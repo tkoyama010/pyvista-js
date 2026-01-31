@@ -126,9 +126,17 @@ mesh.faces   # Cell connectivity
 - [x] Mesh rendering with vtk.js
 - [x] PyVista compatibility layer
 - [x] Streamlit/stlite integration
+- [x] Demo application
+- [ ] PyPI publication
 - [ ] Advanced mesh operations
 - [ ] Comprehensive documentation
 - [ ] More examples
+
+## Demo
+
+Try the live demo: [https://tkoyama010.github.io/pyvista-js/](https://tkoyama010.github.io/pyvista-js/)
+
+The demo runs entirely in your browser using stlite!
 
 ## Contributing
 
