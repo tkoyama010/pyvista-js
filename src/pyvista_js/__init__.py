@@ -11,11 +11,25 @@ __license__ = "BSD-3-Clause"
 from .plotter import Plotter
 from .mesh import Mesh, Sphere, Cube, Cylinder
 
-__all__ = [
-    "__version__",
-    "Plotter",
-    "Mesh",
-    "Sphere",
-    "Cube",
-    "Cylinder",
-]
+# Streamlit integration (optional)
+try:
+    from .streamlit_integration import pyvista_chart
+    __all__ = [
+        "__version__",
+        "Plotter",
+        "Mesh",
+        "Sphere",
+        "Cube",
+        "Cylinder",
+        "pyvista_chart",
+    ]
+except ImportError:
+    # Streamlit not available
+    __all__ = [
+        "__version__",
+        "Plotter",
+        "Mesh",
+        "Sphere",
+        "Cube",
+        "Cylinder",
+    ]

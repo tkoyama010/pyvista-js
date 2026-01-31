@@ -41,10 +41,50 @@ plotter.show()
 pip install pyvista-js
 ```
 
+For Streamlit support:
+```bash
+pip install pyvista-js[streamlit]
+```
+
 For Pyodide/stlite:
 ```python
 import micropip
 await micropip.install('pyvista-js')
+```
+
+## Usage
+
+### Basic Example
+
+```python
+import pyvista_js as pv
+
+# Create a plotter
+plotter = pv.Plotter()
+
+# Add a mesh
+mesh = pv.Sphere(radius=1.0)
+plotter.add_mesh(mesh, color='red', opacity=0.8)
+
+# Display (in Pyodide/browser environment)
+plotter.show()
+```
+
+### Streamlit/stlite Example
+
+```python
+import streamlit as st
+import pyvista_js as pv
+
+st.title("3D Visualization")
+
+# Create visualization
+plotter = pv.Plotter()
+sphere = pv.Sphere()
+plotter.add_mesh(sphere, color='blue')
+
+# Display in Streamlit
+pv.pyvista_chart(plotter, height=600)
 ```
 
 ## API Design
@@ -79,15 +119,16 @@ mesh.faces   # Cell connectivity
 
 ## Status
 
-🚧 **Early Development** - This project is in active development.
+🚀 **Beta** - Core functionality implemented!
 
-- [ ] Core Plotter API
-- [ ] Basic geometric primitives
-- [ ] Mesh rendering
-- [ ] PyVista compatibility layer
-- [ ] stlite integration
-- [ ] Documentation
-- [ ] Examples
+- [x] Core Plotter API
+- [x] Basic geometric primitives (Sphere, Cube, Cylinder)
+- [x] Mesh rendering with vtk.js
+- [x] PyVista compatibility layer
+- [x] Streamlit/stlite integration
+- [ ] Advanced mesh operations
+- [ ] Comprehensive documentation
+- [ ] More examples
 
 ## Contributing
 

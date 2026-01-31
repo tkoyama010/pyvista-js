@@ -7,6 +7,8 @@ using vtk.js in browser environments.
 from typing import Optional, Tuple, Union
 import numpy as np
 
+from .rendering import get_renderer
+
 
 class Plotter:
     """Main plotting interface for pyvista-js.
@@ -26,8 +28,7 @@ class Plotter:
     def __init__(self):
         """Initialize a new Plotter instance."""
         self._actors = []
-        self._renderer = None
-        self._render_window = None
+        self._renderer = get_renderer()
         
     def add_mesh(
         self,
@@ -60,20 +61,30 @@ class Plotter:
         >>> mesh = pv.Sphere()
         >>> plotter.add_mesh(mesh, color='red', opacity=0.8)
         """
-        # This will be implemented with vtk.js integration
-        actor = {
+        # Add mesh to vtk.js renderer
+        actor = self._renderer.add_mesh_actor(mesh, color=color, opacity=opacity)
+        
+        # Store reference
+        self._actors.append({
             'mesh': mesh,
             'color': color,
             'opacity': opacity,
+            'actor': actor,
             'kwargs': kwargs
-        }
-        self._actors.append(actor)
+        })
+        
         return actor
     
-    def show(self):
+    def show(self, container_id: str = "pyvista-container"):
         """Display the visualization.
         
         In browser environments, this will render the scene using vtk.js.
+        
+        Parameters
+        ----------
+        container_id : str, optional
+            HTML element ID for the visualization container.
+            Default is "pyvista-container".
         
         Examples
         --------
@@ -81,9 +92,11 @@ class Plotter:
         >>> plotter.add_mesh(pv.Sphere())
         >>> plotter.show()
         """
-        # This will be implemented with vtk.js rendering
-        # For now, just a placeholder
-        print(f"Plotter with {len(self._actors)} actors")
+        # Create container if needed
+        self._renderer.create_container(container_id)
+        
+        # Render the scene
+        self._renderer.render()
         
     def clear(self):
         """Clear all actors from the plotter.
@@ -95,6 +108,7 @@ class Plotter:
         >>> plotter.clear()
         """
         self._actors = []
+        self._renderer.clear()
         
     @property
     def actors(self):
