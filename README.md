@@ -138,6 +138,25 @@ Try the live demo: [https://tkoyama010.github.io/pyvista-js/](https://tkoyama010
 
 The demo runs entirely in your browser using stlite!
 
+### GitHub Pages Setup
+
+To enable the demo and PR previews:
+
+1. Go to **Settings** → **Pages**
+2. Under **Source**, select **GitHub Actions**
+3. Save the settings
+
+**Demo URLs:**
+- Main: `https://tkoyama010.github.io/pyvista-js/`
+- PR Preview: `https://tkoyama010.github.io/pyvista-js/pr-preview/pr-<NUMBER>/`
+
+**Local Testing:**
+```bash
+cd demo
+python -m http.server 8000
+# Open http://localhost:8000
+```
+
 ## Contributing
 
 Contributions are welcome! This project aims to:
