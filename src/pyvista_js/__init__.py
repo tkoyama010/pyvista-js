@@ -8,10 +8,14 @@ __version__ = "0.1.0"
 __author__ = "Tetsuo Koyama"
 __license__ = "BSD-3-Clause"
 
-# Core imports will be added as implementation progresses
-# from .plotter import Plotter
-# from .mesh import Sphere, Cube, Cylinder
+from .plotter import Plotter
+from .mesh import Mesh, Sphere, Cube, Cylinder
 
 __all__ = [
     "__version__",
+    "Plotter",
+    "Mesh",
+    "Sphere",
+    "Cube",
+    "Cylinder",
 ]
