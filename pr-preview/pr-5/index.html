@@ -28,10 +28,10 @@ This demo installs pyvista-js directly from GitHub and runs entirely in your bro
 """)
 
 # Install and import
-with st.spinner("Installing pyvista-js from GitHub..."):
+with st.spinner("Installing pyvista-js..."):
     try:
         import micropip
-        await micropip.install("https://github.com/tkoyama010/pyvista-js/archive/refs/heads/main.zip")
+        await micropip.install("https://github.com/tkoyama010/pyvista-js/releases/download/v0.1.dev0/pyvista_js-0.1.dev0-py3-none-any.whl")
         import pyvista_js as pv
         st.success(f"✅ pyvista-js {pv.__version__} loaded successfully!")
         
