@@ -42,6 +42,7 @@ jobs:
       - name: Build pyvista-js wheel
         run: |
           uv build
+          mkdir -p jupyterlite/files
           cp dist/*.whl jupyterlite/files/
 
       - name: Install JupyterLite
