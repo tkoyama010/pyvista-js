@@ -52,7 +52,7 @@ jobs:
 
       - name: Build JupyterLite
         run: |
-          jupyter lite build --contents jupyterlite/content --output-dir _site
+          jupyter lite build --contents jupyterlite/content --contents jupyterlite/files --output-dir _site
 
       - name: Upload artifact for Pages (main branch)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
