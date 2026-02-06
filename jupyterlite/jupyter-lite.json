@@ -6,8 +6,5 @@
     "baseUrl": "./",
     "enableMemoryStorage": true,
     "disableRTC": true
-  },
-  "piplite_urls": [
-    "https://github.com/tkoyama010/pyvista-js/archive/refs/heads/main.zip"
-  ]
+  }
 }
