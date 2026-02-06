@@ -54,6 +54,17 @@ await micropip.install('pyvista-js')
 
 ## Usage
 
+### JupyterLite Demo
+
+Try pyvista-js directly in your browser with JupyterLite (no installation required):
+
+🚀 **[Launch JupyterLite Demo](https://tkoyama010.github.io/pyvista-js/)** (Coming soon)
+
+The demo includes interactive notebooks demonstrating:
+- Basic sphere creation and visualization
+- Mesh manipulation
+- PyVista-like API usage in the browser
+
 ### Basic Example
 
 ```python

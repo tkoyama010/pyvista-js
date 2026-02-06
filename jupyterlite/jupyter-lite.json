@@ -1,0 +1,13 @@
+{
+  "jupyter-lite-schema-version": 0,
+  "jupyter-config-data": {
+    "appName": "pyvista-js JupyterLite Demo",
+    "appVersion": "0.1.0",
+    "baseUrl": "./",
+    "enableMemoryStorage": true,
+    "disableRTC": true
+  },
+  "piplite_urls": [
+    "https://github.com/tkoyama010/pyvista-js/archive/refs/heads/main.zip"
+  ]
+}

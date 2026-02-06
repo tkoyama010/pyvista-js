@@ -1,0 +1,2 @@
+numpy
+git+https://github.com/tkoyama010/pyvista-js.git
