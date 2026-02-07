@@ -16,16 +16,10 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
   pull-requests: write
 
-concurrency:
-  group: "pages-${{ github.event_name != 'pull_request' && 'main' || format('pr-{0}', github.event.pull_request.number) }}"
-  cancel-in-progress: false
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,11 +39,13 @@ jobs:
         run: |
           jupyter lite build --contents jupyterlite/content --output-dir _site
 
-      - name: Upload artifact for Pages (main branch)
+      - name: Deploy to gh-pages (main branch)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: _site
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          force_orphan: true
 
       - name: Deploy PR Preview
         if: github.event_name == 'pull_request'
@@ -58,15 +54,3 @@ jobs:
           source-dir: _site
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-
-  deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
