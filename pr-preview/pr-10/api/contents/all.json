@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-02-07T21:22:38.743751Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-02-07T21:22:27.548072Z",
+      "mimetype": null,
+      "name": "vtk_demo.ipynb",
+      "path": "vtk_demo.ipynb",
+      "size": 3706,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-02-07T21:22:38.743751Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-02-07T21:22:38.743751Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
