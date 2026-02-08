@@ -36,7 +36,7 @@ plotter.show()
 - 📊 **Streamlit/stlite support** - Easy integration with web frameworks
 - 🔧 **Lightweight** - No server required, pure client-side
 
-## Installation (Future)
+## Installation
 
 ```bash
 pip install pyvista-js
