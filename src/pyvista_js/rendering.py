@@ -125,14 +125,11 @@ class VTKJSRenderer:
             If vtk.js is not available in the page.
         """
         if not PYODIDE_ENV:
-            raise RuntimeError(
-                "VTKJSRenderer can only be used in Pyodide/browser environment"
-            )
-        
-        if not VTK_AVAILABLE:
-            raise ImportError(
-                "vtk.js is not available. Please ensure vtk.js is loaded in the page."
-            )
+            # In non-Pyodide environment, check if IPython is available
+            if not IPYTHON_AVAILABLE:
+                raise RuntimeError(
+                    "VTKJSRenderer requires either Pyodide environment or IPython"
+                )
         
         self.container = None
         self.actors = []
@@ -469,7 +466,7 @@ def get_renderer():
     Returns
     -------
     VTKJSRenderer or MockRenderer
-        - VTKJSRenderer if in Pyodide with vtk.js available
+        - VTKJSRenderer if in Pyodide or IPython environment
         - MockRenderer otherwise (standard Python, testing, CI/CD)
         
     Examples
@@ -477,7 +474,7 @@ def get_renderer():
     >>> # Automatically gets the right renderer
     >>> renderer = get_renderer()
     >>> 
-    >>> # In Pyodide: returns VTKJSRenderer
+    >>> # In Pyodide or Jupyter: returns VTKJSRenderer
     >>> # In standard Python: returns MockRenderer
     >>> 
     >>> # Same code works in both environments
@@ -492,7 +489,8 @@ def get_renderer():
     This function is used internally by the Plotter class. You typically
     don't need to call it directly unless implementing custom rendering logic.
     """
-    if PYODIDE_ENV and VTK_AVAILABLE:
+    # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
+    if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
         return VTKJSRenderer()
     else:
         return MockRenderer()
