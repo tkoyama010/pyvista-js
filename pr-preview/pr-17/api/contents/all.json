@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-02-08T08:54:34.579942Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-02-08T08:54:24.646908Z",
+      "mimetype": null,
+      "name": "vtk_demo.ipynb",
+      "path": "vtk_demo.ipynb",
+      "size": 3706,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-02-08T08:54:34.577941Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-02-08T08:54:24.646908Z",
+      "mimetype": null,
+      "name": "simple_demo.ipynb",
+      "path": "simple_demo.ipynb",
+      "size": 1694,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-02-08T08:54:34.578941Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-02-08T08:54:34.578941Z",
+      "mimetype": null,
+      "name": "src",
+      "path": "src",
+      "size": null,
+      "type": "directory",
+      "writable": true
+    }
+  ],
+  "created": "2026-02-08T08:54:34.579942Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-02-08T08:54:34.579942Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
