@@ -74,6 +74,13 @@ if PYODIDE_ENV:
 else:
     VTK_AVAILABLE = False
 
+# Check if IPython is available
+try:
+    from IPython.display import display, HTML
+    IPYTHON_AVAILABLE = True
+except ImportError:
+    IPYTHON_AVAILABLE = False
+
 
 class VTKJSRenderer:
     """Renderer using vtk.js for browser visualization.
@@ -127,15 +134,9 @@ class VTKJSRenderer:
                 "vtk.js is not available. Please ensure vtk.js is loaded in the page."
             )
         
-        # Create vtk.js rendering components
-        self.renderer = vtk.Rendering.Core.vtkRenderer.newInstance()
-        self.render_window = vtk.Rendering.Core.vtkRenderWindow.newInstance()
-        self.render_window.addRenderer(self.renderer)
-        
-        self.interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance()
-        self.interactor.setView(self.render_window)
-        
         self.container = None
+        self.actors = []
+        self.use_ipython = IPYTHON_AVAILABLE
         
     def create_container(self, element_id="pyvista-container"):
         """Create a DOM container for rendering.
@@ -151,30 +152,28 @@ class VTKJSRenderer:
         Returns
         -------
         container
-            The created DOM element.
+            The created DOM element (if using direct DOM) or None (if using IPython).
             
         Examples
         --------
         >>> renderer = VTKJSRenderer()
         >>> container = renderer.create_container('my-visualization')
         """
-        # Create container div
-        self.container = document.createElement("div")
-        self.container.setAttribute("id", element_id)
-        self.container.style.width = "100%"
-        self.container.style.height = "600px"
-        
-        # Append to body
-        document.body.appendChild(self.container)
-        
-        # Set container for render window
-        self.render_window.getViews()[0].setContainer(self.container)
-        
-        # Initialize interactor
-        self.interactor.initialize()
-        self.interactor.bindEvents(self.container)
-        
-        return self.container
+        if self.use_ipython:
+            # Store container ID for later HTML generation
+            self.container_id = element_id
+            return None
+        else:
+            # Create container div directly
+            self.container = document.createElement("div")
+            self.container.setAttribute("id", element_id)
+            self.container.style.width = "100%"
+            self.container.style.height = "600px"
+            
+            # Append to body
+            document.body.appendChild(self.container)
+            
+            return self.container
         
     def add_mesh_actor(self, mesh, color=None, opacity=1.0):
         """Add a mesh to the renderer.
@@ -196,7 +195,7 @@ class VTKJSRenderer:
         Returns
         -------
         actor
-            The vtk.js vtkActor object representing the mesh.
+            The vtk.js vtkActor object representing the mesh (or dict if using IPython).
             
         Examples
         --------
@@ -204,47 +203,124 @@ class VTKJSRenderer:
         >>> mesh = Sphere(radius=2.0)
         >>> actor = renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
         """
-        # Create polydata from mesh
-        polydata = vtk.Common.DataModel.vtkPolyData.newInstance()
+        # Store actor information for later rendering
+        if isinstance(color, str):
+            color = self._color_name_to_rgb(color)
         
-        # Convert NumPy points to JavaScript array
-        points = mesh.points.flatten().tolist()
-        polydata.getPoints().setData(points, 3)
+        actor_info = {
+            'mesh': mesh,
+            'color': color,
+            'opacity': opacity,
+        }
+        self.actors.append(actor_info)
         
-        # Create mapper
-        mapper = vtk.Rendering.Core.vtkMapper.newInstance()
-        mapper.setInputData(polydata)
-        
-        # Create actor
-        actor = vtk.Rendering.Core.vtkActor.newInstance()
-        actor.setMapper(mapper)
-        
-        # Set color if provided
-        if color is not None:
-            if isinstance(color, str):
-                # Convert color name to RGB (simplified)
-                color = self._color_name_to_rgb(color)
-            actor.getProperty().setColor(*color)
-        
-        # Set opacity
-        actor.getProperty().setOpacity(opacity)
-        
-        # Add to renderer
-        self.renderer.addActor(actor)
-        
-        return actor
+        return actor_info
         
     def render(self):
         """Render the scene.
         
         Resets the camera to show all actors and triggers rendering.
+        In IPython/Jupyter, generates and displays HTML with vtk.js code.
         
         Examples
         --------
         >>> renderer.render()  # Display the visualization
         """
-        self.renderer.resetCamera()
-        self.render_window.render()
+        if self.use_ipython:
+            # Generate HTML with JavaScript code
+            html = self._generate_html()
+            display(HTML(html))
+        else:
+            # Direct rendering
+            self.renderer.resetCamera()
+            self.render_window.render()
+    
+    def _generate_html(self):
+        """Generate HTML and JavaScript for IPython display."""
+        container_id = getattr(self, 'container_id', 'pyvista-container')
+        
+        # Generate JavaScript code for each actor
+        actor_js_code = []
+        for actor_info in self.actors:
+            mesh = actor_info['mesh']
+            color = actor_info.get('color', (0.5, 0.5, 0.5))
+            opacity = actor_info.get('opacity', 1.0)
+            
+            # Convert mesh points to JavaScript array
+            points_flat = mesh.points.flatten().tolist()
+            points_str = '[' + ','.join(map(str, points_flat)) + ']'
+            
+            # Generate code to create sphere source (for now, assuming Sphere)
+            # TODO: Add support for other mesh types
+            actor_js_code.append(f'''
+      // Create sphere source
+      const sphereSource = vtk.Filters.Sources.vtkSphereSource.newInstance({{
+        center: [0, 0, 0],
+        radius: 1.0,
+        thetaResolution: 30,
+        phiResolution: 30
+      }});
+      
+      // Create mapper
+      const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+      mapper.setInputConnection(sphereSource.getOutputPort());
+      
+      // Create actor
+      const actor = vtk.Rendering.Core.vtkActor.newInstance();
+      actor.setMapper(mapper);
+      actor.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
+      actor.getProperty().setOpacity({opacity});
+      
+      // Add actor to renderer
+      renderer.addActor(actor);
+            ''')
+        
+        actors_code = '\n'.join(actor_js_code)
+        
+        html = f'''
+<div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
+<div id="debug-{container_id}" style="margin-top:10px;font-family:monospace;font-size:11px;background:#f5f5f5;padding:8px;"></div>
+<script>
+(function() {{
+  const debug = document.getElementById('debug-{container_id}');
+  function log(msg) {{
+    console.log(msg);
+    debug.innerHTML += msg + '<br>';
+  }}
+  
+  setTimeout(function() {{
+    try {{
+      const container = document.getElementById('{container_id}');
+      log('📦 Container: ' + container.offsetWidth + 'x' + container.offsetHeight);
+      
+      // Use the simpler FullScreenRenderWindow helper
+      const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
+        container: container,
+        background: [0.2, 0.3, 0.4]
+      }});
+      
+      const renderer = fullScreenRenderer.getRenderer();
+      const renderWindow = fullScreenRenderer.getRenderWindow();
+      log('✅ Renderer created');
+      
+{actors_code}
+      
+      // Reset camera and render
+      renderer.resetCamera();
+      renderWindow.render();
+      
+      log('🎉 Scene rendered successfully!');
+      log('🖱️  Drag to rotate, scroll to zoom');
+      
+    }} catch(e) {{
+      log('❌ Error: ' + e.message);
+      console.error(e);
+    }}
+  }}, 300);
+}})();
+</script>
+'''
+        return html
         
     def clear(self):
         """Remove all actors from the renderer.
@@ -253,7 +329,9 @@ class VTKJSRenderer:
         --------
         >>> renderer.clear()  # Remove all visualizations
         """
-        self.renderer.removeAllActors()
+        self.actors = []
+        if not self.use_ipython and hasattr(self, 'renderer'):
+            self.renderer.removeAllActors()
         
     @staticmethod
     def _color_name_to_rgb(color_name):
