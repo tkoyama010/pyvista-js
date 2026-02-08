@@ -35,7 +35,7 @@ class Mesh:
 
 
 def Sphere(
-    radius: float = 0.5,
+    radius: float = 1.0,
     center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
     theta_resolution: int = 30,
     phi_resolution: int = 30,
@@ -45,7 +45,7 @@ def Sphere(
     Parameters
     ----------
     radius : float, optional
-        Sphere radius. Default is 0.5.
+        Sphere radius. Default is 1.0.
     center : tuple, optional
         Center of the sphere (x, y, z). Default is (0, 0, 0).
     theta_resolution : int, optional
