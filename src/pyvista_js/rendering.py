@@ -33,7 +33,10 @@ NumPy arrays are converted to JavaScript for vtk.js:
 
 Loading vtk.js
 --------------
-vtk.js must be loaded before using VTKJSRenderer:
+vtk.js is automatically loaded when VTKJSRenderer is initialized in
+IPython/Jupyter environments. No manual script loading required.
+
+For manual loading or custom versions:
 
 .. code-block:: html
 
@@ -81,6 +84,32 @@ except ImportError:
     IPYTHON_AVAILABLE = False
 
 
+# Flag to track if vtk.js has been loaded
+_VTKJS_LOADED = False
+
+
+def _load_vtkjs():
+    """Load vtk.js library in IPython/Jupyter environment.
+
+    This function automatically loads the vtk.js library from unpkg CDN
+    when working in Jupyter notebooks. It only loads the library once
+    per session.
+    """
+    global _VTKJS_LOADED
+    if _VTKJS_LOADED:
+        return
+
+    if IPYTHON_AVAILABLE:
+        try:
+            display(HTML('''
+<script src="https://unpkg.com/vtk.js@29.5.0"></script>
+'''))
+            _VTKJS_LOADED = True
+        except NameError:
+            # display/HTML not available (e.g., in tests)
+            pass
+
+
 class VTKJSRenderer:
     """Renderer using vtk.js for browser visualization.
 
@@ -116,6 +145,8 @@ class VTKJSRenderer:
     def __init__(self):
         """Initialize the vtk.js renderer.
 
+        Automatically loads vtk.js library if in IPython/Jupyter environment.
+
         Raises
         ------
         RuntimeError
@@ -129,6 +160,8 @@ class VTKJSRenderer:
                 raise RuntimeError(
                     "VTKJSRenderer requires either Pyodide environment or IPython"
                 )
+            # Automatically load vtk.js in IPython/Jupyter
+            _load_vtkjs()
 
         self.container = None
         self.actors = []
