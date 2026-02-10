@@ -3,6 +3,8 @@ name: Tests
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0, v0.1.0, etc.
   pull_request:
     branches: [ main ]
 
