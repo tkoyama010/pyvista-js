@@ -10,6 +10,7 @@ __license__ = "BSD-3-Clause"
 
 from .mesh import Cube, Cylinder, Mesh, Sphere
 from .plotter import Plotter
+from .rendering import ElectronRenderer
 
 # Streamlit integration (optional)
 try:
@@ -18,6 +19,7 @@ try:
     __all__ = [
         "Cube",
         "Cylinder",
+        "ElectronRenderer",
         "Mesh",
         "Plotter",
         "Sphere",
@@ -29,6 +31,7 @@ except ImportError:
     __all__ = [
         "Cube",
         "Cylinder",
+        "ElectronRenderer",
         "Mesh",
         "Plotter",
         "Sphere",
