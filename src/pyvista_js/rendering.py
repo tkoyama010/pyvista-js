@@ -26,7 +26,7 @@ NumPy arrays are converted to JavaScript for vtk.js:
 
 >>> # Python NumPy array (n, 3)
 >>> points = mesh.points
->>> 
+>>>
 >>> # Convert to JavaScript flat array
 >>> points_js = points.flatten().tolist()
 >>> polydata.getPoints().setData(points_js, 3)
@@ -48,26 +48,25 @@ Using the renderer (automatically selected):
 
 >>> from pyvista_js.rendering import get_renderer
 >>> from pyvista_js import Sphere
->>> 
+>>>
 >>> renderer = get_renderer()
 >>> mesh = Sphere()
 >>> renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
 >>> renderer.create_container('viz-container')
 >>> renderer.render()
 
-In Pyodide environment, this uses vtk.js. In standard Python, 
+In Pyodide environment, this uses vtk.js. In standard Python,
 it uses MockRenderer which prints debug output.
 """
 
 import sys
-from typing import TYPE_CHECKING
 
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
 
 if PYODIDE_ENV:
     try:
-        from js import vtk, document, window
+        from js import document  # noqa: F401
         VTK_AVAILABLE = True
     except ImportError:
         VTK_AVAILABLE = False
@@ -76,7 +75,7 @@ else:
 
 # Check if IPython is available
 try:
-    from IPython.display import display, HTML
+    from IPython.display import HTML, display
     IPYTHON_AVAILABLE = True
 except ImportError:
     IPYTHON_AVAILABLE = False
@@ -84,39 +83,39 @@ except ImportError:
 
 class VTKJSRenderer:
     """Renderer using vtk.js for browser visualization.
-    
+
     This class wraps vtk.js rendering components and provides
     a bridge between Python mesh data and JavaScript WebGL rendering.
-    
+
     Notes
     -----
     This renderer can only be instantiated in a Pyodide environment
     with vtk.js loaded in the page. Use `get_renderer()` to automatically
     get the appropriate renderer for the current environment.
-    
+
     The renderer creates standard vtk.js objects:
     - vtkRenderer: Scene renderer
     - vtkRenderWindow: Rendering window
     - vtkRenderWindowInteractor: User interaction handler
-    
+
     Examples
     --------
     >>> # In Pyodide/browser environment
     >>> renderer = VTKJSRenderer()
     >>> renderer.create_container('my-viz')
-    >>> 
+    >>>
     >>> # Add a mesh
     >>> from pyvista_js import Sphere
     >>> mesh = Sphere()
     >>> actor = renderer.add_mesh_actor(mesh, color='blue')
-    >>> 
+    >>>
     >>> # Render the scene
     >>> renderer.render()
     """
-    
+
     def __init__(self):
         """Initialize the vtk.js renderer.
-        
+
         Raises
         ------
         RuntimeError
@@ -130,27 +129,27 @@ class VTKJSRenderer:
                 raise RuntimeError(
                     "VTKJSRenderer requires either Pyodide environment or IPython"
                 )
-        
+
         self.container = None
         self.actors = []
         self.use_ipython = IPYTHON_AVAILABLE
-        
+
     def create_container(self, element_id="pyvista-container"):
         """Create a DOM container for rendering.
-        
+
         Creates a <div> element in the document and configures it for
         vtk.js rendering with mouse/touch interaction support.
-        
+
         Parameters
         ----------
         element_id : str, default="pyvista-container"
             HTML element ID for the container.
-            
+
         Returns
         -------
         container
             The created DOM element (if using direct DOM) or None (if using IPython).
-            
+
         Examples
         --------
         >>> renderer = VTKJSRenderer()
@@ -166,18 +165,18 @@ class VTKJSRenderer:
             self.container.setAttribute("id", element_id)
             self.container.style.width = "100%"
             self.container.style.height = "600px"
-            
+
             # Append to body
             document.body.appendChild(self.container)
-            
+
             return self.container
-        
+
     def add_mesh_actor(self, mesh, color=None, opacity=1.0):
         """Add a mesh to the renderer.
-        
+
         Converts a pyvista-js Mesh to vtk.js polydata and creates
         an actor for rendering.
-        
+
         Parameters
         ----------
         mesh : Mesh
@@ -188,12 +187,12 @@ class VTKJSRenderer:
             If None, uses default vtk.js coloring.
         opacity : float, default=1.0
             Opacity value between 0 (transparent) and 1 (opaque).
-            
+
         Returns
         -------
         actor
             The vtk.js vtkActor object representing the mesh (or dict if using IPython).
-            
+
         Examples
         --------
         >>> from pyvista_js import Sphere
@@ -203,22 +202,22 @@ class VTKJSRenderer:
         # Store actor information for later rendering
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
-        
+
         actor_info = {
             'mesh': mesh,
             'color': color,
             'opacity': opacity,
         }
         self.actors.append(actor_info)
-        
+
         return actor_info
-        
+
     def render(self):
         """Render the scene.
-        
+
         Resets the camera to show all actors and triggers rendering.
         In IPython/Jupyter, generates and displays HTML with vtk.js code.
-        
+
         Examples
         --------
         >>> renderer.render()  # Display the visualization
@@ -231,22 +230,22 @@ class VTKJSRenderer:
             # Direct rendering
             self.renderer.resetCamera()
             self.render_window.render()
-    
+
     def _generate_html(self):
         """Generate HTML and JavaScript for IPython display."""
         container_id = getattr(self, 'container_id', 'pyvista-container')
-        
+
         # Generate JavaScript code for each actor
         actor_js_code = []
         for actor_info in self.actors:
             mesh = actor_info['mesh']
             color = actor_info.get('color', (0.5, 0.5, 0.5))
             opacity = actor_info.get('opacity', 1.0)
-            
+
             # Convert mesh points to JavaScript array
             points_flat = mesh.points.flatten().tolist()
-            points_str = '[' + ','.join(map(str, points_flat)) + ']'
-            
+            '[' + ','.join(map(str, points_flat)) + ']'
+
             # Generate code to create sphere source (for now, assuming Sphere)
             # TODO: Add support for other mesh types
             actor_js_code.append(f'''
@@ -257,26 +256,27 @@ class VTKJSRenderer:
         thetaResolution: 30,
         phiResolution: 30
       }});
-      
+
       // Create mapper
       const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
       mapper.setInputConnection(sphereSource.getOutputPort());
-      
+
       // Create actor
       const actor = vtk.Rendering.Core.vtkActor.newInstance();
       actor.setMapper(mapper);
       actor.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
       actor.getProperty().setOpacity({opacity});
-      
+
       // Add actor to renderer
       renderer.addActor(actor);
             ''')
-        
+
         actors_code = '\n'.join(actor_js_code)
-        
+
         html = f'''
 <div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
-<div id="debug-{container_id}" style="margin-top:10px;font-family:monospace;font-size:11px;background:#f5f5f5;padding:8px;"></div>
+<div id="debug-{container_id}" style="margin-top:10px;font-family:monospace;
+font-size:11px;background:#f5f5f5;padding:8px;"></div>
 <script>
 (function() {{
   const debug = document.getElementById('debug-{container_id}');
@@ -284,31 +284,31 @@ class VTKJSRenderer:
     console.log(msg);
     debug.innerHTML += msg + '<br>';
   }}
-  
+
   setTimeout(function() {{
     try {{
       const container = document.getElementById('{container_id}');
       log('📦 Container: ' + container.offsetWidth + 'x' + container.offsetHeight);
-      
+
       // Use the simpler FullScreenRenderWindow helper
       const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
         container: container,
         background: [0.2, 0.3, 0.4]
       }});
-      
+
       const renderer = fullScreenRenderer.getRenderer();
       const renderWindow = fullScreenRenderer.getRenderWindow();
       log('✅ Renderer created');
-      
+
 {actors_code}
-      
+
       // Reset camera and render
       renderer.resetCamera();
       renderWindow.render();
-      
+
       log('🎉 Scene rendered successfully!');
       log('🖱️  Drag to rotate, scroll to zoom');
-      
+
     }} catch(e) {{
       log('❌ Error: ' + e.message);
       console.error(e);
@@ -318,10 +318,10 @@ class VTKJSRenderer:
 </script>
 '''
         return html
-        
+
     def clear(self):
         """Remove all actors from the renderer.
-        
+
         Examples
         --------
         >>> renderer.clear()  # Remove all visualizations
@@ -329,16 +329,16 @@ class VTKJSRenderer:
         self.actors = []
         if not self.use_ipython and hasattr(self, 'renderer'):
             self.renderer.removeAllActors()
-        
+
     @staticmethod
     def _color_name_to_rgb(color_name):
         """Convert color name to RGB tuple.
-        
+
         Parameters
         ----------
         color_name : str
             Color name (e.g., 'red', 'blue').
-            
+
         Returns
         -------
         tuple of float
@@ -359,10 +359,10 @@ class VTKJSRenderer:
 
 class MockRenderer:
     """Mock renderer for non-Pyodide environments.
-    
+
     Provides a drop-in replacement for VTKJSRenderer that can be used
     in standard Python environments for development and testing.
-    
+
     Why MockRenderer is Needed
     ---------------------------
     1. **Local Development**: Develop and test code on your PC without browser
@@ -370,43 +370,43 @@ class MockRenderer:
     3. **Documentation**: Generate docs with sphinx-build without Pyodide
     4. **API Validation**: Verify API design before vtk.js integration
     5. **Cross-platform**: Same code works in Pyodide and standard Python
-    
+
     The MockRenderer prints debug information instead of rendering,
     allowing you to verify that your visualization code is correct.
-    
+
     Examples
     --------
     >>> # Works in standard Python
     >>> from pyvista_js.rendering import MockRenderer
     >>> from pyvista_js import Sphere
-    >>> 
+    >>>
     >>> renderer = MockRenderer()
     >>> mesh = Sphere()
     >>> renderer.add_mesh_actor(mesh, color='red')
     Mock: Added mesh with 900 points
-    >>> 
+    >>>
     >>> renderer.render()
     Mock: Rendering 1 actors
-    
+
     Notes
     -----
     The mock renderer is automatically used when calling `get_renderer()`
     outside of a Pyodide environment. You typically don't need to instantiate
     it directly.
     """
-    
+
     def __init__(self):
         """Initialize mock renderer."""
         self.actors = []
-        
+
     def create_container(self, element_id="pyvista-container"):
         """Mock container creation.
-        
+
         Parameters
         ----------
         element_id : str
             Container ID (for API compatibility).
-            
+
         Returns
         -------
         None
@@ -414,10 +414,10 @@ class MockRenderer:
         """
         print(f"Mock: Created container '{element_id}'")
         return None
-        
+
     def add_mesh_actor(self, mesh, color=None, opacity=1.0):
         """Mock mesh addition.
-        
+
         Parameters
         ----------
         mesh : Mesh
@@ -426,7 +426,7 @@ class MockRenderer:
             Color (stored but not rendered).
         opacity : float
             Opacity (stored but not rendered).
-            
+
         Returns
         -------
         dict
@@ -440,17 +440,17 @@ class MockRenderer:
         self.actors.append(actor)
         print(f"Mock: Added mesh with {mesh.n_points} points")
         return actor
-        
+
     def render(self):
         """Mock rendering.
-        
+
         Prints the number of actors that would be rendered.
         """
         print(f"Mock: Rendering {len(self.actors)} actors")
-        
+
     def clear(self):
         """Mock clear.
-        
+
         Removes all actors from the mock renderer.
         """
         self.actors = []
@@ -459,31 +459,31 @@ class MockRenderer:
 
 def get_renderer():
     """Get appropriate renderer for current environment.
-    
+
     Automatically detects whether running in Pyodide/browser and
     returns the appropriate renderer implementation.
-    
+
     Returns
     -------
     VTKJSRenderer or MockRenderer
         - VTKJSRenderer if in Pyodide or IPython environment
         - MockRenderer otherwise (standard Python, testing, CI/CD)
-        
+
     Examples
     --------
     >>> # Automatically gets the right renderer
     >>> renderer = get_renderer()
-    >>> 
+    >>>
     >>> # In Pyodide or Jupyter: returns VTKJSRenderer
     >>> # In standard Python: returns MockRenderer
-    >>> 
+    >>>
     >>> # Same code works in both environments
     >>> from pyvista_js import Sphere
     >>> mesh = Sphere()
     >>> renderer.add_mesh_actor(mesh, color='blue')
     >>> renderer.create_container()
     >>> renderer.render()
-    
+
     Notes
     -----
     This function is used internally by the Plotter class. You typically
