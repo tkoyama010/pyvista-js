@@ -14,6 +14,7 @@ from .plotter import Plotter
 # Streamlit integration (optional)
 try:
     from .streamlit_integration import pyvista_chart
+
     __all__ = [
         "__version__",
         "Plotter",

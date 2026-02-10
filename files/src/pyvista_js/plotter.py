@@ -35,7 +35,7 @@ class Plotter:
         mesh,
         color: Optional[Union[str, Tuple[float, float, float]]] = None,
         opacity: float = 1.0,
-        **kwargs
+        **kwargs,
     ):
         """Add a mesh to the plotter.
 
@@ -65,13 +65,9 @@ class Plotter:
         actor = self._renderer.add_mesh_actor(mesh, color=color, opacity=opacity)
 
         # Store reference
-        self._actors.append({
-            'mesh': mesh,
-            'color': color,
-            'opacity': opacity,
-            'actor': actor,
-            'kwargs': kwargs
-        })
+        self._actors.append(
+            {"mesh": mesh, "color": color, "opacity": opacity, "actor": actor, "kwargs": kwargs}
+        )
 
         return actor
 
@@ -162,20 +158,20 @@ class Plotter:
         """
         # Common color names
         color_map = {
-            'white': (1.0, 1.0, 1.0),
-            'black': (0.0, 0.0, 0.0),
-            'red': (1.0, 0.0, 0.0),
-            'green': (0.0, 1.0, 0.0),
-            'blue': (0.0, 0.0, 1.0),
-            'yellow': (1.0, 1.0, 0.0),
-            'cyan': (0.0, 1.0, 1.0),
-            'magenta': (1.0, 0.0, 1.0),
-            'gray': (0.5, 0.5, 0.5),
-            'grey': (0.5, 0.5, 0.5),
-            'orange': (1.0, 0.647, 0.0),
-            'purple': (0.5, 0.0, 0.5),
-            'pink': (1.0, 0.753, 0.796),
-            'brown': (0.647, 0.165, 0.165),
+            "white": (1.0, 1.0, 1.0),
+            "black": (0.0, 0.0, 0.0),
+            "red": (1.0, 0.0, 0.0),
+            "green": (0.0, 1.0, 0.0),
+            "blue": (0.0, 0.0, 1.0),
+            "yellow": (1.0, 1.0, 0.0),
+            "cyan": (0.0, 1.0, 1.0),
+            "magenta": (1.0, 0.0, 1.0),
+            "gray": (0.5, 0.5, 0.5),
+            "grey": (0.5, 0.5, 0.5),
+            "orange": (1.0, 0.647, 0.0),
+            "purple": (0.5, 0.0, 0.5),
+            "pink": (1.0, 0.753, 0.796),
+            "brown": (0.647, 0.165, 0.165),
         }
 
         if isinstance(color, str):
@@ -189,18 +185,11 @@ class Plotter:
                 )
         elif isinstance(color, (tuple, list)):
             if len(color) != 3:
-                raise ValueError(
-                    f"RGB color must have 3 values, got {len(color)}"
-                )
+                raise ValueError(f"RGB color must have 3 values, got {len(color)}")
             # Validate values are between 0 and 1
             for val in color:
                 if not 0 <= val <= 1:
-                    raise ValueError(
-                        f"RGB values must be between 0 and 1, got {val}"
-                    )
+                    raise ValueError(f"RGB values must be between 0 and 1, got {val}")
             return tuple(color)
         else:
-            raise TypeError(
-                f"Color must be a string or RGB tuple, got {type(color)}"
-            )
-
+            raise TypeError(f"Color must be a string or RGB tuple, got {type(color)}")
