@@ -4,12 +4,9 @@ This package provides a familiar PyVista interface for 3D visualization
 in browser environments using vtk.js as the rendering backend.
 """
 
-from importlib.metadata import version, metadata
-
-__version__ = version("pyvista-js")
-_metadata = metadata("pyvista-js")
-__author__ = _metadata.get("Author", "Tetsuo Koyama")
-__license__ = _metadata.get("License", "BSD-3-Clause")
+__version__ = "0.2.dev0"
+__author__ = "Tetsuo Koyama"
+__license__ = "BSD-3-Clause"
 
 from .plotter import Plotter
 from .mesh import Mesh, Sphere, Cube, Cylinder
