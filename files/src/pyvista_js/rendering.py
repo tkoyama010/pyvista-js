@@ -242,24 +242,71 @@ class VTKJSRenderer:
             color = actor_info.get('color', (0.5, 0.5, 0.5))
             opacity = actor_info.get('opacity', 1.0)
 
+            # Detect mesh type and get parameters
+            mesh_type = getattr(mesh, '_mesh_type', None)
+            params = getattr(mesh, '_params', {})
+
             # Convert mesh points to JavaScript array
             points_flat = mesh.points.flatten().tolist()
             '[' + ','.join(map(str, points_flat)) + ']'
 
-            # Generate code to create sphere source (for now, assuming Sphere)
-            # TODO: Add support for other mesh types
-            actor_js_code.append(f'''
-      // Create sphere source
-      const sphereSource = vtk.Filters.Sources.vtkSphereSource.newInstance({{
-        center: [0, 0, 0],
-        radius: 1.0,
-        thetaResolution: 30,
-        phiResolution: 30
-      }});
+            # Generate appropriate source based on mesh type
+            if mesh_type == 'Sphere':
+                radius = params.get('radius', 1.0)
+                center = params.get('center', (0, 0, 0))
+                theta_res = params.get('theta_resolution', 30)
+                phi_res = params.get('phi_resolution', 30)
+                source_code = f'''
+      const source = vtk.Filters.Sources.vtkSphereSource.newInstance({{
+        center: [{center[0]}, {center[1]}, {center[2]}],
+        radius: {radius},
+        thetaResolution: {theta_res},
+        phiResolution: {phi_res}
+      }});'''
+            elif mesh_type == 'Cube':
+                center = params.get('center', (0, 0, 0))
+                x_len = params.get('x_length', 1.0)
+                y_len = params.get('y_length', 1.0)
+                z_len = params.get('z_length', 1.0)
+                source_code = f'''
+      const source = vtk.Filters.Sources.vtkCubeSource.newInstance({{
+        center: [{center[0]}, {center[1]}, {center[2]}],
+        xLength: {x_len},
+        yLength: {y_len},
+        zLength: {z_len}
+      }});'''
+            elif mesh_type == 'Cylinder':
+                center = params.get('center', (0, 0, 0))
+                radius = params.get('radius', 0.5)
+                height = params.get('height', 1.0)
+                resolution = params.get('resolution', 100)
+                source_code = f'''
+      const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
+        center: [{center[0]}, {center[1]}, {center[2]}],
+        radius: {radius},
+        height: {height},
+        resolution: {resolution}
+      }});'''
+            else:
+                # Generic mesh using polydata
+                points_str = ','.join(map(str, points_flat))
+                source_code = f'''
+      const points = new Float32Array([{points_str}]);
+      const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+      polydata.getPoints().setData(points, 3);
+      const source = polydata;'''
+
+            # Determine mapper setup based on mesh type
+            if mesh_type in ['Sphere', 'Cube', 'Cylinder']:
+                mapper_setup = 'mapper.setInputConnection(source.getOutputPort());'
+            else:
+                mapper_setup = 'mapper.setInputData(source);'
+
+            actor_js_code.append(f'''{source_code}
 
       // Create mapper
       const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
-      mapper.setInputConnection(sphereSource.getOutputPort());
+      {mapper_setup}
 
       // Create actor
       const actor = vtk.Rendering.Core.vtkActor.newInstance();
@@ -318,6 +365,16 @@ font-size:11px;background:#f5f5f5;padding:8px;"></div>
 </script>
 '''
         return html
+
+    def _repr_html_(self):
+        """IPython representation as HTML for Jupyter notebooks.
+
+        Returns
+        -------
+        str
+            HTML string for display in Jupyter.
+        """
+        return self._generate_html()
 
     def clear(self):
         """Remove all actors from the renderer.
