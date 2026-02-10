@@ -78,7 +78,15 @@ def Sphere(
             z = radius * np.cos(p) + center[2]
             points.append([x, y, z])
 
-    return Mesh(points=np.array(points))
+    mesh = Mesh(points=np.array(points))
+    mesh._mesh_type = 'Sphere'
+    mesh._params = {
+        'radius': radius,
+        'center': center,
+        'theta_resolution': theta_resolution,
+        'phi_resolution': phi_resolution
+    }
+    return mesh
 
 
 def Cube(
@@ -137,7 +145,15 @@ def Cube(
         [1, 2, 6, 5],  # Right
     ])
 
-    return Mesh(points=points, faces=faces)
+    mesh = Mesh(points=points, faces=faces)
+    mesh._mesh_type = 'Cube'
+    mesh._params = {
+        'center': center,
+        'x_length': x_length,
+        'y_length': y_length,
+        'z_length': z_length
+    }
+    return mesh
 
 
 def Cylinder(
@@ -193,4 +209,13 @@ def Cylinder(
 
     points = np.vstack([bottom_points, top_points])
 
-    return Mesh(points=points)
+    mesh = Mesh(points=points)
+    mesh._mesh_type = 'Cylinder'
+    mesh._params = {
+        'center': center,
+        'direction': direction,
+        'radius': radius,
+        'height': height,
+        'resolution': resolution
+    }
+    return mesh
