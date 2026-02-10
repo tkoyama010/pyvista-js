@@ -36,6 +36,7 @@ plotter.show()
 - ⚡ **vtk.js powered** - Leverages the power of vtk.js for rendering
 - 📊 **Streamlit/stlite support** - Easy integration with web frameworks
 - 🔧 **Lightweight** - No server required, pure client-side
+- 🖥️ **Desktop window support** - Electron renderer for non-notebook environments
 
 ## Installation
 
@@ -89,6 +90,31 @@ plotter.add_mesh(sphere, color='blue')
 pv.pyvista_chart(plotter, height=600)
 ```
 
+### Desktop Window (Electron) Example
+
+For standard Python scripts (not in notebooks), you can use the Electron backend to display visualizations in a desktop window:
+
+```python
+import os
+os.environ['PYVISTA_JS_BACKEND'] = 'electron'
+
+import pyvista_js as pv
+
+# Create visualization
+plotter = pv.Plotter()
+sphere = pv.Sphere()
+plotter.add_mesh(sphere, color='red')
+
+# Opens in Electron desktop window
+plotter.show()
+```
+
+**Requirements for Electron backend:**
+- Node.js installed on your system
+- Electron will be installed automatically on first use
+
+**Note:** If Electron is not available, the renderer will fall back to opening the visualization in your default web browser.
+
 ## API Design
 
 ### Core Classes
@@ -109,15 +135,39 @@ mesh.points  # NumPy array of vertices
 mesh.faces   # Cell connectivity
 ```
 
+### Backend Selection
+
+pyvista-js automatically selects the appropriate rendering backend based on the environment:
+
+- **Jupyter/JupyterLite**: Uses `VTKJSRenderer` (vtk.js in notebook)
+- **Streamlit/stlite**: Uses `pyvista_chart` integration
+- **Standard Python**: Uses `MockRenderer` (testing) by default
+
+You can explicitly select a backend using the `PYVISTA_JS_BACKEND` environment variable:
+
+```python
+import os
+
+# Use Electron for desktop window
+os.environ['PYVISTA_JS_BACKEND'] = 'electron'
+
+# Use mock renderer (for testing)
+os.environ['PYVISTA_JS_BACKEND'] = 'mock'
+
+# Auto-detect (default)
+os.environ['PYVISTA_JS_BACKEND'] = 'auto'
+```
+
 ## Comparison with PyVista
 
 | Feature | PyVista | pyvista-js |
 |---------|---------|------------|
 | Backend | VTK (C++) | vtk.js (WebGL) |
-| Environment | Desktop | Browser |
+| Environment | Desktop | Browser + Desktop (Electron) |
 | Installation | `pip install pyvista` | `pip install pyvista-js` |
-| Rendering | Native OpenGL | WebGL |
+| Rendering | Native OpenGL | WebGL / Electron |
 | Server Required | Optional | No |
+| Node.js Required | No | Only for Electron backend |
 
 ## Status
 
@@ -128,6 +178,7 @@ mesh.faces   # Cell connectivity
 - [x] Mesh rendering with vtk.js
 - [x] PyVista compatibility layer
 - [x] Streamlit/stlite integration
+- [x] Electron desktop window support
 - [ ] Advanced mesh operations
 - [ ] Comprehensive documentation
 - [ ] More examples

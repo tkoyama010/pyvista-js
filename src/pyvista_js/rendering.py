@@ -65,9 +65,15 @@ it uses MockRenderer which prints debug output.
 
 from __future__ import annotations
 
+import json
 import logging
+import os
+import subprocess
 import sys
+import tempfile
 import time
+import webbrowser
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -496,6 +502,491 @@ class VTKJSRenderer:
         return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
 
 
+class ElectronRenderer:
+    """Renderer using Electron for desktop window visualization.
+
+    This class provides a desktop window for 3D visualization using
+    Electron + vtk.js when running in standard Python environments
+    (not in notebook or browser).
+
+    The renderer creates an Electron window with vtk.js rendering,
+    providing a desktop visualization experience similar to PyVista's
+    native OpenGL rendering but using web technologies.
+
+    Features
+    --------
+    - Desktop window output for standard Python scripts
+    - Full vtk.js rendering capabilities
+    - Interactive 3D visualization with mouse controls
+    - No browser required (runs in Electron)
+
+    Requirements
+    ------------
+    - Node.js and npm installed
+    - Electron package (installed automatically on first use)
+
+    Examples
+    --------
+    >>> # In standard Python (not notebook)
+    >>> from pyvista_js.rendering import ElectronRenderer
+    >>> from pyvista_js import Sphere
+    >>>
+    >>> renderer = ElectronRenderer()
+    >>> mesh = Sphere()
+    >>> renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
+    >>> renderer.render()  # Opens Electron window
+
+    Notes
+    -----
+    This renderer is designed for desktop Python environments.
+    It requires Node.js to be installed on the system.
+    The first run will install Electron via npm if not already present.
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize the Electron renderer.
+
+        Creates a temporary directory for HTML files and initializes
+        the actor list.
+
+        """
+        self.actors = []
+        self.background = (0.2, 0.3, 0.4)  # Default background color
+        self.temp_dir = Path(tempfile.mkdtemp(prefix="pyvista_js_"))
+        self._electron_available = self._check_electron()
+
+    def _check_electron(self) -> bool:
+        """Check if Node.js and Electron are available.
+
+        Returns
+        -------
+        bool
+            True if Electron is available or can be installed, False otherwise.
+
+        """
+        # Check if Node.js is installed
+        try:
+            subprocess.run(
+                ["node", "--version"],  # noqa: S607
+                capture_output=True,
+                check=True,
+                timeout=5,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
+            logger.warning("Node.js not found. Electron renderer requires Node.js to be installed.")
+            return False
+
+        return True
+
+    def _ensure_electron_installed(self) -> bool:
+        """Ensure Electron is installed in the temp directory.
+
+        Returns
+        -------
+        bool
+            True if Electron is installed successfully, False otherwise.
+
+        """
+        if not self._electron_available:
+            return False
+
+        # Create package.json if it doesn't exist
+        package_json_path = self.temp_dir / "package.json"
+        if not package_json_path.exists():
+            package_json = {
+                "name": "pyvista-js-electron",
+                "version": "1.0.0",
+                "description": "Electron viewer for pyvista-js",
+                "main": "main.js",
+                "dependencies": {"electron": "^28.0.0"},
+            }
+            package_json_path.write_text(json.dumps(package_json, indent=2))
+
+        # Check if node_modules/electron exists
+        electron_path = self.temp_dir / "node_modules" / "electron"
+        if electron_path.exists():
+            return True
+
+        # Install Electron
+        logger.info("Installing Electron... This may take a minute on first use.")
+        try:
+            subprocess.run(
+                ["npm", "install"],  # noqa: S607
+                cwd=self.temp_dir,
+                capture_output=True,
+                check=True,
+                timeout=120,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
+            logger.warning("Failed to install Electron: %s", e)
+            return False
+        else:
+            logger.info("Electron installed successfully.")
+            return True
+
+    def create_container(self, element_id: str = "pyvista-container") -> None:
+        """Create container (no-op for Electron renderer).
+
+        Parameters
+        ----------
+        element_id : str
+            Container ID (stored for HTML generation).
+
+        """
+        self.container_id = element_id
+
+    def add_mesh_actor(
+        self,
+        mesh: Mesh,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+    ) -> dict[str, object]:
+        """Add a mesh to the renderer.
+
+        Parameters
+        ----------
+        mesh : Mesh
+            The mesh to add.
+        color : str or tuple, optional
+            Color of the mesh.
+        opacity : float
+            Opacity of the mesh (0-1).
+
+        Returns
+        -------
+        dict
+            Actor dictionary with mesh data.
+
+        """
+        if isinstance(color, str):
+            color = self._color_name_to_rgb(color)
+
+        actor_info = {
+            "mesh": mesh,
+            "color": color,
+            "opacity": opacity,
+        }
+        self.actors.append(actor_info)
+        logger.info("Added mesh with %d points", mesh.n_points)
+        return actor_info
+
+    def render(self) -> None:
+        """Render the scene in an Electron window.
+
+        Generates HTML with vtk.js code, creates Electron main.js,
+        and launches the Electron application to display the visualization.
+
+        If Electron is not available, falls back to saving HTML file
+        and attempting to open it in the default browser.
+
+        """
+        # Generate HTML content
+        html_content = self._generate_html()
+
+        # Save HTML file
+        html_path = self.temp_dir / "viewer.html"
+        html_path.write_text(html_content)
+
+        logger.info("Visualization HTML saved to: %s", html_path)
+
+        # Try to render with Electron
+        if self._electron_available and self._ensure_electron_installed():
+            self._render_with_electron(html_path)
+        else:
+            logger.warning(
+                "Electron not available. HTML file saved to: %s\n"
+                "You can open this file in a browser to view the visualization.",
+                html_path,
+            )
+            # Try to open in default browser as fallback
+            self._open_in_browser(html_path)
+
+    def _render_with_electron(self, html_path: Path) -> None:
+        """Launch Electron to display the visualization.
+
+        Parameters
+        ----------
+        html_path : Path
+            Path to the HTML file to display.
+
+        """
+        # Create Electron main.js
+        main_js = f"""
+const {{ app, BrowserWindow }} = require('electron');
+const path = require('path');
+
+function createWindow() {{
+  const win = new BrowserWindow({{
+    width: 1024,
+    height: 768,
+    title: 'PyVista-JS Viewer',
+    webPreferences: {{
+      nodeIntegration: false,
+      contextIsolation: true
+    }}
+  }});
+
+  win.loadFile('{html_path.name}');
+
+  // Open DevTools for debugging (optional)
+  // win.webContents.openDevTools();
+}}
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {{
+  if (process.platform !== 'darwin') {{
+    app.quit();
+  }}
+}});
+
+app.on('activate', () => {{
+  if (BrowserWindow.getAllWindows().length === 0) {{
+    createWindow();
+  }}
+}});
+"""
+        main_js_path = self.temp_dir / "main.js"
+        main_js_path.write_text(main_js)
+
+        # Launch Electron
+        try:
+            logger.info("Opening Electron window...")
+            # Use npx to run electron
+            subprocess.Popen(
+                ["npx", "electron", "."],  # noqa: S607
+                cwd=self.temp_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            logger.info("Electron window opened successfully.")
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            logger.warning("Failed to launch Electron: %s", e)
+            logger.info("HTML file available at: %s", html_path)
+
+    def _open_in_browser(self, html_path: Path) -> None:
+        """Fallback: Open HTML in default browser.
+
+        Parameters
+        ----------
+        html_path : Path
+            Path to the HTML file to open.
+
+        """
+        try:
+            webbrowser.open(html_path.as_uri())
+            logger.info("Opened visualization in default browser.")
+        except OSError as e:
+            logger.warning("Could not open browser: %s", e)
+
+    def _generate_html(self) -> str:
+        """Generate HTML content with vtk.js visualization.
+
+        Returns
+        -------
+        str
+            Complete HTML document with embedded vtk.js code.
+
+        """
+        container_id = getattr(self, "container_id", "pyvista-container")
+
+        # Generate JavaScript code for each actor
+        actor_js_code = []
+        for idx, actor_info in enumerate(self.actors):
+            mesh = actor_info["mesh"]
+            color = actor_info.get("color", (0.5, 0.5, 0.5))
+            opacity = actor_info.get("opacity", 1.0)
+
+            # Detect mesh type and get parameters
+            mesh_type = getattr(mesh, "_mesh_type", None)
+            params = getattr(mesh, "_params", {})
+
+            # Convert mesh points to JavaScript array
+            points_flat = mesh.points.flatten().tolist()
+
+            # Generate appropriate source based on mesh type
+            if mesh_type == "Sphere":
+                radius = params.get("radius", 1.0)
+                center = params.get("center", (0, 0, 0))
+                theta_res = params.get("theta_resolution", 30)
+                phi_res = params.get("phi_resolution", 30)
+                source_code = f"""
+      const source{idx} = vtk.Filters.Sources.vtkSphereSource.newInstance({{
+        center: [{center[0]}, {center[1]}, {center[2]}],
+        radius: {radius},
+        thetaResolution: {theta_res},
+        phiResolution: {phi_res}
+      }});"""
+            elif mesh_type == "Cube":
+                center = params.get("center", (0, 0, 0))
+                x_len = params.get("x_length", 1.0)
+                y_len = params.get("y_length", 1.0)
+                z_len = params.get("z_length", 1.0)
+                source_code = f"""
+      const source{idx} = vtk.Filters.Sources.vtkCubeSource.newInstance({{
+        center: [{center[0]}, {center[1]}, {center[2]}],
+        xLength: {x_len},
+        yLength: {y_len},
+        zLength: {z_len}
+      }});"""
+            elif mesh_type == "Cylinder":
+                center = params.get("center", (0, 0, 0))
+                radius = params.get("radius", 0.5)
+                height = params.get("height", 1.0)
+                resolution = params.get("resolution", 100)
+                source_code = f"""
+      const source{idx} = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
+        center: [{center[0]}, {center[1]}, {center[2]}],
+        radius: {radius},
+        height: {height},
+        resolution: {resolution}
+      }});"""
+            else:
+                # Generic mesh using polydata
+                points_str = ",".join(map(str, points_flat))
+                source_code = f"""
+      const points{idx} = new Float32Array([{points_str}]);
+      const polydata{idx} = vtk.Common.DataModel.vtkPolyData.newInstance();
+      polydata{idx}.getPoints().setData(points{idx}, 3);
+      const source{idx} = polydata{idx};"""
+
+            # Determine mapper setup based on mesh type
+            if mesh_type in ["Sphere", "Cube", "Cylinder"]:
+                mapper_setup = f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+            else:
+                mapper_setup = f"mapper{idx}.setInputData(source{idx});"
+
+            actor_js_code.append(f"""{source_code}
+
+      // Create mapper
+      const mapper{idx} = vtk.Rendering.Core.vtkMapper.newInstance();
+      {mapper_setup}
+
+      // Create actor
+      const actor{idx} = vtk.Rendering.Core.vtkActor.newInstance();
+      actor{idx}.setMapper(mapper{idx});
+      actor{idx}.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
+      actor{idx}.getProperty().setOpacity({opacity});
+
+      // Add actor to renderer
+      renderer.addActor(actor{idx});
+            """)
+
+        actors_code = "\n".join(actor_js_code)
+
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyVista-JS Viewer</title>
+    <style>
+        body {{
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }}
+        #info {{
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }}
+        #{container_id} {{
+            width: 100vw;
+            height: 100vh;
+        }}
+    </style>
+    <script src="https://unpkg.com/vtk.js@29.5.0"></script>
+</head>
+<body>
+    <div id="info">
+        <strong>PyVista-JS Viewer</strong><br>
+        Left Mouse: Rotate<br>
+        Middle Mouse: Pan<br>
+        Right Mouse: Zoom<br>
+        Scroll: Zoom
+    </div>
+    <div id="{container_id}"></div>
+    <script>
+        (function() {{
+            const container = document.getElementById('{container_id}');
+
+            // Use the simpler FullScreenRenderWindow helper
+            const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
+                container: container,
+                background: [{self.background[0]}, {self.background[1]}, {self.background[2]}]
+            }});
+
+            const renderer = fullScreenRenderer.getRenderer();
+            const renderWindow = fullScreenRenderer.getRenderWindow();
+
+{actors_code}
+
+            // Reset camera and render
+            renderer.resetCamera();
+            renderWindow.render();
+        }})();
+    </script>
+</body>
+</html>"""
+
+    def clear(self) -> None:
+        """Remove all actors from the renderer."""
+        self.actors = []
+        logger.info("Cleared all actors")
+
+    def set_background(self, color: tuple[float, float, float]) -> None:
+        """Set the background color.
+
+        Parameters
+        ----------
+        color : tuple
+            RGB color tuple with values between 0 and 1.
+
+        """
+        self.background = color
+
+    @staticmethod
+    def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
+        """Convert color name to RGB tuple.
+
+        Parameters
+        ----------
+        color_name : str
+            Color name (e.g., 'red', 'blue').
+
+        Returns
+        -------
+        tuple of float
+            RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
+
+        """
+        colors = {
+            "red": (1.0, 0.0, 0.0),
+            "green": (0.0, 1.0, 0.0),
+            "blue": (0.0, 0.0, 1.0),
+            "yellow": (1.0, 1.0, 0.0),
+            "cyan": (0.0, 1.0, 1.0),
+            "magenta": (1.0, 0.0, 1.0),
+            "white": (1.0, 1.0, 1.0),
+            "black": (0.0, 0.0, 0.0),
+        }
+        return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
+
+    def __del__(self) -> None:
+        """Clean up temporary directory on deletion."""
+        # Note: We intentionally don't delete the temp directory here
+        # to allow the Electron window to remain open after the script exits.
+        # The OS will clean up temp files eventually.
+
+
 class MockRenderer:
     """Mock renderer for non-Pyodide environments.
 
@@ -615,16 +1106,25 @@ class MockRenderer:
         self.background = color
 
 
-def get_renderer() -> VTKJSRenderer | MockRenderer:
+def get_renderer() -> VTKJSRenderer | MockRenderer | ElectronRenderer:
     """Get appropriate renderer for current environment.
 
     Automatically detects whether running in Pyodide/browser and
     returns the appropriate renderer implementation.
 
+    Environment Variables
+    ---------------------
+    PYVISTA_JS_BACKEND : str, optional
+        Override automatic backend selection. Options:
+        - 'electron': Use Electron renderer (desktop window)
+        - 'mock': Use mock renderer (testing)
+        - 'auto': Automatic selection (default)
+
     Returns
     -------
-    VTKJSRenderer or MockRenderer
+    VTKJSRenderer, MockRenderer, or ElectronRenderer
         - VTKJSRenderer if in Pyodide or IPython environment
+        - ElectronRenderer if PYVISTA_JS_BACKEND='electron' in standard Python
         - MockRenderer otherwise (standard Python, testing, CI/CD)
 
     Examples
@@ -642,12 +1142,27 @@ def get_renderer() -> VTKJSRenderer | MockRenderer:
     >>> renderer.create_container()
     >>> renderer.render()
 
+    Force Electron backend in standard Python:
+
+    >>> import os
+    >>> os.environ['PYVISTA_JS_BACKEND'] = 'electron'
+    >>> renderer = get_renderer()  # Returns ElectronRenderer
+
     Notes
     -----
     This function is used internally by the Plotter class. You typically
     don't need to call it directly unless implementing custom rendering logic.
 
     """
+    # Check for explicit backend override
+    backend = os.environ.get("PYVISTA_JS_BACKEND", "auto").lower()
+
+    if backend == "electron":
+        return ElectronRenderer()
+    if backend == "mock":
+        return MockRenderer()
+
+    # Automatic selection (default behavior)
     # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
     if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
         return VTKJSRenderer()
