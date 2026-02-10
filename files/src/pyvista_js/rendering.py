@@ -33,7 +33,10 @@ NumPy arrays are converted to JavaScript for vtk.js:
 
 Loading vtk.js
 --------------
-vtk.js must be loaded before using VTKJSRenderer:
+vtk.js is automatically loaded when VTKJSRenderer is initialized in
+IPython/Jupyter environments. No manual script loading required.
+
+For manual loading or custom versions:
 
 .. code-block:: html
 
@@ -81,6 +84,49 @@ except ImportError:
     IPYTHON_AVAILABLE = False
 
 
+# Flag to track if vtk.js has been loaded
+_VTKJS_LOADED = False
+
+
+def _load_vtkjs():
+    """Load vtk.js library in IPython/Jupyter/Pyodide environment.
+
+    This function automatically loads the vtk.js library from unpkg CDN
+    when working in Jupyter notebooks or JupyterLite. It only loads the
+    library once per session and waits for it to be available.
+    """
+    import time
+
+    global _VTKJS_LOADED
+    if _VTKJS_LOADED:
+        return
+
+    if IPYTHON_AVAILABLE:
+        try:
+            display(HTML('''
+<script src="https://unpkg.com/vtk.js@29.5.0"></script>
+'''))
+            # Wait for vtk.js to load from CDN
+            time.sleep(2)
+            _VTKJS_LOADED = True
+        except NameError:
+            # display/HTML not available (e.g., in tests)
+            pass
+    elif PYODIDE_ENV:
+        # In pure Pyodide environment without IPython
+        try:
+            from js import document
+            script = document.createElement('script')
+            script.src = 'https://unpkg.com/vtk.js@29.5.0'
+            document.head.appendChild(script)
+            # Wait for vtk.js to load from CDN
+            time.sleep(2)
+            _VTKJS_LOADED = True
+        except Exception:
+            # If we can't load, that's ok - might already be loaded
+            pass
+
+
 class VTKJSRenderer:
     """Renderer using vtk.js for browser visualization.
 
@@ -116,6 +162,8 @@ class VTKJSRenderer:
     def __init__(self):
         """Initialize the vtk.js renderer.
 
+        Automatically loads vtk.js library if in IPython/Jupyter environment.
+
         Raises
         ------
         RuntimeError
@@ -129,6 +177,10 @@ class VTKJSRenderer:
                 raise RuntimeError(
                     "VTKJSRenderer requires either Pyodide environment or IPython"
                 )
+
+        # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
+        if IPYTHON_AVAILABLE or PYODIDE_ENV:
+            _load_vtkjs()
 
         self.container = None
         self.actors = []
