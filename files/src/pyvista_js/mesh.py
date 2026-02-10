@@ -4,12 +4,13 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 """
 
 from typing import Tuple
+
 import numpy as np
 
 
 class Mesh:
     """Base mesh class.
-    
+
     Parameters
     ----------
     points : array-like
@@ -17,17 +18,17 @@ class Mesh:
     faces : array-like, optional
         Cell connectivity information.
     """
-    
+
     def __init__(self, points, faces=None):
         """Initialize a mesh."""
         self.points = np.asarray(points)
         self.faces = np.asarray(faces) if faces is not None else None
-        
+
     @property
     def n_points(self):
         """Return the number of points."""
         return len(self.points)
-        
+
     @property
     def n_faces(self):
         """Return the number of faces."""
@@ -41,7 +42,7 @@ def Sphere(
     phi_resolution: int = 30,
 ) -> Mesh:
     """Create a sphere mesh.
-    
+
     Parameters
     ----------
     radius : float, optional
@@ -52,12 +53,12 @@ def Sphere(
         Number of points in the azimuthal direction. Default is 30.
     phi_resolution : int, optional
         Number of points in the polar direction. Default is 30.
-        
+
     Returns
     -------
     Mesh
         A sphere mesh.
-        
+
     Examples
     --------
     >>> import pyvista_js as pv
@@ -68,7 +69,7 @@ def Sphere(
     # Generate sphere points using spherical coordinates
     theta = np.linspace(0, 2 * np.pi, theta_resolution)
     phi = np.linspace(0, np.pi, phi_resolution)
-    
+
     points = []
     for p in phi:
         for t in theta:
@@ -76,7 +77,7 @@ def Sphere(
             y = radius * np.sin(p) * np.sin(t) + center[1]
             z = radius * np.cos(p) + center[2]
             points.append([x, y, z])
-    
+
     return Mesh(points=np.array(points))
 
 
@@ -87,7 +88,7 @@ def Cube(
     z_length: float = 1.0,
 ) -> Mesh:
     """Create a cube mesh.
-    
+
     Parameters
     ----------
     center : tuple, optional
@@ -98,12 +99,12 @@ def Cube(
         Length in y direction. Default is 1.0.
     z_length : float, optional
         Length in z direction. Default is 1.0.
-        
+
     Returns
     -------
     Mesh
         A cube mesh.
-        
+
     Examples
     --------
     >>> import pyvista_js as pv
@@ -114,7 +115,7 @@ def Cube(
     # Generate cube vertices
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
-    
+
     points = np.array([
         [x - dx, y - dy, z - dz],
         [x + dx, y - dy, z - dz],
@@ -125,7 +126,7 @@ def Cube(
         [x + dx, y + dy, z + dz],
         [x - dx, y + dy, z + dz],
     ])
-    
+
     # Define faces (each face has 4 vertices)
     faces = np.array([
         [0, 1, 2, 3],  # Bottom
@@ -135,7 +136,7 @@ def Cube(
         [0, 3, 7, 4],  # Left
         [1, 2, 6, 5],  # Right
     ])
-    
+
     return Mesh(points=points, faces=faces)
 
 
@@ -147,7 +148,7 @@ def Cylinder(
     resolution: int = 100,
 ) -> Mesh:
     """Create a cylinder mesh.
-    
+
     Parameters
     ----------
     center : tuple, optional
@@ -160,12 +161,12 @@ def Cylinder(
         Height of the cylinder. Default is 1.0.
     resolution : int, optional
         Number of points around the cylinder. Default is 100.
-        
+
     Returns
     -------
     Mesh
         A cylinder mesh.
-        
+
     Examples
     --------
     >>> import pyvista_js as pv
@@ -173,7 +174,7 @@ def Cylinder(
     """
     # Generate cylinder points
     theta = np.linspace(0, 2 * np.pi, resolution)
-    
+
     # Bottom circle
     bottom_points = []
     for t in theta:
@@ -181,7 +182,7 @@ def Cylinder(
         y = radius * np.sin(t) + center[1]
         z = center[2] - height / 2
         bottom_points.append([x, y, z])
-    
+
     # Top circle
     top_points = []
     for t in theta:
@@ -189,7 +190,7 @@ def Cylinder(
         y = radius * np.sin(t) + center[1]
         z = center[2] + height / 2
         top_points.append([x, y, z])
-    
+
     points = np.vstack([bottom_points, top_points])
-    
+
     return Mesh(points=points)
