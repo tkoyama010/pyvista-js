@@ -89,11 +89,11 @@ _VTKJS_LOADED = False
 
 
 def _load_vtkjs():
-    """Load vtk.js library in IPython/Jupyter environment.
+    """Load vtk.js library in IPython/Jupyter/Pyodide environment.
 
     This function automatically loads the vtk.js library from unpkg CDN
-    when working in Jupyter notebooks. It only loads the library once
-    per session.
+    when working in Jupyter notebooks or JupyterLite. It only loads the
+    library once per session.
     """
     global _VTKJS_LOADED
     if _VTKJS_LOADED:
@@ -107,6 +107,17 @@ def _load_vtkjs():
             _VTKJS_LOADED = True
         except NameError:
             # display/HTML not available (e.g., in tests)
+            pass
+    elif PYODIDE_ENV:
+        # In pure Pyodide environment without IPython
+        try:
+            from js import document
+            script = document.createElement('script')
+            script.src = 'https://unpkg.com/vtk.js@29.5.0'
+            document.head.appendChild(script)
+            _VTKJS_LOADED = True
+        except Exception:
+            # If we can't load, that's ok - might already be loaded
             pass
 
 
@@ -160,7 +171,9 @@ class VTKJSRenderer:
                 raise RuntimeError(
                     "VTKJSRenderer requires either Pyodide environment or IPython"
                 )
-            # Automatically load vtk.js in IPython/Jupyter
+
+        # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
+        if IPYTHON_AVAILABLE or PYODIDE_ENV:
             _load_vtkjs()
 
         self.container = None
