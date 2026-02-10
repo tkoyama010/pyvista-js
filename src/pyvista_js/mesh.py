@@ -3,9 +3,14 @@
 Provides geometric primitives and mesh handling compatible with PyVista API.
 """
 
-from typing import Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 
 class Mesh:
@@ -17,27 +22,28 @@ class Mesh:
         Vertex coordinates as an (n, 3) array.
     faces : array-like, optional
         Cell connectivity information.
+
     """
 
-    def __init__(self, points, faces=None):
+    def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
         """Initialize a mesh."""
         self.points = np.asarray(points)
         self.faces = np.asarray(faces) if faces is not None else None
 
     @property
-    def n_points(self):
+    def n_points(self) -> int:
         """Return the number of points."""
         return len(self.points)
 
     @property
-    def n_faces(self):
+    def n_faces(self) -> int:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
 
 
-def Sphere(
+def Sphere(  # noqa: N802
     radius: float = 1.0,
-    center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     theta_resolution: int = 30,
     phi_resolution: int = 30,
 ) -> Mesh:
@@ -65,6 +71,7 @@ def Sphere(
     >>> sphere = pv.Sphere(radius=1.0)
     >>> sphere.n_points
     902
+
     """
     # Generate sphere points using spherical coordinates
     theta = np.linspace(0, 2 * np.pi, theta_resolution)
@@ -79,8 +86,9 @@ def Sphere(
             points.append([x, y, z])
 
     mesh = Mesh(points=np.array(points))
-    mesh._mesh_type = "Sphere"
-    mesh._params = {
+    # Store mesh metadata for rendering
+    mesh.__dict__["_mesh_type"] = "Sphere"
+    mesh.__dict__["_params"] = {
         "radius": radius,
         "center": center,
         "theta_resolution": theta_resolution,
@@ -89,8 +97,8 @@ def Sphere(
     return mesh
 
 
-def Cube(
-    center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+def Cube(  # noqa: N802
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     x_length: float = 1.0,
     y_length: float = 1.0,
     z_length: float = 1.0,
@@ -119,6 +127,7 @@ def Cube(
     >>> cube = pv.Cube()
     >>> cube.n_points
     8
+
     """
     # Generate cube vertices
     x, y, z = center
@@ -134,7 +143,7 @@ def Cube(
             [x + dx, y - dy, z + dz],
             [x + dx, y + dy, z + dz],
             [x - dx, y + dy, z + dz],
-        ]
+        ],
     )
 
     # Define faces (each face has 4 vertices)
@@ -146,12 +155,13 @@ def Cube(
             [2, 3, 7, 6],  # Back
             [0, 3, 7, 4],  # Left
             [1, 2, 6, 5],  # Right
-        ]
+        ],
     )
 
     mesh = Mesh(points=points, faces=faces)
-    mesh._mesh_type = "Cube"
-    mesh._params = {
+    # Store mesh metadata for rendering
+    mesh.__dict__["_mesh_type"] = "Cube"
+    mesh.__dict__["_params"] = {
         "center": center,
         "x_length": x_length,
         "y_length": y_length,
@@ -160,9 +170,9 @@ def Cube(
     return mesh
 
 
-def Cylinder(
-    center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    direction: Tuple[float, float, float] = (1.0, 0.0, 0.0),
+def Cylinder(  # noqa: N802
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
     radius: float = 0.5,
     height: float = 1.0,
     resolution: int = 100,
@@ -191,6 +201,7 @@ def Cylinder(
     --------
     >>> import pyvista_js as pv
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
+
     """
     # Generate cylinder points
     theta = np.linspace(0, 2 * np.pi, resolution)
@@ -214,8 +225,9 @@ def Cylinder(
     points = np.vstack([bottom_points, top_points])
 
     mesh = Mesh(points=points)
-    mesh._mesh_type = "Cylinder"
-    mesh._params = {
+    # Store mesh metadata for rendering
+    mesh.__dict__["_mesh_type"] = "Cylinder"
+    mesh.__dict__["_params"] = {
         "center": center,
         "direction": direction,
         "radius": radius,
