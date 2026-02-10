@@ -185,6 +185,7 @@ class VTKJSRenderer:
         self.container = None
         self.actors = []
         self.use_ipython = IPYTHON_AVAILABLE
+        self.background = (0.2, 0.3, 0.4)  # Default background color
 
     def create_container(self, element_id="pyvista-container"):
         """Create a DOM container for rendering.
@@ -383,7 +384,7 @@ class VTKJSRenderer:
       // Use the simpler FullScreenRenderWindow helper
       const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
         container: container,
-        background: [0.2, 0.3, 0.4]
+        background: [{self.background[0]}, {self.background[1]}, {self.background[2]}]
       }});
 
       const renderer = fullScreenRenderer.getRenderer();
@@ -424,6 +425,20 @@ class VTKJSRenderer:
         self.actors = []
         if not self.use_ipython and hasattr(self, 'renderer'):
             self.renderer.removeAllActors()
+
+    def set_background(self, color):
+        """Set the background color of the renderer.
+
+        Parameters
+        ----------
+        color : tuple
+            RGB color tuple with values between 0 and 1.
+
+        Examples
+        --------
+        >>> renderer.set_background((1.0, 1.0, 1.0))  # White background
+        """
+        self.background = color
 
     @staticmethod
     def _color_name_to_rgb(color_name):
@@ -493,6 +508,7 @@ class MockRenderer:
     def __init__(self):
         """Initialize mock renderer."""
         self.actors = []
+        self.background = (0.2, 0.3, 0.4)  # Default background color
 
     def create_container(self, element_id="pyvista-container"):
         """Mock container creation.
@@ -550,6 +566,17 @@ class MockRenderer:
         """
         self.actors = []
         print("Mock: Cleared all actors")
+
+    def set_background(self, color):
+        """Set the background color.
+
+        Parameters
+        ----------
+        color : tuple
+            RGB color tuple with values between 0 and 1.
+        """
+        self.background = color
+        print(f"Mock: Set background color to {color}")
 
 
 def get_renderer():
