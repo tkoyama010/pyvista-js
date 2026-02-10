@@ -316,7 +316,7 @@ class VTKJSRenderer:
 
         # Generate JavaScript code for each actor
         actor_js_code = []
-        for actor_info in self.actors:
+        for idx, actor_info in enumerate(self.actors):
             mesh = actor_info["mesh"]
             color = actor_info.get("color", (0.5, 0.5, 0.5))
             opacity = actor_info.get("opacity", 1.0)
@@ -336,7 +336,7 @@ class VTKJSRenderer:
                 theta_res = params.get("theta_resolution", 30)
                 phi_res = params.get("phi_resolution", 30)
                 source_code = f"""
-      const source = vtk.Filters.Sources.vtkSphereSource.newInstance({{
+      const source{idx} = vtk.Filters.Sources.vtkSphereSource.newInstance({{
         center: [{center[0]}, {center[1]}, {center[2]}],
         radius: {radius},
         thetaResolution: {theta_res},
@@ -348,7 +348,7 @@ class VTKJSRenderer:
                 y_len = params.get("y_length", 1.0)
                 z_len = params.get("z_length", 1.0)
                 source_code = f"""
-      const source = vtk.Filters.Sources.vtkCubeSource.newInstance({{
+      const source{idx} = vtk.Filters.Sources.vtkCubeSource.newInstance({{
         center: [{center[0]}, {center[1]}, {center[2]}],
         xLength: {x_len},
         yLength: {y_len},
@@ -360,7 +360,7 @@ class VTKJSRenderer:
                 height = params.get("height", 1.0)
                 resolution = params.get("resolution", 100)
                 source_code = f"""
-      const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
+      const source{idx} = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
         center: [{center[0]}, {center[1]}, {center[2]}],
         radius: {radius},
         height: {height},
@@ -370,31 +370,31 @@ class VTKJSRenderer:
                 # Generic mesh using polydata
                 points_str = ",".join(map(str, points_flat))
                 source_code = f"""
-      const points = new Float32Array([{points_str}]);
-      const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-      polydata.getPoints().setData(points, 3);
-      const source = polydata;"""
+      const points{idx} = new Float32Array([{points_str}]);
+      const polydata{idx} = vtk.Common.DataModel.vtkPolyData.newInstance();
+      polydata{idx}.getPoints().setData(points{idx}, 3);
+      const source{idx} = polydata{idx};"""
 
             # Determine mapper setup based on mesh type
             if mesh_type in ["Sphere", "Cube", "Cylinder"]:
-                mapper_setup = "mapper.setInputConnection(source.getOutputPort());"
+                mapper_setup = f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
             else:
-                mapper_setup = "mapper.setInputData(source);"
+                mapper_setup = f"mapper{idx}.setInputData(source{idx});"
 
             actor_js_code.append(f"""{source_code}
 
       // Create mapper
-      const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+      const mapper{idx} = vtk.Rendering.Core.vtkMapper.newInstance();
       {mapper_setup}
 
       // Create actor
-      const actor = vtk.Rendering.Core.vtkActor.newInstance();
-      actor.setMapper(mapper);
-      actor.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
-      actor.getProperty().setOpacity({opacity});
+      const actor{idx} = vtk.Rendering.Core.vtkActor.newInstance();
+      actor{idx}.setMapper(mapper{idx});
+      actor{idx}.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
+      actor{idx}.getProperty().setOpacity({opacity});
 
       // Add actor to renderer
-      renderer.addActor(actor);
+      renderer.addActor(actor{idx});
             """)
 
         actors_code = "\n".join(actor_js_code)

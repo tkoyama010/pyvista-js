@@ -166,3 +166,30 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
     assert "radius: 2.5" in html
     assert "center: [1, 2, 3]" in html or "center: [1.0, 2.0, 3.0]" in html
     assert "thetaResolution: 60" in html
+
+
+def test_multiple_meshes_unique_variables(monkeypatch) -> None:
+    """Test that multiple meshes use unique variable names in generated JavaScript."""
+    # Mock IPython availability
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    mesh1 = Sphere()
+    mesh2 = Cube()
+    renderer.add_mesh_actor(mesh1, color="red", opacity=0.8)
+    renderer.add_mesh_actor(mesh2, color="blue", opacity=0.8)
+
+    html = renderer._repr_html_()
+
+    # Verify unique variable names for each mesh
+    assert "source0" in html
+    assert "mapper0" in html
+    assert "actor0" in html
+    assert "source1" in html
+    assert "mapper1" in html
+    assert "actor1" in html
+
+    # Verify both actors are added to renderer
+    assert html.count("renderer.addActor") == 2
+    assert "vtkSphereSource" in html
+    assert "vtkCubeSource" in html
