@@ -20,6 +20,12 @@ repos:
       # Run the formatter
       - id: ruff-format
 
+  - repo: https://github.com/scientific-python/cookie
+    rev: 2024.08.19
+    hooks:
+      - id: sp-repo-review
+        additional_dependencies: ["repo-review[cli]"]
+
 ci:
   autofix_commit_msg: |
     [pre-commit.ci] auto fixes from pre-commit.com hooks
