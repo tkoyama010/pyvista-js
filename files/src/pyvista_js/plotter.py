@@ -4,9 +4,14 @@ The Plotter provides the main interface for creating 3D visualizations
 using vtk.js in browser environments.
 """
 
-from typing import Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from .rendering import get_renderer
+
+if TYPE_CHECKING:
+    from .mesh import Mesh
 
 
 class Plotter:
@@ -22,9 +27,10 @@ class Plotter:
     >>> mesh = pv.Sphere()
     >>> plotter.add_mesh(mesh, color='red')
     >>> plotter.show()
+
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize a new Plotter instance."""
         self._actors = []
         self._renderer = get_renderer()
@@ -32,11 +38,11 @@ class Plotter:
 
     def add_mesh(
         self,
-        mesh,
-        color: Optional[Union[str, Tuple[float, float, float]]] = None,
+        mesh: Mesh,
+        color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
-        **kwargs,
-    ):
+        **kwargs: object,
+    ) -> dict[str, object]:
         """Add a mesh to the plotter.
 
         Parameters
@@ -60,18 +66,19 @@ class Plotter:
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
         >>> plotter.add_mesh(mesh, color='red', opacity=0.8)
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(mesh, color=color, opacity=opacity)
 
         # Store reference
         self._actors.append(
-            {"mesh": mesh, "color": color, "opacity": opacity, "actor": actor, "kwargs": kwargs}
+            {"mesh": mesh, "color": color, "opacity": opacity, "actor": actor, "kwargs": kwargs},
         )
 
         return actor
 
-    def show(self, container_id: str = "pyvista-container"):
+    def show(self, container_id: str = "pyvista-container") -> None:
         """Display the visualization.
 
         In browser environments, this will render the scene using vtk.js.
@@ -87,6 +94,7 @@ class Plotter:
         >>> plotter = pv.Plotter()
         >>> plotter.add_mesh(pv.Sphere())
         >>> plotter.show()
+
         """
         # Create container if needed
         self._renderer.create_container(container_id)
@@ -94,7 +102,7 @@ class Plotter:
         # Render the scene
         self._renderer.render()
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all actors from the plotter.
 
         Examples
@@ -102,17 +110,18 @@ class Plotter:
         >>> plotter = pv.Plotter()
         >>> plotter.add_mesh(pv.Sphere())
         >>> plotter.clear()
+
         """
         self._actors = []
         self._renderer.clear()
 
     @property
-    def actors(self):
+    def actors(self) -> list[dict[str, Any]]:
         """Return the list of actors in the plotter."""
         return self._actors
 
     @property
-    def background_color(self):
+    def background_color(self) -> tuple[float, float, float]:
         """Get or set the background color.
 
         Parameters
@@ -133,17 +142,21 @@ class Plotter:
         >>> plotter.background_color
         (1.0, 1.0, 1.0)
         >>> plotter.background_color = (0.5, 0.5, 0.5)
+
         """
         return self._background_color
 
     @background_color.setter
-    def background_color(self, color):
+    def background_color(self, color: str | tuple[float, float, float]) -> None:
         """Set the background color."""
         self._background_color = self._parse_color(color)
         # Update renderer's background color
         self._renderer.set_background(self._background_color)
 
-    def _parse_color(self, color):
+    def _parse_color(
+        self,
+        color: str | tuple[float, float, float] | list[float],
+    ) -> tuple[float, float, float]:
         """Parse color input to RGB tuple.
 
         Parameters
@@ -155,6 +168,7 @@ class Plotter:
         -------
         tuple
             RGB color tuple with values between 0 and 1.
+
         """
         # Common color names
         color_map = {
@@ -178,18 +192,20 @@ class Plotter:
             color_lower = color.lower()
             if color_lower in color_map:
                 return color_map[color_lower]
-            else:
-                raise ValueError(
-                    f"Unknown color name: '{color}'. "
-                    f"Supported colors: {', '.join(color_map.keys())}"
-                )
-        elif isinstance(color, (tuple, list)):
-            if len(color) != 3:
-                raise ValueError(f"RGB color must have 3 values, got {len(color)}")
+            msg = f"Unknown color name: '{color}'. Supported colors: {', '.join(color_map.keys())}"
+            raise ValueError(
+                msg,
+            )
+        if isinstance(color, (tuple, list)):
+            rgb_size = 3
+            if len(color) != rgb_size:
+                msg = f"RGB color must have 3 values, got {len(color)}"
+                raise ValueError(msg)
             # Validate values are between 0 and 1
             for val in color:
                 if not 0 <= val <= 1:
-                    raise ValueError(f"RGB values must be between 0 and 1, got {val}")
+                    msg = f"RGB values must be between 0 and 1, got {val}"
+                    raise ValueError(msg)
             return tuple(color)
-        else:
-            raise TypeError(f"Color must be a string or RGB tuple, got {type(color)}")
+        msg = f"Color must be a string or RGB tuple, got {type(color)}"
+        raise TypeError(msg)
