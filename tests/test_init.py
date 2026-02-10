@@ -11,7 +11,7 @@ def test_import():
 
 
 @pytest.mark.parametrize("attr,expected", [
-    ("__version__", "0.2.dev0"),
+    ("__version__", "0.1.1"),
     ("__author__", "Tetsuo Koyama"),
     ("__license__", "BSD-3-Clause"),
 ])

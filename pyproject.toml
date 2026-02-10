@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyvista-js"
-version = "0.1.0"
+version = "0.1.1"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 requires-python = ">=3.10"
