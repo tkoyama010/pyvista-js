@@ -296,11 +296,17 @@ class VTKJSRenderer:
       polydata.getPoints().setData(points, 3);
       const source = polydata;'''
 
+            # Determine mapper setup based on mesh type
+            if mesh_type in ['Sphere', 'Cube', 'Cylinder']:
+                mapper_setup = 'mapper.setInputConnection(source.getOutputPort());'
+            else:
+                mapper_setup = 'mapper.setInputData(source);'
+
             actor_js_code.append(f'''{source_code}
 
       // Create mapper
       const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
-      {'mapper.setInputConnection(source.getOutputPort());' if mesh_type in ['Sphere', 'Cube', 'Cylinder'] else 'mapper.setInputData(source);'}
+      {mapper_setup}
 
       // Create actor
       const actor = vtk.Rendering.Core.vtkActor.newInstance();
