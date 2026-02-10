@@ -60,22 +60,35 @@ Using the renderer (automatically selected):
 
 In Pyodide environment, this uses vtk.js. In standard Python,
 it uses MockRenderer which prints debug output.
+
 """
 
+from __future__ import annotations
+
+import logging
 import sys
+import time
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from .mesh import Mesh
 
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
 
 if PYODIDE_ENV:
     try:
-        from js import document  # noqa: F401
+        from js import document  # type: ignore[import-not-found]
 
         VTK_AVAILABLE = True
     except ImportError:
         VTK_AVAILABLE = False
+        document = None  # type: ignore[assignment]
 else:
     VTK_AVAILABLE = False
+    document = None  # type: ignore[assignment]
 
 # Check if IPython is available
 try:
@@ -86,50 +99,52 @@ except ImportError:
     IPYTHON_AVAILABLE = False
 
 
-# Flag to track if vtk.js has been loaded
-_VTKJS_LOADED = False
+class _VTKJSLoader:
+    """Singleton class to manage vtk.js library loading."""
 
+    _instance: _VTKJSLoader | None = None
+    _loaded: bool = False
 
-def _load_vtkjs():
-    """Load vtk.js library in IPython/Jupyter/Pyodide environment.
+    def __new__(cls) -> Self:
+        """Ensure singleton instance."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
-    This function automatically loads the vtk.js library from unpkg CDN
-    when working in Jupyter notebooks or JupyterLite. It only loads the
-    library once per session and waits for it to be available.
-    """
-    import time
+    def load(self) -> None:
+        """Load vtk.js library in IPython/Jupyter/Pyodide environment.
 
-    global _VTKJS_LOADED
-    if _VTKJS_LOADED:
-        return
+        This function automatically loads the vtk.js library from unpkg CDN
+        when working in Jupyter notebooks or JupyterLite. It only loads the
+        library once per session and waits for it to be available.
+        """
+        if self._loaded:
+            return
 
-    if IPYTHON_AVAILABLE:
-        try:
-            display(
-                HTML("""
+        if IPYTHON_AVAILABLE:
+            try:
+                display(
+                    HTML("""
 <script src="https://unpkg.com/vtk.js@29.5.0"></script>
-""")
-            )
-            # Wait for vtk.js to load from CDN
-            time.sleep(2)
-            _VTKJS_LOADED = True
-        except NameError:
-            # display/HTML not available (e.g., in tests)
-            pass
-    elif PYODIDE_ENV:
-        # In pure Pyodide environment without IPython
-        try:
-            from js import document
-
+"""),
+                )
+                # Wait for vtk.js to load from CDN
+                time.sleep(2)
+                self._loaded = True
+            except NameError:
+                # display/HTML not available (e.g., in tests)
+                pass
+        elif PYODIDE_ENV and document is not None:
+            # In pure Pyodide environment without IPython
             script = document.createElement("script")
             script.src = "https://unpkg.com/vtk.js@29.5.0"
             document.head.appendChild(script)
             # Wait for vtk.js to load from CDN
             time.sleep(2)
-            _VTKJS_LOADED = True
-        except Exception:
-            # If we can't load, that's ok - might already be loaded
-            pass
+            self._loaded = True
+
+
+logger = logging.getLogger(__name__)
 
 
 class VTKJSRenderer:
@@ -162,9 +177,10 @@ class VTKJSRenderer:
     >>>
     >>> # Render the scene
     >>> renderer.render()
+
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the vtk.js renderer.
 
         Automatically loads vtk.js library if in IPython/Jupyter environment.
@@ -175,22 +191,22 @@ class VTKJSRenderer:
             If not running in Pyodide environment.
         ImportError
             If vtk.js is not available in the page.
+
         """
-        if not PYODIDE_ENV:
-            # In non-Pyodide environment, check if IPython is available
-            if not IPYTHON_AVAILABLE:
-                raise RuntimeError("VTKJSRenderer requires either Pyodide environment or IPython")
+        if not PYODIDE_ENV and not IPYTHON_AVAILABLE:
+            msg = "VTKJSRenderer requires either Pyodide environment or IPython"
+            raise RuntimeError(msg)
 
         # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
         if IPYTHON_AVAILABLE or PYODIDE_ENV:
-            _load_vtkjs()
+            _VTKJSLoader().load()
 
         self.container = None
         self.actors = []
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (0.2, 0.3, 0.4)  # Default background color
 
-    def create_container(self, element_id="pyvista-container"):
+    def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Create a DOM container for rendering.
 
         Creates a <div> element in the document and configures it for
@@ -210,24 +226,29 @@ class VTKJSRenderer:
         --------
         >>> renderer = VTKJSRenderer()
         >>> container = renderer.create_container('my-visualization')
+
         """
         if self.use_ipython:
             # Store container ID for later HTML generation
             self.container_id = element_id
             return None
-        else:
-            # Create container div directly
-            self.container = document.createElement("div")
-            self.container.setAttribute("id", element_id)
-            self.container.style.width = "100%"
-            self.container.style.height = "600px"
+        # Create container div directly
+        self.container = document.createElement("div")
+        self.container.setAttribute("id", element_id)
+        self.container.style.width = "100%"
+        self.container.style.height = "600px"
 
-            # Append to body
-            document.body.appendChild(self.container)
+        # Append to body
+        document.body.appendChild(self.container)
 
-            return self.container
+        return self.container
 
-    def add_mesh_actor(self, mesh, color=None, opacity=1.0):
+    def add_mesh_actor(
+        self,
+        mesh: Mesh,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+    ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
         Converts a pyvista-js Mesh to vtk.js polydata and creates
@@ -254,6 +275,7 @@ class VTKJSRenderer:
         >>> from pyvista_js import Sphere
         >>> mesh = Sphere(radius=2.0)
         >>> actor = renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
+
         """
         # Store actor information for later rendering
         if isinstance(color, str):
@@ -268,7 +290,7 @@ class VTKJSRenderer:
 
         return actor_info
 
-    def render(self):
+    def render(self) -> None:
         """Render the scene.
 
         Resets the camera to show all actors and triggers rendering.
@@ -277,6 +299,7 @@ class VTKJSRenderer:
         Examples
         --------
         >>> renderer.render()  # Display the visualization
+
         """
         if self.use_ipython:
             # Generate HTML with JavaScript code
@@ -287,7 +310,7 @@ class VTKJSRenderer:
             self.renderer.resetCamera()
             self.render_window.render()
 
-    def _generate_html(self):
+    def _generate_html(self) -> str:
         """Generate HTML and JavaScript for IPython display."""
         container_id = getattr(self, "container_id", "pyvista-container")
 
@@ -376,7 +399,7 @@ class VTKJSRenderer:
 
         actors_code = "\n".join(actor_js_code)
 
-        html = f'''
+        return f"""
 <div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
 <script>
 (function() {{
@@ -405,31 +428,32 @@ class VTKJSRenderer:
   }}, 300);
 }})();
 </script>
-'''
-        return html
+"""
 
-    def _repr_html_(self):
+    def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks.
 
         Returns
         -------
         str
             HTML string for display in Jupyter.
+
         """
         return self._generate_html()
 
-    def clear(self):
+    def clear(self) -> None:
         """Remove all actors from the renderer.
 
         Examples
         --------
         >>> renderer.clear()  # Remove all visualizations
+
         """
         self.actors = []
         if not self.use_ipython and hasattr(self, "renderer"):
             self.renderer.removeAllActors()
 
-    def set_background(self, color):
+    def set_background(self, color: tuple[float, float, float]) -> None:
         """Set the background color of the renderer.
 
         Parameters
@@ -440,11 +464,12 @@ class VTKJSRenderer:
         Examples
         --------
         >>> renderer.set_background((1.0, 1.0, 1.0))  # White background
+
         """
         self.background = color
 
     @staticmethod
-    def _color_name_to_rgb(color_name):
+    def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
         """Convert color name to RGB tuple.
 
         Parameters
@@ -456,6 +481,7 @@ class VTKJSRenderer:
         -------
         tuple of float
             RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
+
         """
         colors = {
             "red": (1.0, 0.0, 0.0),
@@ -506,14 +532,15 @@ class MockRenderer:
     The mock renderer is automatically used when calling `get_renderer()`
     outside of a Pyodide environment. You typically don't need to instantiate
     it directly.
+
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize mock renderer."""
         self.actors = []
         self.background = (0.2, 0.3, 0.4)  # Default background color
 
-    def create_container(self, element_id="pyvista-container"):
+    def create_container(self, element_id: str = "pyvista-container") -> None:
         """Mock container creation.
 
         Parameters
@@ -525,11 +552,16 @@ class MockRenderer:
         -------
         None
             Mock renderers don't create actual containers.
-        """
-        print(f"Mock: Created container '{element_id}'")
-        return None
 
-    def add_mesh_actor(self, mesh, color=None, opacity=1.0):
+        """
+        logger.info("Created container '%s'", element_id)
+
+    def add_mesh_actor(
+        self,
+        mesh: Mesh,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+    ) -> dict[str, object]:
         """Mock mesh addition.
 
         Parameters
@@ -545,6 +577,7 @@ class MockRenderer:
         -------
         dict
             Mock actor dictionary with mesh data.
+
         """
         actor = {
             "mesh": mesh,
@@ -552,37 +585,37 @@ class MockRenderer:
             "opacity": opacity,
         }
         self.actors.append(actor)
-        print(f"Mock: Added mesh with {mesh.n_points} points")
+        logger.info("Added mesh with %d points", mesh.n_points)
         return actor
 
-    def render(self):
+    def render(self) -> None:
         """Mock rendering.
 
-        Prints the number of actors that would be rendered.
+        Logs the number of actors that would be rendered.
         """
-        print(f"Mock: Rendering {len(self.actors)} actors")
+        logger.info("Rendering %d actors", len(self.actors))
 
-    def clear(self):
+    def clear(self) -> None:
         """Mock clear.
 
         Removes all actors from the mock renderer.
         """
         self.actors = []
-        print("Mock: Cleared all actors")
+        logger.info("Cleared all actors")
 
-    def set_background(self, color):
+    def set_background(self, color: tuple[float, float, float]) -> None:
         """Set the background color.
 
         Parameters
         ----------
         color : tuple
             RGB color tuple with values between 0 and 1.
+
         """
         self.background = color
-        print(f"Mock: Set background color to {color}")
 
 
-def get_renderer():
+def get_renderer() -> VTKJSRenderer | MockRenderer:
     """Get appropriate renderer for current environment.
 
     Automatically detects whether running in Pyodide/browser and
@@ -613,9 +646,9 @@ def get_renderer():
     -----
     This function is used internally by the Plotter class. You typically
     don't need to call it directly unless implementing custom rendering logic.
+
     """
     # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
     if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
         return VTKJSRenderer()
-    else:
-        return MockRenderer()
+    return MockRenderer()

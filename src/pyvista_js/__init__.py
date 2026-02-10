@@ -1,4 +1,4 @@
-"""pyvista-js: PyVista-like API for vtk.js
+"""pyvista-js: PyVista-like API for vtk.js.
 
 This package provides a familiar PyVista interface for 3D visualization
 in browser environments using vtk.js as the rendering backend.
@@ -16,21 +16,21 @@ try:
     from .streamlit_integration import pyvista_chart
 
     __all__ = [
-        "__version__",
-        "Plotter",
-        "Mesh",
-        "Sphere",
         "Cube",
         "Cylinder",
+        "Mesh",
+        "Plotter",
+        "Sphere",
+        "__version__",
         "pyvista_chart",
     ]
 except ImportError:
     # Streamlit not available
     __all__ = [
-        "__version__",
-        "Plotter",
-        "Mesh",
-        "Sphere",
         "Cube",
         "Cylinder",
+        "Mesh",
+        "Plotter",
+        "Sphere",
+        "__version__",
     ]

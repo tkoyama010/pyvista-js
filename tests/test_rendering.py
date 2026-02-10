@@ -1,78 +1,80 @@
 """Test vtk.js rendering backend."""
 
+import logging
+
 import pytest
 
-from pyvista_js import Cube, Cylinder, Sphere
+from pyvista_js import Cube, Cylinder, Sphere, rendering
 from pyvista_js.rendering import MockRenderer, get_renderer
 
 
-def test_get_renderer_returns_mock():
+def test_get_renderer_returns_mock() -> None:
     """Test that get_renderer returns MockRenderer in non-Pyodide env."""
     renderer = get_renderer()
     assert isinstance(renderer, MockRenderer)
 
 
-def test_mock_renderer_creation():
+def test_mock_renderer_creation() -> None:
     """Test MockRenderer initialization."""
     renderer = MockRenderer()
     assert renderer is not None
     assert len(renderer.actors) == 0
 
 
-def test_mock_add_mesh(capsys):
+def test_mock_add_mesh(caplog) -> None:
     """Test adding mesh to MockRenderer."""
-    renderer = MockRenderer()
-    mesh = Sphere()
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        mesh = Sphere()
 
-    actor = renderer.add_mesh_actor(mesh, color="red", opacity=0.8)
+        actor = renderer.add_mesh_actor(mesh, color="red", opacity=0.8)
 
-    assert len(renderer.actors) == 1
-    assert actor["color"] == "red"
-    assert actor["opacity"] == 0.8
+        assert len(renderer.actors) == 1
+        assert actor["color"] == "red"
+        assert actor["opacity"] == 0.8
 
-    captured = capsys.readouterr()
-    assert "Added mesh with" in captured.out
+        assert "Added mesh with" in caplog.text
 
 
-def test_mock_render(capsys):
+def test_mock_render(caplog) -> None:
     """Test MockRenderer render method."""
-    renderer = MockRenderer()
-    renderer.add_mesh_actor(Sphere())
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        renderer.add_mesh_actor(Sphere())
 
-    renderer.render()
+        renderer.render()
 
-    captured = capsys.readouterr()
-    assert "Rendering 1 actors" in captured.out
+        assert "Rendering 1 actors" in caplog.text
 
 
-def test_mock_clear(capsys):
+def test_mock_clear(caplog) -> None:
     """Test MockRenderer clear method."""
-    renderer = MockRenderer()
-    renderer.add_mesh_actor(Sphere())
-    renderer.add_mesh_actor(Sphere())
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        renderer.add_mesh_actor(Sphere())
+        renderer.add_mesh_actor(Sphere())
 
-    assert len(renderer.actors) == 2
+        assert len(renderer.actors) == 2
 
-    renderer.clear()
+        renderer.clear()
 
-    assert len(renderer.actors) == 0
-    captured = capsys.readouterr()
-    assert "Cleared all actors" in captured.out
+        assert len(renderer.actors) == 0
+        assert "Cleared all actors" in caplog.text
 
 
-def test_mock_create_container(capsys):
+def test_mock_create_container(caplog) -> None:
     """Test MockRenderer container creation."""
-    renderer = MockRenderer()
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
 
-    container = renderer.create_container("test-container")
+        container = renderer.create_container("test-container")
 
-    assert container is None
-    captured = capsys.readouterr()
-    assert "Created container 'test-container'" in captured.out
+        assert container is None
+        assert "Created container 'test-container'" in caplog.text
 
 
 @pytest.mark.parametrize(
-    "mesh_factory,mesh_type,params",
+    ("mesh_factory", "mesh_type", "params"),
     [
         (
             lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=40, phi_resolution=50),
@@ -91,7 +93,7 @@ def test_mock_create_container(capsys):
         ),
     ],
 )
-def test_mesh_type_rendering(mesh_factory, mesh_type, params):
+def test_mesh_type_rendering(mesh_factory, mesh_type, params) -> None:
     """Test that different mesh types render with correct parameters."""
     renderer = MockRenderer()
     mesh = mesh_factory()
@@ -107,7 +109,7 @@ def test_mesh_type_rendering(mesh_factory, mesh_type, params):
         assert mesh._params[key] == value
 
 
-def test_multiple_mesh_types_rendering():
+def test_multiple_mesh_types_rendering() -> None:
     """Test rendering multiple different mesh types together."""
     renderer = MockRenderer()
 
@@ -126,17 +128,15 @@ def test_multiple_mesh_types_rendering():
 
 
 @pytest.mark.parametrize(
-    "mesh_factory,vtk_source_name",
+    ("mesh_factory", "vtk_source_name"),
     [
         (lambda: Sphere(radius=1.0), "vtkSphereSource"),
         (lambda: Cube(x_length=2.0), "vtkCubeSource"),
         (lambda: Cylinder(radius=0.5, height=2.0), "vtkCylinderSource"),
     ],
 )
-def test_html_generation_mesh_sources(mesh_factory, vtk_source_name, monkeypatch):
+def test_html_generation_mesh_sources(mesh_factory, vtk_source_name, monkeypatch) -> None:
     """Test that HTML generation includes correct vtk.js source types."""
-    from pyvista_js import rendering
-
     # Mock IPython availability
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
@@ -151,10 +151,8 @@ def test_html_generation_mesh_sources(mesh_factory, vtk_source_name, monkeypatch
     assert "vtkActor" in html
 
 
-def test_mesh_parameters_in_html(monkeypatch):
+def test_mesh_parameters_in_html(monkeypatch) -> None:
     """Test that mesh parameters are correctly passed to HTML/JS."""
-    from pyvista_js import rendering
-
     # Mock IPython availability
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 

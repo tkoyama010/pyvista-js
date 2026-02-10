@@ -3,6 +3,13 @@
 Provides components for displaying pyvista-js visualizations in Streamlit and stlite.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .plotter import Plotter
+
 # Check if streamlit is available
 try:
     import streamlit as st
@@ -13,7 +20,7 @@ except ImportError:
     STREAMLIT_AVAILABLE = False
 
 
-def pyvista_chart(plotter, height: int = 600, key: str = None):
+def pyvista_chart(plotter: Plotter, height: int = 600, key: str | None = None) -> None:
     """Display a pyvista-js Plotter in Streamlit.
 
     This function renders a pyvista-js visualization as a Streamlit component.
@@ -38,18 +45,20 @@ def pyvista_chart(plotter, height: int = 600, key: str = None):
     >>> plotter.add_mesh(sphere, color='red')
     >>>
     >>> pv.pyvista_chart(plotter, height=500)
+
     """
     if not STREAMLIT_AVAILABLE:
-        raise ImportError("Streamlit is not available. Install with: pip install streamlit")
+        msg = "Streamlit is not available. Install with: pip install streamlit"
+        raise ImportError(msg)
 
     # Generate HTML for vtk.js visualization
     html_code = _generate_vtkjs_html(plotter, height)
 
     # Display using Streamlit components
-    components.html(html_code, height=height, scrolling=False)
+    components.html(html_code, height=height, scrolling=False, key=key)
 
 
-def _generate_vtkjs_html(plotter, height: int) -> str:
+def _generate_vtkjs_html(plotter: Plotter, height: int) -> str:
     """Generate HTML code for vtk.js visualization.
 
     Parameters
@@ -63,6 +72,7 @@ def _generate_vtkjs_html(plotter, height: int) -> str:
     -------
     str
         HTML code with embedded vtk.js visualization.
+
     """
     # Extract mesh data from plotter
     meshes_data = []
@@ -74,11 +84,11 @@ def _generate_vtkjs_html(plotter, height: int) -> str:
                 "n_points": mesh.n_points,
                 "color": actor_info["color"],
                 "opacity": actor_info["opacity"],
-            }
+            },
         )
 
     # Generate HTML
-    html = f"""
+    return f"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -202,7 +212,6 @@ def _generate_vtkjs_html(plotter, height: int) -> str:
 </body>
 </html>
 """
-    return html
 
 
 # Convenience function for Streamlit

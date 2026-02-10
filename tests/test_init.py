@@ -5,20 +5,20 @@ import pytest
 import pyvista_js
 
 
-def test_import():
+def test_import() -> None:
     """Test that package can be imported."""
     assert pyvista_js is not None
 
 
 @pytest.mark.parametrize(
-    "attr,expected",
+    ("attr", "expected"),
     [
         ("__version__", "0.2.dev0"),
         ("__author__", "Tetsuo Koyama"),
         ("__license__", "BSD-3-Clause"),
     ],
 )
-def test_metadata_attributes(attr, expected):
+def test_metadata_attributes(attr, expected) -> None:
     """Test that metadata attributes exist and have correct values."""
     assert hasattr(pyvista_js, attr)
     assert getattr(pyvista_js, attr) == expected
@@ -35,12 +35,12 @@ def test_metadata_attributes(attr, expected):
         "Cylinder",
     ],
 )
-def test_exports(name):
+def test_exports(name) -> None:
     """Test that main classes are exported."""
     assert hasattr(pyvista_js, name)
 
 
-def test_all_attribute():
+def test_all_attribute() -> None:
     """Test that __all__ is properly defined."""
     assert hasattr(pyvista_js, "__all__")
     assert isinstance(pyvista_js.__all__, list)

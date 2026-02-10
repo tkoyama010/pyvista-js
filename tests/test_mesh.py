@@ -5,7 +5,7 @@ import numpy as np
 from pyvista_js import Cube, Cylinder, Mesh, Sphere
 
 
-def test_mesh_creation():
+def test_mesh_creation() -> None:
     """Test basic mesh creation."""
     points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
     mesh = Mesh(points)
@@ -14,7 +14,7 @@ def test_mesh_creation():
     assert np.array_equal(mesh.points, points)
 
 
-def test_sphere_creation():
+def test_sphere_creation() -> None:
     """Test sphere primitive creation."""
     sphere = Sphere(radius=1.0)
 
@@ -23,7 +23,7 @@ def test_sphere_creation():
     assert sphere.points.shape[1] == 3  # 3D coordinates
 
 
-def test_sphere_parameters():
+def test_sphere_parameters() -> None:
     """Test sphere with custom parameters."""
     sphere = Sphere(radius=2.0, center=(1, 2, 3))
 
@@ -32,7 +32,7 @@ def test_sphere_parameters():
     assert np.allclose(center, [1, 2, 3], atol=0.1)
 
 
-def test_cube_creation():
+def test_cube_creation() -> None:
     """Test cube primitive creation."""
     cube = Cube()
 
@@ -40,7 +40,7 @@ def test_cube_creation():
     assert cube.n_faces == 6
 
 
-def test_cube_size():
+def test_cube_size() -> None:
     """Test cube with custom size."""
     cube = Cube(x_length=2.0, y_length=2.0, z_length=2.0)
 
@@ -51,7 +51,7 @@ def test_cube_size():
     assert np.allclose(maxs - mins, [2.0, 2.0, 2.0])
 
 
-def test_cylinder_creation():
+def test_cylinder_creation() -> None:
     """Test cylinder primitive creation."""
     cylinder = Cylinder(radius=1.0, height=2.0)
 

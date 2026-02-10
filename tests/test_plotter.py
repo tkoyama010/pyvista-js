@@ -5,14 +5,14 @@ import pytest
 from pyvista_js import Cube, Cylinder, Plotter, Sphere
 
 
-def test_plotter_creation():
+def test_plotter_creation() -> None:
     """Test that a plotter can be created."""
     plotter = Plotter()
     assert plotter is not None
     assert len(plotter.actors) == 0
 
 
-def test_add_mesh():
+def test_add_mesh() -> None:
     """Test adding a mesh to the plotter."""
     plotter = Plotter()
     mesh = Sphere()
@@ -24,7 +24,7 @@ def test_add_mesh():
     assert plotter.actors[0]["opacity"] == 0.8
 
 
-def test_clear():
+def test_clear() -> None:
     """Test clearing the plotter."""
     plotter = Plotter()
     plotter.add_mesh(Sphere())
@@ -36,7 +36,7 @@ def test_clear():
     assert len(plotter.actors) == 0
 
 
-def test_multiple_meshes():
+def test_multiple_meshes() -> None:
     """Test adding multiple meshes."""
     plotter = Plotter()
 
@@ -46,7 +46,7 @@ def test_multiple_meshes():
     assert len(plotter.actors) == 2
 
 
-def test_show(capsys):
+def test_show(capsys) -> None:
     """Test show method (with mock renderer)."""
     plotter = Plotter()
     plotter.add_mesh(Sphere())
@@ -59,29 +59,26 @@ def test_show(capsys):
 
 
 @pytest.mark.parametrize(
-    "mesh_type,mesh_factory,expected_type,params",
+    ("mesh_factory", "expected_type", "params"),
     [
         (
-            "Sphere",
             lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50),
             "Sphere",
             {"radius": 2.0, "center": (1, 2, 3), "theta_resolution": 50},
         ),
         (
-            "Cube",
             lambda: Cube(center=(0, 0, 0), x_length=3.0, y_length=2.0, z_length=1.0),
             "Cube",
             {"x_length": 3.0, "y_length": 2.0, "z_length": 1.0},
         ),
         (
-            "Cylinder",
             lambda: Cylinder(radius=1.5, height=4.0, resolution=80),
             "Cylinder",
             {"radius": 1.5, "height": 4.0, "resolution": 80},
         ),
     ],
 )
-def test_plotter_mesh_with_parameters(mesh_type, mesh_factory, expected_type, params):
+def test_plotter_mesh_with_parameters(mesh_factory, expected_type, params) -> None:
     """Test plotter correctly handles different mesh types with parameters."""
     plotter = Plotter()
     mesh = mesh_factory()
@@ -97,7 +94,7 @@ def test_plotter_mesh_with_parameters(mesh_type, mesh_factory, expected_type, pa
         assert actor["mesh"]._params[key] == value
 
 
-def test_plotter_all_mesh_types():
+def test_plotter_all_mesh_types() -> None:
     """Test plotter with all mesh types in one scene."""
     plotter = Plotter()
 
@@ -118,13 +115,13 @@ def test_plotter_all_mesh_types():
     assert "Cylinder" in mesh_types
 
 
-def test_background_color_default():
+def test_background_color_default() -> None:
     """Test default background color."""
     plotter = Plotter()
     assert plotter.background_color == (0.2, 0.3, 0.4)
 
 
-def test_background_color_set_rgb():
+def test_background_color_set_rgb() -> None:
     """Test setting background color with RGB tuple."""
     plotter = Plotter()
     plotter.background_color = (1.0, 1.0, 1.0)
@@ -132,7 +129,7 @@ def test_background_color_set_rgb():
     assert plotter._renderer.background == (1.0, 1.0, 1.0)
 
 
-def test_background_color_set_string():
+def test_background_color_set_string() -> None:
     """Test setting background color with color name."""
     plotter = Plotter()
     plotter.background_color = "white"
@@ -149,7 +146,7 @@ def test_background_color_set_string():
 
 
 @pytest.mark.parametrize(
-    "color_name,expected_rgb",
+    ("color_name", "expected_rgb"),
     [
         ("white", (1.0, 1.0, 1.0)),
         ("black", (0.0, 0.0, 0.0)),
@@ -167,7 +164,7 @@ def test_background_color_set_string():
         ("brown", (0.647, 0.165, 0.165)),
     ],
 )
-def test_background_color_names(color_name, expected_rgb):
+def test_background_color_names(color_name, expected_rgb) -> None:
     """Test all supported color names."""
     plotter = Plotter()
     plotter.background_color = color_name
@@ -175,21 +172,21 @@ def test_background_color_names(color_name, expected_rgb):
     assert plotter._renderer.background == expected_rgb
 
 
-def test_background_color_invalid_name():
+def test_background_color_invalid_name() -> None:
     """Test setting background color with invalid color name."""
     plotter = Plotter()
     with pytest.raises(ValueError, match="Unknown color name"):
         plotter.background_color = "invalid_color"
 
 
-def test_background_color_invalid_rgb_length():
+def test_background_color_invalid_rgb_length() -> None:
     """Test setting background color with wrong RGB tuple length."""
     plotter = Plotter()
     with pytest.raises(ValueError, match="RGB color must have 3 values"):
         plotter.background_color = (1.0, 1.0)
 
 
-def test_background_color_invalid_rgb_range():
+def test_background_color_invalid_rgb_range() -> None:
     """Test setting background color with RGB values out of range."""
     plotter = Plotter()
     with pytest.raises(ValueError, match="RGB values must be between 0 and 1"):
@@ -199,14 +196,14 @@ def test_background_color_invalid_rgb_range():
         plotter.background_color = (-0.1, 0.5, 0.5)
 
 
-def test_background_color_invalid_type():
+def test_background_color_invalid_type() -> None:
     """Test setting background color with invalid type."""
     plotter = Plotter()
     with pytest.raises(TypeError, match="Color must be a string or RGB tuple"):
         plotter.background_color = 123
 
 
-def test_background_color_updates_renderer():
+def test_background_color_updates_renderer() -> None:
     """Test that background color updates the renderer."""
     plotter = Plotter()
     plotter.background_color = "white"
