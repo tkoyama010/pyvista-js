@@ -366,6 +366,16 @@ font-size:11px;background:#f5f5f5;padding:8px;"></div>
 '''
         return html
 
+    def _repr_html_(self):
+        """IPython representation as HTML for Jupyter notebooks.
+
+        Returns
+        -------
+        str
+            HTML string for display in Jupyter.
+        """
+        return self._generate_html()
+
     def clear(self):
         """Remove all actors from the renderer.
 
