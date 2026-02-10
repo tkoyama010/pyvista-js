@@ -93,8 +93,10 @@ def _load_vtkjs():
 
     This function automatically loads the vtk.js library from unpkg CDN
     when working in Jupyter notebooks or JupyterLite. It only loads the
-    library once per session.
+    library once per session and waits for it to be available.
     """
+    import time
+
     global _VTKJS_LOADED
     if _VTKJS_LOADED:
         return
@@ -104,6 +106,8 @@ def _load_vtkjs():
             display(HTML('''
 <script src="https://unpkg.com/vtk.js@29.5.0"></script>
 '''))
+            # Wait for vtk.js to load from CDN
+            time.sleep(2)
             _VTKJS_LOADED = True
         except NameError:
             # display/HTML not available (e.g., in tests)
@@ -115,6 +119,8 @@ def _load_vtkjs():
             script = document.createElement('script')
             script.src = 'https://unpkg.com/vtk.js@29.5.0'
             document.head.appendChild(script)
+            # Wait for vtk.js to load from CDN
+            time.sleep(2)
             _VTKJS_LOADED = True
         except Exception:
             # If we can't load, that's ok - might already be loaded
