@@ -322,20 +322,11 @@ class VTKJSRenderer:
 
         html = f'''
 <div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
-<div id="debug-{container_id}" style="margin-top:10px;font-family:monospace;
-font-size:11px;background:#f5f5f5;padding:8px;"></div>
 <script>
 (function() {{
-  const debug = document.getElementById('debug-{container_id}');
-  function log(msg) {{
-    console.log(msg);
-    debug.innerHTML += msg + '<br>';
-  }}
-
   setTimeout(function() {{
     try {{
       const container = document.getElementById('{container_id}');
-      log('📦 Container: ' + container.offsetWidth + 'x' + container.offsetHeight);
 
       // Use the simpler FullScreenRenderWindow helper
       const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
@@ -345,7 +336,6 @@ font-size:11px;background:#f5f5f5;padding:8px;"></div>
 
       const renderer = fullScreenRenderer.getRenderer();
       const renderWindow = fullScreenRenderer.getRenderWindow();
-      log('✅ Renderer created');
 
 {actors_code}
 
@@ -353,12 +343,8 @@ font-size:11px;background:#f5f5f5;padding:8px;"></div>
       renderer.resetCamera();
       renderWindow.render();
 
-      log('🎉 Scene rendered successfully!');
-      log('🖱️  Drag to rotate, scroll to zoom');
-
     }} catch(e) {{
-      log('❌ Error: ' + e.message);
-      console.error(e);
+      console.error('Error rendering vtk.js scene:', e);
     }}
   }}, 300);
 }})();
