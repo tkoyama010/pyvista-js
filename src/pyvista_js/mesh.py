@@ -79,12 +79,12 @@ def Sphere(
             points.append([x, y, z])
 
     mesh = Mesh(points=np.array(points))
-    mesh._mesh_type = 'Sphere'
+    mesh._mesh_type = "Sphere"
     mesh._params = {
-        'radius': radius,
-        'center': center,
-        'theta_resolution': theta_resolution,
-        'phi_resolution': phi_resolution
+        "radius": radius,
+        "center": center,
+        "theta_resolution": theta_resolution,
+        "phi_resolution": phi_resolution,
     }
     return mesh
 
@@ -124,34 +124,38 @@ def Cube(
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
 
-    points = np.array([
-        [x - dx, y - dy, z - dz],
-        [x + dx, y - dy, z - dz],
-        [x + dx, y + dy, z - dz],
-        [x - dx, y + dy, z - dz],
-        [x - dx, y - dy, z + dz],
-        [x + dx, y - dy, z + dz],
-        [x + dx, y + dy, z + dz],
-        [x - dx, y + dy, z + dz],
-    ])
+    points = np.array(
+        [
+            [x - dx, y - dy, z - dz],
+            [x + dx, y - dy, z - dz],
+            [x + dx, y + dy, z - dz],
+            [x - dx, y + dy, z - dz],
+            [x - dx, y - dy, z + dz],
+            [x + dx, y - dy, z + dz],
+            [x + dx, y + dy, z + dz],
+            [x - dx, y + dy, z + dz],
+        ]
+    )
 
     # Define faces (each face has 4 vertices)
-    faces = np.array([
-        [0, 1, 2, 3],  # Bottom
-        [4, 5, 6, 7],  # Top
-        [0, 1, 5, 4],  # Front
-        [2, 3, 7, 6],  # Back
-        [0, 3, 7, 4],  # Left
-        [1, 2, 6, 5],  # Right
-    ])
+    faces = np.array(
+        [
+            [0, 1, 2, 3],  # Bottom
+            [4, 5, 6, 7],  # Top
+            [0, 1, 5, 4],  # Front
+            [2, 3, 7, 6],  # Back
+            [0, 3, 7, 4],  # Left
+            [1, 2, 6, 5],  # Right
+        ]
+    )
 
     mesh = Mesh(points=points, faces=faces)
-    mesh._mesh_type = 'Cube'
+    mesh._mesh_type = "Cube"
     mesh._params = {
-        'center': center,
-        'x_length': x_length,
-        'y_length': y_length,
-        'z_length': z_length
+        "center": center,
+        "x_length": x_length,
+        "y_length": y_length,
+        "z_length": z_length,
     }
     return mesh
 
@@ -210,12 +214,12 @@ def Cylinder(
     points = np.vstack([bottom_points, top_points])
 
     mesh = Mesh(points=points)
-    mesh._mesh_type = 'Cylinder'
+    mesh._mesh_type = "Cylinder"
     mesh._params = {
-        'center': center,
-        'direction': direction,
-        'radius': radius,
-        'height': height,
-        'resolution': resolution
+        "center": center,
+        "direction": direction,
+        "radius": radius,
+        "height": height,
+        "resolution": resolution,
     }
     return mesh

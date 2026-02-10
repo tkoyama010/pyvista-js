@@ -3,11 +3,11 @@
 Provides components for displaying pyvista-js visualizations in Streamlit and stlite.
 """
 
-
 # Check if streamlit is available
 try:
     import streamlit as st
     import streamlit.components.v1 as components
+
     STREAMLIT_AVAILABLE = True
 except ImportError:
     STREAMLIT_AVAILABLE = False
@@ -40,9 +40,7 @@ def pyvista_chart(plotter, height: int = 600, key: str = None):
     >>> pv.pyvista_chart(plotter, height=500)
     """
     if not STREAMLIT_AVAILABLE:
-        raise ImportError(
-            "Streamlit is not available. Install with: pip install streamlit"
-        )
+        raise ImportError("Streamlit is not available. Install with: pip install streamlit")
 
     # Generate HTML for vtk.js visualization
     html_code = _generate_vtkjs_html(plotter, height)
@@ -69,13 +67,15 @@ def _generate_vtkjs_html(plotter, height: int) -> str:
     # Extract mesh data from plotter
     meshes_data = []
     for actor_info in plotter.actors:
-        mesh = actor_info['mesh']
-        meshes_data.append({
-            'points': mesh.points.tolist(),
-            'n_points': mesh.n_points,
-            'color': actor_info['color'],
-            'opacity': actor_info['opacity'],
-        })
+        mesh = actor_info["mesh"]
+        meshes_data.append(
+            {
+                "points": mesh.points.tolist(),
+                "n_points": mesh.n_points,
+                "color": actor_info["color"],
+                "opacity": actor_info["opacity"],
+            }
+        )
 
     # Generate HTML
     html = f"""
