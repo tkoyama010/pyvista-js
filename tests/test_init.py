@@ -1,6 +1,7 @@
 """Test package initialization and metadata."""
 
 import pytest
+
 import pyvista_js
 
 
@@ -37,7 +38,7 @@ def test_all_attribute():
     """Test that __all__ is properly defined."""
     assert hasattr(pyvista_js, "__all__")
     assert isinstance(pyvista_js.__all__, list)
-    
+
     expected_exports = ["__version__", "Plotter", "Mesh", "Sphere", "Cube", "Cylinder"]
     for name in expected_exports:
         assert name in pyvista_js.__all__

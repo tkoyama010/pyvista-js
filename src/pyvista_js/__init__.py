@@ -8,8 +8,8 @@ __version__ = "0.2.dev0"
 __author__ = "Tetsuo Koyama"
 __license__ = "BSD-3-Clause"
 
+from .mesh import Cube, Cylinder, Mesh, Sphere
 from .plotter import Plotter
-from .mesh import Mesh, Sphere, Cube, Cylinder
 
 # Streamlit integration (optional)
 try:
