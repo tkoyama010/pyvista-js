@@ -70,6 +70,7 @@ PYODIDE_ENV = sys.platform == "emscripten"
 if PYODIDE_ENV:
     try:
         from js import document  # noqa: F401
+
         VTK_AVAILABLE = True
     except ImportError:
         VTK_AVAILABLE = False
@@ -79,6 +80,7 @@ else:
 # Check if IPython is available
 try:
     from IPython.display import HTML, display
+
     IPYTHON_AVAILABLE = True
 except ImportError:
     IPYTHON_AVAILABLE = False
@@ -103,9 +105,11 @@ def _load_vtkjs():
 
     if IPYTHON_AVAILABLE:
         try:
-            display(HTML('''
+            display(
+                HTML("""
 <script src="https://unpkg.com/vtk.js@29.5.0"></script>
-'''))
+""")
+            )
             # Wait for vtk.js to load from CDN
             time.sleep(2)
             _VTKJS_LOADED = True
@@ -116,8 +120,9 @@ def _load_vtkjs():
         # In pure Pyodide environment without IPython
         try:
             from js import document
-            script = document.createElement('script')
-            script.src = 'https://unpkg.com/vtk.js@29.5.0'
+
+            script = document.createElement("script")
+            script.src = "https://unpkg.com/vtk.js@29.5.0"
             document.head.appendChild(script)
             # Wait for vtk.js to load from CDN
             time.sleep(2)
@@ -174,9 +179,7 @@ class VTKJSRenderer:
         if not PYODIDE_ENV:
             # In non-Pyodide environment, check if IPython is available
             if not IPYTHON_AVAILABLE:
-                raise RuntimeError(
-                    "VTKJSRenderer requires either Pyodide environment or IPython"
-                )
+                raise RuntimeError("VTKJSRenderer requires either Pyodide environment or IPython")
 
         # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
         if IPYTHON_AVAILABLE or PYODIDE_ENV:
@@ -257,9 +260,9 @@ class VTKJSRenderer:
             color = self._color_name_to_rgb(color)
 
         actor_info = {
-            'mesh': mesh,
-            'color': color,
-            'opacity': opacity,
+            "mesh": mesh,
+            "color": color,
+            "opacity": opacity,
         }
         self.actors.append(actor_info)
 
@@ -286,76 +289,76 @@ class VTKJSRenderer:
 
     def _generate_html(self):
         """Generate HTML and JavaScript for IPython display."""
-        container_id = getattr(self, 'container_id', 'pyvista-container')
+        container_id = getattr(self, "container_id", "pyvista-container")
 
         # Generate JavaScript code for each actor
         actor_js_code = []
         for actor_info in self.actors:
-            mesh = actor_info['mesh']
-            color = actor_info.get('color', (0.5, 0.5, 0.5))
-            opacity = actor_info.get('opacity', 1.0)
+            mesh = actor_info["mesh"]
+            color = actor_info.get("color", (0.5, 0.5, 0.5))
+            opacity = actor_info.get("opacity", 1.0)
 
             # Detect mesh type and get parameters
-            mesh_type = getattr(mesh, '_mesh_type', None)
-            params = getattr(mesh, '_params', {})
+            mesh_type = getattr(mesh, "_mesh_type", None)
+            params = getattr(mesh, "_params", {})
 
             # Convert mesh points to JavaScript array
             points_flat = mesh.points.flatten().tolist()
-            '[' + ','.join(map(str, points_flat)) + ']'
+            "[" + ",".join(map(str, points_flat)) + "]"
 
             # Generate appropriate source based on mesh type
-            if mesh_type == 'Sphere':
-                radius = params.get('radius', 1.0)
-                center = params.get('center', (0, 0, 0))
-                theta_res = params.get('theta_resolution', 30)
-                phi_res = params.get('phi_resolution', 30)
-                source_code = f'''
+            if mesh_type == "Sphere":
+                radius = params.get("radius", 1.0)
+                center = params.get("center", (0, 0, 0))
+                theta_res = params.get("theta_resolution", 30)
+                phi_res = params.get("phi_resolution", 30)
+                source_code = f"""
       const source = vtk.Filters.Sources.vtkSphereSource.newInstance({{
         center: [{center[0]}, {center[1]}, {center[2]}],
         radius: {radius},
         thetaResolution: {theta_res},
         phiResolution: {phi_res}
-      }});'''
-            elif mesh_type == 'Cube':
-                center = params.get('center', (0, 0, 0))
-                x_len = params.get('x_length', 1.0)
-                y_len = params.get('y_length', 1.0)
-                z_len = params.get('z_length', 1.0)
-                source_code = f'''
+      }});"""
+            elif mesh_type == "Cube":
+                center = params.get("center", (0, 0, 0))
+                x_len = params.get("x_length", 1.0)
+                y_len = params.get("y_length", 1.0)
+                z_len = params.get("z_length", 1.0)
+                source_code = f"""
       const source = vtk.Filters.Sources.vtkCubeSource.newInstance({{
         center: [{center[0]}, {center[1]}, {center[2]}],
         xLength: {x_len},
         yLength: {y_len},
         zLength: {z_len}
-      }});'''
-            elif mesh_type == 'Cylinder':
-                center = params.get('center', (0, 0, 0))
-                radius = params.get('radius', 0.5)
-                height = params.get('height', 1.0)
-                resolution = params.get('resolution', 100)
-                source_code = f'''
+      }});"""
+            elif mesh_type == "Cylinder":
+                center = params.get("center", (0, 0, 0))
+                radius = params.get("radius", 0.5)
+                height = params.get("height", 1.0)
+                resolution = params.get("resolution", 100)
+                source_code = f"""
       const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
         center: [{center[0]}, {center[1]}, {center[2]}],
         radius: {radius},
         height: {height},
         resolution: {resolution}
-      }});'''
+      }});"""
             else:
                 # Generic mesh using polydata
-                points_str = ','.join(map(str, points_flat))
-                source_code = f'''
+                points_str = ",".join(map(str, points_flat))
+                source_code = f"""
       const points = new Float32Array([{points_str}]);
       const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
       polydata.getPoints().setData(points, 3);
-      const source = polydata;'''
+      const source = polydata;"""
 
             # Determine mapper setup based on mesh type
-            if mesh_type in ['Sphere', 'Cube', 'Cylinder']:
-                mapper_setup = 'mapper.setInputConnection(source.getOutputPort());'
+            if mesh_type in ["Sphere", "Cube", "Cylinder"]:
+                mapper_setup = "mapper.setInputConnection(source.getOutputPort());"
             else:
-                mapper_setup = 'mapper.setInputData(source);'
+                mapper_setup = "mapper.setInputData(source);"
 
-            actor_js_code.append(f'''{source_code}
+            actor_js_code.append(f"""{source_code}
 
       // Create mapper
       const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
@@ -369,9 +372,9 @@ class VTKJSRenderer:
 
       // Add actor to renderer
       renderer.addActor(actor);
-            ''')
+            """)
 
-        actors_code = '\n'.join(actor_js_code)
+        actors_code = "\n".join(actor_js_code)
 
         html = f'''
 <div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
@@ -423,7 +426,7 @@ class VTKJSRenderer:
         >>> renderer.clear()  # Remove all visualizations
         """
         self.actors = []
-        if not self.use_ipython and hasattr(self, 'renderer'):
+        if not self.use_ipython and hasattr(self, "renderer"):
             self.renderer.removeAllActors()
 
     def set_background(self, color):
@@ -455,14 +458,14 @@ class VTKJSRenderer:
             RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
         """
         colors = {
-            'red': (1.0, 0.0, 0.0),
-            'green': (0.0, 1.0, 0.0),
-            'blue': (0.0, 0.0, 1.0),
-            'yellow': (1.0, 1.0, 0.0),
-            'cyan': (0.0, 1.0, 1.0),
-            'magenta': (1.0, 0.0, 1.0),
-            'white': (1.0, 1.0, 1.0),
-            'black': (0.0, 0.0, 0.0),
+            "red": (1.0, 0.0, 0.0),
+            "green": (0.0, 1.0, 0.0),
+            "blue": (0.0, 0.0, 1.0),
+            "yellow": (1.0, 1.0, 0.0),
+            "cyan": (0.0, 1.0, 1.0),
+            "magenta": (1.0, 0.0, 1.0),
+            "white": (1.0, 1.0, 1.0),
+            "black": (0.0, 0.0, 0.0),
         }
         return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
 
@@ -544,9 +547,9 @@ class MockRenderer:
             Mock actor dictionary with mesh data.
         """
         actor = {
-            'mesh': mesh,
-            'color': color,
-            'opacity': opacity,
+            "mesh": mesh,
+            "color": color,
+            "opacity": opacity,
         }
         self.actors.append(actor)
         print(f"Mock: Added mesh with {mesh.n_points} points")

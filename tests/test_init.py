@@ -10,11 +10,14 @@ def test_import():
     assert pyvista_js is not None
 
 
-@pytest.mark.parametrize("attr,expected", [
-    ("__version__", "0.2.dev0"),
-    ("__author__", "Tetsuo Koyama"),
-    ("__license__", "BSD-3-Clause"),
-])
+@pytest.mark.parametrize(
+    "attr,expected",
+    [
+        ("__version__", "0.2.dev0"),
+        ("__author__", "Tetsuo Koyama"),
+        ("__license__", "BSD-3-Clause"),
+    ],
+)
 def test_metadata_attributes(attr, expected):
     """Test that metadata attributes exist and have correct values."""
     assert hasattr(pyvista_js, attr)
@@ -22,13 +25,16 @@ def test_metadata_attributes(attr, expected):
     assert isinstance(getattr(pyvista_js, attr), str)
 
 
-@pytest.mark.parametrize("name", [
-    "Plotter",
-    "Mesh",
-    "Sphere",
-    "Cube",
-    "Cylinder",
-])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "Plotter",
+        "Mesh",
+        "Sphere",
+        "Cube",
+        "Cylinder",
+    ],
+)
 def test_exports(name):
     """Test that main classes are exported."""
     assert hasattr(pyvista_js, name)
