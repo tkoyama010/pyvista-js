@@ -154,7 +154,8 @@ class Plotter:
         self._renderer.set_background(self._background_color)
 
     def _parse_color(
-        self, color: str | tuple[float, float, float] | list[float],
+        self,
+        color: str | tuple[float, float, float] | list[float],
     ) -> tuple[float, float, float]:
         """Parse color input to RGB tuple.
 
@@ -191,10 +192,7 @@ class Plotter:
             color_lower = color.lower()
             if color_lower in color_map:
                 return color_map[color_lower]
-            msg = (
-                f"Unknown color name: '{color}'. "
-                f"Supported colors: {', '.join(color_map.keys())}"
-            )
+            msg = f"Unknown color name: '{color}'. Supported colors: {', '.join(color_map.keys())}"
             raise ValueError(
                 msg,
             )
