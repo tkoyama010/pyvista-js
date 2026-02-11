@@ -48,6 +48,20 @@ Issues = "https://github.com/tkoyama010/pyvista-js/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/pyvista_js"]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+log_cli_level = "INFO"
+xfail_strict = true
+addopts = [
+    "-ra",
+    "--strict-config",
+    "--strict-markers",
+]
+filterwarnings = [
+    "error",
+]
+
 [tool.ruff]
 line-length = 100
 
