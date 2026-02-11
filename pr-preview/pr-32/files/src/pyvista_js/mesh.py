@@ -40,13 +40,155 @@ class Mesh:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
 
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code for this mesh.
+
+        Parameters
+        ----------
+        idx : int
+            Index of this mesh in the rendering pipeline.
+
+        Returns
+        -------
+        str
+            JavaScript code to create the vtk.js source for this mesh.
+
+        """
+        # Default implementation for generic meshes using polydata
+        points_flat = self.points.flatten().tolist()
+        points_str = ",".join(map(str, points_flat))
+        return f"""
+      const points{idx} = new Float32Array([{points_str}]);
+      const polydata{idx} = vtk.Common.DataModel.vtkPolyData.newInstance();
+      polydata{idx}.getPoints().setData(points{idx}, 3);
+      const source{idx} = polydata{idx};"""
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code for this mesh.
+
+        Parameters
+        ----------
+        idx : int
+            Index of this mesh in the rendering pipeline.
+
+        Returns
+        -------
+        str
+            JavaScript code to set up the mapper for this mesh.
+
+        """
+        # Default implementation for generic meshes
+        return f"mapper{idx}.setInputData(source{idx});"
+
+
+class SphereMesh(Mesh):
+    """Sphere mesh with vtk.js source generation."""
+
+    def __init__(
+        self,
+        points: ArrayLike,
+        radius: float,
+        center: tuple[float, float, float],
+        theta_resolution: int,
+        phi_resolution: int,
+    ) -> None:
+        """Initialize a sphere mesh."""
+        super().__init__(points)
+        self.radius = radius
+        self.center = center
+        self.theta_resolution = theta_resolution
+        self.phi_resolution = phi_resolution
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js sphere source code."""
+        return f"""
+      const source{idx} = vtk.Filters.Sources.vtkSphereSource.newInstance({{
+        center: [{self.center[0]}, {self.center[1]}, {self.center[2]}],
+        radius: {self.radius},
+        thetaResolution: {self.theta_resolution},
+        phiResolution: {self.phi_resolution}
+      }});"""
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code for sphere mesh."""
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+
+class CubeMesh(Mesh):
+    """Cube mesh with vtk.js source generation."""
+
+    def __init__(  # noqa: PLR0913
+        self,
+        points: ArrayLike,
+        faces: ArrayLike,
+        center: tuple[float, float, float],
+        x_length: float,
+        y_length: float,
+        z_length: float,
+    ) -> None:
+        """Initialize a cube mesh."""
+        super().__init__(points, faces)
+        self.center = center
+        self.x_length = x_length
+        self.y_length = y_length
+        self.z_length = z_length
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js cube source code."""
+        return f"""
+      const source{idx} = vtk.Filters.Sources.vtkCubeSource.newInstance({{
+        center: [{self.center[0]}, {self.center[1]}, {self.center[2]}],
+        xLength: {self.x_length},
+        yLength: {self.y_length},
+        zLength: {self.z_length}
+      }});"""
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code for cube mesh."""
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+
+class CylinderMesh(Mesh):
+    """Cylinder mesh with vtk.js source generation."""
+
+    def __init__(  # noqa: PLR0913
+        self,
+        points: ArrayLike,
+        center: tuple[float, float, float],
+        direction: tuple[float, float, float],
+        radius: float,
+        height: float,
+        resolution: int,
+    ) -> None:
+        """Initialize a cylinder mesh."""
+        super().__init__(points)
+        self.center = center
+        self.direction = direction
+        self.radius = radius
+        self.height = height
+        self.resolution = resolution
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js cylinder source code."""
+        return f"""
+      const source{idx} = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
+        center: [{self.center[0]}, {self.center[1]}, {self.center[2]}],
+        radius: {self.radius},
+        height: {self.height},
+        resolution: {self.resolution}
+      }});"""
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code for cylinder mesh."""
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
 
 def Sphere(  # noqa: N802
     radius: float = 1.0,
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     theta_resolution: int = 30,
     phi_resolution: int = 30,
-) -> Mesh:
+) -> SphereMesh:
     """Create a sphere mesh.
 
     Parameters
@@ -62,7 +204,7 @@ def Sphere(  # noqa: N802
 
     Returns
     -------
-    Mesh
+    SphereMesh
         A sphere mesh.
 
     Examples
@@ -85,8 +227,14 @@ def Sphere(  # noqa: N802
             z = radius * np.cos(p) + center[2]
             points.append([x, y, z])
 
-    mesh = Mesh(points=np.array(points))
-    # Store mesh metadata for rendering
+    mesh = SphereMesh(
+        points=np.array(points),
+        radius=radius,
+        center=center,
+        theta_resolution=theta_resolution,
+        phi_resolution=phi_resolution,
+    )
+    # Store mesh metadata for backward compatibility
     mesh.__dict__["_mesh_type"] = "Sphere"
     mesh.__dict__["_params"] = {
         "radius": radius,
@@ -102,7 +250,7 @@ def Cube(  # noqa: N802
     x_length: float = 1.0,
     y_length: float = 1.0,
     z_length: float = 1.0,
-) -> Mesh:
+) -> CubeMesh:
     """Create a cube mesh.
 
     Parameters
@@ -118,7 +266,7 @@ def Cube(  # noqa: N802
 
     Returns
     -------
-    Mesh
+    CubeMesh
         A cube mesh.
 
     Examples
@@ -158,8 +306,15 @@ def Cube(  # noqa: N802
         ],
     )
 
-    mesh = Mesh(points=points, faces=faces)
-    # Store mesh metadata for rendering
+    mesh = CubeMesh(
+        points=points,
+        faces=faces,
+        center=center,
+        x_length=x_length,
+        y_length=y_length,
+        z_length=z_length,
+    )
+    # Store mesh metadata for backward compatibility
     mesh.__dict__["_mesh_type"] = "Cube"
     mesh.__dict__["_params"] = {
         "center": center,
@@ -176,7 +331,7 @@ def Cylinder(  # noqa: N802
     radius: float = 0.5,
     height: float = 1.0,
     resolution: int = 100,
-) -> Mesh:
+) -> CylinderMesh:
     """Create a cylinder mesh.
 
     Parameters
@@ -194,7 +349,7 @@ def Cylinder(  # noqa: N802
 
     Returns
     -------
-    Mesh
+    CylinderMesh
         A cylinder mesh.
 
     Examples
@@ -224,8 +379,15 @@ def Cylinder(  # noqa: N802
 
     points = np.vstack([bottom_points, top_points])
 
-    mesh = Mesh(points=points)
-    # Store mesh metadata for rendering
+    mesh = CylinderMesh(
+        points=points,
+        center=center,
+        direction=direction,
+        radius=radius,
+        height=height,
+        resolution=resolution,
+    )
+    # Store mesh metadata for backward compatibility
     mesh.__dict__["_mesh_type"] = "Cylinder"
     mesh.__dict__["_params"] = {
         "center": center,
