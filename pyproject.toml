@@ -48,6 +48,9 @@ Issues = "https://github.com/tkoyama010/pyvista-js/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/pyvista_js"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/pyvista_js/js" = "pyvista_js/js"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]

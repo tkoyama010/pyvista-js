@@ -68,12 +68,18 @@ from __future__ import annotations
 import logging
 import sys
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .mesh import Mesh
+
+# Load JavaScript templates
+_JS_DIR = Path(__file__).parent / "js"
+_RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
+_ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
 
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
@@ -325,54 +331,28 @@ class VTKJSRenderer:
             source_code = mesh.generate_vtk_js_source(idx)
             mapper_setup = mesh.get_mapper_setup(idx)
 
-            actor_js_code.append(f"""{source_code}
-
-      // Create mapper
-      const mapper{idx} = vtk.Rendering.Core.vtkMapper.newInstance();
-      {mapper_setup}
-
-      // Create actor
-      const actor{idx} = vtk.Rendering.Core.vtkActor.newInstance();
-      actor{idx}.setMapper(mapper{idx});
-      actor{idx}.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
-      actor{idx}.getProperty().setOpacity({opacity});
-
-      // Add actor to renderer
-      renderer.addActor(actor{idx});
-            """)
+            # Use actor template
+            actor_code = (
+                _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
+                .replace("{{INDEX}}", str(idx))
+                .replace("{{MAPPER_SETUP}}", mapper_setup)
+                .replace("{{COLOR_R}}", str(color[0]))
+                .replace("{{COLOR_G}}", str(color[1]))
+                .replace("{{COLOR_B}}", str(color[2]))
+                .replace("{{OPACITY}}", str(opacity))
+            )
+            actor_js_code.append(actor_code)
 
         actors_code = "\n".join(actor_js_code)
 
-        return f"""
-<div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
-<script>
-(function() {{
-  setTimeout(function() {{
-    try {{
-      const container = document.getElementById('{container_id}');
-
-      // Use the simpler FullScreenRenderWindow helper
-      const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
-        container: container,
-        background: [{self.background[0]}, {self.background[1]}, {self.background[2]}]
-      }});
-
-      const renderer = fullScreenRenderer.getRenderer();
-      const renderWindow = fullScreenRenderer.getRenderWindow();
-
-{actors_code}
-
-      // Reset camera and render
-      renderer.resetCamera();
-      renderWindow.render();
-
-    }} catch(e) {{
-      console.error('Error rendering vtk.js scene:', e);
-    }}
-  }}, 300);
-}})();
-</script>
-"""
+        # Use rendering template
+        return (
+            _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", container_id)
+            .replace("{{BACKGROUND_R}}", str(self.background[0]))
+            .replace("{{BACKGROUND_G}}", str(self.background[1]))
+            .replace("{{BACKGROUND_B}}", str(self.background[2]))
+            .replace("{{ACTORS_CODE}}", actors_code)
+        )
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks.
