@@ -343,7 +343,13 @@ class VTKJSRenderer:
             )
             actor_js_code.append(actor_code)
 
-        actors_code = "\n".join(actor_js_code)
+        # Join actor code with proper indentation (6 spaces to match the context)
+        indented_actors = []
+        for actor in actor_js_code:
+            lines = actor.split("\n")
+            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
+            indented_actors.append(indented_lines)
+        actors_code = "\n\n".join(indented_actors)
 
         # Use rendering template
         return (
