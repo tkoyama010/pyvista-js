@@ -321,65 +321,9 @@ class VTKJSRenderer:
             color = actor_info.get("color", (0.5, 0.5, 0.5))
             opacity = actor_info.get("opacity", 1.0)
 
-            # Detect mesh type and get parameters
-            mesh_type = getattr(mesh, "_mesh_type", None)
-            params = getattr(mesh, "_params", {})
-
-            # Convert mesh points to JavaScript array
-            points_flat = mesh.points.flatten().tolist()
-            "[" + ",".join(map(str, points_flat)) + "]"
-
-            # Generate appropriate source based on mesh type
-            if mesh_type == "Sphere":
-                radius = params.get("radius", 1.0)
-                center = params.get("center", (0, 0, 0))
-                theta_res = params.get("theta_resolution", 30)
-                phi_res = params.get("phi_resolution", 30)
-                source_code = f"""
-      const source{idx} = vtk.Filters.Sources.vtkSphereSource.newInstance({{
-        center: [{center[0]}, {center[1]}, {center[2]}],
-        radius: {radius},
-        thetaResolution: {theta_res},
-        phiResolution: {phi_res}
-      }});"""
-            elif mesh_type == "Cube":
-                center = params.get("center", (0, 0, 0))
-                x_len = params.get("x_length", 1.0)
-                y_len = params.get("y_length", 1.0)
-                z_len = params.get("z_length", 1.0)
-                source_code = f"""
-      const source{idx} = vtk.Filters.Sources.vtkCubeSource.newInstance({{
-        center: [{center[0]}, {center[1]}, {center[2]}],
-        xLength: {x_len},
-        yLength: {y_len},
-        zLength: {z_len}
-      }});"""
-            elif mesh_type == "Cylinder":
-                center = params.get("center", (0, 0, 0))
-                radius = params.get("radius", 0.5)
-                height = params.get("height", 1.0)
-                resolution = params.get("resolution", 100)
-                source_code = f"""
-      const source{idx} = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
-        center: [{center[0]}, {center[1]}, {center[2]}],
-        radius: {radius},
-        height: {height},
-        resolution: {resolution}
-      }});"""
-            else:
-                # Generic mesh using polydata
-                points_str = ",".join(map(str, points_flat))
-                source_code = f"""
-      const points{idx} = new Float32Array([{points_str}]);
-      const polydata{idx} = vtk.Common.DataModel.vtkPolyData.newInstance();
-      polydata{idx}.getPoints().setData(points{idx}, 3);
-      const source{idx} = polydata{idx};"""
-
-            # Determine mapper setup based on mesh type
-            if mesh_type in ["Sphere", "Cube", "Cylinder"]:
-                mapper_setup = f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-            else:
-                mapper_setup = f"mapper{idx}.setInputData(source{idx});"
+            # Use polymorphic methods to generate source code
+            source_code = mesh.generate_vtk_js_source(idx)
+            mapper_setup = mesh.get_mapper_setup(idx)
 
             actor_js_code.append(f"""{source_code}
 
