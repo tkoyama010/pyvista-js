@@ -5,10 +5,16 @@ Provides components for displaying pyvista-js visualizations in Streamlit and st
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .plotter import Plotter
+
+# Load JavaScript template
+_JS_DIR = Path(__file__).parent / "js"
+_STREAMLIT_TEMPLATE = (_JS_DIR / "streamlit.html").read_text()
 
 # Check if streamlit is available
 try:
@@ -87,131 +93,11 @@ def _generate_vtkjs_html(plotter: Plotter, height: int) -> str:
             },
         )
 
-    # Generate HTML
-    return f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }}
-        #container {{
-            width: 100%;
-            height: {height}px;
-        }}
-    </style>
-    <script src="https://unpkg.com/vtk.js"></script>
-</head>
-<body>
-    <div id="container"></div>
-    <script type="module">
-        const {{ vtk }} = window;
-
-        // Create renderer and render window
-        const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
-        renderer.setBackground(0.2, 0.3, 0.4);
-
-        const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
-        renderWindow.addRenderer(renderer);
-
-        // Create OpenGL render window
-        const openglRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
-        renderWindow.addView(openglRenderWindow);
-
-        // Create interactor
-        const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
-        interactor.setView(openglRenderWindow);
-        interactor.initialize();
-        interactor.bindEvents(document.getElementById('container'));
-
-        // Set container
-        const container = document.getElementById('container');
-        openglRenderWindow.setContainer(container);
-
-        const {{ width, height }} = container.getBoundingClientRect();
-        openglRenderWindow.setSize(width, height);
-
-        // Mesh data from Python
-        const meshesData = {meshes_data};
-
-        // Add each mesh
-        meshesData.forEach(meshData => {{
-            // Create polydata
-            const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-
-            // Set points
-            const points = new Float32Array(meshData.points.flat());
-            polydata.getPoints().setData(points, 3);
-
-            // Generate point cloud connectivity (for now)
-            const verts = new Uint32Array(meshData.n_points * 2);
-            for (let i = 0; i < meshData.n_points; i++) {{
-                verts[i * 2] = 1;
-                verts[i * 2 + 1] = i;
-            }}
-            polydata.getVerts().setData(verts);
-
-            // Create mapper
-            const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
-            mapper.setInputData(polydata);
-
-            // Create actor
-            const actor = vtk.Rendering.Core.vtkActor.newInstance();
-            actor.setMapper(mapper);
-
-            // Set color
-            if (meshData.color) {{
-                let rgb;
-                if (typeof meshData.color === 'string') {{
-                    rgb = nameToRGB(meshData.color);
-                }} else {{
-                    rgb = meshData.color;
-                }}
-                actor.getProperty().setColor(...rgb);
-            }}
-
-            // Set opacity
-            actor.getProperty().setOpacity(meshData.opacity || 1.0);
-
-            // Set point size for visibility
-            actor.getProperty().setPointSize(5);
-
-            renderer.addActor(actor);
-        }});
-
-        // Reset camera and render
-        renderer.resetCamera();
-        renderWindow.render();
-
-        // Color name to RGB conversion
-        function nameToRGB(colorName) {{
-            const colors = {{
-                'red': [1.0, 0.0, 0.0],
-                'green': [0.0, 1.0, 0.0],
-                'blue': [0.0, 0.0, 1.0],
-                'yellow': [1.0, 1.0, 0.0],
-                'cyan': [0.0, 1.0, 1.0],
-                'magenta': [1.0, 0.0, 1.0],
-                'white': [1.0, 1.0, 1.0],
-                'black': [0.0, 0.0, 0.0],
-            }};
-            return colors[colorName.toLowerCase()] || [0.5, 0.5, 0.5];
-        }}
-
-        // Handle window resize
-        window.addEventListener('resize', () => {{
-            const {{ width, height }} = container.getBoundingClientRect();
-            openglRenderWindow.setSize(width, height);
-            renderWindow.render();
-        }});
-    </script>
-</body>
-</html>
-"""
+    # Use template and replace placeholders
+    return _STREAMLIT_TEMPLATE.replace("{{HEIGHT}}", str(height)).replace(
+        "{{MESHES_DATA}}",
+        json.dumps(meshes_data),
+    )
 
 
 # Convenience function for Streamlit
