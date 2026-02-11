@@ -33,6 +33,7 @@ dev = [
     "pytest>=7.0",
     "ruff>=0.1.0",
     "pre-commit>=3.0.0",
+    "tox>=4.0.0",
 ]
 streamlit = [
     "streamlit>=1.30.0",
