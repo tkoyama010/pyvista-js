@@ -74,6 +74,11 @@ line-length = 100
 [tool.ruff.lint]
 select = ["ALL"]
 
+[tool.ruff.lint.flake8-pytest-style]
+parametrize-names-type = "tuple"
+parametrize-values-type = "list"
+parametrize-values-row-type = "tuple"
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
     "S101",     # assert - normal for pytest
