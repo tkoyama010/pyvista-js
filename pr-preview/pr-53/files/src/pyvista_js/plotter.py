@@ -32,7 +32,7 @@ class Plotter:
 
     def __init__(self) -> None:
         """Initialize a new Plotter instance."""
-        self._actors = []
+        self._actors: list[dict[str, object]] = []
         self._renderer = get_renderer()
         self._background_color = (0.2, 0.3, 0.4)  # Default background color
 
@@ -206,6 +206,6 @@ class Plotter:
                 if not 0 <= val <= 1:
                     msg = f"RGB values must be between 0 and 1, got {val}"
                     raise ValueError(msg)
-            return tuple(color)
-        msg = f"Color must be a string or RGB tuple, got {type(color)}"
+            return (color[0], color[1], color[2])
+        msg = f"Color must be a string or RGB tuple, got {type(color)}"  # type: ignore[unreachable]
         raise TypeError(msg)
