@@ -23,7 +23,7 @@ plotter = pv.Plotter()
 
 # Add a mesh
 mesh = pv.Sphere()
-plotter.add_mesh(mesh, color='red', opacity=0.8)
+plotter.add_mesh(mesh, color="red", opacity=0.8)
 
 # Display in browser
 plotter.show()
@@ -44,14 +44,17 @@ pip install pyvista-js
 ```
 
 For Streamlit support:
+
 ```bash
 pip install pyvista-js[streamlit]
 ```
 
 For Pyodide/stlite:
+
 ```python
 import micropip
-await micropip.install('pyvista-js')
+
+await micropip.install("pyvista-js")
 ```
 
 ## Usage
@@ -66,7 +69,7 @@ plotter = pv.Plotter()
 
 # Add a mesh
 mesh = pv.Sphere(radius=1.0)
-plotter.add_mesh(mesh, color='red', opacity=0.8)
+plotter.add_mesh(mesh, color="red", opacity=0.8)
 
 # Display (in Pyodide/browser environment)
 plotter.show()
@@ -83,7 +86,7 @@ st.title("3D Visualization")
 # Create visualization
 plotter = pv.Plotter()
 sphere = pv.Sphere()
-plotter.add_mesh(sphere, color='blue')
+plotter.add_mesh(sphere, color="blue")
 
 # Display in Streamlit
 pv.pyvista_chart(plotter, height=600)
@@ -106,7 +109,7 @@ cylinder = pv.Cylinder()
 
 # Mesh operations
 mesh.points  # NumPy array of vertices
-mesh.faces   # Cell connectivity
+mesh.faces  # Cell connectivity
 ```
 
 ## Comparison with PyVista
@@ -137,8 +140,8 @@ mesh.faces   # Cell connectivity
 Contributions are welcome! This project aims to:
 
 1. Provide PyVista-like API for browser environments
-2. Leverage vtk.js for efficient WebGL rendering
-3. Enable 3D visualization in Pyodide/stlite applications
+1. Leverage vtk.js for efficient WebGL rendering
+1. Enable 3D visualization in Pyodide/stlite applications
 
 ## Related Projects
 

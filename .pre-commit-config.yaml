@@ -19,6 +19,11 @@ repos:
       - id: python-no-log-warn
       - id: python-use-type-annotations
       - id: text-unicode-replacement-char
+  
+  - repo: https://github.com/hukkin/mdformat
+    rev: 0.7.21
+    hooks:
+      - id: mdformat
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.0
@@ -28,6 +33,24 @@ repos:
         args: [--fix]
       # Run the formatter
       - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        files: ^src/
+        additional_dependencies: [numpy>=1.20]
+
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.20.0
+    hooks:
+      - id: blacken-docs
+        additional_dependencies: [black==24.10.0]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
 
 ci:
   autofix_commit_msg: |
