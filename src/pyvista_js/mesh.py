@@ -5,12 +5,20 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
+
+# Load JavaScript templates
+_JS_DIR = Path(__file__).parent / "js"
+_MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
+_SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
+_CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
+_CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 
 
 class Mesh:
@@ -57,11 +65,10 @@ class Mesh:
         # Default implementation for generic meshes using polydata
         points_flat = self.points.flatten().tolist()
         points_str = ",".join(map(str, points_flat))
-        return f"""
-      const points{idx} = new Float32Array([{points_str}]);
-      const polydata{idx} = vtk.Common.DataModel.vtkPolyData.newInstance();
-      polydata{idx}.getPoints().setData(points{idx}, 3);
-      const source{idx} = polydata{idx};"""
+        return _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+            "{{POINTS_DATA}}",
+            points_str,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code for this mesh.
@@ -101,13 +108,15 @@ class SphereMesh(Mesh):
 
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js sphere source code."""
-        return f"""
-      const source{idx} = vtk.Filters.Sources.vtkSphereSource.newInstance({{
-        center: [{self.center[0]}, {self.center[1]}, {self.center[2]}],
-        radius: {self.radius},
-        thetaResolution: {self.theta_resolution},
-        phiResolution: {self.phi_resolution}
-      }});"""
+        return (
+            _SPHERE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(self.center[0]))
+            .replace("{{CENTER_Y}}", str(self.center[1]))
+            .replace("{{CENTER_Z}}", str(self.center[2]))
+            .replace("{{RADIUS}}", str(self.radius))
+            .replace("{{THETA_RESOLUTION}}", str(self.theta_resolution))
+            .replace("{{PHI_RESOLUTION}}", str(self.phi_resolution))
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code for sphere mesh."""
@@ -135,13 +144,15 @@ class CubeMesh(Mesh):
 
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js cube source code."""
-        return f"""
-      const source{idx} = vtk.Filters.Sources.vtkCubeSource.newInstance({{
-        center: [{self.center[0]}, {self.center[1]}, {self.center[2]}],
-        xLength: {self.x_length},
-        yLength: {self.y_length},
-        zLength: {self.z_length}
-      }});"""
+        return (
+            _CUBE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(self.center[0]))
+            .replace("{{CENTER_Y}}", str(self.center[1]))
+            .replace("{{CENTER_Z}}", str(self.center[2]))
+            .replace("{{X_LENGTH}}", str(self.x_length))
+            .replace("{{Y_LENGTH}}", str(self.y_length))
+            .replace("{{Z_LENGTH}}", str(self.z_length))
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code for cube mesh."""
@@ -170,13 +181,15 @@ class CylinderMesh(Mesh):
 
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js cylinder source code."""
-        return f"""
-      const source{idx} = vtk.Filters.Sources.vtkCylinderSource.newInstance({{
-        center: [{self.center[0]}, {self.center[1]}, {self.center[2]}],
-        radius: {self.radius},
-        height: {self.height},
-        resolution: {self.resolution}
-      }});"""
+        return (
+            _CYLINDER_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(self.center[0]))
+            .replace("{{CENTER_Y}}", str(self.center[1]))
+            .replace("{{CENTER_Z}}", str(self.center[2]))
+            .replace("{{RADIUS}}", str(self.radius))
+            .replace("{{HEIGHT}}", str(self.height))
+            .replace("{{RESOLUTION}}", str(self.resolution))
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code for cylinder mesh."""
