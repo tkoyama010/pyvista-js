@@ -1,22 +1,26 @@
 # pyvista-js Development Plan
 
 ## Phase 1: Foundation (Week 1)
+
 1. Project structure
-2. Basic documentation
-3. Development environment
-4. CI/CD setup
+1. Basic documentation
+1. Development environment
+1. CI/CD setup
 
 ## Phase 2: Core API (Week 2-3)
+
 1. Plotter class
-2. Mesh handling
-3. vtk.js integration
+1. Mesh handling
+1. vtk.js integration
 
 ## Phase 3: Examples & Testing (Week 4)
+
 1. Example applications
-2. Unit tests
-3. Documentation
+1. Unit tests
+1. Documentation
 
 ## Phase 4: Release (Week 5)
+
 1. PyPI publication
-2. GitHub Pages docs
-3. Community engagement
+1. GitHub Pages docs
+1. Community engagement
