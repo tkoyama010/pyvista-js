@@ -115,7 +115,7 @@ class _VTKJSLoader:
         """Ensure singleton instance."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-        return cls._instance
+        return cls._instance  # type: ignore[return-value]
 
     def load(self) -> None:
         """Load vtk.js library in IPython/Jupyter/Pyodide environment.
@@ -208,7 +208,7 @@ class VTKJSRenderer:
             _VTKJSLoader().load()
 
         self.container = None
-        self.actors = []
+        self.actors: list[dict[str, object]] = []
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (0.2, 0.3, 0.4)  # Default background color
 
@@ -239,13 +239,13 @@ class VTKJSRenderer:
             self.container_id = element_id
             return None
         # Create container div directly
-        self.container = document.createElement("div")
-        self.container.setAttribute("id", element_id)
-        self.container.style.width = "100%"
-        self.container.style.height = "600px"
+        self.container = document.createElement("div")  # type: ignore[attr-defined]
+        self.container.setAttribute("id", element_id)  # type: ignore[attr-defined]
+        self.container.style.width = "100%"  # type: ignore[attr-defined]
+        self.container.style.height = "600px"  # type: ignore[attr-defined]
 
         # Append to body
-        document.body.appendChild(self.container)
+        document.body.appendChild(self.container)  # type: ignore[union-attr]
 
         return self.container
 
@@ -287,7 +287,7 @@ class VTKJSRenderer:
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
 
-        actor_info = {
+        actor_info: dict[str, object] = {
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
@@ -313,8 +313,8 @@ class VTKJSRenderer:
             display(HTML(html))
         else:
             # Direct rendering
-            self.renderer.resetCamera()
-            self.render_window.render()
+            self.renderer.resetCamera()  # type: ignore[attr-defined]
+            self.render_window.render()  # type: ignore[attr-defined]
 
     def _generate_html(self) -> str:
         """Generate HTML and JavaScript for IPython display."""
@@ -328,17 +328,17 @@ class VTKJSRenderer:
             opacity = actor_info.get("opacity", 1.0)
 
             # Use polymorphic methods to generate source code
-            source_code = mesh.generate_vtk_js_source(idx)
-            mapper_setup = mesh.get_mapper_setup(idx)
+            source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
+            mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
             # Use actor template
             actor_code = (
                 _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
                 .replace("{{INDEX}}", str(idx))
                 .replace("{{MAPPER_SETUP}}", mapper_setup)
-                .replace("{{COLOR_R}}", str(color[0]))
-                .replace("{{COLOR_G}}", str(color[1]))
-                .replace("{{COLOR_B}}", str(color[2]))
+                .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
+                .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
+                .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
                 .replace("{{OPACITY}}", str(opacity))
             )
             actor_js_code.append(actor_code)
@@ -467,7 +467,7 @@ class MockRenderer:
 
     def __init__(self) -> None:
         """Initialize mock renderer."""
-        self.actors = []
+        self.actors: list[dict[str, object]] = []
         self.background = (0.2, 0.3, 0.4)  # Default background color
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
@@ -509,7 +509,7 @@ class MockRenderer:
             Mock actor dictionary with mesh data.
 
         """
-        actor = {
+        actor: dict[str, object] = {
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
