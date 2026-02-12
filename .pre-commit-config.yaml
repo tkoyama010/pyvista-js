@@ -20,6 +20,13 @@ repos:
       # Run the formatter
       - id: ruff-format
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        files: ^src/
+        additional_dependencies: [numpy>=1.20]
+
   - repo: https://github.com/adamchainz/blacken-docs
     rev: 1.20.0
     hooks:
