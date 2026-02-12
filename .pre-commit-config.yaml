@@ -20,7 +20,7 @@ repos:
       - id: python-use-type-annotations
       - id: text-unicode-replacement-char
 
-  - repo: https://github.com/hukkin/mdformat
+  - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.21
     hooks:
       - id: mdformat
