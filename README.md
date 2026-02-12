@@ -44,11 +44,13 @@ pip install pyvista-js
 ```
 
 For Streamlit support:
+
 ```bash
 pip install pyvista-js[streamlit]
 ```
 
 For Pyodide/stlite:
+
 ```python
 import micropip
 await micropip.install('pyvista-js')
@@ -137,8 +139,8 @@ mesh.faces   # Cell connectivity
 Contributions are welcome! This project aims to:
 
 1. Provide PyVista-like API for browser environments
-2. Leverage vtk.js for efficient WebGL rendering
-3. Enable 3D visualization in Pyodide/stlite applications
+1. Leverage vtk.js for efficient WebGL rendering
+1. Enable 3D visualization in Pyodide/stlite applications
 
 ## Related Projects
 
