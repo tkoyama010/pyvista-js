@@ -82,10 +82,17 @@ ini_options.filterwarnings = [
 
 [tool.mypy]
 python_version = "3.10"
+strict = false
 warn_unused_configs = true
 warn_redundant_casts = true
+warn_unreachable = true
 strict_equality = true
 no_implicit_optional = true
+enable_error_code = [
+  "ignore-without-code",
+  "redundant-expr",
+  "truthy-bool",
+]
 # Lenient settings for gradual typing
 disallow_untyped_defs = false
 disallow_any_generics = false
