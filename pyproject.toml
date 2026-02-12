@@ -34,6 +34,7 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "ruff>=0.1.0",
+    "mypy>=1.0.0",
     "pre-commit>=3.0.0",
     "tox>=4.0.0",
 ]
@@ -90,3 +91,24 @@ parametrize-values-row-type = "tuple"
     "INP001",   # implicit namespace package
     "T201",     # print statements OK in examples
 ]
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+strict_equality = true
+no_implicit_optional = true
+# Lenient settings for gradual typing
+disallow_untyped_defs = false
+disallow_any_generics = false
+disallow_incomplete_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+check_untyped_defs = false
+# Ignore missing imports for optional dependencies
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
