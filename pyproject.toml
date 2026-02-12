@@ -34,6 +34,7 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "ruff>=0.1.0",
+    "mypy>=1.0.0",
     "pre-commit>=3.0.0",
     "tox>=4.0.0",
 ]
@@ -73,6 +74,11 @@ line-length = 100
 [tool.ruff.lint]
 select = ["ALL"]
 
+[tool.ruff.lint.flake8-pytest-style]
+parametrize-names-type = "tuple"
+parametrize-values-type = "list"
+parametrize-values-row-type = "tuple"
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [
     "S101",     # assert - normal for pytest
@@ -96,3 +102,21 @@ strict_equality = true
 extra_checks = true
 warn_unreachable = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+warn_unused_configs = true
+warn_redundant_casts = true
+strict_equality = true
+no_implicit_optional = true
+# Lenient settings for gradual typing
+disallow_untyped_defs = false
+disallow_any_generics = false
+disallow_incomplete_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+check_untyped_defs = false
+# Ignore missing imports for optional dependencies
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
