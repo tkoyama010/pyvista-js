@@ -1,0 +1,3 @@
+[codespell]
+skip = .git,*.pyc,*.pyo,*.pyd,*.so,*.dll,*.exe,*.bin,*.obj,*.o,*.a,*.lib,*.dll,*.dylib,*.egg-info,*.whl,*.tar.gz,*.zip,.tox,node_modules,__pycache__,.pytest_cache,.venv,venv,dist,build,.mypy_cache,.ruff_cache
+ignore-words-list = socio-economic
