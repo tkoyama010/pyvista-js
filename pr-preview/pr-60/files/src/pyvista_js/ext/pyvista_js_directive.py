@@ -1,7 +1,10 @@
 """Sphinx extension for rendering pyvista-js visualizations."""
 
-from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+import hashlib
+from typing import Any, ClassVar
+
+from docutils import nodes  # type: ignore[import-untyped]
+from docutils.parsers.rst import Directive, directives  # type: ignore[import-untyped]
 from sphinx.application import Sphinx
 
 
@@ -27,12 +30,12 @@ class PyVistaJSDirective(Directive):
     has_content = True
     required_arguments = 0
     optional_arguments = 0
-    option_spec = {
+    option_spec: ClassVar[dict[str, Any]] = {
         "height": directives.positive_int,
         "caption": directives.unchanged,
     }
 
-    def run(self):
+    def run(self) -> list[PyVistaJSNode]:
         """Process the directive."""
         code = "\n".join(self.content)
         height = self.options.get("height", 500)
@@ -46,19 +49,45 @@ class PyVistaJSDirective(Directive):
         return [node]
 
 
-def visit_pyvista_js_node_html(self, node):
+def visit_pyvista_js_node_html(self: Any, node: PyVistaJSNode) -> None:  # noqa: ANN401
     """Generate HTML for pyvista-js visualization."""
     code = node["code"]
     height = node["height"]
     caption = node["caption"]
 
     # Generate a unique ID for this visualization
-    import hashlib
+    viz_id = hashlib.md5(code.encode()).hexdigest()[:8]  # noqa: S324
 
-    viz_id = hashlib.md5(code.encode()).hexdigest()[:8]
-
-    # Create HTML with embedded JupyterLite/Pyodide
+    # Create HTML with embedded CSS and JupyterLite/Pyodide
+    # Long lines are necessary for HTML/CSS formatting
     html = f"""
+    <style>
+    .pyvista-js-container {{
+        margin: 1em 0;
+    }}
+    .pyvista-js-container .caption {{
+        font-style: italic;
+        color: #666;
+        margin-bottom: 0.5em;
+    }}
+    .pyvista-js-code details {{
+        margin-bottom: 1em;
+    }}
+    .pyvista-js-code summary {{
+        cursor: pointer;
+        color: #007bff;
+        user-select: none;
+    }}
+    .pyvista-js-code pre {{
+        background: #f5f5f5;
+        padding: 1em;
+        border-radius: 4px;
+        overflow-x: auto;
+    }}
+    .pyvista-js-output {{
+        background: #fafafa;
+    }}
+    </style>
     <div class="pyvista-js-container">
         {f'<p class="caption">{caption}</p>' if caption else ""}
         <div class="pyvista-js-code">
@@ -81,54 +110,22 @@ def visit_pyvista_js_node_html(self, node):
             </div>
         </div>
     </div>
-    """
+    """  # noqa: E501
 
     self.body.append(html)
 
 
-def depart_pyvista_js_node_html(self, node):
+def depart_pyvista_js_node_html(self: Any, node: PyVistaJSNode) -> None:  # noqa: ANN401
     """Close the HTML for pyvista-js visualization."""
 
 
-def setup(app: Sphinx):
-    """Setup the Sphinx extension."""
+def setup(app: Sphinx) -> dict[str, Any]:
+    """Set up the Sphinx extension."""
     app.add_node(
         PyVistaJSNode,
         html=(visit_pyvista_js_node_html, depart_pyvista_js_node_html),
     )
     app.add_directive("pyvista-js", PyVistaJSDirective)
-
-    # Add CSS for styling
-    app.add_css_file(
-        None,
-        body="""
-    .pyvista-js-container {
-        margin: 1em 0;
-    }
-    .pyvista-js-container .caption {
-        font-style: italic;
-        color: #666;
-        margin-bottom: 0.5em;
-    }
-    .pyvista-js-code details {
-        margin-bottom: 1em;
-    }
-    .pyvista-js-code summary {
-        cursor: pointer;
-        color: #007bff;
-        user-select: none;
-    }
-    .pyvista-js-code pre {
-        background: #f5f5f5;
-        padding: 1em;
-        border-radius: 4px;
-        overflow-x: auto;
-    }
-    .pyvista-js-output {
-        background: #fafafa;
-    }
-    """,
-    )
 
     return {
         "version": "0.1",
