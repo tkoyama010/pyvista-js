@@ -14,7 +14,9 @@ pip install pyvista-js
 
 ## Quick Start
 
-```python
+```{pyvista-js}
+:height: 600
+
 import pyvista_js as pv
 
 # Create a simple sphere

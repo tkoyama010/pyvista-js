@@ -16,6 +16,7 @@ release = "0.2.dev0"
 
 extensions = [
     "myst_parser",
+    "pyvista_js.ext",
 ]
 
 templates_path = ["_templates"]
