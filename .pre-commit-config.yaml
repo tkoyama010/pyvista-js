@@ -39,6 +39,11 @@ repos:
       # Run the formatter
       - id: ruff-format
 
+  - repo: https://github.com/scientific-python/cookie
+    rev: 2024.08.19
+    hooks:
+      - id: sp-repo-review
+        additional_dependencies: ["repo-review[cli]"]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.14.1
     hooks:
