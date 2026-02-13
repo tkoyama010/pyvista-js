@@ -2,11 +2,11 @@
   "content": [
     {
       "content": null,
-      "created": "2026-02-13T10:29:53.668164Z",
+      "created": "2026-02-13T10:30:26.787838Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-02-13T10:29:51.935013Z",
+      "last_modified": "2026-02-13T10:30:25.114927Z",
       "mimetype": "text/x-python",
       "name": "pyvista_js_directive.py",
       "path": "src/pyvista_js/ext/pyvista_js_directive.py",
@@ -16,11 +16,11 @@
     },
     {
       "content": null,
-      "created": "2026-02-13T10:29:53.667875Z",
+      "created": "2026-02-13T10:30:26.787520Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-02-13T10:29:51.934968Z",
+      "last_modified": "2026-02-13T10:30:25.114880Z",
       "mimetype": "text/x-python",
       "name": "__init__.py",
       "path": "src/pyvista_js/ext/__init__.py",
@@ -29,11 +29,11 @@
       "writable": true
     }
   ],
-  "created": "2026-02-13T10:29:53.668164Z",
+  "created": "2026-02-13T10:30:26.787838Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2026-02-13T10:29:53.668164Z",
+  "last_modified": "2026-02-13T10:30:26.787838Z",
   "mimetype": null,
   "name": "ext",
   "path": "src/pyvista_js/ext",
