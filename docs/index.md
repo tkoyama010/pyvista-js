@@ -14,7 +14,9 @@ pip install pyvista-js
 
 ## Quick Start
 
-```python
+```{jupyter-execute}
+:hide-code:
+
 import pyvista_js as pv
 
 # Create a simple sphere
@@ -25,6 +27,8 @@ plotter = pv.Plotter()
 plotter.add_mesh(sphere)
 plotter.show()
 ```
+
+The code above creates an interactive 3D visualization using pyvista-js.
 
 ## Features
 

@@ -1,3 +1,4 @@
 sphinx>=7.0
 sphinx-book-theme>=1.0
 myst-parser>=2.0
+jupyter-sphinx>=0.5.0

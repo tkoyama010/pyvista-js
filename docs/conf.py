@@ -16,6 +16,7 @@ release = "0.2.dev0"
 
 extensions = [
     "myst_parser",
+    "jupyter_sphinx",
 ]
 
 templates_path = ["_templates"]
@@ -31,3 +32,12 @@ html_static_path = []
 myst_enable_extensions = [
     "colon_fence",
 ]
+
+# -- Options for jupyter-sphinx ----------------------------------------------
+jupyter_sphinx_thebelab_config = {
+    "requestKernel": True,
+    "binderOptions": {
+        "repo": "tkoyama010/pyvista-js",
+        "ref": "main",
+    },
+}
