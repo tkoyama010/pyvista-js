@@ -1,4 +1,4 @@
-# Configuration file for the Sphinx documentation builder.
+# Configuration file for the Sphinx documentation builder.  # noqa: INP001, D100
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "pyvista-js"
-copyright = "2024, Tetsuo Koyama"
+copyright = "2024, Tetsuo Koyama"  # noqa: A001
 author = "Tetsuo Koyama"
 release = "0.2.dev0"
 
