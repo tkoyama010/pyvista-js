@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-02-13T10:25:00.073462Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-02-13T10:24:58.358448Z",
+      "mimetype": "text/x-python",
+      "name": "pyvista_js_directive.py",
+      "path": "src/pyvista_js/ext/pyvista_js_directive.py",
+      "size": 3824,
+      "type": "file",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-02-13T10:25:00.073170Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-02-13T10:24:58.358402Z",
+      "mimetype": "text/x-python",
+      "name": "__init__.py",
+      "path": "src/pyvista_js/ext/__init__.py",
+      "size": 116,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-02-13T10:25:00.073462Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-02-13T10:25:00.073462Z",
+  "mimetype": null,
+  "name": "ext",
+  "path": "src/pyvista_js/ext",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
