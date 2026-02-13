@@ -8,8 +8,6 @@ from sphinx.application import Sphinx
 class PyVistaJSNode(nodes.General, nodes.Element):
     """Node for pyvista-js visualizations."""
 
-    pass
-
 
 class PyVistaJSDirective(Directive):
     """Directive to embed pyvista-js visualizations.
@@ -62,7 +60,7 @@ def visit_pyvista_js_node_html(self, node):
     # Create HTML with embedded JupyterLite/Pyodide
     html = f"""
     <div class="pyvista-js-container">
-        {f'<p class="caption">{caption}</p>' if caption else ''}
+        {f'<p class="caption">{caption}</p>' if caption else ""}
         <div class="pyvista-js-code">
             <details>
                 <summary>Show code</summary>
@@ -90,7 +88,6 @@ def visit_pyvista_js_node_html(self, node):
 
 def depart_pyvista_js_node_html(self, node):
     """Close the HTML for pyvista-js visualization."""
-    pass
 
 
 def setup(app: Sphinx):
@@ -102,7 +99,9 @@ def setup(app: Sphinx):
     app.add_directive("pyvista-js", PyVistaJSDirective)
 
     # Add CSS for styling
-    app.add_css_file(None, body="""
+    app.add_css_file(
+        None,
+        body="""
     .pyvista-js-container {
         margin: 1em 0;
     }
@@ -128,7 +127,8 @@ def setup(app: Sphinx):
     .pyvista-js-output {
         background: #fafafa;
     }
-    """)
+    """,
+    )
 
     return {
         "version": "0.1",
