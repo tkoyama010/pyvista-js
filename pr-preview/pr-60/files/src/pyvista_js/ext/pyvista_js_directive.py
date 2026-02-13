@@ -5,9 +5,6 @@ from typing import Any, ClassVar
 
 from docutils import nodes  # type: ignore[import-untyped]
 from docutils.parsers.rst import Directive, directives  # type: ignore[import-untyped]
-from pygments import highlight
-from pygments.formatters import HtmlFormatter
-from pygments.lexers import PythonLexer
 from sphinx.application import Sphinx
 
 
@@ -61,12 +58,8 @@ def visit_pyvista_js_node_html(self: Any, node: PyVistaJSNode) -> None:  # noqa:
     # Generate a unique ID for this visualization
     viz_id = hashlib.md5(code.encode()).hexdigest()[:8]  # noqa: S324
 
-    # Highlight code with Pygments
-    lexer = PythonLexer()
-    formatter = HtmlFormatter(style="default", noclasses=False, cssclass="highlight")
-    highlighted_code = highlight(code, lexer, formatter)
-
-    # Create HTML with Thebe integration for interactive execution
+    # Create HTML with embedded CSS and JupyterLite/Pyodide
+    # Long lines are necessary for HTML/CSS formatting
     html = f"""
     <style>
     .pyvista-js-container {{
@@ -77,50 +70,43 @@ def visit_pyvista_js_node_html(self: Any, node: PyVistaJSNode) -> None:  # noqa:
         color: #666;
         margin-bottom: 0.5em;
     }}
-    .pyvista-js-code {{
+    .pyvista-js-code details {{
         margin-bottom: 1em;
     }}
-    .pyvista-js-code .thebe-button {{
-        margin-top: 0.5em;
-        padding: 0.5em 1em;
-        background: #28a745;
-        color: white;
-        border: none;
-        border-radius: 4px;
+    .pyvista-js-code summary {{
         cursor: pointer;
-        font-size: 0.9em;
+        color: #007bff;
+        user-select: none;
     }}
-    .pyvista-js-code .thebe-button:hover {{
-        background: #218838;
+    .pyvista-js-code pre {{
+        background: #f5f5f5;
+        padding: 1em;
+        border-radius: 4px;
+        overflow-x: auto;
     }}
     .pyvista-js-output {{
         background: #fafafa;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        min-height: {height}px;
-        padding: 1em;
-    }}
-    .pyvista-js-output iframe {{
-        width: 100%;
-        height: 100%;
-        border: none;
     }}
     </style>
-    <div class="pyvista-js-container" id="container-{viz_id}">
+    <div class="pyvista-js-container">
         {f'<p class="caption">{caption}</p>' if caption else ""}
         <div class="pyvista-js-code">
-            <pre data-executable="true" data-language="python">{code}</pre>
-            {highlighted_code}
+            <details>
+                <summary>Show code</summary>
+                <pre><code class="language-python">{code}</code></pre>
+            </details>
         </div>
-        <div class="pyvista-js-output" id="output-{viz_id}">
-            <div style="padding: 2em; text-align: center; color: #666;">
-                <p>Click "Run Code" to execute and visualize</p>
-                <p style="margin-top: 1em;">
-                    <a href="https://tkoyama010.github.io/pyvista-js/" target="_blank"
-                       style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">
-                        Open in JupyterLite
-                    </a>
-                </p>
+        <div id="pyvista-js-{viz_id}" class="pyvista-js-output" style="height: {height}px; border: 1px solid #ddd; margin: 1em 0;">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+                <div style="text-align: center;">
+                    <p>Interactive 3D visualization (requires JupyterLite)</p>
+                    <p>
+                        <a href="https://tkoyama010.github.io/pyvista-js/" target="_blank"
+                           style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">
+                            Open in JupyterLite
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -133,47 +119,6 @@ def depart_pyvista_js_node_html(self: Any, node: PyVistaJSNode) -> None:  # noqa
     """Close the HTML for pyvista-js visualization."""
 
 
-def add_thebe_config(
-    app: Sphinx,  # noqa: ARG001
-    pagename: str,  # noqa: ARG001
-    templatename: str,  # noqa: ARG001
-    context: dict[str, Any],
-    doctree: Any,  # noqa: ANN401
-) -> None:
-    """Add Thebe configuration to the page."""
-    if doctree is None:
-        return
-
-    # Check if page contains pyvista-js nodes
-    has_pyvista_js = any(isinstance(node, PyVistaJSNode) for node in doctree.traverse())
-    if not has_pyvista_js:
-        return
-
-    # Add Thebe scripts and configuration
-    thebe_config = """
-    <script type="text/x-thebe-config">
-    {
-        requestKernel: true,
-        binderOptions: {
-            repo: "tkoyama010/pyvista-js",
-            ref: "main"
-        },
-        kernelOptions: {
-            name: "python3"
-        }
-    }
-    </script>
-    <script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            thebelab.bootstrap();
-        });
-    </script>
-    """
-    context.setdefault("body", "")
-    context["body"] += thebe_config
-
-
 def setup(app: Sphinx) -> dict[str, Any]:
     """Set up the Sphinx extension."""
     app.add_node(
@@ -181,7 +126,6 @@ def setup(app: Sphinx) -> dict[str, Any]:
         html=(visit_pyvista_js_node_html, depart_pyvista_js_node_html),
     )
     app.add_directive("pyvista-js", PyVistaJSDirective)
-    app.connect("html-page-context", add_thebe_config)
 
     return {
         "version": "0.1",
