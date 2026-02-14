@@ -324,7 +324,7 @@ class VTKJSRenderer:
         actor_js_code = []
         for idx, actor_info in enumerate(self.actors):
             mesh = actor_info["mesh"]
-            color = actor_info.get("color", (0.5, 0.5, 0.5))
+            color = actor_info.get("color") or (0.5, 0.5, 0.5)
             opacity = actor_info.get("opacity", 1.0)
 
             # Use polymorphic methods to generate source code

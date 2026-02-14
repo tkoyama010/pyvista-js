@@ -46,3 +46,5 @@ htmlcov/
 
 # Documentation
 docs/_build/
+docs/.jupyterlite/
+docs/content/
