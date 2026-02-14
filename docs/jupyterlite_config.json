@@ -1,5 +1,10 @@
 {
+  "jupyter-lite-schema-version": 0,
+  "jupyter-config-data": {
+    "contentsStorageName": "pyvista-js-storage"
+  },
   "LiteBuildConfig": {
+    "contents": [],
     "piplite_urls": [
       "https://pypi.org/pypi/{package_name}/json"
     ]
@@ -9,7 +14,8 @@
       "https://pypi.org/pypi/{package_name}/json"
     ],
     "packages": [
-      "pyvista-js"
+      "pyvista-js",
+      "numpy"
     ]
   }
 }

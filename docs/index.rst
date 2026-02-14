@@ -19,7 +19,7 @@ Quick Start
 -----------
 
 .. replite::
-   :kernel: python
+   :kernel: pyolite
    :height: 600px
 
    import pyvista_js as pv
