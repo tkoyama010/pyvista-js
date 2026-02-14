@@ -5,7 +5,7 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
-from pathlib import Path
+from importlib.resources import files
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -13,12 +13,12 @@ import numpy as np
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
-# Load JavaScript templates
-_JS_DIR = Path(__file__).parent / "js"
-_MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
-_SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
-_CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
-_CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
+# Load JavaScript templates using importlib.resources for Pyodide compatibility
+_js_files = files("pyvista_js") / "js"
+_MESH_SOURCE_TEMPLATE = (_js_files / "mesh_source.js").read_text()
+_SPHERE_SOURCE_TEMPLATE = (_js_files / "sphere_source.js").read_text()
+_CUBE_SOURCE_TEMPLATE = (_js_files / "cube_source.js").read_text()
+_CYLINDER_SOURCE_TEMPLATE = (_js_files / "cylinder_source.js").read_text()
 
 
 class Mesh:
