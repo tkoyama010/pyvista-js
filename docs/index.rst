@@ -22,6 +22,9 @@ Quick Start
    :kernel: pyolite
    :height: 600px
 
+   import sys
+   sys.path.insert(0, '/drive/src')
+
    import pyvista_js as pv
 
    # Create a simple sphere

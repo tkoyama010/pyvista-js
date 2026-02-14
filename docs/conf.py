@@ -3,25 +3,21 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import subprocess
+import shutil
 from pathlib import Path
 
-# Build wheel for JupyterLite
-try:
-    docs_dir = Path(__file__).parent
-    project_root = docs_dir.parent
-    pypi_dir = docs_dir / ".jupyterlite" / "pypi"
-    pypi_dir.mkdir(parents=True, exist_ok=True)
+# Copy source code to JupyterLite content directory
+docs_dir = Path(__file__).parent
+project_root = docs_dir.parent
+src_dir = project_root / "src" / "pyvista_js"
+content_dir = docs_dir / "content" / "src"
 
-    subprocess.run(  # noqa: S603
-        ["python", "-m", "build", "--wheel", "--outdir", str(pypi_dir)],  # noqa: S607
-        cwd=project_root,
-        check=True,
-        capture_output=True,
-    )
-except Exception:  # noqa: BLE001, S110
-    # Fail silently - wheel may already exist or build may not be needed
-    pass
+# Create content directory and copy source
+content_dir.mkdir(parents=True, exist_ok=True)
+dest_dir = content_dir / "pyvista_js"
+if dest_dir.exists():
+    shutil.rmtree(dest_dir)
+shutil.copytree(src_dir, dest_dir)
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -57,4 +53,4 @@ myst_enable_extensions = [
 # -- Options for jupyterlite-sphinx ------------------------------------------
 jupyterlite_config = "jupyterlite_config.json"
 jupyterlite_dir = ".jupyterlite"
-jupyterlite_contents = []
+jupyterlite_contents = ["content"]
