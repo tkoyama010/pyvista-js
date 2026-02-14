@@ -16,6 +16,7 @@ release = "0.2.dev0"
 
 extensions = [
     "myst_parser",
+    "jupyterlite_sphinx",
 ]
 
 templates_path = ["_templates"]

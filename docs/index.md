@@ -14,7 +14,10 @@ pip install pyvista-js
 
 ## Quick Start
 
-```python
+```{replite}
+:kernel: python
+:height: 600px
+
 import pyvista_js as pv
 
 # Create a simple sphere
