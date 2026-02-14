@@ -1,0 +1,15 @@
+{
+  "LiteBuildConfig": {
+    "piplite_urls": [
+      "https://pypi.org/pypi/{package_name}/json"
+    ]
+  },
+  "PipliteAddon": {
+    "piplite_urls": [
+      "https://pypi.org/pypi/{package_name}/json"
+    ],
+    "packages": [
+      "pyvista-js"
+    ]
+  }
+}

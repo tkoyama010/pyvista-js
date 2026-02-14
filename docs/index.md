@@ -14,19 +14,20 @@ pip install pyvista-js
 
 ## Quick Start
 
-```{replite}
-:kernel: python
-:height: 600px
+```{eval-rst}
+.. replite::
+   :kernel: python
+   :height: 600px
 
-import pyvista_js as pv
+   import pyvista_js as pv
 
-# Create a simple sphere
-sphere = pv.Sphere()
+   # Create a simple sphere
+   sphere = pv.Sphere()
 
-# Visualize it
-plotter = pv.Plotter()
-plotter.add_mesh(sphere)
-plotter.show()
+   # Visualize it
+   plotter = pv.Plotter()
+   plotter.add_mesh(sphere)
+   plotter.show()
 ```
 
 ## Features

@@ -32,3 +32,7 @@ html_static_path = []
 myst_enable_extensions = [
     "colon_fence",
 ]
+
+# -- Options for jupyterlite-sphinx ------------------------------------------
+jupyterlite_config = "jupyterlite_config.json"
+jupyterlite_dir = ".jupyterlite"
