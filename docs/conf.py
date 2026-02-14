@@ -51,6 +51,5 @@ myst_enable_extensions = [
 ]
 
 # -- Options for jupyterlite-sphinx ------------------------------------------
-jupyterlite_config = "jupyterlite_config.json"
 jupyterlite_dir = ".jupyterlite"
 jupyterlite_contents = ["content"]
