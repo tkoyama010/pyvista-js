@@ -3,6 +3,26 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import subprocess
+from pathlib import Path
+
+# Build wheel for JupyterLite
+try:
+    docs_dir = Path(__file__).parent
+    project_root = docs_dir.parent
+    pypi_dir = docs_dir / ".jupyterlite" / "pypi"
+    pypi_dir.mkdir(parents=True, exist_ok=True)
+
+    subprocess.run(  # noqa: S603
+        ["python", "-m", "build", "--wheel", "--outdir", str(pypi_dir)],  # noqa: S607
+        cwd=project_root,
+        check=True,
+        capture_output=True,
+    )
+except Exception:  # noqa: BLE001, S110
+    # Fail silently - wheel may already exist or build may not be needed
+    pass
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 

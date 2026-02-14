@@ -1,6 +1,11 @@
 {
   "jupyter-lite-schema-version": 0,
   "jupyter-config-data": {
-    "contentsStorageName": "pyvista-js-storage"
+    "contentsStorageName": "pyvista-js-storage",
+    "litePluginSettings": {
+      "@jupyterlite/pyolite-kernel-extension:kernel": {
+        "pipliteUrls": ["./pypi/", "https://pypi.org/pypi/{package_name}/json"]
+      }
+    }
   }
 }
