@@ -22,6 +22,9 @@ Quick Start
    :kernel: pyolite
    :height: 600px
 
+   import micropip
+   await micropip.install('pyvista-js')
+
    import pyvista_js as pv
 
    # Create a simple sphere
