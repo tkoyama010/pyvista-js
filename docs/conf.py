@@ -31,6 +31,7 @@ html_static_path = []
 # -- Options for MyST parser -------------------------------------------------
 myst_enable_extensions = [
     "colon_fence",
+    "deflist",
 ]
 
 # -- Options for jupyterlite-sphinx ------------------------------------------

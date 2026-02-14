@@ -1,20 +1,23 @@
-# pyvista-js Documentation
+pyvista-js Documentation
+========================
 
 Welcome to pyvista-js documentation!
 
-## Overview
+Overview
+--------
 
 pyvista-js is a PyVista-like API for vtk.js, bringing the intuitive PyVista interface to JavaScript-based 3D visualization.
 
-## Installation
+Installation
+------------
 
-```bash
-pip install pyvista-js
-```
+.. code-block:: bash
 
-## Quick Start
+   pip install pyvista-js
 
-```{eval-rst}
+Quick Start
+-----------
+
 .. replite::
    :kernel: python
    :height: 600px
@@ -28,15 +31,16 @@ pip install pyvista-js
    plotter = pv.Plotter()
    plotter.add_mesh(sphere)
    plotter.show()
-```
 
-## Features
+Features
+--------
 
 - PyVista-like API for familiar usage
 - Integration with vtk.js for web-based visualization
 - Support for JupyterLite and Streamlit
 
-## Links
+Links
+-----
 
-- [GitHub Repository](https://github.com/tkoyama010/pyvista-js)
-- [Issue Tracker](https://github.com/tkoyama010/pyvista-js/issues)
+- `GitHub Repository <https://github.com/tkoyama010/pyvista-js>`_
+- `Issue Tracker <https://github.com/tkoyama010/pyvista-js/issues>`_
