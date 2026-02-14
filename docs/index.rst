@@ -27,13 +27,18 @@ Quick Start
 
    import pyvista_js as pv
 
-   # Create a simple sphere
-   sphere = pv.Sphere()
+   # Test basic functionality
+   print("pyvista-js imported successfully!")
+   print(f"pyvista-js version: {pv.__version__ if hasattr(pv, '__version__') else 'unknown'}")
 
-   # Visualize it
-   plotter = pv.Plotter()
-   plotter.add_mesh(sphere)
-   plotter.show()
+   # Try to create a simple sphere
+   try:
+       sphere = pv.Sphere()
+       print(f"Sphere created: {sphere}")
+   except Exception as e:
+       print(f"Error creating sphere: {e}")
+       import traceback
+       traceback.print_exc()
 
 Features
 --------
