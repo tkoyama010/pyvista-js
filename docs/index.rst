@@ -23,7 +23,10 @@ Quick Start
    :height: 600px
 
    import micropip
-   await micropip.install('pyvista-js')
+   # Install latest development version from GitHub
+   await micropip.install(
+       'https://github.com/tkoyama010/pyvista-js/archive/refs/heads/main.zip'
+   )
 
    import pyvista_js as pv
 
