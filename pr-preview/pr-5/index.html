@@ -1,68 +1,110 @@
 <!DOCTYPE html>
-<!--
-  This is the root document for _your_ JupyterLite. Thanks for viewing your source!
-     ___ __   __ _______ __   __ _______ _______ ______   ___     ___ _______ _______
-    |   |  | |  |       |  | |  |       |       |    _ | |   |   |   |       |       |
-    |   |  | |  |    _  |  |_|  |_     _|    ___|   | || |   |   |   |_     _|    ___|
-    |   |  |_|  |   |_| |       | |   | |   |___|   |_||_|   |   |   | |   | |   |___
- ___|   |       |    ___|_     _| |   | |    ___|    __  |   |___|   | |   | |    ___|
-|       |       |   |     |   |   |   | |   |___|   |  | |       |   | |   | |   |___
-|_______|_______|___|     |___|   |___| |_______|___|  |_|_______|___| |___| |_______|
-
-Code: https://github.com/jupyterlite/jupyterlite
-Demo: https://jupyterlite.rtfd.io/en/latest/try
-
-# FILES
-
-Your JupyterLite is structured like this:
-
-    index.html             <---- you are here
-    {:app}/                <---- currently-known: `lab` (semi-required) and `notebook`
-      index.html
-      extensions/
-        {:org}/{:package}/ <---|
-        {:package}/        <---+- federated extensions
-          schema/
-          package.json
-    # TBD
-    files/                 <----- also need to populate `api/contents/`!
-    static/                <----- might save duplication
-      {:app}
-
--->
 <html>
-  <head>
-    <!--
-      # jupyter-config-data
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>pyvista-js Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.css" />
+</head>
+<body>
+    <div id="root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.js"></script>
+    <script>
+        stlite.mount(
+            {
+                requirements: [
+                    "numpy"
+                ],
+                entrypoint: "app.py",
+                files: {
+                    "app.py": `import streamlit as st
 
-      The JSON in `jupyter-lite.json` is the last that will be loaded by most
-      child `index.html` pages, and every field can be overridden.
+st.title("🌐 pyvista-js Demo")
 
-      See the recognized schema as described in the documentation:
+st.markdown("""
+**pyvista-js** - PyVista-like 3D visualization in the browser!
 
-      - https://jupyterlite.rtfd.io/en/latest/reference/schema.html
+This demo installs pyvista-js directly from GitHub and runs entirely in your browser.
+""")
 
-      Notes
-        - fields that...
-          - are relative paths values
-            - will have the parent directory of _this_ file appended, accounting
-              for "magic" hosts which redirect to `{:path}index.html` to `{:path}`,
-              with or without a slash
-        - some fields, such as `federated_extensions` will be _added together_
-    -->
-    <script id="jupyter-config-data" type="application/json" data-jupyter-lite-root=".">
-      {}
+# Install and import
+with st.spinner("Installing pyvista-js..."):
+    try:
+        import micropip
+        await micropip.install("https://github.com/tkoyama010/pyvista-js/releases/download/v0.1.dev0/pyvista_js-0.1.dev0-py3-none-any.whl")
+        import pyvista_js as pv
+        st.success(f"✅ pyvista-js {pv.__version__} loaded successfully!")
+
+        # Sidebar controls
+        st.sidebar.header("⚙️ Controls")
+
+        geometry = st.sidebar.selectbox(
+            "Geometry",
+            ["Sphere", "Cube", "Cylinder"]
+        )
+
+        color = st.sidebar.selectbox(
+            "Color",
+            ["red", "green", "blue", "yellow", "cyan", "magenta"]
+        )
+
+        opacity = st.sidebar.slider(
+            "Opacity",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.8,
+            step=0.1
+        )
+
+        # Create visualization
+        st.header("📊 3D Visualization")
+
+        plotter = pv.Plotter()
+
+        # Create geometry
+        if geometry == "Sphere":
+            mesh = pv.Sphere(radius=1.0)
+            st.sidebar.info(f"Sphere with {mesh.n_points} points")
+        elif geometry == "Cube":
+            mesh = pv.Cube()
+            st.sidebar.info(f"Cube with {mesh.n_points} points")
+        else:
+            mesh = pv.Cylinder(radius=0.5, height=2.0)
+            st.sidebar.info(f"Cylinder with {mesh.n_points} points")
+
+        # Add mesh to plotter
+        plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+        # Display
+        st.write("**Interactive 3D View**")
+        pv.pyvista_chart(plotter, height=600)
+
+    except Exception as e:
+        st.error(f"Failed to load pyvista-js: {e}")
+        st.info("This is expected during development. Full functionality coming soon!")
+
+# Information
+st.markdown("""
+---
+### 🎯 Features
+
+- **Interactive 3D**: Rotate, zoom, and pan with mouse/touch
+- **PyVista API**: Familiar interface for PyVista users
+- **Browser-native**: No server required, runs entirely in browser
+- **Powered by vtk.js**: High-performance WebGL rendering
+
+### 🔗 Links
+
+- [pyvista-js on GitHub](https://github.com/tkoyama010/pyvista-js)
+- [PyVista](https://www.pyvista.org/)
+- [vtk.js](https://kitware.github.io/vtk-js/)
+- [stlite](https://github.com/whitphx/stlite)
+""")
+`
+                }
+            },
+            document.getElementById("root")
+        );
     </script>
-    <!--
-      # jupyter-lite-root
-
-      The source of truth for relative path locations. The `.` means _this_
-      is the root, and will redirect to the `appUrl` defined in
-      `.jupyter-lite/#jupyter-config-data`.
-    -->
-    <script type="module">
-      await import('./config-utils.js');
-    </script>
-    <!-- that's it, there shouldn't be anything below here in head! -->
-  </head>
+</body>
 </html>
