@@ -1,0 +1,67 @@
+name: Deploy JupyterLite
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+  workflow_dispatch:
+
+# Prevent concurrent deployments
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install JupyterLite
+        run: |
+          python -m pip install --upgrade pip
+          pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server
+
+      - name: Copy source code to JupyterLite
+        run: |
+          mkdir -p jupyterlite/content/src
+          cp -r src/pyvista_js jupyterlite/content/src/
+
+      - name: Build JupyterLite
+        run: |
+          jupyter lite build --contents jupyterlite/content --output-dir _site
+
+      - name: Deploy to gh-pages (main branch)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          destination_dir: .
+          keep_files: true
+
+      - name: Deploy PR Preview
+        if: github.event_name == 'pull_request'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: _site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview

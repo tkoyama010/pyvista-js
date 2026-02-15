@@ -4,6 +4,7 @@ This example demonstrates how to use pyvista-js in a Streamlit/stlite applicatio
 """
 
 import streamlit as st
+
 import pyvista_js as pv
 
 st.title("🌐 pyvista-js Demo")
@@ -16,23 +17,11 @@ PyVista-like 3D visualization in the browser using vtk.js!
 # Sidebar controls
 st.sidebar.header("⚙️ Controls")
 
-geometry = st.sidebar.selectbox(
-    "Geometry",
-    ["Sphere", "Cube", "Cylinder"]
-)
+geometry = st.sidebar.selectbox("Geometry", ["Sphere", "Cube", "Cylinder"])
 
-color = st.sidebar.selectbox(
-    "Color",
-    ["red", "green", "blue", "yellow", "cyan", "magenta"]
-)
+color = st.sidebar.selectbox("Color", ["red", "green", "blue", "yellow", "cyan", "magenta"])
 
-opacity = st.sidebar.slider(
-    "Opacity",
-    min_value=0.0,
-    max_value=1.0,
-    value=0.8,
-    step=0.1
-)
+opacity = st.sidebar.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
 
 # Create visualization
 st.header("📊 Visualization")

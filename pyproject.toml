@@ -1,53 +1,105 @@
 [build-system]
-requires = ["hatchling"]
 build-backend = "hatchling.build"
+requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.1.dev0"
+version = "0.2.dev0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
-requires-python = ">=3.10"
 license = "BSD-3-Clause"
 authors = [
-    {name = "Tetsuo Koyama", email = "contact@tetsuo-koyama.dev"},
+  { name = "Tetsuo Koyama", email = "contact@tetsuo-koyama.dev" },
 ]
+requires-python = ">=3.10"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Visualization",
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-    "numpy>=1.20",
+  "numpy>=1.20",
 ]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "ruff>=0.1.0",
+optional-dependencies.dev = [
+  "mypy>=1",
+  "pre-commit>=3",
+  "pytest>=7",
+  "ruff>=0.1",
+  "tox>=4",
 ]
-streamlit = [
-    "streamlit>=1.30.0",
+optional-dependencies.streamlit = [
+  "streamlit>=1.30",
 ]
+urls.Documentation = "https://github.com/tkoyama010/pyvista-js"
+urls.Homepage = "https://github.com/tkoyama010/pyvista-js"
+urls.Issues = "https://github.com/tkoyama010/pyvista-js/issues"
+urls.Repository = "https://github.com/tkoyama010/pyvista-js"
 
-[project.urls]
-Homepage = "https://github.com/tkoyama010/pyvista-js"
-Documentation = "https://github.com/tkoyama010/pyvista-js"
-Repository = "https://github.com/tkoyama010/pyvista-js"
-Issues = "https://github.com/tkoyama010/pyvista-js/issues"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/pyvista_js"]
+[tool.hatch]
+build.targets.wheel.packages = [ "src/pyvista_js" ]
+build.targets.wheel.force-include."src/pyvista_js/js" = "pyvista_js/js"
 
 [tool.ruff]
 line-length = 100
+lint.select = [ "ALL" ]
+lint.per-file-ignores."examples/*" = [
+  "INP001", # implicit namespace package
+  "T201",   # print statements OK in examples
+]
+lint.per-file-ignores."tests/*" = [
+  "ANN",     # missing type annotations - not critical for tests
+  "INP001",  # implicit namespace package
+  "PLR2004", # magic values - normal for test data
+  "S101",    # assert - normal for pytest
+  "SLF001",  # private member access - testing private APIs
+]
+lint.flake8-pytest-style.parametrize-names-type = "tuple"
+lint.flake8-pytest-style.parametrize-values-row-type = "tuple"
+lint.flake8-pytest-style.parametrize-values-type = "list"
 
-[tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+[tool.pytest]
+ini_options.minversion = "6.0"
+ini_options.testpaths = [ "tests" ]
+ini_options.log_cli_level = "INFO"
+ini_options.xfail_strict = true
+ini_options.addopts = [
+  "-ra",
+  "--strict-config",
+  "--strict-markers",
+]
+ini_options.filterwarnings = [
+  "error",
+]
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unreachable = true
+strict_equality = true
+no_implicit_optional = true
+enable_error_code = [
+  "ignore-without-code",
+  "redundant-expr",
+  "truthy-bool",
+]
+# Lenient settings for gradual typing
+disallow_untyped_defs = false
+disallow_any_generics = false
+disallow_incomplete_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+check_untyped_defs = false
+# Ignore missing imports for optional dependencies
+ignore_missing_imports = true
+overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
