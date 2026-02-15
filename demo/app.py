@@ -9,7 +9,7 @@ st.markdown("""
 
 ### Technology Stack
 - 🐍 **Pyodide**: Python in WebAssembly
-- 🎨 **stlite**: Serverless Streamlit  
+- 🎨 **stlite**: Serverless Streamlit
 - 📊 **pyvista-js**: 3D visualization with vtk.js
 """)
 
@@ -18,7 +18,8 @@ st.info("📦 Demo coming soon after PyPI publication!")
 # Example code
 st.header("📝 Example Usage")
 
-st.code('''import pyvista_js as pv
+st.code(
+    """import pyvista_js as pv
 import streamlit as st
 
 # Create a plotter
@@ -30,7 +31,9 @@ plotter.add_mesh(mesh, color='red', opacity=0.8)
 
 # Display in Streamlit/stlite
 pv.pyvista_chart(plotter, height=600)
-''', language='python')
+""",
+    language="python",
+)
 
 # Features
 st.markdown("""

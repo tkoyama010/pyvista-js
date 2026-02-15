@@ -7,6 +7,7 @@ Live demo: [https://tkoyama010.github.io/pyvista-js/](https://tkoyama010.github.
 This demo showcases pyvista-js running in stlite (serverless Streamlit).
 
 The demo runs entirely in your browser using:
+
 - **Pyodide**: Python in WebAssembly
 - **stlite**: Serverless Streamlit
 - **pyvista-js**: PyVista-like API for vtk.js

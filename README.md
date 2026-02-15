@@ -155,14 +155,16 @@ The demo runs entirely in your browser using stlite!
 To enable the demo and PR previews:
 
 1. Go to **Settings** → **Pages**
-2. Under **Source**, select **GitHub Actions**
-3. Save the settings
+1. Under **Source**, select **GitHub Actions**
+1. Save the settings
 
 **Demo URLs:**
+
 - Main: `https://tkoyama010.github.io/pyvista-js/`
 - PR Preview: `https://tkoyama010.github.io/pyvista-js/pr-preview/pr-<NUMBER>/`
 
 **Local Testing:**
+
 ```bash
 cd demo
 python -m http.server 8000
