@@ -43,3 +43,8 @@ htmlcov/
 
 # Distribution
 *.whl
+
+# Documentation
+docs/_build/
+docs/.jupyterlite/
+docs/content/

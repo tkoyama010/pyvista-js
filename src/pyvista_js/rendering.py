@@ -68,12 +68,18 @@ from __future__ import annotations
 import logging
 import sys
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .mesh import Mesh
+
+# Load JavaScript templates
+_JS_DIR = Path(__file__).parent / "js"
+_RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
+_ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
 
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
@@ -109,7 +115,7 @@ class _VTKJSLoader:
         """Ensure singleton instance."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-        return cls._instance
+        return cls._instance  # type: ignore[return-value]
 
     def load(self) -> None:
         """Load vtk.js library in IPython/Jupyter/Pyodide environment.
@@ -202,7 +208,7 @@ class VTKJSRenderer:
             _VTKJSLoader().load()
 
         self.container = None
-        self.actors = []
+        self.actors: list[dict[str, object]] = []
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (0.2, 0.3, 0.4)  # Default background color
 
@@ -233,13 +239,13 @@ class VTKJSRenderer:
             self.container_id = element_id
             return None
         # Create container div directly
-        self.container = document.createElement("div")
-        self.container.setAttribute("id", element_id)
-        self.container.style.width = "100%"
-        self.container.style.height = "600px"
+        self.container = document.createElement("div")  # type: ignore[attr-defined]
+        self.container.setAttribute("id", element_id)  # type: ignore[attr-defined]
+        self.container.style.width = "100%"  # type: ignore[attr-defined]
+        self.container.style.height = "600px"  # type: ignore[attr-defined]
 
         # Append to body
-        document.body.appendChild(self.container)
+        document.body.appendChild(self.container)  # type: ignore[union-attr]
 
         return self.container
 
@@ -281,7 +287,7 @@ class VTKJSRenderer:
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
 
-        actor_info = {
+        actor_info: dict[str, object] = {
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
@@ -307,8 +313,8 @@ class VTKJSRenderer:
             display(HTML(html))
         else:
             # Direct rendering
-            self.renderer.resetCamera()
-            self.render_window.render()
+            self.renderer.resetCamera()  # type: ignore[attr-defined]
+            self.render_window.render()  # type: ignore[attr-defined]
 
     def _generate_html(self) -> str:
         """Generate HTML and JavaScript for IPython display."""
@@ -318,61 +324,41 @@ class VTKJSRenderer:
         actor_js_code = []
         for idx, actor_info in enumerate(self.actors):
             mesh = actor_info["mesh"]
-            color = actor_info.get("color", (0.5, 0.5, 0.5))
+            color = actor_info.get("color") or (0.5, 0.5, 0.5)
             opacity = actor_info.get("opacity", 1.0)
 
             # Use polymorphic methods to generate source code
-            source_code = mesh.generate_vtk_js_source(idx)
-            mapper_setup = mesh.get_mapper_setup(idx)
+            source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
+            mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
-            actor_js_code.append(f"""{source_code}
+            # Use actor template
+            actor_code = (
+                _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
+                .replace("{{INDEX}}", str(idx))
+                .replace("{{MAPPER_SETUP}}", mapper_setup)
+                .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
+                .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
+                .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
+                .replace("{{OPACITY}}", str(opacity))
+            )
+            actor_js_code.append(actor_code)
 
-      // Create mapper
-      const mapper{idx} = vtk.Rendering.Core.vtkMapper.newInstance();
-      {mapper_setup}
+        # Join actor code with proper indentation (6 spaces to match the context)
+        indented_actors = []
+        for actor in actor_js_code:
+            lines = actor.split("\n")
+            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
+            indented_actors.append(indented_lines)
+        actors_code = "\n\n".join(indented_actors)
 
-      // Create actor
-      const actor{idx} = vtk.Rendering.Core.vtkActor.newInstance();
-      actor{idx}.setMapper(mapper{idx});
-      actor{idx}.getProperty().setColor({color[0]}, {color[1]}, {color[2]});
-      actor{idx}.getProperty().setOpacity({opacity});
-
-      // Add actor to renderer
-      renderer.addActor(actor{idx});
-            """)
-
-        actors_code = "\n".join(actor_js_code)
-
-        return f"""
-<div id="{container_id}" style="width:600px;height:400px;border:2px solid #333;"></div>
-<script>
-(function() {{
-  setTimeout(function() {{
-    try {{
-      const container = document.getElementById('{container_id}');
-
-      // Use the simpler FullScreenRenderWindow helper
-      const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({{
-        container: container,
-        background: [{self.background[0]}, {self.background[1]}, {self.background[2]}]
-      }});
-
-      const renderer = fullScreenRenderer.getRenderer();
-      const renderWindow = fullScreenRenderer.getRenderWindow();
-
-{actors_code}
-
-      // Reset camera and render
-      renderer.resetCamera();
-      renderWindow.render();
-
-    }} catch(e) {{
-      console.error('Error rendering vtk.js scene:', e);
-    }}
-  }}, 300);
-}})();
-</script>
-"""
+        # Use rendering template
+        return (
+            _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", container_id)
+            .replace("{{BACKGROUND_R}}", str(self.background[0]))
+            .replace("{{BACKGROUND_G}}", str(self.background[1]))
+            .replace("{{BACKGROUND_B}}", str(self.background[2]))
+            .replace("{{ACTORS_CODE}}", actors_code)
+        )
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks.
@@ -481,7 +467,7 @@ class MockRenderer:
 
     def __init__(self) -> None:
         """Initialize mock renderer."""
-        self.actors = []
+        self.actors: list[dict[str, object]] = []
         self.background = (0.2, 0.3, 0.4)  # Default background color
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
@@ -523,7 +509,7 @@ class MockRenderer:
             Mock actor dictionary with mesh data.
 
         """
-        actor = {
+        actor: dict[str, object] = {
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
