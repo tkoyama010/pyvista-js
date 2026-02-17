@@ -47,20 +47,6 @@ urls.Repository = "https://github.com/tkoyama010/pyvista-js"
 build.targets.wheel.packages = [ "src/pyvista_js" ]
 build.targets.wheel.force-include."src/pyvista_js/js" = "pyvista_js/js"
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-testpaths = ["tests"]
-log_cli_level = "INFO"
-xfail_strict = true
-addopts = [
-    "-ra",
-    "--strict-config",
-    "--strict-markers",
-]
-filterwarnings = [
-    "error",
-]
-
 [tool.ruff]
 line-length = 100
 lint.select = [ "ALL" ]
