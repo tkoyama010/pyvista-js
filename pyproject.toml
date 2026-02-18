@@ -38,10 +38,24 @@ optional-dependencies.dev = [
 optional-dependencies.streamlit = [
   "streamlit>=1.30",
 ]
-urls.Documentation = "https://github.com/tkoyama010/pyvista-js"
-urls.Homepage = "https://github.com/tkoyama010/pyvista-js"
-urls.Issues = "https://github.com/tkoyama010/pyvista-js/issues"
-urls.Repository = "https://github.com/tkoyama010/pyvista-js"
+
+[dependency-groups]
+test = [
+  "pytest>=7",
+]
+dev = [
+  { include-group = "test" },
+  "mypy>=1",
+  "pre-commit>=3",
+  "ruff>=0.1",
+  "tox>=4",
+]
+
+[project.urls]
+Documentation = "https://github.com/tkoyama010/pyvista-js"
+Homepage = "https://github.com/tkoyama010/pyvista-js"
+Issues = "https://github.com/tkoyama010/pyvista-js/issues"
+Repository = "https://github.com/tkoyama010/pyvista-js"
 
 [tool.hatch]
 build.targets.wheel.packages = [ "src/pyvista_js" ]
