@@ -43,6 +43,18 @@ urls.Homepage = "https://github.com/tkoyama010/pyvista-js"
 urls.Issues = "https://github.com/tkoyama010/pyvista-js/issues"
 urls.Repository = "https://github.com/tkoyama010/pyvista-js"
 
+[dependency-groups]
+dev = [
+  "mypy>=1",
+  "pre-commit>=3",
+  "ruff>=0.1",
+  "tox>=4",
+  { include-group = "test" },
+]
+test = [
+  "pytest>=7",
+]
+
 [tool.hatch]
 build.targets.wheel.packages = [ "src/pyvista_js" ]
 build.targets.wheel.force-include."src/pyvista_js/js" = "pyvista_js/js"
