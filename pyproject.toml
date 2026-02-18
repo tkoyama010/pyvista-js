@@ -80,6 +80,7 @@ lint.flake8-pytest-style.parametrize-values-type = "list"
 [tool.pytest]
 ini_options.minversion = "6.0"
 ini_options.testpaths = [ "tests" ]
+ini_options.log_level = "INFO"
 ini_options.log_cli_level = "INFO"
 ini_options.xfail_strict = true
 ini_options.addopts = [
