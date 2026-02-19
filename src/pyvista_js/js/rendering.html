@@ -5,6 +5,11 @@
     try {
       const container = document.getElementById('{{CONTAINER_ID}}');
 
+      // Clear any existing content to prevent conflicts from multiple renders
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+
       // Use the simpler FullScreenRenderWindow helper
       const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({
         container: container,
