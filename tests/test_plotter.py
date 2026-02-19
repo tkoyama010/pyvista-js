@@ -214,7 +214,7 @@ def test_background_color_updates_renderer() -> None:
 
 def test_double_render() -> None:
     """Test that rendering twice does not cause conflicts.
-    
+
     Regression test for bug where calling show() twice would break rendering
     due to vtk.js renderer conflicts on the same container.
     """
