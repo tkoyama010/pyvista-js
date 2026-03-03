@@ -24,14 +24,7 @@ repos:
     rev: 1.0.0
     hooks:
       - id: mdformat
-        exclude: ^(README|CONTRIBUTING)\.md$
-
-  - repo: https://github.com/thlorenz/doctoc
-    rev: v2.3.0
-    hooks:
-      - id: doctoc
-        args: [--notitle]
-        files: ^(README|CONTRIBUTING)\.md$
+        additional_dependencies: ['mdformat-toc==0.5.0']
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.16.2"
@@ -110,5 +103,5 @@ ci:
   autoupdate_branch: ''
   autoupdate_commit_msg: 'chore: pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: []
+  skip: [mdformat]
   submodules: false
