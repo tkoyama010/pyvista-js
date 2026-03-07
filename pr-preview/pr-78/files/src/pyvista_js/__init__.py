@@ -12,7 +12,7 @@ __license__ = "BSD-3-Clause"
 
 if sys.platform == "emscripten":
     try:
-        import numpy  # noqa: F401
+        import numpy as np  # noqa: F401
     except ImportError:
         import asyncio
 
