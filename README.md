@@ -45,12 +45,6 @@ plotter.show()
 pip install pyvista-js
 ```
 
-For Streamlit support:
-
-```bash
-pip install pyvista-js[streamlit]
-```
-
 For Pyodide/stlite:
 
 ```python
