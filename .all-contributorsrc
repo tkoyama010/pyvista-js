@@ -16,7 +16,8 @@
         "ideas",
         "doc",
         "code",
-        "review"
+        "review",
+        "bug"
       ]
     }
   ],
