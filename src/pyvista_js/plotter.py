@@ -6,6 +6,7 @@ using vtk.js in browser environments.
 
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING, Any
 
 from .rendering import get_renderer
@@ -35,6 +36,7 @@ class Plotter:
         self._actors: list[dict[str, object]] = []
         self._renderer = get_renderer()
         self._background_color = (0.2, 0.3, 0.4)  # Default background color
+        self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
 
     def add_mesh(
         self,
@@ -78,7 +80,7 @@ class Plotter:
 
         return actor
 
-    def show(self, container_id: str = "pyvista-container") -> None:
+    def show(self, container_id: str | None = None) -> None:
         """Display the visualization.
 
         In browser environments, this will render the scene using vtk.js.
@@ -87,7 +89,8 @@ class Plotter:
         ----------
         container_id : str, optional
             HTML element ID for the visualization container.
-            Default is "pyvista-container".
+            Defaults to a unique ID generated per Plotter instance to avoid
+            conflicts when calling show() multiple times in the same session.
 
         Examples
         --------
@@ -97,7 +100,7 @@ class Plotter:
 
         """
         # Create container if needed
-        self._renderer.create_container(container_id)
+        self._renderer.create_container(container_id or self._container_id)
 
         # Render the scene
         self._renderer.render()

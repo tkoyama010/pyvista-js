@@ -210,3 +210,38 @@ def test_background_color_updates_renderer() -> None:
 
     # Check that renderer was updated
     assert plotter._renderer.background == (1.0, 1.0, 1.0)
+
+
+def test_multiple_plotters_have_unique_container_ids() -> None:
+    """Test that each Plotter instance gets a unique container ID.
+
+    Regression test for: second plotter.show() renders no output because
+    both plotters share the same container ID, causing the second vtk.js
+    renderer to attach to the first container instead of its own.
+    """
+    plotter1 = Plotter()
+    plotter2 = Plotter()
+
+    assert plotter1._container_id != plotter2._container_id
+
+
+def test_show_twice_uses_same_container_id() -> None:
+    """Test that calling show() twice on the same plotter reuses its container ID."""
+    plotter = Plotter()
+    container_id = plotter._container_id
+
+    plotter.add_mesh(Sphere())
+    plotter.show()
+    plotter.show()
+
+    assert plotter._container_id == container_id
+
+
+def test_show_custom_container_id() -> None:
+    """Test that show() respects an explicitly provided container ID."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.show(container_id="my-custom-container")
+
+    # The instance container_id should be unchanged
+    assert plotter._container_id != "my-custom-container"
