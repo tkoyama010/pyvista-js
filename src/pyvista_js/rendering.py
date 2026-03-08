@@ -756,7 +756,6 @@ class MockRenderer:
         logger.info("Set environment texture: %s", texture)
 
 
-
 def get_renderer() -> VTKJSRenderer | MockRenderer:
     """Get appropriate renderer for current environment.
 

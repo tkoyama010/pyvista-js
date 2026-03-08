@@ -204,7 +204,6 @@ class Plotter:
         """
         self._renderer.set_environment_texture(texture)
 
-
     def clear(self) -> None:
         """Clear all actors from the plotter.
 
