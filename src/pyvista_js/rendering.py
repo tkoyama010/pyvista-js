@@ -348,7 +348,7 @@ class VTKJSRenderer:
 
         """
         if isinstance(texture, CubeMap):
-            self._environment_texture_cubemap: CubeMap | None = texture
+            self._environment_texture_cubemap = texture
             self._environment_texture_url = None
         else:
             self._environment_texture_url = texture
