@@ -6,9 +6,7 @@ Provides download helpers for standard datasets, mirroring the
 
 from __future__ import annotations
 
-_PYVISTA_DATA_BASE = (
-    "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data"
-)
+_PYVISTA_DATA_BASE = "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data"
 
 
 class CubeMap:
