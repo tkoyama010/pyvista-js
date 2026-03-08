@@ -30,7 +30,6 @@ jobs:
       run: |
         tox -e lint
 
-
   test:
     runs-on: ${{ matrix.os }}
     strategy:
