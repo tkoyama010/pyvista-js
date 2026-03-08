@@ -139,6 +139,38 @@ class Plotter:
         # Render the scene
         self._renderer.render()
 
+    def view_vector(
+        self,
+        vector: tuple[float, float, float],
+        viewup: tuple[float, float, float] | None = None,
+    ) -> None:
+        """Point the camera in the direction of the given vector.
+
+        Parameters
+        ----------
+        vector : tuple of float
+            Direction to point the camera in, given as (vx, vy, vz).
+        viewup : tuple of float, optional
+            View-up vector. Defaults to (0, 1, 0).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_vector((1, 0, 0))
+        >>> plotter.show()
+
+        View from an isometric angle:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Cube())
+        >>> plotter.view_vector((1, 1, 1))
+        >>> plotter.show()
+
+        """
+        self._renderer.view_vector(vector, viewup=viewup)
+
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting (IBL).
 
@@ -171,6 +203,7 @@ class Plotter:
 
         """
         self._renderer.set_environment_texture(texture)
+
 
     def clear(self) -> None:
         """Clear all actors from the plotter.
