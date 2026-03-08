@@ -20,6 +20,7 @@ if sys.platform == "emscripten":
 
         asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
 
+from . import examples
 from .mesh import Cube, Cylinder, Mesh, Sphere
 from .plotter import Plotter
 
@@ -34,6 +35,7 @@ try:
         "Plotter",
         "Sphere",
         "__version__",
+        "examples",
         "pyvista_chart",
     ]
 except ImportError:
@@ -45,4 +47,5 @@ except ImportError:
         "Plotter",
         "Sphere",
         "__version__",
+        "examples",
     ]
