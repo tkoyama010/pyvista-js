@@ -1,6 +1,7 @@
 """Test mesh creation and properties."""
 
 import numpy as np
+import pytest
 
 from pyvista_js import Cube, Cylinder, Mesh, Sphere
 
@@ -57,3 +58,37 @@ def test_cylinder_creation() -> None:
 
     assert cylinder.n_points > 0
     assert isinstance(cylinder.points, np.ndarray)
+
+
+def test_bounding_sphere_empty_mesh() -> None:
+    """Test bounding_sphere returns NaN values for a mesh with no points."""
+    mesh = Mesh(points=np.empty((0, 3)))
+    r, c = mesh.bounding_sphere
+
+    assert np.isnan(r)
+    assert all(np.isnan(x) for x in c)
+
+
+@pytest.mark.parametrize(
+    ("mesh_factory", "expected_radius", "expected_center"),
+    [
+        (lambda: Sphere(radius=1.5, center=(1.0, 2.0, 3.0)), 1.5, (1.0, 2.0, 3.0)),
+        (lambda: Sphere(radius=0.5, center=(0.0, 0.0, 0.0)), 0.5, (0.0, 0.0, 0.0)),
+        (
+            lambda: Cube(center=(0.0, 0.0, 0.0), x_length=2.0, y_length=2.0, z_length=2.0),
+            3**0.5,
+            (0.0, 0.0, 0.0),
+        ),
+    ],
+)
+def test_bounding_sphere(mesh_factory, expected_radius, expected_center) -> None:
+    """Test bounding_sphere radius and center for various meshes."""
+    mesh = mesh_factory()
+    r, c = mesh.bounding_sphere
+
+    assert isinstance(r, float)
+    assert isinstance(c, tuple)
+    assert len(c) == 3
+    assert all(isinstance(x, float) for x in c)
+    assert np.isclose(r, expected_radius, atol=1e-3)
+    assert np.allclose(c, expected_center, atol=1e-3)
