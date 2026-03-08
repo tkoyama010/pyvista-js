@@ -168,6 +168,85 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
     assert "thetaResolution: 60" in html
 
 
+def test_view_vector_in_html(monkeypatch) -> None:
+    """Test that view_vector generates correct camera JS in HTML output."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="red")
+    renderer.view_vector((1.0, 2.0, 3.0))
+
+    html = renderer._repr_html_()
+
+    assert "getActiveCamera" in html
+    assert "getFocalPoint" in html
+    assert "setPosition" in html
+    assert "fp[0] + 1.0" in html
+    assert "fp[1] + 2.0" in html
+    assert "fp[2] + 3.0" in html
+    assert "setViewUp" in html
+    assert "resetCameraClippingRange" in html
+
+
+def test_view_vector_default_viewup_in_html(monkeypatch) -> None:
+    """Test that the default viewup (0, 1, 0) appears in HTML when not specified."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere())
+    renderer.view_vector((0.0, 0.0, 1.0))
+
+    html = renderer._repr_html_()
+
+    assert "setViewUp(0.0, 1.0, 0.0)" in html
+
+
+def test_view_vector_custom_viewup_in_html(monkeypatch) -> None:
+    """Test that a custom viewup appears correctly in HTML."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere())
+    renderer.view_vector((1.0, 0.0, 0.0), viewup=(0.0, 0.0, 1.0))
+
+    html = renderer._repr_html_()
+
+    assert "setViewUp(0.0, 0.0, 1.0)" in html
+
+
+def test_no_view_vector_no_camera_code(monkeypatch) -> None:
+    """Test that no camera override code is generated when view_vector is not called."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="blue")
+
+    html = renderer._repr_html_()
+
+    assert "getActiveCamera" not in html
+    assert "setPosition" not in html
+    assert "{{CAMERA_CODE}}" not in html
+
+
+def test_mock_renderer_view_vector(caplog) -> None:
+    """Test that MockRenderer.view_vector logs the call."""
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        renderer.view_vector((1.0, 0.0, 0.0))
+
+        assert "Set view vector" in caplog.text
+        assert "(1.0, 0.0, 0.0)" in caplog.text
+
+
+def test_mock_renderer_view_vector_with_viewup(caplog) -> None:
+    """Test that MockRenderer.view_vector logs vector and viewup."""
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        renderer.view_vector((0.0, 1.0, 0.0), viewup=(0.0, 0.0, 1.0))
+
+        assert "Set view vector" in caplog.text
+
+
 def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     """Test that multiple meshes use unique variable names in generated JavaScript."""
     # Mock IPython availability

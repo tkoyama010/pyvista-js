@@ -245,3 +245,47 @@ def test_show_custom_container_id() -> None:
 
     # The instance container_id should be unchanged
     assert plotter._container_id != "my-custom-container"
+
+
+def test_view_vector_sets_renderer_state() -> None:
+    """Test that view_vector stores the vector in the renderer."""
+    plotter = Plotter()
+    plotter.view_vector((1.0, 0.0, 0.0))
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+
+
+def test_view_vector_default_viewup() -> None:
+    """Test that default viewup is (0, 1, 0) when not specified."""
+    plotter = Plotter()
+    plotter.view_vector((0.0, 0.0, 1.0))
+
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_vector_custom_viewup() -> None:
+    """Test that a custom viewup is stored correctly."""
+    plotter = Plotter()
+    plotter.view_vector((1.0, 1.0, 0.0), viewup=(0.0, 0.0, 1.0))
+
+    assert plotter._renderer._view_vector == (1.0, 1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+@pytest.mark.parametrize(
+    "vector",
+    [
+        (1.0, 0.0, 0.0),  # +X (view from right)
+        (-1.0, 0.0, 0.0),  # -X (view from left)
+        (0.0, 1.0, 0.0),  # +Y (view from top)
+        (0.0, 0.0, 1.0),  # +Z (view from front)
+        (1.0, 1.0, 1.0),  # isometric
+    ],
+)
+def test_view_vector_common_directions(vector) -> None:
+    """Test view_vector with common viewing directions."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_vector(vector)
+
+    assert plotter._renderer._view_vector == tuple(float(v) for v in vector)
