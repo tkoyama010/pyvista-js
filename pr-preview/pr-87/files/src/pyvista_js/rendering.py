@@ -354,7 +354,7 @@ class VTKJSRenderer:
             # Build PBR code snippet if enabled
             if pbr:
                 pbr_code = (
-                    f"actor{idx}.getProperty().setInterpolationToPBR();\n"
+                    f"actor{idx}.getProperty().setInterpolationToPhong();\n"
                     f"actor{idx}.getProperty().setMetallic({metallic});\n"
                     f"actor{idx}.getProperty().setRoughness({roughness});"
                 )
