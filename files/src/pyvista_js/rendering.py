@@ -8,7 +8,8 @@ Architecture
 pyvista-js uses a backend abstraction to support multiple environments:
 
 1. **VTKJSRenderer**: Used in Pyodide/browser with vtk.js for WebGL rendering
-2. **MockRenderer**: Used in standard Python for development/testing
+2. **BrowserRenderer**: Used in standard Python; opens the plot in the default browser
+3. **MockRenderer**: Used in standard Python for development/testing
 
 Environment Detection
 ---------------------
@@ -18,7 +19,8 @@ The library automatically detects the runtime:
 >>> PYODIDE_ENV = sys.platform == "emscripten"  # True in Pyodide
 
 If running in Pyodide and vtk.js is available, VTKJSRenderer is used.
-Otherwise, MockRenderer provides a fallback for testing.
+If running in standard Python, BrowserRenderer opens the plot in the default browser.
+MockRenderer provides a fallback for testing.
 
 Data Conversion
 ---------------
@@ -59,16 +61,19 @@ Using the renderer (automatically selected):
 >>> renderer.render()
 
 In Pyodide environment, this uses vtk.js. In standard Python,
-it uses MockRenderer which prints debug output.
+it opens the visualization in the default web browser.
 
 """
 
 from __future__ import annotations
 
 import logging
+import os
+import pathlib
 import sys
+import tempfile
 import time
-from pathlib import Path
+import webbrowser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -79,9 +84,12 @@ if TYPE_CHECKING:
 from .examples import CubeMap
 
 # Load JavaScript templates
-_JS_DIR = Path(__file__).parent / "js"
+_JS_DIR = pathlib.Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
+
+# vtk.js CDN URL used across renderers
+_VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
 
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
@@ -132,8 +140,8 @@ class _VTKJSLoader:
         if IPYTHON_AVAILABLE:
             try:
                 display(
-                    HTML("""
-<script src="https://unpkg.com/vtk.js@29.5.0"></script>
+                    HTML(f"""
+<script src="{_VTKJS_CDN}"></script>
 """),
                 )
                 # Wait for vtk.js to load from CDN
@@ -145,7 +153,7 @@ class _VTKJSLoader:
         elif PYODIDE_ENV and document is not None:
             # In pure Pyodide environment without IPython
             script = document.createElement("script")
-            script.src = "https://unpkg.com/vtk.js@29.5.0"
+            script.src = _VTKJS_CDN
             document.head.appendChild(script)
             # Wait for vtk.js to load from CDN
             time.sleep(2)
@@ -155,74 +163,25 @@ class _VTKJSLoader:
 logger = logging.getLogger(__name__)
 
 
-class VTKJSRenderer:
-    """Renderer using vtk.js for browser visualization.
+class _BaseHTMLRenderer:
+    """Base class providing shared state and HTML generation for vtk.js renderers.
 
-    This class wraps vtk.js rendering components and provides
-    a bridge between Python mesh data and JavaScript WebGL rendering.
-
-    Notes
-    -----
-    This renderer can only be instantiated in a Pyodide environment
-    with vtk.js loaded in the page. Use `get_renderer()` to automatically
-    get the appropriate renderer for the current environment.
-
-    The renderer creates standard vtk.js objects:
-    - vtkRenderer: Scene renderer
-    - vtkRenderWindow: Rendering window
-    - vtkRenderWindowInteractor: User interaction handler
-
-    Examples
-    --------
-    >>> # In Pyodide/browser environment
-    >>> renderer = VTKJSRenderer()
-    >>> renderer.create_container('my-viz')
-    >>>
-    >>> # Add a mesh
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> actor = renderer.add_mesh_actor(mesh, color='blue')
-    >>>
-    >>> # Render the scene
-    >>> renderer.render()
-
+    Subclasses implement :meth:`render` to display the generated HTML in their
+    respective environments (Jupyter notebook, standalone browser, etc.).
     """
 
     def __init__(self) -> None:
-        """Initialize the vtk.js renderer.
-
-        Automatically loads vtk.js library if in IPython/Jupyter environment.
-
-        Raises
-        ------
-        RuntimeError
-            If not running in Pyodide environment.
-        ImportError
-            If vtk.js is not available in the page.
-
-        """
-        if not PYODIDE_ENV and not IPYTHON_AVAILABLE:
-            msg = "VTKJSRenderer requires either Pyodide environment or IPython"
-            raise RuntimeError(msg)
-
-        # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
-        if IPYTHON_AVAILABLE or PYODIDE_ENV:
-            _VTKJSLoader().load()
-
-        self.container = None
+        """Initialize shared renderer state."""
         self.actors: list[dict[str, object]] = []
-        self.use_ipython = IPYTHON_AVAILABLE
-        self.background = (1.0, 1.0, 1.0)  # Default background color
+        self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
+        self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
         self._environment_texture_cubemap: CubeMap | None = None
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
-        """Create a DOM container for rendering.
-
-        Creates a <div> element in the document and configures it for
-        vtk.js rendering with mouse/touch interaction support.
+        """Store the container ID for later HTML generation.
 
         Parameters
         ----------
@@ -231,29 +190,12 @@ class VTKJSRenderer:
 
         Returns
         -------
-        container
-            The created DOM element (if using direct DOM) or None (if using IPython).
-
-        Examples
-        --------
-        >>> renderer = VTKJSRenderer()
-        >>> container = renderer.create_container('my-visualization')
+        object or None
+            Subclasses may return a DOM element or None.
 
         """
-        if self.use_ipython:
-            # Store container ID for later HTML generation
-            self.container_id = element_id
-            return None
-        # Create container div directly
-        self.container = document.createElement("div")  # type: ignore[attr-defined]
-        self.container.setAttribute("id", element_id)  # type: ignore[attr-defined]
-        self.container.style.width = "100%"  # type: ignore[attr-defined]
-        self.container.style.height = "600px"  # type: ignore[attr-defined]
-
-        # Append to body
-        document.body.appendChild(self.container)  # type: ignore[union-attr]
-
-        return self.container
+        self.container_id = element_id
+        return None
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
@@ -266,44 +208,27 @@ class VTKJSRenderer:
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
-        Converts a pyvista-js Mesh to vtk.js polydata and creates
-        an actor for rendering.
-
         Parameters
         ----------
         mesh : Mesh
-            The mesh object to render. Must have a `points` attribute
-            containing an (n, 3) NumPy array of vertex coordinates.
+            The mesh object to render.
         color : tuple or str, optional
             RGB color tuple (0-1) or color name ('red', 'blue', etc.).
-            If None, uses default vtk.js coloring.
         opacity : float, default=1.0
-            Opacity value between 0 (transparent) and 1 (opaque).
+            Opacity value between 0 and 1.
         pbr : bool, default=False
-            Enable physically based rendering (PBR).
+            Enable physically based rendering.
         metallic : float, default=0.0
-            Metallic factor for PBR, between 0 and 1.
+            Metallic factor for PBR.
         roughness : float, default=0.5
-            Roughness factor for PBR, between 0 and 1.
+            Roughness factor for PBR.
 
         Returns
         -------
-        actor
-            The vtk.js vtkActor object representing the mesh (or dict if using IPython).
-
-        Examples
-        --------
-        >>> from pyvista_js import Sphere
-        >>> mesh = Sphere(radius=2.0)
-        >>> actor = renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
-
-        PBR example:
-
-        >>> actor = renderer.add_mesh_actor(mesh, color='white', pbr=True, metallic=0.8,
-        ...                                 roughness=0.1)
+        dict
+            Actor information dictionary.
 
         """
-        # Store actor information for later rendering
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
 
@@ -316,28 +241,7 @@ class VTKJSRenderer:
             "roughness": roughness,
         }
         self.actors.append(actor_info)
-
         return actor_info
-
-    def render(self) -> None:
-        """Render the scene.
-
-        Resets the camera to show all actors and triggers rendering.
-        In IPython/Jupyter, generates and displays HTML with vtk.js code.
-
-        Examples
-        --------
-        >>> renderer.render()  # Display the visualization
-
-        """
-        if self.use_ipython:
-            # Generate HTML with JavaScript code
-            html = self._generate_html()
-            display(HTML(html))
-        else:
-            # Direct rendering
-            self.renderer.resetCamera()  # type: ignore[attr-defined]
-            self.render_window.render()  # type: ignore[attr-defined]
 
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting.
@@ -356,9 +260,43 @@ class VTKJSRenderer:
             self._environment_texture_url = texture
             self._environment_texture_cubemap = None
 
+    def set_background(self, color: tuple[float, float, float]) -> None:
+        """Set the background color of the renderer.
+
+        Parameters
+        ----------
+        color : tuple
+            RGB color tuple with values between 0 and 1.
+
+        """
+        self.background = color
+
+    def view_vector(
+        self,
+        vector: tuple[float, float, float],
+        viewup: tuple[float, float, float] | None = None,
+    ) -> None:
+        """Point the camera in the direction of the given vector.
+
+        Parameters
+        ----------
+        vector : tuple of float
+            Direction vector (vx, vy, vz) to point the camera.
+        viewup : tuple of float, optional
+            View-up vector. Defaults to (0, 1, 0).
+
+        """
+        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
+        if viewup is not None:
+            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
+
+    def clear(self) -> None:
+        """Remove all actors from the renderer."""
+        self.actors = []
+
     def _generate_html(self) -> str:
-        """Generate HTML and JavaScript for IPython display."""
-        container_id = getattr(self, "container_id", "pyvista-container")
+        """Generate HTML fragment with embedded vtk.js JavaScript."""
+        container_id = self.container_id
 
         # Generate JavaScript code for each actor
         actor_js_code = []
@@ -370,7 +308,6 @@ class VTKJSRenderer:
             metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
             roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
 
-            # Use polymorphic methods to generate source code
             source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
             mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
@@ -395,7 +332,6 @@ class VTKJSRenderer:
             else:
                 pbr_code = ""
 
-            # Use actor template
             actor_code = (
                 _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
                 .replace("{{INDEX}}", str(idx))
@@ -408,7 +344,6 @@ class VTKJSRenderer:
             )
             actor_js_code.append(actor_code)
 
-        # Join actor code with proper indentation (6 spaces to match the context)
         indented_actors = []
         for actor in actor_js_code:
             lines = actor.split("\n")
@@ -479,7 +414,6 @@ class VTKJSRenderer:
         else:
             camera_code = ""
 
-        # Use rendering template
         return (
             _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", container_id)
             .replace("{{BACKGROUND_R}}", str(self.background[0]))
@@ -491,61 +425,8 @@ class VTKJSRenderer:
         )
 
     def _repr_html_(self) -> str:
-        """IPython representation as HTML for Jupyter notebooks.
-
-        Returns
-        -------
-        str
-            HTML string for display in Jupyter.
-
-        """
+        """IPython representation as HTML for Jupyter notebooks."""
         return self._generate_html()
-
-    def clear(self) -> None:
-        """Remove all actors from the renderer.
-
-        Examples
-        --------
-        >>> renderer.clear()  # Remove all visualizations
-
-        """
-        self.actors = []
-        if not self.use_ipython and hasattr(self, "renderer"):
-            self.renderer.removeAllActors()
-
-    def set_background(self, color: tuple[float, float, float]) -> None:
-        """Set the background color of the renderer.
-
-        Parameters
-        ----------
-        color : tuple
-            RGB color tuple with values between 0 and 1.
-
-        Examples
-        --------
-        >>> renderer.set_background((1.0, 1.0, 1.0))  # White background
-
-        """
-        self.background = color
-
-    def view_vector(
-        self,
-        vector: tuple[float, float, float],
-        viewup: tuple[float, float, float] | None = None,
-    ) -> None:
-        """Point the camera in the direction of the given vector.
-
-        Parameters
-        ----------
-        vector : tuple of float
-            Direction vector (vx, vy, vz) to point the camera.
-        viewup : tuple of float, optional
-            View-up vector. Defaults to (0, 1, 0).
-
-        """
-        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
-        if viewup is not None:
-            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
 
     @staticmethod
     def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
@@ -573,6 +454,190 @@ class VTKJSRenderer:
             "black": (0.0, 0.0, 0.0),
         }
         return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
+
+
+class VTKJSRenderer(_BaseHTMLRenderer):
+    """Renderer using vtk.js for browser visualization.
+
+    This class wraps vtk.js rendering components and provides
+    a bridge between Python mesh data and JavaScript WebGL rendering.
+
+    Notes
+    -----
+    This renderer can only be instantiated in a Pyodide environment
+    with vtk.js loaded in the page. Use `get_renderer()` to automatically
+    get the appropriate renderer for the current environment.
+
+    The renderer creates standard vtk.js objects:
+    - vtkRenderer: Scene renderer
+    - vtkRenderWindow: Rendering window
+    - vtkRenderWindowInteractor: User interaction handler
+
+    Examples
+    --------
+    >>> # In Pyodide/browser environment
+    >>> renderer = VTKJSRenderer()
+    >>> renderer.create_container('my-viz')
+    >>>
+    >>> # Add a mesh
+    >>> from pyvista_js import Sphere
+    >>> mesh = Sphere()
+    >>> actor = renderer.add_mesh_actor(mesh, color='blue')
+    >>>
+    >>> # Render the scene
+    >>> renderer.render()
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize the vtk.js renderer.
+
+        Automatically loads vtk.js library if in IPython/Jupyter environment.
+
+        Raises
+        ------
+        RuntimeError
+            If not running in Pyodide environment.
+        ImportError
+            If vtk.js is not available in the page.
+
+        """
+        if not PYODIDE_ENV and not IPYTHON_AVAILABLE:
+            msg = "VTKJSRenderer requires either Pyodide environment or IPython"
+            raise RuntimeError(msg)
+
+        super().__init__()
+
+        # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
+        if IPYTHON_AVAILABLE or PYODIDE_ENV:
+            _VTKJSLoader().load()
+
+        self.container = None
+        self.use_ipython = IPYTHON_AVAILABLE
+
+    def create_container(self, element_id: str = "pyvista-container") -> object | None:
+        """Create a DOM container for rendering.
+
+        Creates a <div> element in the document and configures it for
+        vtk.js rendering with mouse/touch interaction support.
+
+        Parameters
+        ----------
+        element_id : str, default="pyvista-container"
+            HTML element ID for the container.
+
+        Returns
+        -------
+        container
+            The created DOM element (if using direct DOM) or None (if using IPython).
+
+        Examples
+        --------
+        >>> renderer = VTKJSRenderer()
+        >>> container = renderer.create_container('my-visualization')
+
+        """
+        if self.use_ipython:
+            super().create_container(element_id)
+            return None
+        # Create container div directly
+        self.container = document.createElement("div")  # type: ignore[attr-defined]
+        self.container.setAttribute("id", element_id)  # type: ignore[attr-defined]
+        self.container.style.width = "100%"  # type: ignore[attr-defined]
+        self.container.style.height = "600px"  # type: ignore[attr-defined]
+
+        # Append to body
+        document.body.appendChild(self.container)  # type: ignore[union-attr]
+
+        return self.container
+
+    def render(self) -> None:
+        """Render the scene.
+
+        Resets the camera to show all actors and triggers rendering.
+        In IPython/Jupyter, generates and displays HTML with vtk.js code.
+
+        Examples
+        --------
+        >>> renderer.render()  # Display the visualization
+
+        """
+        if self.use_ipython:
+            html = self._generate_html()
+            display(HTML(html))
+        else:
+            # Direct rendering
+            self.renderer.resetCamera()  # type: ignore[attr-defined]
+            self.render_window.render()  # type: ignore[attr-defined]
+
+    def clear(self) -> None:
+        """Remove all actors from the renderer.
+
+        Examples
+        --------
+        >>> renderer.clear()  # Remove all visualizations
+
+        """
+        super().clear()
+        if not self.use_ipython and hasattr(self, "renderer"):
+            self.renderer.removeAllActors()
+
+
+class BrowserRenderer(_BaseHTMLRenderer):
+    """Renderer that opens the visualization in the default web browser.
+
+    Used automatically in standard Python environments (outside of
+    Jupyter/Pyodide). Generates a standalone HTML file and opens it
+    with :func:`webbrowser.open`.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> plotter = pv.Plotter()
+    >>> plotter.add_mesh(pv.Sphere(), color='red')
+    >>> plotter.show()  # Opens the default browser with the 3D scene
+
+    """
+
+    def render(self) -> None:
+        """Write the visualization to a temp HTML file and open it in the browser."""
+        html = self._generate_standalone_html()
+        with tempfile.NamedTemporaryFile(
+            suffix=".html",
+            delete=False,
+            mode="w",
+            encoding="utf-8",
+        ) as f:
+            f.write(html)
+            tmp_path = f.name
+
+        url = pathlib.Path(tmp_path).as_uri()
+        webbrowser.open(url)
+        logger.info("Opened visualization in browser: %s", url)
+
+    def _generate_standalone_html(self) -> str:
+        """Wrap the HTML fragment in a complete standalone HTML page."""
+        fragment = self._generate_html()
+        container_id = self.container_id
+        container_rule = (
+            f"    #{container_id} "
+            "{ width: 100vw !important; height: 100vh !important; border: none !important; }\n"
+        )
+        style = (
+            "  <style>\n"
+            "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
+            " overflow: hidden; }\n" + container_rule + "  </style>\n"
+        )
+        return (
+            "<!DOCTYPE html>\n"
+            "<html>\n"
+            "<head>\n"
+            "  <meta charset='utf-8'>\n"
+            "  <title>pyvista-js</title>\n"
+            f"  <script src='{_VTKJS_CDN}'></script>\n" + style + "</head>\n"
+            "<body>\n" + fragment + "</body>\n"
+            "</html>\n"
+        )
 
 
 class MockRenderer:
@@ -739,7 +804,7 @@ class MockRenderer:
         logger.info("Set environment texture: %s", texture)
 
 
-def get_renderer() -> VTKJSRenderer | MockRenderer:
+def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """Get appropriate renderer for current environment.
 
     Automatically detects whether running in Pyodide/browser and
@@ -747,9 +812,10 @@ def get_renderer() -> VTKJSRenderer | MockRenderer:
 
     Returns
     -------
-    VTKJSRenderer or MockRenderer
+    VTKJSRenderer or BrowserRenderer or MockRenderer
         - VTKJSRenderer if in Pyodide or IPython environment
-        - MockRenderer otherwise (standard Python, testing, CI/CD)
+        - BrowserRenderer in standard Python (opens the default browser)
+        - MockRenderer if ``PYVISTA_JS_NO_BROWSER=1`` is set (for testing/CI)
 
     Examples
     --------
@@ -757,7 +823,7 @@ def get_renderer() -> VTKJSRenderer | MockRenderer:
     >>> renderer = get_renderer()
     >>>
     >>> # In Pyodide or Jupyter: returns VTKJSRenderer
-    >>> # In standard Python: returns MockRenderer
+    >>> # In standard Python: returns BrowserRenderer (opens browser)
     >>>
     >>> # Same code works in both environments
     >>> from pyvista_js import Sphere
@@ -771,8 +837,14 @@ def get_renderer() -> VTKJSRenderer | MockRenderer:
     This function is used internally by the Plotter class. You typically
     don't need to call it directly unless implementing custom rendering logic.
 
+    Set the environment variable ``PYVISTA_JS_NO_BROWSER=1`` to suppress
+    browser opening (useful for CI/CD and automated testing).
+
     """
     # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
     if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
         return VTKJSRenderer()
-    return MockRenderer()
+    # Respect opt-out env var for CI/testing
+    if os.environ.get("PYVISTA_JS_NO_BROWSER"):
+        return MockRenderer()
+    return BrowserRenderer()
