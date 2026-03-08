@@ -180,10 +180,11 @@ def test_view_vector_in_html(monkeypatch) -> None:
 
     assert "getActiveCamera" in html
     assert "getFocalPoint" in html
-    assert "setPosition" in html
-    assert "fp[0] + 1.0" in html
-    assert "fp[1] + 2.0" in html
-    assert "fp[2] + 3.0" in html
+    assert "getDistance" in html
+    assert "cam.setPosition" in html
+    assert "dist*1.0/vlen" in html
+    assert "dist*2.0/vlen" in html
+    assert "dist*3.0/vlen" in html
     assert "setViewUp" in html
     assert "resetCameraClippingRange" in html
 
