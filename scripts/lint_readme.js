@@ -12,6 +12,12 @@ const result = spawnSync('standard-readme', ['README.md'], {
 process.stdout.write(result.stdout || '')
 process.stderr.write(result.stderr || '')
 
-if (result.status !== 0 || (result.stdout || '').includes(' warning')) {
+// Ignore appropriate-heading: it checks the directory name, which varies by
+// checkout path in CI environments (e.g. /code, /workspace).
+const hasWarnings = (result.stdout || '')
+  .split('\n')
+  .some(line => line.includes(' warning') && !line.includes('appropriate-heading'))
+
+if (result.status !== 0 || hasWarnings) {
   process.exit(1)
 }
