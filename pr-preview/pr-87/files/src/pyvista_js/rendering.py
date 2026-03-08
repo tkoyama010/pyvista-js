@@ -365,8 +365,8 @@ class VTKJSRenderer:
             color = actor_info.get("color") or (0.5, 0.5, 0.5)
             opacity = actor_info.get("opacity", 1.0)
             pbr = actor_info.get("pbr", False)
-            metallic = actor_info.get("metallic", 0.0)
-            roughness = actor_info.get("roughness", 0.5)
+            metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
+            roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
 
             # Use polymorphic methods to generate source code
             source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
@@ -377,8 +377,8 @@ class VTKJSRenderer:
             # Phong parameters so the material differences are visible.
             if pbr:
                 specular = round(metallic * 0.9 + 0.1, 4)
-                specular_power = max(1, round((1.0 - float(roughness)) ** 2 * 128))
-                diffuse = round(1.0 - float(metallic) * 0.6, 4)
+                specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
+                diffuse = round(1.0 - metallic * 0.6, 4)
                 pbr_code = (
                     f"actor{idx}.getProperty().setInterpolationToPhong();\n"
                     f"actor{idx}.getProperty().setMetallic({metallic});\n"
