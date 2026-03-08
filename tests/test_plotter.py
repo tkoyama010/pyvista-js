@@ -1,5 +1,7 @@
 """Test basic plotter functionality."""
 
+import webbrowser
+
 import pytest
 
 from pyvista_js import Cube, Cylinder, Plotter, Sphere
@@ -48,10 +50,12 @@ def test_multiple_meshes() -> None:
 
 def test_show(monkeypatch) -> None:
     """Test show method opens browser with a file:// URL."""
-    import webbrowser
+    opened: list[str] = []
 
-    opened = []
-    monkeypatch.setattr(webbrowser, "open", lambda url: opened.append(url))
+    def _capture(url: str) -> None:
+        opened.append(url)
+
+    monkeypatch.setattr(webbrowser, "open", _capture)
 
     plotter = Plotter()
     plotter.add_mesh(Sphere())

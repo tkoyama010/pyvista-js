@@ -5,13 +5,13 @@ import logging
 import pytest
 
 from pyvista_js import Cube, Cylinder, Sphere, rendering
-from pyvista_js.rendering import MockRenderer, get_renderer
+from pyvista_js.rendering import BrowserRenderer, MockRenderer, get_renderer
 
 
-def test_get_renderer_returns_mock() -> None:
-    """Test that get_renderer returns MockRenderer in non-Pyodide env."""
+def test_get_renderer_returns_browser() -> None:
+    """Test that get_renderer returns BrowserRenderer in standard Python env."""
     renderer = get_renderer()
-    assert isinstance(renderer, MockRenderer)
+    assert isinstance(renderer, BrowserRenderer)
 
 
 def test_mock_renderer_creation() -> None:
