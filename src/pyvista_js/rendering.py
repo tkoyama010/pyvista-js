@@ -76,6 +76,8 @@ if TYPE_CHECKING:
 
     from .mesh import Mesh
 
+from .examples import CubeMap
+
 # Load JavaScript templates
 _JS_DIR = Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
@@ -212,6 +214,7 @@ class VTKJSRenderer:
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (0.2, 0.3, 0.4)  # Default background color
         self._environment_texture_url: str | None = None
+        self._environment_texture_cubemap: CubeMap | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Create a DOM container for rendering.
@@ -334,16 +337,22 @@ class VTKJSRenderer:
             self.renderer.resetCamera()  # type: ignore[attr-defined]
             self.render_window.render()  # type: ignore[attr-defined]
 
-    def set_environment_texture(self, texture_url: str) -> None:
-        """Set the environment texture URL for image-based lighting.
+    def set_environment_texture(self, texture: str | CubeMap) -> None:
+        """Set the environment texture for image-based lighting.
 
         Parameters
         ----------
-        texture_url : str
-            URL of the environment texture image.
+        texture : str or CubeMap
+            Either a URL string pointing to an equirectangular image, or a
+            :class:`~pyvista_js.examples.CubeMap` with six face image URLs.
 
         """
-        self._environment_texture_url = texture_url
+        if isinstance(texture, CubeMap):
+            self._environment_texture_cubemap: CubeMap | None = texture
+            self._environment_texture_url = None
+        else:
+            self._environment_texture_url = texture
+            self._environment_texture_cubemap = None
 
     def _generate_html(self) -> str:
         """Generate HTML and JavaScript for IPython display."""
@@ -394,7 +403,7 @@ class VTKJSRenderer:
             indented_actors.append(indented_lines)
         actors_code = "\n\n".join(indented_actors)
 
-        # Build environment texture code if a URL was provided
+        # Build environment texture code
         if self._environment_texture_url:
             env_code = (
                 "      // Load environment texture for image-based lighting\n"
@@ -407,6 +416,36 @@ class VTKJSRenderer:
                 "        renderWindow.render();\n"
                 "      };\n"
                 f"      envImg.src = '{self._environment_texture_url}';"
+            )
+        elif self._environment_texture_cubemap:
+            urls = self._environment_texture_cubemap.face_urls
+            urls_js = ", ".join(f"'{u}'" for u in urls)
+            env_code = (
+                "      // Load cubemap faces and stitch into a canvas for IBL\n"
+                f"      const faceUrls = [{urls_js}];\n"
+                "      Promise.all(faceUrls.map(function(url) {\n"
+                "        return new Promise(function(resolve, reject) {\n"
+                "          const img = new Image();\n"
+                "          img.crossOrigin = 'anonymous';\n"
+                "          img.onload = function() { resolve(img); };\n"
+                "          img.onerror = reject;\n"
+                "          img.src = url;\n"
+                "        });\n"
+                "      })).then(function(images) {\n"
+                "        const size = images[0].width;\n"
+                "        const canvas = document.createElement('canvas');\n"
+                "        canvas.width = size * 6;\n"
+                "        canvas.height = size;\n"
+                "        const ctx = canvas.getContext('2d');\n"
+                "        images.forEach(function(img, i) {\n"
+                "          ctx.drawImage(img, i * size, 0);\n"
+                "        });\n"
+                "        const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+                "        envTexture.setInterpolate(true);\n"
+                "        envTexture.setCanvas(canvas);\n"
+                "        renderer.setEnvironmentTexture(envTexture);\n"
+                "        renderWindow.render();\n"
+                "      });"
             )
         else:
             env_code = ""
@@ -617,16 +656,16 @@ class MockRenderer:
         """
         self.background = color
 
-    def set_environment_texture(self, texture_url: str) -> None:
+    def set_environment_texture(self, texture: object) -> None:
         """Mock environment texture.
 
         Parameters
         ----------
-        texture_url : str
-            URL of the environment texture image (stored but not rendered).
+        texture : str or CubeMap
+            Environment texture (stored but not rendered).
 
         """
-        logger.info("Set environment texture: %s", texture_url)
+        logger.info("Set environment texture: %s", texture)
 
 
 def get_renderer() -> VTKJSRenderer | MockRenderer:
