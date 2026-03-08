@@ -161,6 +161,13 @@ class Plotter:
         >>> plotter.view_vector((1, 0, 0))
         >>> plotter.show()
 
+        View from an isometric angle:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Cube())
+        >>> plotter.view_vector((1, 1, 1))
+        >>> plotter.show()
+
         """
         self._renderer.view_vector(vector, viewup=viewup)
 
@@ -196,6 +203,7 @@ class Plotter:
 
         """
         self._renderer.set_environment_texture(texture)
+
 
     def clear(self) -> None:
         """Clear all actors from the plotter.
