@@ -372,12 +372,20 @@ class VTKJSRenderer:
             source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
             mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
-            # Build PBR code snippet if enabled
+            # Build PBR code snippet if enabled.
+            # vtk.js WebGL uses Phong shading; map metallic/roughness to
+            # Phong parameters so the material differences are visible.
             if pbr:
+                specular = round(metallic * 0.9 + 0.1, 4)
+                specular_power = max(1, round((1.0 - float(roughness)) ** 2 * 128))
+                diffuse = round(1.0 - float(metallic) * 0.6, 4)
                 pbr_code = (
                     f"actor{idx}.getProperty().setInterpolationToPhong();\n"
                     f"actor{idx}.getProperty().setMetallic({metallic});\n"
-                    f"actor{idx}.getProperty().setRoughness({roughness});"
+                    f"actor{idx}.getProperty().setRoughness({roughness});\n"
+                    f"actor{idx}.getProperty().setSpecular({specular});\n"
+                    f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
+                    f"actor{idx}.getProperty().setDiffuse({diffuse});"
                 )
             else:
                 pbr_code = ""
