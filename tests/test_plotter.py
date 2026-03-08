@@ -275,11 +275,11 @@ def test_view_vector_custom_viewup() -> None:
 @pytest.mark.parametrize(
     "vector",
     [
-        (1.0, 0.0, 0.0),   # +X (view from right)
+        (1.0, 0.0, 0.0),  # +X (view from right)
         (-1.0, 0.0, 0.0),  # -X (view from left)
-        (0.0, 1.0, 0.0),   # +Y (view from top)
-        (0.0, 0.0, 1.0),   # +Z (view from front)
-        (1.0, 1.0, 1.0),   # isometric
+        (0.0, 1.0, 0.0),  # +Y (view from top)
+        (0.0, 0.0, 1.0),  # +Z (view from front)
+        (1.0, 1.0, 1.0),  # isometric
     ],
 )
 def test_view_vector_common_directions(vector) -> None:
