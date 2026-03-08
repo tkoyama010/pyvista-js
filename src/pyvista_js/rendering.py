@@ -339,25 +339,6 @@ class VTKJSRenderer:
             self.renderer.resetCamera()  # type: ignore[attr-defined]
             self.render_window.render()  # type: ignore[attr-defined]
 
-    def view_vector(
-        self,
-        vector: tuple[float, float, float],
-        viewup: tuple[float, float, float] | None = None,
-    ) -> None:
-        """Point the camera in the direction of the given vector.
-
-        Parameters
-        ----------
-        vector : tuple of float
-            Direction vector (vx, vy, vz) to point the camera.
-        viewup : tuple of float, optional
-            View-up vector. Defaults to (0, 1, 0).
-
-        """
-        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
-        if viewup is not None:
-            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
-
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting.
 
@@ -544,6 +525,25 @@ class VTKJSRenderer:
 
         """
         self.background = color
+
+    def view_vector(
+        self,
+        vector: tuple[float, float, float],
+        viewup: tuple[float, float, float] | None = None,
+    ) -> None:
+        """Point the camera in the direction of the given vector.
+
+        Parameters
+        ----------
+        vector : tuple of float
+            Direction vector (vx, vy, vz) to point the camera.
+        viewup : tuple of float, optional
+            View-up vector. Defaults to (0, 1, 0).
+
+        """
+        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
+        if viewup is not None:
+            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
 
     @staticmethod
     def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
