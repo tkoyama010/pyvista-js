@@ -180,7 +180,7 @@ class _BaseHTMLRenderer:
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
-    def create_container(self, element_id: str = "pyvista-container") -> None:
+    def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Store the container ID for later HTML generation.
 
         Parameters
@@ -188,8 +188,14 @@ class _BaseHTMLRenderer:
         element_id : str, default="pyvista-container"
             HTML element ID for the container.
 
+        Returns
+        -------
+        object or None
+            Subclasses may return a DOM element or None.
+
         """
         self.container_id = element_id
+        return None
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
