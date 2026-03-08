@@ -84,7 +84,7 @@ if TYPE_CHECKING:
 from .examples import CubeMap
 
 # Load JavaScript templates
-_JS_DIR = Path = pathlib.Path(__file__).parent / "js"
+_JS_DIR = pathlib.Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
 
