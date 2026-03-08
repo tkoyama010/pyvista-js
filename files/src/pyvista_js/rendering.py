@@ -211,6 +211,8 @@ class VTKJSRenderer:
         self.actors: list[dict[str, object]] = []
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (0.2, 0.3, 0.4)  # Default background color
+        self._view_vector: tuple[float, float, float] | None = None
+        self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Create a DOM container for rendering.
@@ -351,6 +353,20 @@ class VTKJSRenderer:
             indented_actors.append(indented_lines)
         actors_code = "\n\n".join(indented_actors)
 
+        # Build camera override code if view_vector was called
+        if self._view_vector is not None:
+            vx, vy, vz = self._view_vector
+            ux, uy, uz = self._view_up
+            camera_code = (
+                "      const cam = renderer.getActiveCamera();\n"
+                "      const fp = cam.getFocalPoint();\n"
+                f"      cam.setPosition(fp[0] + {vx}, fp[1] + {vy}, fp[2] + {vz});\n"
+                f"      cam.setViewUp({ux}, {uy}, {uz});\n"
+                "      renderer.resetCameraClippingRange();"
+            )
+        else:
+            camera_code = ""
+
         # Use rendering template
         return (
             _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", container_id)
@@ -358,6 +374,7 @@ class VTKJSRenderer:
             .replace("{{BACKGROUND_G}}", str(self.background[1]))
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
             .replace("{{ACTORS_CODE}}", actors_code)
+            .replace("{{CAMERA_CODE}}", camera_code)
         )
 
     def _repr_html_(self) -> str:
@@ -397,6 +414,25 @@ class VTKJSRenderer:
 
         """
         self.background = color
+
+    def view_vector(
+        self,
+        vector: tuple[float, float, float],
+        viewup: tuple[float, float, float] | None = None,
+    ) -> None:
+        """Point the camera in the direction of the given vector.
+
+        Parameters
+        ----------
+        vector : tuple of float
+            Direction vector (vx, vy, vz) to point the camera.
+        viewup : tuple of float, optional
+            View-up vector. Defaults to (0, 1, 0).
+
+        """
+        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
+        if viewup is not None:
+            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
 
     @staticmethod
     def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
@@ -469,6 +505,8 @@ class MockRenderer:
         """Initialize mock renderer."""
         self.actors: list[dict[str, object]] = []
         self.background = (0.2, 0.3, 0.4)  # Default background color
+        self._view_vector: tuple[float, float, float] | None = None
+        self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
         """Mock container creation.
@@ -543,6 +581,26 @@ class MockRenderer:
 
         """
         self.background = color
+
+    def view_vector(
+        self,
+        vector: tuple[float, float, float],
+        viewup: tuple[float, float, float] | None = None,
+    ) -> None:
+        """Mock view_vector.
+
+        Parameters
+        ----------
+        vector : tuple of float
+            Direction vector (stored but not rendered).
+        viewup : tuple of float, optional
+            View-up vector (stored but not rendered).
+
+        """
+        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
+        if viewup is not None:
+            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
+        logger.info("Set view vector: %s (viewup=%s)", vector, viewup)
 
 
 def get_renderer() -> VTKJSRenderer | MockRenderer:
