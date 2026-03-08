@@ -62,16 +62,6 @@ repos:
     hooks:
       - id: codespell
 
-  - repo: local
-    hooks:
-      - id: standard-readme
-        name: standard-readme
-        language: node
-        additional_dependencies:
-          - standard-readme
-        entry: ./scripts/lint_readme.js
-        files: ^README\.md$
-
 ci:
   autofix_commit_msg: |
     [pre-commit.ci] auto fixes from pre-commit.com hooks
