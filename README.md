@@ -74,6 +74,14 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
+Enjoying pyvista-js? Show your support with a GitHub star — it's a simple click that means the world to us and helps others discover it, too!
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=tkoyama010/pyvista-js&type=Date">
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=tkoyama010/pyvista-js&type=Date&theme=dark">
+  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=tkoyama010/pyvista-js&type=Date">
+</picture>
+
 ## License
 
 [BSD 3-Clause](LICENSE) © Tetsuo Koyama
