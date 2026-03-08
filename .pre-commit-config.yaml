@@ -67,8 +67,9 @@ repos:
       - id: standard-readme
         name: standard-readme
         language: node
-        additional_dependencies: [standard-readme]
-        entry: standard-readme
+        additional_dependencies:
+          - standard-readme
+        entry: ./scripts/lint_readme.js
         files: ^README\.md$
 
 ci:
