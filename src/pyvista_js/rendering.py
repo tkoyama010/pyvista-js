@@ -472,7 +472,7 @@ class VTKJSRenderer:
                 "      const fp = cam.getFocalPoint();\n"
                 "      const dist = cam.getDistance();\n"
                 f"      const vlen = Math.sqrt({vx}*{vx} + {vy}*{vy} + {vz}*{vz});\n"
-                f"      cam.setPosition(fp[0] + dist*{vx}/vlen, fp[1] + dist*{vy}/vlen, fp[2] + dist*{vz}/vlen);\n"
+                f"      cam.setPosition(fp[0]+dist*{vx}/vlen, fp[1]+dist*{vy}/vlen, fp[2]+dist*{vz}/vlen);\n"  # noqa: E501
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 "      renderer.resetCameraClippingRange();"
             )
