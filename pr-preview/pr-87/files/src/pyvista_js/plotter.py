@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 from .rendering import get_renderer
 
 if TYPE_CHECKING:
+    from .examples import CubeMap
     from .mesh import Mesh
 
 
@@ -138,7 +139,7 @@ class Plotter:
         # Render the scene
         self._renderer.render()
 
-    def set_environment_texture(self, texture: object) -> None:
+    def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting (IBL).
 
         Used with PBR materials to provide realistic reflections and lighting.
