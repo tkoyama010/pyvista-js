@@ -28,6 +28,7 @@ For Pyodide/stlite:
 
 ```python
 import micropip
+
 await micropip.install("pyvista-js")
 ```
 
