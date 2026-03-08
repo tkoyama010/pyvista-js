@@ -89,7 +89,12 @@ class Plotter:
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
-            mesh, color=color, opacity=opacity, pbr=pbr, metallic=metallic, roughness=roughness
+            mesh,
+            color=color,
+            opacity=opacity,
+            pbr=pbr,
+            metallic=metallic,
+            roughness=roughness,
         )
 
         # Store reference
