@@ -118,7 +118,7 @@ def test_plotter_all_mesh_types() -> None:
 def test_background_color_default() -> None:
     """Test default background color."""
     plotter = Plotter()
-    assert plotter.background_color == (0.2, 0.3, 0.4)
+    assert plotter.background_color == (1.0, 1.0, 1.0)
 
 
 def test_background_color_set_rgb() -> None:

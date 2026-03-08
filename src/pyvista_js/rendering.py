@@ -210,7 +210,7 @@ class VTKJSRenderer:
         self.container = None
         self.actors: list[dict[str, object]] = []
         self.use_ipython = IPYTHON_AVAILABLE
-        self.background = (0.2, 0.3, 0.4)  # Default background color
+        self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
@@ -504,7 +504,7 @@ class MockRenderer:
     def __init__(self) -> None:
         """Initialize mock renderer."""
         self.actors: list[dict[str, object]] = []
-        self.background = (0.2, 0.3, 0.4)  # Default background color
+        self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
