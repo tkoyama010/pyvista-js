@@ -14,9 +14,11 @@ process.stderr.write(result.stderr || '')
 
 // Ignore appropriate-heading: it checks the directory name, which varies by
 // checkout path in CI environments (e.g. /code, /workspace).
+// Match only formatted warning lines (spaces around "warning"), not the
+// summary line "⚠ N warning".
 const hasWarnings = (result.stdout || '')
   .split('\n')
-  .some(line => line.includes(' warning') && !line.includes('appropriate-heading'))
+  .some(line => /\s+warning\s+/.test(line) && !line.includes('appropriate-heading'))
 
 if (result.status !== 0 || hasWarnings) {
   process.exit(1)
