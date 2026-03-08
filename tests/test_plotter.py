@@ -1,5 +1,7 @@
 """Test basic plotter functionality."""
 
+import webbrowser
+
 import pytest
 
 from pyvista_js import Cube, Cylinder, Plotter, Sphere
@@ -46,16 +48,21 @@ def test_multiple_meshes() -> None:
     assert len(plotter.actors) == 2
 
 
-def test_show(capsys) -> None:
-    """Test show method (with mock renderer)."""
+def test_show(monkeypatch) -> None:
+    """Test show method opens browser with a file:// URL."""
+    opened: list[str] = []
+
+    def _capture(url: str) -> None:
+        opened.append(url)
+
+    monkeypatch.setattr(webbrowser, "open", _capture)
+
     plotter = Plotter()
     plotter.add_mesh(Sphere())
-
     plotter.show()
 
-    # In mock environment, should print rendering info
-    captured = capsys.readouterr()
-    assert "Mock:" in captured.out or captured.out == ""  # Either mock or no output
+    assert len(opened) == 1
+    assert opened[0].startswith("file://")
 
 
 @pytest.mark.parametrize(
