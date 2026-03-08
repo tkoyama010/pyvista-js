@@ -138,6 +138,27 @@ class Plotter:
         # Render the scene
         self._renderer.render()
 
+    def set_environment_texture(self, texture_url: str) -> None:
+        """Set the environment texture for image-based lighting (IBL).
+
+        Used with PBR materials to provide realistic reflections and lighting.
+
+        Parameters
+        ----------
+        texture_url : str
+            URL of the environment texture image (equirectangular or cubemap).
+
+        Examples
+        --------
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture('https://example.com/env.jpg')
+        >>> plotter.show()
+
+        """
+        self._renderer.set_environment_texture(texture_url)
+
     def clear(self) -> None:
         """Clear all actors from the plotter.
 

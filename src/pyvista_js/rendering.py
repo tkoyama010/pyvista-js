@@ -211,6 +211,7 @@ class VTKJSRenderer:
         self.actors: list[dict[str, object]] = []
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (0.2, 0.3, 0.4)  # Default background color
+        self._environment_texture_url: str | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Create a DOM container for rendering.
@@ -333,6 +334,17 @@ class VTKJSRenderer:
             self.renderer.resetCamera()  # type: ignore[attr-defined]
             self.render_window.render()  # type: ignore[attr-defined]
 
+    def set_environment_texture(self, texture_url: str) -> None:
+        """Set the environment texture URL for image-based lighting.
+
+        Parameters
+        ----------
+        texture_url : str
+            URL of the environment texture image.
+
+        """
+        self._environment_texture_url = texture_url
+
     def _generate_html(self) -> str:
         """Generate HTML and JavaScript for IPython display."""
         container_id = getattr(self, "container_id", "pyvista-container")
@@ -382,6 +394,23 @@ class VTKJSRenderer:
             indented_actors.append(indented_lines)
         actors_code = "\n\n".join(indented_actors)
 
+        # Build environment texture code if a URL was provided
+        if self._environment_texture_url:
+            env_code = (
+                "      // Load environment texture for image-based lighting\n"
+                "      const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+                "      const envImg = new Image();\n"
+                "      envImg.crossOrigin = 'anonymous';\n"
+                "      envImg.onload = function() {\n"
+                "        envTexture.setImage(envImg);\n"
+                "        renderer.setEnvironmentTexture(envTexture);\n"
+                "        renderWindow.render();\n"
+                "      };\n"
+                f"      envImg.src = '{self._environment_texture_url}';"
+            )
+        else:
+            env_code = ""
+
         # Use rendering template
         return (
             _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", container_id)
@@ -389,6 +418,7 @@ class VTKJSRenderer:
             .replace("{{BACKGROUND_G}}", str(self.background[1]))
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
             .replace("{{ACTORS_CODE}}", actors_code)
+            .replace("{{ENVIRONMENT_CODE}}", env_code)
         )
 
     def _repr_html_(self) -> str:
@@ -586,6 +616,17 @@ class MockRenderer:
 
         """
         self.background = color
+
+    def set_environment_texture(self, texture_url: str) -> None:
+        """Mock environment texture.
+
+        Parameters
+        ----------
+        texture_url : str
+            URL of the environment texture image (stored but not rendered).
+
+        """
+        logger.info("Set environment texture: %s", texture_url)
 
 
 def get_renderer() -> VTKJSRenderer | MockRenderer:

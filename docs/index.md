@@ -47,6 +47,9 @@ pip install pyvista-js
 
    # Vary metallic and roughness across a grid of spheres
    plotter = pv.Plotter()
+   plotter.set_environment_texture(
+       'https://raw.githubusercontent.com/nidorx/matcaps/master/1024/3D4B63_D0D8E0_8E9DAE_68788A.png'
+   )
    colors = ['red', 'green', 'blue', 'yellow', 'cyan']
    for i in range(5):
        for j in range(6):
