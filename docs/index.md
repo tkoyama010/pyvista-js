@@ -62,6 +62,7 @@ pip install pyvista-js
                metallic=i / 4,
                roughness=j / 5,
            )
+   plotter.view_vector((-1, 0, 0), (0, 1, 0))
    plotter.show()
 ```
 
