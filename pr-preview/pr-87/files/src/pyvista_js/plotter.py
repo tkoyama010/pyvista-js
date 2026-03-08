@@ -38,12 +38,12 @@ class Plotter:
         self._background_color = (0.2, 0.3, 0.4)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
 
-    def add_mesh(
+    def add_mesh(  # noqa: PLR0913
         self,
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
-        pbr: bool = False,
+        pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
         **kwargs: object,

@@ -249,12 +249,12 @@ class VTKJSRenderer:
 
         return self.container
 
-    def add_mesh_actor(
+    def add_mesh_actor(  # noqa: PLR0913
         self,
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
-        pbr: bool = False,
+        pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
     ) -> dict[str, object]:
@@ -293,7 +293,8 @@ class VTKJSRenderer:
 
         PBR example:
 
-        >>> actor = renderer.add_mesh_actor(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+        >>> actor = renderer.add_mesh_actor(mesh, color='white', pbr=True, metallic=0.8,
+        ...                                 roughness=0.1)
 
         """
         # Store actor information for later rendering
@@ -516,12 +517,12 @@ class MockRenderer:
         """
         logger.info("Created container '%s'", element_id)
 
-    def add_mesh_actor(
+    def add_mesh_actor(  # noqa: PLR0913
         self,
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
-        pbr: bool = False,
+        pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
     ) -> dict[str, object]:
