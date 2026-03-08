@@ -44,6 +44,53 @@ class Mesh:
         return len(self.points)
 
     @property
+    def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
+        """Compute the radius and center of a bounding sphere.
+
+        Uses Ritter's algorithm to approximate the minimum bounding sphere.
+        Returns NaN values if there are no points.
+
+        Returns
+        -------
+        float, tuple
+            Sphere radius as a float and center as a tuple of floats ``(x, y, z)``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> mesh = pv.Sphere(radius=1.5, center=(1, 2, 3))
+        >>> radius, center = mesh.bounding_sphere
+        >>> round(radius, 5)
+        1.5
+        >>> [round(c, 5) for c in center]
+        [1.0, 2.0, 3.0]
+
+        """
+        if self.n_points == 0:
+            nan = float("nan")
+            return nan, (nan, nan, nan)
+
+        pts = self.points.astype(float)
+
+        # Ritter's algorithm
+        p = pts[0]
+        dists = np.linalg.norm(pts - p, axis=1)
+        q = pts[np.argmax(dists)]
+        dists = np.linalg.norm(pts - q, axis=1)
+        r = pts[np.argmax(dists)]
+
+        center = (q + r) / 2.0
+        radius = float(np.linalg.norm(r - q) / 2.0)
+
+        for pt in pts:
+            d = float(np.linalg.norm(pt - center))
+            if d > radius:
+                radius = (radius + d) / 2.0
+                center = center + (d - radius) / d * (pt - center)
+
+        return radius, (float(center[0]), float(center[1]), float(center[2]))
+
+    @property
     def n_faces(self) -> int:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
