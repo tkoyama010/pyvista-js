@@ -74,8 +74,11 @@ def test_bounding_sphere_empty_mesh() -> None:
     [
         (lambda: Sphere(radius=1.5, center=(1.0, 2.0, 3.0)), 1.5, (1.0, 2.0, 3.0)),
         (lambda: Sphere(radius=0.5, center=(0.0, 0.0, 0.0)), 0.5, (0.0, 0.0, 0.0)),
-        (lambda: Cube(center=(0.0, 0.0, 0.0), x_length=2.0, y_length=2.0, z_length=2.0),
-         3**0.5, (0.0, 0.0, 0.0)),
+        (
+            lambda: Cube(center=(0.0, 0.0, 0.0), x_length=2.0, y_length=2.0, z_length=2.0),
+            3**0.5,
+            (0.0, 0.0, 0.0),
+        ),
     ],
 )
 def test_bounding_sphere(mesh_factory, expected_radius, expected_center) -> None:
