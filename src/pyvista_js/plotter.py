@@ -35,7 +35,7 @@ class Plotter:
         """Initialize a new Plotter instance."""
         self._actors: list[dict[str, object]] = []
         self._renderer = get_renderer()
-        self._background_color = (0.2, 0.3, 0.4)  # Default background color
+        self._background_color = (1.0, 1.0, 1.0)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
 
     def add_mesh(
