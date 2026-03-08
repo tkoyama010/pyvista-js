@@ -30,6 +30,14 @@ jobs:
       run: |
         tox -e lint
 
+  readme-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Lint README with standard-readme
+      run: npx --yes standard-readme README.md
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
