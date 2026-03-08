@@ -505,6 +505,8 @@ class MockRenderer:
         """Initialize mock renderer."""
         self.actors: list[dict[str, object]] = []
         self.background = (0.2, 0.3, 0.4)  # Default background color
+        self._view_vector: tuple[float, float, float] | None = None
+        self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
         """Mock container creation.
@@ -595,6 +597,9 @@ class MockRenderer:
             View-up vector (stored but not rendered).
 
         """
+        self._view_vector = (float(vector[0]), float(vector[1]), float(vector[2]))
+        if viewup is not None:
+            self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
         logger.info("Set view vector: %s (viewup=%s)", vector, viewup)
 
 
