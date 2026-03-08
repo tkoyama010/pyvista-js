@@ -57,7 +57,6 @@ test = [
 
 [tool.hatch]
 build.targets.wheel.packages = [ "src/pyvista_js" ]
-build.targets.wheel.force-include."src/pyvista_js/js" = "pyvista_js/js"
 
 [tool.ruff]
 line-length = 100
