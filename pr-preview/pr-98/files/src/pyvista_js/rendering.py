@@ -620,9 +620,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
         style = (
             "  <style>\n"
             "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
-            " overflow: hidden; }\n"
-            + container_rule
-            + "  </style>\n"
+            " overflow: hidden; }\n" + container_rule + "  </style>\n"
         )
         return (
             "<!DOCTYPE html>\n"
@@ -630,12 +628,8 @@ class BrowserRenderer(_BaseHTMLRenderer):
             "<head>\n"
             "  <meta charset='utf-8'>\n"
             "  <title>pyvista-js</title>\n"
-            f"  <script src='{_VTKJS_CDN}'></script>\n"
-            + style
-            + "</head>\n"
-            "<body>\n"
-            + fragment
-            + "</body>\n"
+            f"  <script src='{_VTKJS_CDN}'></script>\n" + style + "</head>\n"
+            "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
 
