@@ -76,6 +76,8 @@ if TYPE_CHECKING:
 
     from .mesh import Mesh
 
+from .examples import CubeMap
+
 # Load JavaScript templates
 _JS_DIR = Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
@@ -211,6 +213,8 @@ class VTKJSRenderer:
         self.actors: list[dict[str, object]] = []
         self.use_ipython = IPYTHON_AVAILABLE
         self.background = (1.0, 1.0, 1.0)  # Default background color
+        self._environment_texture_url: str | None = None
+        self._environment_texture_cubemap: CubeMap | None = None
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
 
@@ -251,11 +255,14 @@ class VTKJSRenderer:
 
         return self.container
 
-    def add_mesh_actor(
+    def add_mesh_actor(  # noqa: PLR0913
         self,
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
+        pbr: bool = False,  # noqa: FBT001 FBT002
+        metallic: float = 0.0,
+        roughness: float = 0.5,
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
@@ -272,6 +279,12 @@ class VTKJSRenderer:
             If None, uses default vtk.js coloring.
         opacity : float, default=1.0
             Opacity value between 0 (transparent) and 1 (opaque).
+        pbr : bool, default=False
+            Enable physically based rendering (PBR).
+        metallic : float, default=0.0
+            Metallic factor for PBR, between 0 and 1.
+        roughness : float, default=0.5
+            Roughness factor for PBR, between 0 and 1.
 
         Returns
         -------
@@ -284,6 +297,11 @@ class VTKJSRenderer:
         >>> mesh = Sphere(radius=2.0)
         >>> actor = renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
 
+        PBR example:
+
+        >>> actor = renderer.add_mesh_actor(mesh, color='white', pbr=True, metallic=0.8,
+        ...                                 roughness=0.1)
+
         """
         # Store actor information for later rendering
         if isinstance(color, str):
@@ -293,6 +311,9 @@ class VTKJSRenderer:
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
+            "pbr": pbr,
+            "metallic": metallic,
+            "roughness": roughness,
         }
         self.actors.append(actor_info)
 
@@ -318,6 +339,23 @@ class VTKJSRenderer:
             self.renderer.resetCamera()  # type: ignore[attr-defined]
             self.render_window.render()  # type: ignore[attr-defined]
 
+    def set_environment_texture(self, texture: str | CubeMap) -> None:
+        """Set the environment texture for image-based lighting.
+
+        Parameters
+        ----------
+        texture : str or CubeMap
+            Either a URL string pointing to an equirectangular image, or a
+            :class:`~pyvista_js.examples.CubeMap` with six face image URLs.
+
+        """
+        if isinstance(texture, CubeMap):
+            self._environment_texture_cubemap = texture
+            self._environment_texture_url = None
+        else:
+            self._environment_texture_url = texture
+            self._environment_texture_cubemap = None
+
     def _generate_html(self) -> str:
         """Generate HTML and JavaScript for IPython display."""
         container_id = getattr(self, "container_id", "pyvista-container")
@@ -328,10 +366,34 @@ class VTKJSRenderer:
             mesh = actor_info["mesh"]
             color = actor_info.get("color") or (0.5, 0.5, 0.5)
             opacity = actor_info.get("opacity", 1.0)
+            pbr = actor_info.get("pbr", False)
+            metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
+            roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
 
             # Use polymorphic methods to generate source code
             source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
             mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
+
+            # Build PBR code snippet if enabled.
+            # vtk.js WebGL uses Phong shading; map metallic/roughness to
+            # Phong parameters so both axes are visually distinct:
+            #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
+            #   roughness → specularPower (128 → 1)
+            if pbr:
+                specular = round(metallic * 0.5 + 0.5, 4)
+                specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
+                diffuse = round(1.0 - metallic * 0.7, 4)
+                pbr_code = (
+                    f"actor{idx}.getProperty().setInterpolationToPhong();\n"
+                    f"actor{idx}.getProperty().setMetallic({metallic});\n"
+                    f"actor{idx}.getProperty().setRoughness({roughness});\n"
+                    f"actor{idx}.getProperty().setAmbient(0.1);\n"
+                    f"actor{idx}.getProperty().setSpecular({specular});\n"
+                    f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
+                    f"actor{idx}.getProperty().setDiffuse({diffuse});"
+                )
+            else:
+                pbr_code = ""
 
             # Use actor template
             actor_code = (
@@ -342,6 +404,7 @@ class VTKJSRenderer:
                 .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
                 .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
                 .replace("{{OPACITY}}", str(opacity))
+                .replace("{{PBR_CODE}}", pbr_code)
             )
             actor_js_code.append(actor_code)
 
@@ -353,14 +416,63 @@ class VTKJSRenderer:
             indented_actors.append(indented_lines)
         actors_code = "\n\n".join(indented_actors)
 
-        # Build camera override code if view_vector was called
+        # Build environment texture code
+        if self._environment_texture_url:
+            env_code = (
+                "      // Load environment texture for image-based lighting\n"
+                "      const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+                "      const envImg = new Image();\n"
+                "      envImg.crossOrigin = 'anonymous';\n"
+                "      envImg.onload = function() {\n"
+                "        envTexture.setImage(envImg);\n"
+                "        renderer.setEnvironmentTexture(envTexture);\n"
+                "        renderWindow.render();\n"
+                "      };\n"
+                f"      envImg.src = '{self._environment_texture_url}';"
+            )
+        elif self._environment_texture_cubemap:
+            urls = self._environment_texture_cubemap.face_urls
+            urls_js = ", ".join(f"'{u}'" for u in urls)
+            env_code = (
+                "      // Load cubemap faces and stitch into a canvas for IBL\n"
+                f"      const faceUrls = [{urls_js}];\n"
+                "      Promise.all(faceUrls.map(function(url) {\n"
+                "        return new Promise(function(resolve, reject) {\n"
+                "          const img = new Image();\n"
+                "          img.crossOrigin = 'anonymous';\n"
+                "          img.onload = function() { resolve(img); };\n"
+                "          img.onerror = reject;\n"
+                "          img.src = url;\n"
+                "        });\n"
+                "      })).then(function(images) {\n"
+                "        const size = images[0].width;\n"
+                "        const canvas = document.createElement('canvas');\n"
+                "        canvas.width = size * 6;\n"
+                "        canvas.height = size;\n"
+                "        const ctx = canvas.getContext('2d');\n"
+                "        images.forEach(function(img, i) {\n"
+                "          ctx.drawImage(img, i * size, 0);\n"
+                "        });\n"
+                "        const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+                "        envTexture.setInterpolate(true);\n"
+                "        envTexture.setCanvas(canvas);\n"
+                "        renderer.setEnvironmentTexture(envTexture);\n"
+                "        renderWindow.render();\n"
+                "      });"
+            )
+        else:
+            env_code = ""
+
+        # Build camera code
         if self._view_vector is not None:
             vx, vy, vz = self._view_vector
             ux, uy, uz = self._view_up
             camera_code = (
                 "      const cam = renderer.getActiveCamera();\n"
                 "      const fp = cam.getFocalPoint();\n"
-                f"      cam.setPosition(fp[0] + {vx}, fp[1] + {vy}, fp[2] + {vz});\n"
+                "      const dist = cam.getDistance();\n"
+                f"      const vlen = Math.sqrt({vx}*{vx} + {vy}*{vy} + {vz}*{vz});\n"
+                f"      cam.setPosition(fp[0]+dist*{vx}/vlen, fp[1]+dist*{vy}/vlen, fp[2]+dist*{vz}/vlen);\n"  # noqa: E501
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 "      renderer.resetCameraClippingRange();"
             )
@@ -374,6 +486,7 @@ class VTKJSRenderer:
             .replace("{{BACKGROUND_G}}", str(self.background[1]))
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
             .replace("{{ACTORS_CODE}}", actors_code)
+            .replace("{{ENVIRONMENT_CODE}}", env_code)
             .replace("{{CAMERA_CODE}}", camera_code)
         )
 
@@ -524,11 +637,14 @@ class MockRenderer:
         """
         logger.info("Created container '%s'", element_id)
 
-    def add_mesh_actor(
+    def add_mesh_actor(  # noqa: PLR0913
         self,
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
+        pbr: bool = False,  # noqa: FBT001 FBT002
+        metallic: float = 0.0,
+        roughness: float = 0.5,
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -540,6 +656,12 @@ class MockRenderer:
             Color (stored but not rendered).
         opacity : float
             Opacity (stored but not rendered).
+        pbr : bool
+            PBR flag (stored but not rendered).
+        metallic : float
+            Metallic factor (stored but not rendered).
+        roughness : float
+            Roughness factor (stored but not rendered).
 
         Returns
         -------
@@ -551,6 +673,9 @@ class MockRenderer:
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
+            "pbr": pbr,
+            "metallic": metallic,
+            "roughness": roughness,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
@@ -601,6 +726,17 @@ class MockRenderer:
         if viewup is not None:
             self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
         logger.info("Set view vector: %s (viewup=%s)", vector, viewup)
+
+    def set_environment_texture(self, texture: object) -> None:
+        """Mock environment texture.
+
+        Parameters
+        ----------
+        texture : str or CubeMap
+            Environment texture (stored but not rendered).
+
+        """
+        logger.info("Set environment texture: %s", texture)
 
 
 def get_renderer() -> VTKJSRenderer | MockRenderer:

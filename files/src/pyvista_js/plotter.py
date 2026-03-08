@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 from .rendering import get_renderer
 
 if TYPE_CHECKING:
+    from .examples import CubeMap
     from .mesh import Mesh
 
 
@@ -38,11 +39,14 @@ class Plotter:
         self._background_color = (1.0, 1.0, 1.0)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
 
-    def add_mesh(
+    def add_mesh(  # noqa: PLR0913
         self,
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
+        pbr: bool = False,  # noqa: FBT001 FBT002
+        metallic: float = 0.0,
+        roughness: float = 0.5,
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -55,6 +59,14 @@ class Plotter:
             Color of the mesh. Can be a color name or RGB tuple.
         opacity : float, optional
             Opacity of the mesh, between 0 (transparent) and 1 (opaque).
+        pbr : bool, optional
+            Enable physically based rendering (PBR). Default is False.
+        metallic : float, optional
+            Metallic factor for PBR, between 0 (non-metallic) and 1 (fully
+            metallic). Only used when ``pbr=True``. Default is 0.0.
+        roughness : float, optional
+            Roughness factor for PBR, between 0 (mirror-like) and 1 (fully
+            rough). Only used when ``pbr=True``. Default is 0.5.
         **kwargs
             Additional rendering options.
 
@@ -69,13 +81,35 @@ class Plotter:
         >>> mesh = pv.Sphere()
         >>> plotter.add_mesh(mesh, color='red', opacity=0.8)
 
+        PBR example:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+
         """
         # Add mesh to vtk.js renderer
-        actor = self._renderer.add_mesh_actor(mesh, color=color, opacity=opacity)
+        actor = self._renderer.add_mesh_actor(
+            mesh,
+            color=color,
+            opacity=opacity,
+            pbr=pbr,
+            metallic=metallic,
+            roughness=roughness,
+        )
 
         # Store reference
         self._actors.append(
-            {"mesh": mesh, "color": color, "opacity": opacity, "actor": actor, "kwargs": kwargs},
+            {
+                "mesh": mesh,
+                "color": color,
+                "opacity": opacity,
+                "pbr": pbr,
+                "metallic": metallic,
+                "roughness": roughness,
+                "actor": actor,
+                "kwargs": kwargs,
+            },
         )
 
         return actor
@@ -136,6 +170,39 @@ class Plotter:
 
         """
         self._renderer.view_vector(vector, viewup=viewup)
+
+    def set_environment_texture(self, texture: str | CubeMap) -> None:
+        """Set the environment texture for image-based lighting (IBL).
+
+        Used with PBR materials to provide realistic reflections and lighting.
+
+        Parameters
+        ----------
+        texture : str or CubeMap
+            Either a URL string pointing to an equirectangular image, or a
+            :class:`~pyvista_js.examples.CubeMap` returned by
+            :func:`~pyvista_js.examples.download_sky_box_cube_map`.
+
+        Examples
+        --------
+        URL string:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture('https://example.com/env.jpg')
+        >>> plotter.show()
+
+        CubeMap:
+
+        >>> from pyvista_js import examples
+        >>> cubemap = examples.download_sky_box_cube_map()
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture(cubemap)
+        >>> plotter.show()
+
+        """
+        self._renderer.set_environment_texture(texture)
 
     def clear(self) -> None:
         """Clear all actors from the plotter.
