@@ -33,6 +33,34 @@ pip install pyvista-js
    plotter.show()
 ```
 
+## Physically Based Rendering
+
+```{eval-rst}
+.. replite::
+   :kernel: pyolite
+   :height: 600px
+
+   import sys
+   sys.path.insert(0, '/drive/src')
+
+   import pyvista_js as pv
+
+   # Vary metallic and roughness across a grid of spheres
+   plotter = pv.Plotter()
+   colors = ['red', 'green', 'blue', 'yellow', 'cyan']
+   for i in range(5):
+       for j in range(6):
+           sphere = pv.Sphere(radius=0.4, center=(0.0, 4 - i, j))
+           plotter.add_mesh(
+               sphere,
+               color=colors[i],
+               pbr=True,
+               metallic=i / 4,
+               roughness=j / 5,
+           )
+   plotter.show()
+```
+
 ## Features
 
 - PyVista-like API for familiar usage

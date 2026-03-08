@@ -254,6 +254,9 @@ class VTKJSRenderer:
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
+        pbr: bool = False,
+        metallic: float = 0.0,
+        roughness: float = 0.5,
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
@@ -270,6 +273,12 @@ class VTKJSRenderer:
             If None, uses default vtk.js coloring.
         opacity : float, default=1.0
             Opacity value between 0 (transparent) and 1 (opaque).
+        pbr : bool, default=False
+            Enable physically based rendering (PBR).
+        metallic : float, default=0.0
+            Metallic factor for PBR, between 0 and 1.
+        roughness : float, default=0.5
+            Roughness factor for PBR, between 0 and 1.
 
         Returns
         -------
@@ -282,6 +291,10 @@ class VTKJSRenderer:
         >>> mesh = Sphere(radius=2.0)
         >>> actor = renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
 
+        PBR example:
+
+        >>> actor = renderer.add_mesh_actor(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+
         """
         # Store actor information for later rendering
         if isinstance(color, str):
@@ -291,6 +304,9 @@ class VTKJSRenderer:
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
+            "pbr": pbr,
+            "metallic": metallic,
+            "roughness": roughness,
         }
         self.actors.append(actor_info)
 
@@ -326,10 +342,23 @@ class VTKJSRenderer:
             mesh = actor_info["mesh"]
             color = actor_info.get("color") or (0.5, 0.5, 0.5)
             opacity = actor_info.get("opacity", 1.0)
+            pbr = actor_info.get("pbr", False)
+            metallic = actor_info.get("metallic", 0.0)
+            roughness = actor_info.get("roughness", 0.5)
 
             # Use polymorphic methods to generate source code
             source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
             mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
+
+            # Build PBR code snippet if enabled
+            if pbr:
+                pbr_code = (
+                    f"actor{idx}.getProperty().setInterpolationToPBR();\n"
+                    f"actor{idx}.getProperty().setMetallic({metallic});\n"
+                    f"actor{idx}.getProperty().setRoughness({roughness});"
+                )
+            else:
+                pbr_code = ""
 
             # Use actor template
             actor_code = (
@@ -340,6 +369,7 @@ class VTKJSRenderer:
                 .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
                 .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
                 .replace("{{OPACITY}}", str(opacity))
+                .replace("{{PBR_CODE}}", pbr_code)
             )
             actor_js_code.append(actor_code)
 
@@ -491,6 +521,9 @@ class MockRenderer:
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
+        pbr: bool = False,
+        metallic: float = 0.0,
+        roughness: float = 0.5,
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -502,6 +535,12 @@ class MockRenderer:
             Color (stored but not rendered).
         opacity : float
             Opacity (stored but not rendered).
+        pbr : bool
+            PBR flag (stored but not rendered).
+        metallic : float
+            Metallic factor (stored but not rendered).
+        roughness : float
+            Roughness factor (stored but not rendered).
 
         Returns
         -------
@@ -513,6 +552,9 @@ class MockRenderer:
             "mesh": mesh,
             "color": color,
             "opacity": opacity,
+            "pbr": pbr,
+            "metallic": metallic,
+            "roughness": roughness,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)

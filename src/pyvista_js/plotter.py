@@ -43,6 +43,9 @@ class Plotter:
         mesh: Mesh,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
+        pbr: bool = False,
+        metallic: float = 0.0,
+        roughness: float = 0.5,
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -55,6 +58,14 @@ class Plotter:
             Color of the mesh. Can be a color name or RGB tuple.
         opacity : float, optional
             Opacity of the mesh, between 0 (transparent) and 1 (opaque).
+        pbr : bool, optional
+            Enable physically based rendering (PBR). Default is False.
+        metallic : float, optional
+            Metallic factor for PBR, between 0 (non-metallic) and 1 (fully
+            metallic). Only used when ``pbr=True``. Default is 0.0.
+        roughness : float, optional
+            Roughness factor for PBR, between 0 (mirror-like) and 1 (fully
+            rough). Only used when ``pbr=True``. Default is 0.5.
         **kwargs
             Additional rendering options.
 
@@ -69,13 +80,30 @@ class Plotter:
         >>> mesh = pv.Sphere()
         >>> plotter.add_mesh(mesh, color='red', opacity=0.8)
 
+        PBR example:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+
         """
         # Add mesh to vtk.js renderer
-        actor = self._renderer.add_mesh_actor(mesh, color=color, opacity=opacity)
+        actor = self._renderer.add_mesh_actor(
+            mesh, color=color, opacity=opacity, pbr=pbr, metallic=metallic, roughness=roughness
+        )
 
         # Store reference
         self._actors.append(
-            {"mesh": mesh, "color": color, "opacity": opacity, "actor": actor, "kwargs": kwargs},
+            {
+                "mesh": mesh,
+                "color": color,
+                "opacity": opacity,
+                "pbr": pbr,
+                "metallic": metallic,
+                "roughness": roughness,
+                "actor": actor,
+                "kwargs": kwargs,
+            },
         )
 
         return actor
