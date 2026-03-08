@@ -374,15 +374,18 @@ class VTKJSRenderer:
 
             # Build PBR code snippet if enabled.
             # vtk.js WebGL uses Phong shading; map metallic/roughness to
-            # Phong parameters so the material differences are visible.
+            # Phong parameters so both axes are visually distinct:
+            #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
+            #   roughness → specularPower (128 → 1)
             if pbr:
-                specular = round(metallic * 0.9 + 0.1, 4)
+                specular = round(metallic * 0.5 + 0.5, 4)
                 specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
-                diffuse = round(1.0 - metallic * 0.6, 4)
+                diffuse = round(1.0 - metallic * 0.7, 4)
                 pbr_code = (
                     f"actor{idx}.getProperty().setInterpolationToPhong();\n"
                     f"actor{idx}.getProperty().setMetallic({metallic});\n"
                     f"actor{idx}.getProperty().setRoughness({roughness});\n"
+                    f"actor{idx}.getProperty().setAmbient(0.1);\n"
                     f"actor{idx}.getProperty().setSpecular({specular});\n"
                     f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
                     f"actor{idx}.getProperty().setDiffuse({diffuse});"

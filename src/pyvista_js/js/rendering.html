@@ -14,6 +14,15 @@
       const renderer = fullScreenRenderer.getRenderer();
       const renderWindow = fullScreenRenderer.getRenderWindow();
 
+      // Add an angled directional light so specular highlights are visible
+      const light = vtk.Rendering.Core.vtkLight.newInstance();
+      light.setLightTypeToSceneLight();
+      light.setPositional(false);
+      light.setIntensity(1.0);
+      light.setPosition(1, 1, 1);
+      light.setFocalPoint(0, 0, 0);
+      renderer.addLight(light);
+
 {{ACTORS_CODE}}
 
 {{ENVIRONMENT_CODE}}
