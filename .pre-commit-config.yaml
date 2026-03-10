@@ -31,7 +31,7 @@ repos:
       - id: pyproject-fmt
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
+    rev: v0.15.5
     hooks:
       # Run the linter
       - id: ruff-check
@@ -58,12 +58,12 @@ repos:
         additional_dependencies: [black==24.10.0]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
+    rev: v2.4.2
     hooks:
       - id: codespell
 
   - repo: https://github.com/tkoyama010/standard-readme-pre-commit
-    rev: v0.1.0
+    rev: 0f0602b6c3b7e891e2c8e23a27ad93e41177fa90
     hooks:
       - id: standard-readme
 
