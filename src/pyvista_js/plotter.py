@@ -31,10 +31,12 @@ class Plotter:
     >>> plotter.show()
 
     .. replite::
-       :kernel: python3
+       :kernel: pyolite
        :height: 400px
        :prompt: Try it live
 
+       import sys
+       sys.path.insert(0, '/drive/src')
        import pyvista_js as pv
        plotter = pv.Plotter()
        mesh = pv.Sphere()
@@ -99,10 +101,12 @@ class Plotter:
         >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            plotter = pv.Plotter()
            mesh = pv.Sphere()
@@ -155,10 +159,12 @@ class Plotter:
         >>> plotter.show()
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            plotter = pv.Plotter()
            plotter.add_mesh(pv.Sphere())
@@ -201,10 +207,12 @@ class Plotter:
         >>> plotter.show()
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            plotter = pv.Plotter()
            plotter.add_mesh(pv.Cube())
@@ -245,10 +253,12 @@ class Plotter:
         >>> plotter.show()
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            from pyvista_js import examples
            cubemap = examples.download_sky_box_cube_map()
@@ -270,10 +280,12 @@ class Plotter:
         >>> plotter.clear()
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            plotter = pv.Plotter()
            plotter.add_mesh(pv.Sphere())
@@ -312,10 +324,12 @@ class Plotter:
         >>> plotter.background_color = (0.5, 0.5, 0.5)
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            plotter = pv.Plotter()
            plotter.background_color = 'white'
