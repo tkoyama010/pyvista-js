@@ -65,6 +65,17 @@ class Mesh:
         >>> [round(c, 5) for c in center]
         [1.0, 2.0, 3.0]
 
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           mesh = pv.Sphere(radius=1.5, center=(1, 2, 3))
+           radius, center = mesh.bounding_sphere
+           print(round(radius, 5))
+           print([round(c, 5) for c in center])
+
         """
         if self.n_points == 0:
             nan = float("nan")
@@ -274,6 +285,16 @@ def Sphere(  # noqa: N802
     >>> sphere.n_points
     902
 
+    .. replite::
+       :kernel: python3
+       :height: 400px
+       :prompt: Try it live
+
+       import pyvista_js as pv
+       plotter = pv.Plotter()
+       plotter.add_mesh(pv.Sphere(radius=1.0))
+       plotter.show()
+
     """
     # Generate sphere points using spherical coordinates
     theta = np.linspace(0, 2 * np.pi, theta_resolution)
@@ -335,6 +356,16 @@ def Cube(  # noqa: N802
     >>> cube = pv.Cube()
     >>> cube.n_points
     8
+
+    .. replite::
+       :kernel: python3
+       :height: 400px
+       :prompt: Try it live
+
+       import pyvista_js as pv
+       plotter = pv.Plotter()
+       plotter.add_mesh(pv.Cube())
+       plotter.show()
 
     """
     # Generate cube vertices
@@ -416,6 +447,16 @@ def Cylinder(  # noqa: N802
     --------
     >>> import pyvista_js as pv
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
+
+    .. replite::
+       :kernel: python3
+       :height: 400px
+       :prompt: Try it live
+
+       import pyvista_js as pv
+       plotter = pv.Plotter()
+       plotter.add_mesh(pv.Cylinder(radius=1.0, height=2.0))
+       plotter.show()
 
     """
     # Generate cylinder points

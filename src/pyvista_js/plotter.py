@@ -30,6 +30,17 @@ class Plotter:
     >>> plotter.add_mesh(mesh, color='red')
     >>> plotter.show()
 
+    .. replite::
+       :kernel: python3
+       :height: 400px
+       :prompt: Try it live
+
+       import pyvista_js as pv
+       plotter = pv.Plotter()
+       mesh = pv.Sphere()
+       plotter.add_mesh(mesh, color='red')
+       plotter.show()
+
     """
 
     def __init__(self) -> None:
@@ -87,6 +98,17 @@ class Plotter:
         >>> mesh = pv.Sphere()
         >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
 
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           plotter = pv.Plotter()
+           mesh = pv.Sphere()
+           plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+           plotter.show()
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -132,6 +154,16 @@ class Plotter:
         >>> plotter.add_mesh(pv.Sphere())
         >>> plotter.show()
 
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           plotter = pv.Plotter()
+           plotter.add_mesh(pv.Sphere())
+           plotter.show()
+
         """
         # Create container if needed
         self._renderer.create_container(container_id or self._container_id)
@@ -168,6 +200,17 @@ class Plotter:
         >>> plotter.view_vector((1, 1, 1))
         >>> plotter.show()
 
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           plotter = pv.Plotter()
+           plotter.add_mesh(pv.Cube())
+           plotter.view_vector((1, 1, 1))
+           plotter.show()
+
         """
         self._renderer.view_vector(vector, viewup=viewup)
 
@@ -201,6 +244,19 @@ class Plotter:
         >>> plotter.set_environment_texture(cubemap)
         >>> plotter.show()
 
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           from pyvista_js import examples
+           cubemap = examples.download_sky_box_cube_map()
+           plotter = pv.Plotter()
+           plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+           plotter.set_environment_texture(cubemap)
+           plotter.show()
+
         """
         self._renderer.set_environment_texture(texture)
 
@@ -212,6 +268,16 @@ class Plotter:
         >>> plotter = pv.Plotter()
         >>> plotter.add_mesh(pv.Sphere())
         >>> plotter.clear()
+
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           plotter = pv.Plotter()
+           plotter.add_mesh(pv.Sphere())
+           plotter.clear()
 
         """
         self._actors = []
@@ -244,6 +310,16 @@ class Plotter:
         >>> plotter.background_color
         (1.0, 1.0, 1.0)
         >>> plotter.background_color = (0.5, 0.5, 0.5)
+
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           import pyvista_js as pv
+           plotter = pv.Plotter()
+           plotter.background_color = 'white'
+           plotter.background_color
 
         """
         return self._background_color

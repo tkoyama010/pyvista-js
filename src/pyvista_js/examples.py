@@ -34,6 +34,15 @@ class CubeMap:
     >>> type(cubemap)
     <class 'pyvista_js.examples.CubeMap'>
 
+    .. replite::
+       :kernel: python3
+       :height: 400px
+       :prompt: Try it live
+
+       from pyvista_js import examples
+       cubemap = examples.download_sky_box_cube_map()
+       type(cubemap)
+
     """
 
     def __init__(  # noqa: PLR0913
@@ -72,6 +81,15 @@ class CubeMap:
         >>> cubemap = examples.download_sky_box_cube_map()
         >>> skybox = cubemap.to_skybox()
 
+        .. replite::
+           :kernel: python3
+           :height: 400px
+           :prompt: Try it live
+
+           from pyvista_js import examples
+           cubemap = examples.download_sky_box_cube_map()
+           skybox = cubemap.to_skybox()
+
         """
         return self
 
@@ -97,6 +115,20 @@ def download_sky_box_cube_map() -> CubeMap:
     >>> mesh = pv.Sphere()
     >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
     >>> plotter.show()
+
+    .. replite::
+       :kernel: python3
+       :height: 400px
+       :prompt: Try it live
+
+       import pyvista_js as pv
+       from pyvista_js import examples
+       cubemap = examples.download_sky_box_cube_map()
+       plotter = pv.Plotter()
+       plotter.set_environment_texture(cubemap)
+       mesh = pv.Sphere()
+       plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+       plotter.show()
 
     """
     base = _PYVISTA_DATA_BASE
