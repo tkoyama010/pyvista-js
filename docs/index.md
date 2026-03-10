@@ -72,6 +72,17 @@ pip install pyvista-js
 - Integration with vtk.js for web-based visualization
 - Support for JupyterLite and Streamlit
 
+## API Reference
+
+See the full {doc}`API Reference <api/index>` for detailed documentation of all classes and functions.
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+api/index
+```
+
 ## Links
 
 - [GitHub Repository](https://github.com/tkoyama010/pyvista-js)
