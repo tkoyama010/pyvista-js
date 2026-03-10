@@ -66,10 +66,12 @@ class Mesh:
         [1.0, 2.0, 3.0]
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            import pyvista_js as pv
            mesh = pv.Sphere(radius=1.5, center=(1, 2, 3))
            radius, center = mesh.bounding_sphere
@@ -286,10 +288,12 @@ def Sphere(  # noqa: N802
     902
 
     .. replite::
-       :kernel: python3
+       :kernel: pyolite
        :height: 400px
        :prompt: Try it live
 
+       import sys
+       sys.path.insert(0, '/drive/src')
        import pyvista_js as pv
        plotter = pv.Plotter()
        plotter.add_mesh(pv.Sphere(radius=1.0))
@@ -358,10 +362,12 @@ def Cube(  # noqa: N802
     8
 
     .. replite::
-       :kernel: python3
+       :kernel: pyolite
        :height: 400px
        :prompt: Try it live
 
+       import sys
+       sys.path.insert(0, '/drive/src')
        import pyvista_js as pv
        plotter = pv.Plotter()
        plotter.add_mesh(pv.Cube())
@@ -449,10 +455,12 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     .. replite::
-       :kernel: python3
+       :kernel: pyolite
        :height: 400px
        :prompt: Try it live
 
+       import sys
+       sys.path.insert(0, '/drive/src')
        import pyvista_js as pv
        plotter = pv.Plotter()
        plotter.add_mesh(pv.Cylinder(radius=1.0, height=2.0))

@@ -35,10 +35,12 @@ class CubeMap:
     <class 'pyvista_js.examples.CubeMap'>
 
     .. replite::
-       :kernel: python3
+       :kernel: pyolite
        :height: 400px
        :prompt: Try it live
 
+       import sys
+       sys.path.insert(0, '/drive/src')
        from pyvista_js import examples
        cubemap = examples.download_sky_box_cube_map()
        type(cubemap)
@@ -82,10 +84,12 @@ class CubeMap:
         >>> skybox = cubemap.to_skybox()
 
         .. replite::
-           :kernel: python3
+           :kernel: pyolite
            :height: 400px
            :prompt: Try it live
 
+           import sys
+           sys.path.insert(0, '/drive/src')
            from pyvista_js import examples
            cubemap = examples.download_sky_box_cube_map()
            skybox = cubemap.to_skybox()
@@ -117,10 +121,12 @@ def download_sky_box_cube_map() -> CubeMap:
     >>> plotter.show()
 
     .. replite::
-       :kernel: python3
+       :kernel: pyolite
        :height: 400px
        :prompt: Try it live
 
+       import sys
+       sys.path.insert(0, '/drive/src')
        import pyvista_js as pv
        from pyvista_js import examples
        cubemap = examples.download_sky_box_cube_map()
