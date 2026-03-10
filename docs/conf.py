@@ -33,7 +33,18 @@ release = "0.2.dev0"
 extensions = [
     "myst_parser",
     "jupyterlite_sphinx",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
 ]
+
+# -- Options for autodoc -----------------------------------------------------
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+}
+autosummary_generate = True
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
