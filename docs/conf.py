@@ -44,7 +44,7 @@ autodoc_default_options = {
     "undoc-members": True,
     "show-inheritance": True,
 }
-autosummary_generate = True
+autosummary_generate = False
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
