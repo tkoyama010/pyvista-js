@@ -35,6 +35,13 @@ optional-dependencies.dev = [
   "ruff>=0.1",
   "tox>=4",
 ]
+optional-dependencies.docs = [
+  "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12'",
+  "jupyterlite-sphinx==0.22.1; python_version>='3.12'",
+  "myst-parser==5.0.0; python_version>='3.12'",
+  "sphinx==9.1.0; python_version>='3.12'",
+  "sphinx-book-theme==1.1.4; python_version>='3.12'",
+]
 optional-dependencies.streamlit = [
   "streamlit>=1.30",
 ]
