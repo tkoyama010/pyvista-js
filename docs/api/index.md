@@ -25,6 +25,16 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Cylinder
 ```
 
+## Readers
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.PolyDataReader
+```
+
 ## Examples
 
 ```{eval-rst}
