@@ -72,7 +72,7 @@ jupyterlite_contents = ["content"]
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"
-subprocess.run(
+subprocess.run(  # noqa: S603
     [sys.executable, "-m", "pip", "wheel", "--no-deps", "-w", str(_wheel_dir), str(project_root)],
     check=True,
 )
