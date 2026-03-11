@@ -66,6 +66,38 @@ pip install pyvista-js
    plotter.show()
 ```
 
+## Streamlit Demo
+
+```{eval-rst}
+.. stlite::
+   :requirements: pyvista-js
+
+   import streamlit as st
+
+   import pyvista_js as pv
+
+   st.title("pyvista-js Demo")
+
+   geometry = st.selectbox("Geometry", ["Sphere", "Cube", "Cylinder"])
+
+   color = st.selectbox("Color", ["red", "green", "blue", "yellow", "cyan", "magenta"])
+
+   opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
+
+   plotter = pv.Plotter()
+
+   if geometry == "Sphere":
+       mesh = pv.Sphere(radius=1.0)
+   elif geometry == "Cube":
+       mesh = pv.Cube()
+   else:
+       mesh = pv.Cylinder(radius=0.5, height=2.0)
+
+   plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+   pv.pyvista_chart(plotter, height=600)
+```
+
 ## Features
 
 - PyVista-like API for familiar usage

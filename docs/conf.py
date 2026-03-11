@@ -31,6 +31,7 @@ release = "0.2.dev0"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "atsphinx.stlite",
     "myst_parser",
     "jupyterlite_sphinx",
     "sphinx.ext.autodoc",
