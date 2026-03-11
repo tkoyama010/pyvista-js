@@ -1,0 +1,14 @@
+.stlite-wrapper {
+    width: 100%;
+    margin: 1em 0;
+}
+
+.stlite-frame {
+    width: 100%;
+    height: 600px;
+    border: none;
+}
+
+.jupyterlite_sphinx_raw_iframe {
+    width: 100%;
+}
