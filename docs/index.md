@@ -66,6 +66,10 @@ pip install pyvista-js
    plotter.show()
 ```
 
+## Streamlit Demo
+
+See the {doc}`Streamlit Demo <stlite_demo>` page for an interactive demo using stlite.
+
 ## Features
 
 - PyVista-like API for familiar usage
@@ -80,6 +84,7 @@ See the full {doc}`API Reference <api/index>` for detailed documentation of all 
 :maxdepth: 2
 :hidden:
 
+stlite_demo
 api/index
 ```
 
