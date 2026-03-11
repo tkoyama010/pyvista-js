@@ -48,3 +48,4 @@ htmlcov/
 docs/_build/
 docs/.jupyterlite/
 docs/content/
+docs/stlite_demo.md
