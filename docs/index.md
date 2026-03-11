@@ -73,6 +73,7 @@ pip install pyvista-js
    :requirements: pyvista-js
 
    import streamlit as st
+   import streamlit.components.v1 as components
 
    import pyvista_js as pv
 
@@ -95,7 +96,8 @@ pip install pyvista-js
 
    plotter.add_mesh(mesh, color=color, opacity=opacity)
 
-   pv.pyvista_chart(plotter, height=600)
+   html = plotter._renderer._generate_standalone_html()
+   components.html(html, height=600)
 ```
 
 ## Features
