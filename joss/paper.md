@@ -1,24 +1,22 @@
-______________________________________________________________________
-
+---
 title: 'pyvista-js: A PyVista-like API for 3D visualization in the browser'
 tags:
+  - Python
+  - JavaScript
+  - 3D visualization
+  - WebAssembly
+  - scientific computing
+authors:
+  - name: Tetsuo Koyama
+    orcid: 0000-0001-7955-5947
+    affiliation: "1"
+affiliations:
+  - name: Independent Researcher, Japan
+    index: 1
+date: 11 March 2026
+bibliography: paper.bib
 
-- Python
-- JavaScript
-- 3D visualization
-- WebAssembly
-- scientific computing
-  authors:
-- name: Tetsuo Koyama
-  orcid: 0000-0001-7955-5947
-  affiliation: 1
-  affiliations:
-- name: Independent Researcher, Japan
-  index: 1
-  date: 11 March 2026
-  bibliography: paper.bib
-
-______________________________________________________________________
+---
 
 # Summary
 
