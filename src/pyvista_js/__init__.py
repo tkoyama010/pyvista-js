@@ -23,6 +23,7 @@ if sys.platform == "emscripten":
 from . import examples
 from .mesh import Cube, Cylinder, Mesh, Sphere
 from .plotter import Plotter
+from .readers import PolyDataReader
 
 # Streamlit integration (optional)
 try:
@@ -33,6 +34,7 @@ try:
         "Cylinder",
         "Mesh",
         "Plotter",
+        "PolyDataReader",
         "Sphere",
         "__version__",
         "examples",
@@ -45,6 +47,7 @@ except ImportError:
         "Cylinder",
         "Mesh",
         "Plotter",
+        "PolyDataReader",
         "Sphere",
         "__version__",
         "examples",
