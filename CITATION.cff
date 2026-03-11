@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "pyvista-js: A PyVista-like API for 3D visualization in the browser"
+version: 0.2.0
+date-released: "2026-03-08"
+license: BSD-3-Clause
+repository-code: "https://github.com/tkoyama010/pyvista-js"
+url: "https://github.com/tkoyama010/pyvista-js"
+authors:
+  - family-names: Koyama
+    given-names: Tetsuo
+    orcid: "https://orcid.org/0000-0001-9859-9565"
+keywords:
+  - Python
+  - JavaScript
+  - 3D visualization
+  - WebAssembly
+  - scientific computing
+  - vtk.js
+  - PyVista
+  - JupyterLite
+abstract: >-
+  pyvista-js is an open-source Python package that provides a PyVista-like API
+  for 3D visualization running entirely in the web browser. By bridging the
+  familiar PyVista interface with vtk.js, pyvista-js enables researchers and
+  engineers to create interactive 3D visualizations without requiring a local
+  VTK installation. The package integrates with JupyterLite, allowing
+  zero-install interactive notebooks to be shared as static web pages.
