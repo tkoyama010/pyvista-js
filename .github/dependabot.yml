@@ -5,6 +5,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      cooldown:
+        semver-patch: 3
+        semver-minor: 3
+        semver-major: 3
     labels:
       - "dependencies"
     groups:
@@ -17,5 +21,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      cooldown:
+        semver-patch: 3
+        semver-minor: 3
+        semver-major: 3
     labels:
       - "dependencies"
