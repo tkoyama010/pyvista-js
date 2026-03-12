@@ -21,6 +21,9 @@ logger = logging.getLogger(__name__)
 # (version header, title, format, dataset declaration)
 _MIN_VTK_LINES = 4
 
+# Number of coordinate components per vertex (x, y, z)
+_N_COORDS = 3
+
 # Load JavaScript templates
 _JS_DIR = Path(__file__).parent / "js"
 _VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
@@ -345,7 +348,7 @@ class PLYReader:
         n_vertices = 0
         for line in lines[1 : header_end + 1]:
             parts = line.strip().split()
-            if len(parts) >= 3 and parts[0] == "element" and parts[1] == "vertex":
+            if len(parts) >= _N_COORDS and parts[0] == "element" and parts[1] == "vertex":
                 n_vertices = int(parts[2])
                 break
 
@@ -358,7 +361,7 @@ class PLYReader:
             if data_start + i >= len(lines):
                 break
             parts = lines[data_start + i].strip().split()
-            if len(parts) >= 3:
+            if len(parts) >= _N_COORDS:
                 points.append([float(parts[0]), float(parts[1]), float(parts[2])])
 
         if not points:
