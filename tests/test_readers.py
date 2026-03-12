@@ -5,11 +5,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import PLYReader, PolyDataReader
+from pyvista_js import OBJReader, PLYReader, PolyDataReader
 
 DATA_DIR = Path(__file__).parent / "data"
 TRIANGLE_VTK = DATA_DIR / "triangle.vtk"
 TRIANGLE_PLY = DATA_DIR / "triangle.ply"
+TRIANGLE_OBJ = DATA_DIR / "triangle.obj"
 
 
 # --- PolyDataReader tests ---
@@ -234,4 +235,77 @@ def test_ply_reader_no_vertices(tmp_path: Path) -> None:
         "ply\nformat ascii 1.0\nelement vertex 0\nend_header\n",
     )
     mesh = PLYReader(ply_file).read()
+    assert mesh.n_points == 0
+
+
+# --- OBJReader tests ---
+
+
+def test_obj_reader_path() -> None:
+    """Test that the reader exposes the path property."""
+    reader = OBJReader(TRIANGLE_OBJ)
+    assert reader.path == TRIANGLE_OBJ
+
+
+def test_obj_reader_read_points() -> None:
+    """Test reading points from an OBJ file."""
+    reader = OBJReader(TRIANGLE_OBJ)
+    mesh = reader.read()
+
+    assert mesh.n_points == 3
+    expected = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.5, 1.0, 0.0]])
+    assert np.allclose(mesh.points, expected)
+
+
+def test_obj_reader_string_path() -> None:
+    """Test that string paths are accepted."""
+    reader = OBJReader(str(TRIANGLE_OBJ))
+    mesh = reader.read()
+    assert mesh.n_points == 3
+
+
+@pytest.mark.parametrize(
+    ("method", "expected"),
+    [
+        ("generate_vtk_js_source", "vtkOBJReader"),
+        ("generate_vtk_js_source", "parseAsArrayBuffer"),
+        ("generate_vtk_js_source", "source0"),
+        ("get_mapper_setup", "setInputData"),
+    ],
+)
+def test_obj_reader_js_output(method: str, expected: str) -> None:
+    """Test that generated JavaScript contains expected strings."""
+    mesh = OBJReader(TRIANGLE_OBJ).read()
+    result = getattr(mesh, method)(0)
+    assert expected in result
+
+
+@pytest.mark.parametrize(
+    ("fixture_type", "match"),
+    [
+        ("not_found", "File not found"),
+        ("wrong_ext", "Expected a .obj file"),
+    ],
+)
+def test_obj_reader_init_errors(
+    tmp_path: Path,
+    fixture_type: str,
+    match: str,
+) -> None:
+    """Test errors raised during reader initialization."""
+    if fixture_type == "not_found":
+        with pytest.raises(FileNotFoundError, match=match):
+            OBJReader("nonexistent.obj")
+    else:
+        bad_file = tmp_path / "data.txt"
+        bad_file.write_text("hello")
+        with pytest.raises(ValueError, match=match):
+            OBJReader(bad_file)
+
+
+def test_obj_reader_no_vertices(tmp_path: Path) -> None:
+    """Test reading an OBJ file with no vertices yields empty mesh."""
+    obj_file = tmp_path / "empty.obj"
+    obj_file.write_text("# empty obj file\n")
+    mesh = OBJReader(obj_file).read()
     assert mesh.n_points == 0
