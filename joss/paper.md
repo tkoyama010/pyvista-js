@@ -11,7 +11,7 @@ authors:
     orcid: 0000-0001-9859-9565
     affiliation: "1"
 affiliations:
-  - name: Independent Researcher, Japan
+  - name: AKARI Inc.
     index: 1
 date: 11 March 2026
 bibliography: paper.bib
