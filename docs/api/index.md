@@ -33,6 +33,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.PolyDataReader
+   pyvista_js.PLYReader
 ```
 
 ## Examples
