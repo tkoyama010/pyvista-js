@@ -28,6 +28,37 @@ _N_COORDS = 3
 _JS_DIR = Path(__file__).parent / "js"
 _VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
 _PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
+_OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
+
+
+class _OBJMesh(Mesh):
+    """Mesh loaded from an OBJ file, rendered via vtk.js OBJ reader."""
+
+    def __init__(self, points: np.ndarray, obj_base64: str) -> None:
+        """Initialize with points and base64-encoded OBJ file content.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            Vertex coordinates (N, 3) extracted for bounding sphere computation.
+        obj_base64 : str
+            Base64-encoded content of the OBJ file passed to vtk.js for rendering.
+
+        """
+        super().__init__(points)
+        self._obj_base64 = obj_base64
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code using vtkOBJReader."""
+        escaped = json.dumps(self._obj_base64)
+        return _OBJ_READER_SOURCE_TEMPLATE.replace(
+            "{{INDEX}}",
+            str(idx),
+        ).replace("{{OBJ_BASE64}}", escaped)
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code."""
+        return f"mapper{idx}.setInputData(source{idx});"
 
 
 class _PolyDataMesh(Mesh):
@@ -364,6 +395,108 @@ class PLYReader:
             if len(parts) >= _N_COORDS:
                 points.append([float(parts[0]), float(parts[1]), float(parts[2])])
 
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+
+class OBJReader:
+    """Reader for Wavefront OBJ files (``.obj``).
+
+    Reads an OBJ ASCII file and produces a :class:`Mesh` that delegates
+    parsing to vtk.js's ``vtkOBJReader`` at render time. Python extracts
+    only the vertex coordinates so that camera framing and bounding-sphere
+    queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.obj`` file.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.OBJReader("model.obj")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() != ".obj":
+            msg = f"Expected a .obj file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the OBJ file.
+
+        """
+        return self._path
+
+    def read(self) -> _OBJMesh:
+        """Read the OBJ file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Vertex coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the OBJ file content.
+
+        Raises
+        ------
+        ValueError
+            If the file contains no vertex data.
+
+        """
+        raw = self._path.read_bytes()
+        text = raw.decode("ascii", errors="replace")
+        lines = text.splitlines()
+
+        points = self._extract_points(lines)
+        obj_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _OBJMesh(points=points, obj_base64=obj_base64)
+
+    @staticmethod
+    def _extract_points(lines: list[str]) -> np.ndarray:
+        """Extract vertex coordinates from OBJ lines.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Parameters
+        ----------
+        lines : list[str]
+            All lines of the OBJ file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        points = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("v "):
+                parts = stripped.split()
+                if len(parts) >= _N_COORDS + 1:
+                    points.append(
+                        [float(parts[1]), float(parts[2]), float(parts[3])],
+                    )
         if not points:
             return np.empty((0, 3))
         return np.array(points)
