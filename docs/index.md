@@ -1,10 +1,9 @@
 # pyvista-js Documentation
 
-Welcome to pyvista-js documentation!
+Welcome to the `pyvista-js` documentation!
 
-## Overview
-
-pyvista-js is a PyVista-like API for vtk.js, bringing the intuitive PyVista interface to JavaScript-based 3D visualization.
+`pyvista-js` is a PyVista-like API for vtk.js, bringing the intuitive PyVista interface
+to JavaScript-based 3D visualization in browser environments.
 
 ## Installation
 
@@ -12,83 +11,78 @@ pyvista-js is a PyVista-like API for vtk.js, bringing the intuitive PyVista inte
 pip install pyvista-js
 ```
 
-## Quick Start
+---
 
-```{eval-rst}
-.. replite::
-   :kernel: pyolite
-   :height: 600px
+::::{grid} 1 1 2 2
+:gutter: 2
 
-   import sys
-   sys.path.insert(0, '/drive/src')
+:::{grid-item-card} Tutorials
+:link: tutorials/index
+:link-type: doc
+:class-card: sd-rounded-3
 
-   import pyvista_js as pv
+Topic driven themed lessons.
+:::
 
-   # Create a simple sphere
-   sphere = pv.Sphere()
+:::{grid-item-card} How-To Guides
+:link: howtos/index
+:link-type: doc
+:class-card: sd-rounded-3
 
-   # Visualize it
-   plotter = pv.Plotter()
-   plotter.add_mesh(sphere)
-   plotter.show()
-```
+Focused guides for common tasks.
+:::
 
-## Physically Based Rendering
+:::{grid-item-card} Explanation
+:link: explanation/index
+:link-type: doc
+:class-card: sd-rounded-3
 
-```{eval-rst}
-.. replite::
-   :kernel: pyolite
-   :height: 600px
+Deeper understanding awaits.
+:::
 
-   import sys
-   sys.path.insert(0, '/drive/src')
+:::{grid-item-card} Reference
+:link: api/index
+:link-type: doc
+:class-card: sd-rounded-3
 
-   import pyvista_js as pv
+No fuss facts.
+:::
 
-   from pyvista_js import examples
-   cubemap = examples.download_sky_box_cube_map()
+::::
 
-   # Vary metallic and roughness across a grid of spheres
-   plotter = pv.Plotter()
-   plotter.set_environment_texture(cubemap)
-   colors = ['red', 'green', 'blue', 'yellow', 'cyan']
-   for i in range(5):
-       for j in range(6):
-           sphere = pv.Sphere(radius=0.4, center=(0.0, 4 - i, j))
-           plotter.add_mesh(
-               sphere,
-               color=colors[i],
-               pbr=True,
-               metallic=i / 4,
-               roughness=j / 5,
-           )
-   plotter.view_vector((-1, 0, 0), (0, 1, 0))
-   plotter.show()
-```
+Choose your approach to learning and `pyvista-js` knowledge discovery
+([Diátaxis](https://diataxis.fr/)).
 
-## Streamlit Demo
-
-See the {doc}`Streamlit Demo <stlite_demo>` page for an interactive demo using stlite.
-
-## Features
-
-- PyVista-like API for familiar usage
-- Integration with vtk.js for web-based visualization
-- Support for JupyterLite and Streamlit
-
-## API Reference
-
-See the full {doc}`API Reference <api/index>` for detailed documentation of all classes and functions.
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-
-stlite_demo
-api/index
-```
+---
 
 ## Links
 
 - [GitHub Repository](https://github.com/tkoyama010/pyvista-js)
 - [Issue Tracker](https://github.com/tkoyama010/pyvista-js/issues)
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: Getting Started
+
+Installation <self>
+```
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: Contents
+
+tutorials/index
+howtos/index
+explanation/index
+api/index
+```
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: Demos
+
+stlite_demo
+```
