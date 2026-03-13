@@ -95,7 +95,14 @@ class Mesh:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
 
-    def plot(self, **kwargs: object) -> None:
+    def plot(
+        self,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        pbr: bool = False,  # noqa: FBT001 FBT002
+        metallic: float = 0.0,
+        roughness: float = 0.5,
+    ) -> None:
         """Plot this mesh.
 
         This is a convenience method that creates a :class:`~pyvista_js.Plotter`,
@@ -103,8 +110,16 @@ class Mesh:
 
         Parameters
         ----------
-        **kwargs
-            Keyword arguments passed to :func:`~pyvista_js.Plotter.add_mesh`.
+        color : str or tuple, optional
+            Color of the mesh. Can be a color name or RGB tuple.
+        opacity : float, optional
+            Opacity of the mesh, between 0 (transparent) and 1 (opaque).
+        pbr : bool, optional
+            Enable physically based rendering (PBR). Default is False.
+        metallic : float, optional
+            Metallic factor for PBR, between 0 and 1. Default is 0.0.
+        roughness : float, optional
+            Roughness factor for PBR, between 0 and 1. Default is 0.5.
 
         Examples
         --------
@@ -116,7 +131,14 @@ class Mesh:
         from .plotter import Plotter  # noqa: PLC0415
 
         plotter = Plotter()
-        plotter.add_mesh(self, **kwargs)
+        plotter.add_mesh(
+            self,
+            color=color,
+            opacity=opacity,
+            pbr=pbr,
+            metallic=metallic,
+            roughness=roughness,
+        )
         plotter.show()
 
     def generate_vtk_js_source(self, idx: int) -> str:
