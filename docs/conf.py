@@ -9,12 +9,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Make pyvista_js importable for autodoc
+# Copy source code to JupyterLite content directory
 docs_dir = Path(__file__).parent
 project_root = docs_dir.parent
-sys.path.insert(0, str(project_root / "src"))
-
-# Copy source code to JupyterLite content directory
 src_dir = project_root / "src" / "pyvista_js"
 content_dir = docs_dir / "content" / "src"
 
