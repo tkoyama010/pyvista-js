@@ -27,9 +27,9 @@ with [vtk.js](https://kitware.github.io/vtk-js) [@vtkjs] — the JavaScript
 port of the Visualization Toolkit (VTK) [@vtk] — `pyvista-js` enables
 researchers and engineers to create interactive 3D visualizations without
 requiring a local VTK installation. The package integrates with
-[JupyterLite](https://jupyterlite.readthedocs.io) [@jupyterlite], a
-WebAssembly-powered Jupyter environment that runs entirely in the browser,
-allowing zero-install interactive notebooks to be shared as static web pages.
+[Pyodide](https://pyodide.org) [@pyodide], a Python runtime for the browser
+based on WebAssembly, allowing zero-install interactive notebooks to be shared
+as static web pages.
 
 # Statement of need
 
@@ -37,13 +37,11 @@ PyVista [@pyvista] has become a widely adopted tool for 3D scientific
 visualization in the Python ecosystem, offering a high-level interface to VTK.
 However, sharing interactive 3D visualizations with collaborators or in
 educational settings often requires recipients to install VTK and PyVista
-locally, which can be a significant barrier. While Jupyter notebooks
-[@jupyter] partially address reproducibility concerns, they still require a
-running Python kernel.
+locally, which can be a significant barrier.
 
 `pyvista-js` addresses this gap by targeting vtk.js [@vtkjs] as the rendering
 backend, allowing the same PyVista-style code to run directly in the browser
-via JupyterLite [@jupyterlite]. This approach enables:
+via Pyodide [@pyodide]. This approach enables:
 
 - **Zero-install notebooks**: Users can open and interact with 3D
   visualizations through a URL, with no local software installation required.
