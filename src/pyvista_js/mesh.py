@@ -95,6 +95,30 @@ class Mesh:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
 
+    def plot(self, **kwargs: object) -> None:
+        """Plot this mesh.
+
+        This is a convenience method that creates a :class:`~pyvista_js.Plotter`,
+        adds this mesh, and calls :func:`~pyvista_js.Plotter.show`.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments passed to :func:`~pyvista_js.Plotter.add_mesh`.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere.plot(color='red')
+
+        """
+        from .plotter import Plotter
+
+        plotter = Plotter()
+        plotter.add_mesh(self, **kwargs)
+        plotter.show()
+
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code for this mesh.
 
