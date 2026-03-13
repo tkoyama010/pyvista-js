@@ -113,7 +113,7 @@ class Mesh:
         >>> sphere.plot(color='red')
 
         """
-        from .plotter import Plotter
+        from .plotter import Plotter  # noqa: PLC0415
 
         plotter = Plotter()
         plotter.add_mesh(self, **kwargs)
