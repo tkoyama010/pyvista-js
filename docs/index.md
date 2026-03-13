@@ -11,7 +11,7 @@ to JavaScript-based 3D visualization in browser environments.
 pip install pyvista-js
 ```
 
----
+______________________________________________________________________
 
 ::::{grid} 1 1 2 2
 :gutter: 2
@@ -53,7 +53,7 @@ No fuss facts.
 Choose your approach to learning and `pyvista-js` knowledge discovery
 ([Diátaxis](https://diataxis.fr/)).
 
----
+______________________________________________________________________
 
 ## Links
 
