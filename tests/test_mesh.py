@@ -99,7 +99,7 @@ def test_bounding_sphere(mesh_factory, expected_radius, expected_center) -> None
 def test_mesh_plot(monkeypatch) -> None:
     """Test that Mesh.plot() creates a plotter, adds the mesh, and shows it."""
     opened: list[str] = []
-    monkeypatch.setattr(webbrowser, "open", lambda url: opened.append(url))
+    monkeypatch.setattr(webbrowser, "open", opened.append)
 
     sphere = Sphere(radius=1.0)
     sphere.plot(color="red")
@@ -111,7 +111,7 @@ def test_mesh_plot(monkeypatch) -> None:
 def test_mesh_plot_with_kwargs(monkeypatch) -> None:
     """Test that Mesh.plot() passes kwargs to add_mesh."""
     opened: list[str] = []
-    monkeypatch.setattr(webbrowser, "open", lambda url: opened.append(url))
+    monkeypatch.setattr(webbrowser, "open", opened.append)
 
     cube = Cube()
     cube.plot(color="blue", opacity=0.5)
@@ -122,7 +122,7 @@ def test_mesh_plot_with_kwargs(monkeypatch) -> None:
 def test_generic_mesh_plot(monkeypatch) -> None:
     """Test that generic Mesh instances can also use plot()."""
     opened: list[str] = []
-    monkeypatch.setattr(webbrowser, "open", lambda url: opened.append(url))
+    monkeypatch.setattr(webbrowser, "open", opened.append)
 
     points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
     mesh = Mesh(points)
