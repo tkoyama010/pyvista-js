@@ -73,6 +73,10 @@ myst_enable_extensions = [
 jupyterlite_dir = ".jupyterlite"
 jupyterlite_contents = ["content"]
 global_enable_try_examples = True
+try_examples_global_warning_text = (
+    "pyvista-js's interactive examples are experimental and may not always work as expected."
+)
+try_examples_preamble = "import sys; sys.path.insert(0, '/drive/src')"
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"
