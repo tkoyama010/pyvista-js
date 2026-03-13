@@ -42,6 +42,7 @@ optional-dependencies.docs = [
   "myst-parser==5; python_version>='3.12'",
   "sphinx==9.1; python_version>='3.12'",
   "sphinx-book-theme==1.1.4; python_version>='3.12'",
+  "sphinx-design==0.7; python_version>='3.12'",
 ]
 optional-dependencies.streamlit = [
   "streamlit>=1.30",
