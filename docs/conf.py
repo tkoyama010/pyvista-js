@@ -48,7 +48,7 @@ autodoc_default_options = {
     "undoc-members": True,
     "show-inheritance": True,
 }
-autosummary_generate = False
+autosummary_generate = True
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
@@ -69,6 +69,7 @@ myst_enable_extensions = [
 # -- Options for jupyterlite-sphinx ------------------------------------------
 jupyterlite_dir = ".jupyterlite"
 jupyterlite_contents = ["content"]
+global_enable_try_examples = True
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"
