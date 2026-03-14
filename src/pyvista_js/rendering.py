@@ -79,7 +79,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .mesh import Mesh
+    from .mesh import PolyData
 
 from .examples import CubeMap
 
@@ -199,7 +199,7 @@ class _BaseHTMLRenderer:
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
-        mesh: Mesh,
+        mesh: PolyData,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
@@ -210,7 +210,7 @@ class _BaseHTMLRenderer:
 
         Parameters
         ----------
-        mesh : Mesh
+        mesh : PolyData
             The mesh object to render.
         color : tuple or str, optional
             RGB color tuple (0-1) or color name ('red', 'blue', etc.).
@@ -704,7 +704,7 @@ class MockRenderer:
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
-        mesh: Mesh,
+        mesh: PolyData,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
@@ -715,7 +715,7 @@ class MockRenderer:
 
         Parameters
         ----------
-        mesh : Mesh
+        mesh : PolyData
             The mesh to add.
         color : str or tuple, optional
             Color (stored but not rendered).
