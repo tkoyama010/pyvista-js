@@ -364,7 +364,7 @@ class _BaseHTMLRenderer:
         texture = actor_info.get("texture")
         if texture is None:
             return ""
-        tex_url = texture.url  # type: ignore[union-attr]
+        tex_url = texture.url  # type: ignore[attr-defined]
         return (
             f"// Load and apply surface texture\n"
             f"const texture{idx} = vtk.Rendering.Core.vtkTexture.newInstance();\n"
