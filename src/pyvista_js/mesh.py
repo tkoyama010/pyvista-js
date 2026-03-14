@@ -6,13 +6,14 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 from __future__ import annotations
 
 import warnings
-from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy.typing import ArrayLike
 
 # Load JavaScript templates relative to this file
@@ -275,12 +276,13 @@ def Sphere(  # noqa: N802
             .replace("{{PHI_RESOLUTION}}", str(phi_resolution))
         )
 
+    def _mapper_setup_sphere(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
     return PolyData(
         points=np.array(points),
         _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=lambda idx: (
-            f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-        ),
+        _mapper_setup_fn=_mapper_setup_sphere,
     )
 
 
@@ -354,19 +356,20 @@ def Cube(  # noqa: N802
             .replace("{{Z_LENGTH}}", str(z_length))
         )
 
+    def _mapper_setup_cube(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
     return PolyData(
         points=points,
         faces=faces,
         _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=lambda idx: (
-            f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-        ),
+        _mapper_setup_fn=_mapper_setup_cube,
     )
 
 
 def Cylinder(  # noqa: N802
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
-    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),  # noqa: ARG001
     radius: float = 0.5,
     height: float = 1.0,
     resolution: int = 100,
@@ -426,10 +429,11 @@ def Cylinder(  # noqa: N802
             .replace("{{RESOLUTION}}", str(resolution))
         )
 
+    def _mapper_setup_cylinder(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
     return PolyData(
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=lambda idx: (
-            f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-        ),
+        _mapper_setup_fn=_mapper_setup_cylinder,
     )
