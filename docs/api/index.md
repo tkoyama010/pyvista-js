@@ -77,3 +77,13 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.examples.CubeMap
    pyvista_js.examples.download_sky_box_cube_map
 ```
+
+## CLI
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js._cli.main
+```
