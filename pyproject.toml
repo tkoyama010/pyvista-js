@@ -51,6 +51,7 @@ urls.Documentation = "https://github.com/tkoyama010/pyvista-js"
 urls.Homepage = "https://github.com/tkoyama010/pyvista-js"
 urls.Issues = "https://github.com/tkoyama010/pyvista-js/issues"
 urls.Repository = "https://github.com/tkoyama010/pyvista-js"
+scripts.pyvista-js = "pyvista_js.__main__:main"
 
 [dependency-groups]
 dev = [
