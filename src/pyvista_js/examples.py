@@ -6,6 +6,8 @@ Provides download helpers for standard datasets, mirroring the
 
 from __future__ import annotations
 
+from pyvista_js.texture import Texture
+
 _PYVISTA_DATA_BASE = "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data"
 
 
@@ -108,3 +110,28 @@ def download_sky_box_cube_map() -> CubeMap:
         posz=f"{base}/skybox2-posz.jpg",
         negz=f"{base}/skybox2-negz.jpg",
     )
+
+
+def download_masonry_texture() -> Texture:
+    """Download the masonry texture dataset.
+
+    Downloads a brick masonry image from the PyVista data repository
+    and returns it as a :class:`~pyvista_js.texture.Texture` object.
+
+    Returns
+    -------
+    Texture
+        Texture wrapping the masonry image URL.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
+    >>> texture = examples.download_masonry_texture()
+    >>> surf = pv.Cylinder()
+    >>> plotter = pv.Plotter()
+    >>> plotter.add_mesh(surf, texture=texture)
+    >>> plotter.show()
+
+    """
+    return Texture(f"{_PYVISTA_DATA_BASE}/masonry.bmp")
