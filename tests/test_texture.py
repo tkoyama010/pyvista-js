@@ -62,7 +62,7 @@ def test_texture_map_to_plane_generic_polydata() -> None:
             [1.0, 0.0, 0.0],
             [1.0, 1.0, 0.0],
             [0.0, 1.0, 0.0],
-        ]
+        ],
     )
     faces = np.array([[0, 1, 2, 3]])
     mesh = PolyData(points, faces)
@@ -156,7 +156,7 @@ def test_texture_with_custom_polydata_and_tcoords(monkeypatch) -> None:
             [1.0, 0.0, 0.0],
             [1.0, 1.0, 0.0],
             [0.0, 1.0, 0.0],
-        ]
+        ],
     )
     faces = np.array([[0, 1, 2, 3]])
     mesh = PolyData(points, faces)
