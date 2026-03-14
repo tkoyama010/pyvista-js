@@ -21,7 +21,7 @@ if sys.platform == "emscripten":
         asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
 
 from . import examples
-from .mesh import Cube, Cylinder, Mesh, Sphere
+from .mesh import Cube, Cylinder, Mesh, PolyData, Sphere
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader
 
@@ -36,6 +36,7 @@ try:
         "OBJReader",
         "PLYReader",
         "Plotter",
+        "PolyData",
         "PolyDataReader",
         "Sphere",
         "__version__",
@@ -51,6 +52,7 @@ except ImportError:
         "OBJReader",
         "PLYReader",
         "Plotter",
+        "PolyData",
         "PolyDataReader",
         "Sphere",
         "__version__",

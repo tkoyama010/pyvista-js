@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .mesh import Mesh
+from .mesh import PolyData
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ _PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
 _OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
 
 
-class _OBJMesh(Mesh):
+class _OBJMesh(PolyData):
     """Mesh loaded from an OBJ file, rendered via vtk.js OBJ reader."""
 
     def __init__(self, points: np.ndarray, obj_base64: str) -> None:
@@ -61,7 +61,7 @@ class _OBJMesh(Mesh):
         return f"mapper{idx}.setInputData(source{idx});"
 
 
-class _PolyDataMesh(Mesh):
+class _PolyDataMesh(PolyData):
     """Mesh loaded from a legacy VTK file, rendered via vtk.js reader."""
 
     def __init__(self, points: np.ndarray, vtk_text: str) -> None:
@@ -91,7 +91,7 @@ class _PolyDataMesh(Mesh):
         return f"mapper{idx}.setInputData(source{idx});"
 
 
-class _PLYMesh(Mesh):
+class _PLYMesh(PolyData):
     """Mesh loaded from a PLY file, rendered via vtk.js PLY reader."""
 
     def __init__(self, points: np.ndarray, ply_base64: str) -> None:
