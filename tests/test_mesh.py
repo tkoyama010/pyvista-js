@@ -155,22 +155,23 @@ def test_shrink_default_factor() -> None:
     assert isinstance(shrunk, PolyData)
 
 
-def test_shrink_vtk_js_source_contains_shrink_filter() -> None:
-    """Test that shrunk mesh generates JS with vtkShrinkFilter."""
+def test_shrink_vtk_js_source_contains_shrink_logic() -> None:
+    """Test that shrunk mesh generates JS with the custom shrink computation."""
     sphere = Sphere()
     shrunk = sphere.shrink(shrink_factor=0.5)
     js_source = shrunk.generate_vtk_js_source(0)
-    assert "vtkShrinkFilter" in js_source
+    assert "shrunkPD0" in js_source
     assert "0.5" in js_source
+    assert "vtkPolyData" in js_source
 
 
-def test_shrink_mapper_setup_uses_shrink_filter() -> None:
-    """Test that shrunk mesh mapper connects to the shrink filter output."""
+def test_shrink_mapper_setup_uses_shrunk_pd() -> None:
+    """Test that shrunk mesh mapper uses setInputData with the shrunk polydata."""
     sphere = Sphere()
     shrunk = sphere.shrink(shrink_factor=0.8)
     mapper_code = shrunk.get_mapper_setup(0)
-    assert "shrinkFilter0" in mapper_code
-    assert "getOutputPort" in mapper_code
+    assert "shrunkPD0" in mapper_code
+    assert "setInputData" in mapper_code
 
 
 def test_shrink_invalid_factor() -> None:
