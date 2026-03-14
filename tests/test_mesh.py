@@ -5,7 +5,7 @@ import webbrowser
 import numpy as np
 import pytest
 
-from pyvista_js import Cube, Cylinder, Mesh, PolyData, Sphere
+from pyvista_js import Circle, Cube, Cylinder, Mesh, PolyData, Sphere
 
 
 def test_mesh_creation() -> None:
@@ -188,3 +188,66 @@ def test_shrink_preserves_faces() -> None:
     cube = Cube()
     shrunk = cube.shrink(shrink_factor=0.8)
     assert shrunk.n_faces == cube.n_faces
+
+
+def test_circle_creation() -> None:
+    """Test circle primitive creation."""
+    circle = Circle()
+
+    assert isinstance(circle, PolyData)
+    assert circle.n_points == 101  # resolution(100) + 1 closing point
+    assert circle.points.shape[1] == 3
+
+
+def test_circle_default_radius() -> None:
+    """Test that default circle has radius 0.5."""
+    circle = Circle()
+    radii = np.linalg.norm(circle.points[:-1, :2], axis=1)
+    assert np.allclose(radii, 0.5, atol=1e-10)
+
+
+def test_circle_custom_radius() -> None:
+    """Test circle with custom radius."""
+    circle = Circle(radius=2.0)
+    radii = np.linalg.norm(circle.points[:-1, :2], axis=1)
+    assert np.allclose(radii, 2.0, atol=1e-10)
+
+
+def test_circle_in_xy_plane() -> None:
+    """Test that circle points lie in the XY plane (z=0)."""
+    circle = Circle(radius=1.0)
+    assert np.allclose(circle.points[:, 2], 0.0)
+
+
+def test_circle_resolution() -> None:
+    """Test circle with custom resolution."""
+    circle = Circle(radius=1.0, resolution=50)
+    assert circle.n_points == 51  # resolution + 1 closing point
+
+
+def test_circle_closed() -> None:
+    """Test that the circle is closed (first and last points are equal)."""
+    circle = Circle(radius=1.0, resolution=100)
+    assert np.allclose(circle.points[0], circle.points[-1])
+
+
+def test_circle_invalid_resolution() -> None:
+    """Test that resolution < 3 raises ValueError."""
+    with pytest.raises(ValueError, match="resolution must be >= 3"):
+        Circle(radius=1.0, resolution=2)
+
+
+def test_circle_vtk_js_source() -> None:
+    """Test that Circle generates vtk.js source code."""
+    circle = Circle(radius=1.5, resolution=60)
+    js_source = circle.generate_vtk_js_source(0)
+    assert "1.5" in js_source
+    assert "60" in js_source
+
+
+def test_circle_mapper_setup() -> None:
+    """Test that Circle mapper uses setInputData."""
+    circle = Circle()
+    mapper_code = circle.get_mapper_setup(0)
+    assert "setInputData" in mapper_code
+    assert "source0" in mapper_code
