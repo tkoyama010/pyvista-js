@@ -6,8 +6,9 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 from __future__ import annotations
 
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -213,8 +214,7 @@ class Mesh(PolyData):
     def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
         """Initialize a Mesh (deprecated)."""
         warnings.warn(
-            "Mesh is deprecated and will be removed in version 0.4. "
-            "Use PolyData instead.",
+            "Mesh is deprecated and will be removed in version 0.4. Use PolyData instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -278,7 +278,9 @@ def Sphere(  # noqa: N802
     return PolyData(
         points=np.array(points),
         _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=lambda idx: f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());",
+        _mapper_setup_fn=lambda idx: (
+            f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+        ),
     )
 
 
@@ -356,7 +358,9 @@ def Cube(  # noqa: N802
         points=points,
         faces=faces,
         _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=lambda idx: f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());",
+        _mapper_setup_fn=lambda idx: (
+            f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+        ),
     )
 
 
@@ -425,5 +429,7 @@ def Cylinder(  # noqa: N802
     return PolyData(
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=lambda idx: f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());",
+        _mapper_setup_fn=lambda idx: (
+            f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+        ),
     )
