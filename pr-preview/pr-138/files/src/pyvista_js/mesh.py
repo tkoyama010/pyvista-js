@@ -594,6 +594,8 @@ def Circle(  # noqa: N802
     >>> circle.n_points
     101
 
+    >>> circle.plot(color="black")  # doctest: +SKIP
+
     """
     if resolution < _CIRCLE_MIN_RESOLUTION:
         msg = f"resolution must be >= {_CIRCLE_MIN_RESOLUTION}, got {resolution}"
