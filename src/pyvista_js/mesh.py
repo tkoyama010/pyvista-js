@@ -189,11 +189,9 @@ class PolyData:
 
         def _vtk_js_source_with_shrink(idx: int) -> str:
             base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
-            shrink_code = (
-                _SHRINK_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                    "{{SHRINK_FACTOR}}",
-                    str(shrink_factor),
-                )
+            shrink_code = _SHRINK_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+                "{{SHRINK_FACTOR}}",
+                str(shrink_factor),
             )
             return base + "\n" + shrink_code
 
