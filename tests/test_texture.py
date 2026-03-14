@@ -110,7 +110,7 @@ def test_add_mesh_with_texture(monkeypatch) -> None:
 
 def test_generated_html_contains_texture_code(monkeypatch) -> None:
     """Test that HTML output contains texture loading code when texture is set."""
-    monkeypatch.setattr(webbrowser, "open", lambda x: None)
+    monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     plotter = pv.Plotter()
     sphere = pv.Sphere()
@@ -125,7 +125,7 @@ def test_generated_html_contains_texture_code(monkeypatch) -> None:
 
 def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
     """Test that HTML output does not contain texture code when no texture set."""
-    monkeypatch.setattr(webbrowser, "open", lambda x: None)
+    monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     plotter = pv.Plotter()
     sphere = pv.Sphere()
@@ -137,7 +137,7 @@ def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
 
 def test_texture_with_primitive_sphere(monkeypatch) -> None:
     """Test texture applied to a Sphere (primitive with auto UV coords)."""
-    monkeypatch.setattr(webbrowser, "open", lambda x: None)
+    monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     plotter = pv.Plotter()
     sphere = pv.Sphere()
@@ -148,7 +148,7 @@ def test_texture_with_primitive_sphere(monkeypatch) -> None:
 
 def test_texture_with_custom_polydata_and_tcoords(monkeypatch) -> None:
     """Test texture on custom PolyData with explicit texture coordinates."""
-    monkeypatch.setattr(webbrowser, "open", lambda x: None)
+    monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     points = np.array(
         [
@@ -178,14 +178,7 @@ def test_polydata_t_coords_none_by_default() -> None:
     assert mesh.t_coords is None
 
 
-@pytest.mark.parametrize(
-    "primitive_factory",
-    [
-        lambda: pv.Sphere(),
-        lambda: pv.Cube(),
-        lambda: pv.Cylinder(),
-    ],
-)
+@pytest.mark.parametrize("primitive_factory", [pv.Sphere, pv.Cube, pv.Cylinder])
 def test_primitives_t_coords_none_by_default(primitive_factory) -> None:
     """Test that primitive meshes have t_coords=None by default."""
     mesh = primitive_factory()
