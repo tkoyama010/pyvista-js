@@ -402,7 +402,7 @@ def Sphere(  # noqa: N802
         )
 
     def _mapper_setup_sphere(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+        return f"mapper{idx}.setInputConnection(texMapSphere{idx}.getOutputPort());"
 
     return PolyData(
         points=np.array(points),
