@@ -14,6 +14,7 @@ from .rendering import get_renderer
 if TYPE_CHECKING:
     from .camera import Camera
     from .examples import CubeMap
+    from .light import Light
     from .mesh import PolyData
 
 
@@ -205,6 +206,26 @@ class Plotter:
 
         """
         self._renderer.set_environment_texture(texture)
+
+    def add_light(self, light: Light) -> None:
+        """Add a light source to the scene.
+
+        Parameters
+        ----------
+        light : Light
+            The :class:`~pyvista_js.light.Light` to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere(), color='white')
+        >>> light = pv.Light(position=(5, 5, 5), color='white', intensity=2.0)
+        >>> plotter.add_light(light)
+        >>> plotter.show()
+
+        """
+        self._renderer.add_light(light)
 
     def clear(self) -> None:
         """Clear all actors from the plotter.
