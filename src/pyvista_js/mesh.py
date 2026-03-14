@@ -24,6 +24,7 @@ _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
+_CIRCLE_MIN_RESOLUTION = 3
 
 
 class PolyData:
@@ -594,8 +595,8 @@ def Circle(  # noqa: N802
     101
 
     """
-    if resolution < 3:
-        msg = f"resolution must be >= 3, got {resolution}"
+    if resolution < _CIRCLE_MIN_RESOLUTION:
+        msg = f"resolution must be >= {_CIRCLE_MIN_RESOLUTION}, got {resolution}"
         raise ValueError(msg)
 
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
