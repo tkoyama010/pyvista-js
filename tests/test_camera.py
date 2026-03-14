@@ -172,7 +172,8 @@ def test_camera_generates_html(monkeypatch) -> None:
     ],
 )
 def test_camera_various_positions(
-    position: tuple, focal_point: tuple
+    position: tuple,
+    focal_point: tuple,
 ) -> None:
     """Test Camera stores various positions and focal points correctly."""
     camera = Camera(position=position, focal_point=focal_point)
