@@ -100,9 +100,10 @@ class Plotter:
 
         Texture example:
 
+        >>> from pyvista_js import examples
         >>> plotter = pv.Plotter()
         >>> sphere = pv.Sphere()
-        >>> texture = pv.Texture('https://example.com/texture.png')
+        >>> texture = examples.download_masonry_texture()
         >>> plotter.add_mesh(sphere, texture=texture)
         >>> plotter.show()
 
