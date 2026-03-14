@@ -82,6 +82,7 @@ if TYPE_CHECKING:
     from .camera import Camera
     from .light import Light
     from .mesh import PolyData
+    from .texture import Texture
 
 from .examples import CubeMap
 
@@ -209,6 +210,7 @@ class _BaseHTMLRenderer:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        texture: Texture | None = None,
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
@@ -226,6 +228,9 @@ class _BaseHTMLRenderer:
             Metallic factor for PBR.
         roughness : float, default=0.5
             Roughness factor for PBR.
+        texture : Texture, optional
+            Surface texture to apply. The texture image is loaded from the
+            URL stored in the :class:`~pyvista_js.Texture` object.
 
         Returns
         -------
@@ -243,6 +248,7 @@ class _BaseHTMLRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "texture": texture,
         }
         self.actors.append(actor_info)
         return actor_info
@@ -401,6 +407,25 @@ class _BaseHTMLRenderer:
             else:
                 pbr_code = ""
 
+            # Build texture code snippet if a texture is provided
+            texture = actor_info.get("texture")
+            if texture is not None:
+                tex_url = texture.url  # type: ignore[union-attr]
+                texture_code = (
+                    f"// Load and apply surface texture\n"
+                    f"const texture{idx} = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+                    f"const texImg{idx} = new Image();\n"
+                    f"texImg{idx}.crossOrigin = 'anonymous';\n"
+                    f"texImg{idx}.onload = function() {{\n"
+                    f"  texture{idx}.setImage(texImg{idx});\n"
+                    f"  actor{idx}.addTexture(texture{idx});\n"
+                    f"  renderWindow.render();\n"
+                    f"}};\n"
+                    f"texImg{idx}.src = '{tex_url}';"
+                )
+            else:
+                texture_code = ""
+
             actor_code = (
                 _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
                 .replace("{{INDEX}}", str(idx))
@@ -410,6 +435,7 @@ class _BaseHTMLRenderer:
                 .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
                 .replace("{{OPACITY}}", str(opacity))
                 .replace("{{PBR_CODE}}", pbr_code)
+                .replace("{{TEXTURE_CODE}}", texture_code)
             )
             actor_js_code.append(actor_code)
 
@@ -799,6 +825,7 @@ class MockRenderer:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        texture: Texture | None = None,
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -816,6 +843,8 @@ class MockRenderer:
             Metallic factor (stored but not rendered).
         roughness : float
             Roughness factor (stored but not rendered).
+        texture : Texture, optional
+            Surface texture (stored but not rendered).
 
         Returns
         -------
@@ -830,6 +859,7 @@ class MockRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "texture": texture,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
