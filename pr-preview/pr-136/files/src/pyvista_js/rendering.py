@@ -344,6 +344,40 @@ class _BaseHTMLRenderer:
         self.actors = []
         self.lights = []
 
+    def _generate_texture_code(self, actor_info: dict[str, object], idx: int) -> str:
+        """Generate vtk.js JavaScript to load and bind a surface texture.
+
+        Parameters
+        ----------
+        actor_info : dict
+            Actor dictionary, may contain a ``'texture'`` key.
+        idx : int
+            Actor index used to create unique JS variable names.
+
+        Returns
+        -------
+        str
+            JavaScript code to load the texture image and bind it to the actor,
+            or an empty string when no texture is set.
+
+        """
+        texture = actor_info.get("texture")
+        if texture is None:
+            return ""
+        tex_url = texture.url  # type: ignore[union-attr]
+        return (
+            f"// Load and apply surface texture\n"
+            f"const texture{idx} = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+            f"const texImg{idx} = new Image();\n"
+            f"texImg{idx}.crossOrigin = 'anonymous';\n"
+            f"texImg{idx}.onload = function() {{\n"
+            f"  texture{idx}.setImage(texImg{idx});\n"
+            f"  actor{idx}.addTexture(texture{idx});\n"
+            f"  renderWindow.render();\n"
+            f"}};\n"
+            f"texImg{idx}.src = '{tex_url}';"
+        )
+
     def _generate_lights_code(self) -> str:
         """Generate vtk.js JavaScript for all lights.
 
@@ -407,24 +441,7 @@ class _BaseHTMLRenderer:
             else:
                 pbr_code = ""
 
-            # Build texture code snippet if a texture is provided
-            texture = actor_info.get("texture")
-            if texture is not None:
-                tex_url = texture.url  # type: ignore[union-attr]
-                texture_code = (
-                    f"// Load and apply surface texture\n"
-                    f"const texture{idx} = vtk.Rendering.Core.vtkTexture.newInstance();\n"
-                    f"const texImg{idx} = new Image();\n"
-                    f"texImg{idx}.crossOrigin = 'anonymous';\n"
-                    f"texImg{idx}.onload = function() {{\n"
-                    f"  texture{idx}.setImage(texImg{idx});\n"
-                    f"  actor{idx}.addTexture(texture{idx});\n"
-                    f"  renderWindow.render();\n"
-                    f"}};\n"
-                    f"texImg{idx}.src = '{tex_url}';"
-                )
-            else:
-                texture_code = ""
+            texture_code = self._generate_texture_code(actor_info, idx)
 
             actor_code = (
                 _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
