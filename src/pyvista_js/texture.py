@@ -21,7 +21,8 @@ class Texture:
     Examples
     --------
     >>> import pyvista_js as pv
-    >>> texture = pv.Texture('https://example.com/texture.png')
+    >>> from pyvista_js import examples
+    >>> texture = examples.download_masonry_texture()
     >>> plotter = pv.Plotter()
     >>> sphere = pv.Sphere()
     >>> plotter.add_mesh(sphere, texture=texture)

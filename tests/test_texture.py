@@ -7,18 +7,19 @@ import pytest
 
 import pyvista_js as pv
 from pyvista_js import PolyData, Sphere, Texture
+from pyvista_js import examples
 
 
 def test_texture_creation() -> None:
     """Test that Texture stores the URL."""
-    tex = Texture("https://example.com/texture.png")
-    assert tex.url == "https://example.com/texture.png"
+    tex = examples.download_masonry_texture()
+    assert tex.url == "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data/masonry.bmp"
 
 
 def test_texture_repr() -> None:
     """Test Texture __repr__."""
-    tex = Texture("https://example.com/texture.png")
-    assert "texture.png" in repr(tex)
+    tex = examples.download_masonry_texture()
+    assert "masonry.bmp" in repr(tex)
 
 
 def test_texture_map_to_plane_returns_polydata() -> None:
@@ -103,7 +104,7 @@ def test_add_mesh_with_texture(monkeypatch) -> None:
 
     plotter = pv.Plotter()
     sphere = pv.Sphere()
-    texture = Texture("https://example.com/texture.png")
+    texture = examples.download_masonry_texture()
     actor = plotter.add_mesh(sphere, texture=texture)
     assert actor["texture"] is texture
 
@@ -114,11 +115,11 @@ def test_generated_html_contains_texture_code(monkeypatch) -> None:
 
     plotter = pv.Plotter()
     sphere = pv.Sphere()
-    texture = Texture("https://example.com/texture.png")
+    texture = examples.download_masonry_texture()
     plotter.add_mesh(sphere, texture=texture)
 
     html = plotter._renderer._generate_html()
-    assert "https://example.com/texture.png" in html
+    assert "masonry.bmp" in html
     assert "addTexture" in html
     assert "vtkTexture" in html
 
@@ -163,7 +164,7 @@ def test_texture_with_custom_polydata_and_tcoords(monkeypatch) -> None:
     mapped = mesh.texture_map_to_plane()
 
     plotter = pv.Plotter()
-    texture = Texture("https://example.com/texture.png")
+    texture = examples.download_masonry_texture()
     plotter.add_mesh(mapped, texture=texture)
 
     html = plotter._renderer._generate_html()
