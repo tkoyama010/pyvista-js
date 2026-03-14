@@ -368,11 +368,12 @@ class _BaseHTMLRenderer:
         return (
             f"// Load and apply surface texture\n"
             f"const texture{idx} = vtk.Rendering.Core.vtkTexture.newInstance();\n"
+            f"texture{idx}.setInterpolate(true);\n"
+            f"actor{idx}.addTexture(texture{idx});\n"
             f"const texImg{idx} = new Image();\n"
             f"texImg{idx}.crossOrigin = 'anonymous';\n"
             f"texImg{idx}.onload = function() {{\n"
             f"  texture{idx}.setImage(texImg{idx});\n"
-            f"  actor{idx}.addTexture(texture{idx});\n"
             f"  renderWindow.render();\n"
             f"}};\n"
             f"texImg{idx}.src = '{tex_url}';"
