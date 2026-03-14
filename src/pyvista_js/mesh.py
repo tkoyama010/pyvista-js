@@ -22,6 +22,7 @@ _MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
 _SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
 _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
+_SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 
 
 class PolyData:
@@ -152,6 +153,70 @@ class PolyData:
             roughness=roughness,
         )
         plotter.show()
+
+    def shrink(self, shrink_factor: float = 0.8) -> PolyData:
+        """Shrink the cells of a mesh towards their centroid.
+
+        This filter shrinks the individual cells of a mesh towards their
+        centroids, producing visual separation between adjacent cells.
+        It mirrors the PyVista ``shrink`` filter API.
+
+        .. note::
+
+            The shrink is computed in JavaScript at render time by
+            iterating over the cell array from the vtk.js source,
+            moving each vertex toward its cell's centroid.
+            ``vtk.js`` does not include ``vtkShrinkFilter``, so this
+            filter is implemented as a custom JavaScript pass.
+
+        Parameters
+        ----------
+        shrink_factor : float, optional
+            The factor to shrink each cell by, between 0 and 1.
+            A value of 1.0 produces no change; lower values produce
+            more shrinkage. Default is 0.8.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with shrunk cells.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> shrunk = sphere.shrink(shrink_factor=0.8)
+        >>> isinstance(shrunk, pv.PolyData)
+        True
+
+        Render the shrunk mesh:
+
+        >>> shrunk.plot()  # doctest: +SKIP
+
+        """
+        if not (0.0 <= shrink_factor <= 1.0):
+            msg = f"shrink_factor must be between 0 and 1, got {shrink_factor}"
+            raise ValueError(msg)
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_shrink(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            shrink_code = _SHRINK_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+                "{{SHRINK_FACTOR}}",
+                str(shrink_factor),
+            )
+            return base + "\n" + shrink_code
+
+        def _mapper_setup_shrink(idx: int) -> str:
+            return f"mapper{idx}.setInputData(shrunkPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_shrink,
+            _mapper_setup_fn=_mapper_setup_shrink,
+        )
 
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code for this mesh.

@@ -138,3 +138,53 @@ def test_generic_mesh_plot(monkeypatch) -> None:
     mesh.plot()
 
     assert len(opened) == 1
+
+
+def test_shrink_returns_polydata() -> None:
+    """Test that shrink returns a PolyData instance."""
+    sphere = Sphere()
+    shrunk = sphere.shrink(shrink_factor=0.8)
+    assert isinstance(shrunk, PolyData)
+    assert shrunk.n_points == sphere.n_points
+
+
+def test_shrink_default_factor() -> None:
+    """Test that shrink works with default shrink_factor."""
+    cube = Cube()
+    shrunk = cube.shrink()
+    assert isinstance(shrunk, PolyData)
+
+
+def test_shrink_vtk_js_source_contains_shrink_logic() -> None:
+    """Test that shrunk mesh generates JS with the custom shrink computation."""
+    sphere = Sphere()
+    shrunk = sphere.shrink(shrink_factor=0.5)
+    js_source = shrunk.generate_vtk_js_source(0)
+    assert "shrunkPD0" in js_source
+    assert "0.5" in js_source
+    assert "vtkPolyData" in js_source
+
+
+def test_shrink_mapper_setup_uses_shrunk_pd() -> None:
+    """Test that shrunk mesh mapper uses setInputData with the shrunk polydata."""
+    sphere = Sphere()
+    shrunk = sphere.shrink(shrink_factor=0.8)
+    mapper_code = shrunk.get_mapper_setup(0)
+    assert "shrunkPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_shrink_invalid_factor() -> None:
+    """Test that an invalid shrink_factor raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="shrink_factor must be between 0 and 1"):
+        sphere.shrink(shrink_factor=1.5)
+    with pytest.raises(ValueError, match="shrink_factor must be between 0 and 1"):
+        sphere.shrink(shrink_factor=-0.1)
+
+
+def test_shrink_preserves_faces() -> None:
+    """Test that shrink preserves face information."""
+    cube = Cube()
+    shrunk = cube.shrink(shrink_factor=0.8)
+    assert shrunk.n_faces == cube.n_faces
