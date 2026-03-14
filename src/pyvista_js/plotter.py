@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .examples import CubeMap
     from .light import Light
     from .mesh import PolyData
+    from .texture import Texture
 
 
 class Plotter:
@@ -50,6 +51,7 @@ class Plotter:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        texture: Texture | None = None,
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -70,6 +72,12 @@ class Plotter:
         roughness : float, optional
             Roughness factor for PBR, between 0 (mirror-like) and 1 (fully
             rough). Only used when ``pbr=True``. Default is 0.5.
+        texture : Texture, optional
+            Surface texture to apply to the mesh. Create one with
+            :class:`~pyvista_js.Texture`. The mesh should have texture
+            coordinates set (e.g., via
+            :meth:`~pyvista_js.PolyData.texture_map_to_plane`) or use a
+            primitive (Sphere, Cube, Cylinder) that generates them automatically.
         **kwargs
             Additional rendering options.
 
@@ -90,6 +98,15 @@ class Plotter:
         >>> mesh = pv.Sphere()
         >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
 
+        Texture example:
+
+        >>> from pyvista_js import examples
+        >>> plotter = pv.Plotter()
+        >>> sphere = pv.Sphere()
+        >>> texture = examples.download_masonry_texture()
+        >>> plotter.add_mesh(sphere, texture=texture)
+        >>> plotter.show()
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -99,6 +116,7 @@ class Plotter:
             pbr=pbr,
             metallic=metallic,
             roughness=roughness,
+            texture=texture,
         )
 
         # Store reference
@@ -110,6 +128,7 @@ class Plotter:
                 "pbr": pbr,
                 "metallic": metallic,
                 "roughness": roughness,
+                "texture": texture,
                 "actor": actor,
                 "kwargs": kwargs,
             },
