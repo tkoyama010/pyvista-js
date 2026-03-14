@@ -42,12 +42,14 @@ class PolyData:
         points: ArrayLike,
         faces: ArrayLike | None = None,
         *,
+        t_coords: ArrayLike | None = None,
         _vtk_js_source_fn: Callable[[int], str] | None = None,
         _mapper_setup_fn: Callable[[int], str] | None = None,
     ) -> None:
         """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
         self.faces = np.asarray(faces) if faces is not None else None
+        self.t_coords = np.asarray(t_coords) if t_coords is not None else None
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
 
@@ -218,6 +220,46 @@ class PolyData:
             _mapper_setup_fn=_mapper_setup_shrink,
         )
 
+    def texture_map_to_plane(self) -> PolyData:
+        """Generate texture coordinates by projecting points onto the XY plane.
+
+        Maps the mesh's X and Y extents to UV coordinates in the [0, 1] range.
+        This mirrors the PyVista :meth:`pyvista.DataSet.texture_map_to_plane` API.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with texture coordinates (``t_coords``) set.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> mesh = pv.Sphere()
+        >>> mapped = mesh.texture_map_to_plane()
+        >>> mapped.t_coords is not None
+        True
+        >>> mapped.t_coords.shape == (mesh.n_points, 2)
+        True
+
+        """
+        pts = self.points.astype(float)
+        x_min, x_max = float(pts[:, 0].min()), float(pts[:, 0].max())
+        y_min, y_max = float(pts[:, 1].min()), float(pts[:, 1].max())
+        x_range = x_max - x_min or 1.0
+        y_range = y_max - y_min or 1.0
+
+        u = (pts[:, 0] - x_min) / x_range
+        v = (pts[:, 1] - y_min) / y_range
+        t_coords = np.column_stack([u, v])
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            t_coords=t_coords,
+            _vtk_js_source_fn=self._vtk_js_source_fn,
+            _mapper_setup_fn=self._mapper_setup_fn,
+        )
+
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code for this mesh.
 
@@ -233,14 +275,32 @@ class PolyData:
 
         """
         if self._vtk_js_source_fn is not None:
-            return self._vtk_js_source_fn(idx)
-        # Default implementation for generic meshes using polydata
-        points_flat = self.points.flatten().tolist()
-        points_str = ",".join(map(str, points_flat))
-        return _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-            "{{POINTS_DATA}}",
-            points_str,
-        )
+            source_code = self._vtk_js_source_fn(idx)
+        else:
+            # Default implementation for generic meshes using polydata
+            points_flat = self.points.flatten().tolist()
+            points_str = ",".join(map(str, points_flat))
+            source_code = _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+                "{{POINTS_DATA}}",
+                points_str,
+            )
+
+        # Inject texture coordinates into the generic polydata (not primitives).
+        # Primitive sources (Sphere, Cube, Cylinder) auto-generate TCoords via vtk.js.
+        if self.t_coords is not None and self._vtk_js_source_fn is None:
+            tcoords_flat = self.t_coords.flatten().tolist()
+            tcoords_str = ",".join(map(str, tcoords_flat))
+            source_code += (
+                f"\n// Inject texture coordinates\n"
+                f"const tcoords{idx} = vtk.Common.Core.vtkDataArray.newInstance({{\n"
+                f"  numberOfComponents: 2,\n"
+                f"  values: Float32Array.from([{tcoords_str}]),\n"
+                f"  name: 'TextureCoordinates'\n"
+                f"}});\n"
+                f"polydata{idx}.getPointData().setTCoords(tcoords{idx});\n"
+            )
+
+        return source_code
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code for this mesh.
@@ -342,7 +402,7 @@ def Sphere(  # noqa: N802
         )
 
     def _mapper_setup_sphere(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+        return f"mapper{idx}.setInputConnection(texMapSphere{idx}.getOutputPort());"
 
     return PolyData(
         points=np.array(points),

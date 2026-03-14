@@ -10,5 +10,6 @@ actor{{INDEX}}.setMapper(mapper{{INDEX}});
 actor{{INDEX}}.getProperty().setColor({{COLOR_R}}, {{COLOR_G}}, {{COLOR_B}});
 actor{{INDEX}}.getProperty().setOpacity({{OPACITY}});
 {{PBR_CODE}}
+{{TEXTURE_CODE}}
 // Add actor to renderer
 renderer.addActor(actor{{INDEX}});
