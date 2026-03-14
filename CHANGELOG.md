@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.2.2...pyvista-js-v0.2.3) (2026-03-14)
+
+
+### Continuous Integration
+
+* fix PyPI Trusted Publishing failure caused by reusable workflow ([#130](https://github.com/tkoyama010/pyvista-js/issues/130)) ([c94ca18](https://github.com/tkoyama010/pyvista-js/commit/c94ca185395c3f903387e2cb743a6328705d12fc))
+
 ## [0.2.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.2.1...pyvista-js-v0.2.2) (2026-03-14)
 
 ### Features

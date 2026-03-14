@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.2.2"
+version = "0.2.3"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
