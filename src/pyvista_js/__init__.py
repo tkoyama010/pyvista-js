@@ -21,6 +21,8 @@ if sys.platform == "emscripten":
         asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
 
 from . import examples
+from .camera import Camera
+from .light import Light
 from .mesh import Cube, Cylinder, Mesh, PolyData, Sphere
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader
@@ -30,8 +32,10 @@ try:
     from .streamlit_integration import pyvista_chart
 
     __all__ = [
+        "Camera",
         "Cube",
         "Cylinder",
+        "Light",
         "Mesh",
         "OBJReader",
         "PLYReader",
@@ -46,8 +50,10 @@ try:
 except ImportError:
     # Streamlit not available
     __all__ = [
+        "Camera",
         "Cube",
         "Cylinder",
+        "Light",
         "Mesh",
         "OBJReader",
         "PLYReader",
