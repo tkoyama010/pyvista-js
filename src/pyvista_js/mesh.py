@@ -534,7 +534,7 @@ def Circle(  # noqa: N802
     101
 
     """
-    if resolution < 3:  # noqa: PLR2004
+    if resolution < 3:
         msg = f"resolution must be >= 3, got {resolution}"
         raise ValueError(msg)
 
