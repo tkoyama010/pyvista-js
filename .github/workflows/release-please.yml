@@ -30,4 +30,5 @@ jobs:
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}
     permissions:
+      contents: read
       id-token: write
