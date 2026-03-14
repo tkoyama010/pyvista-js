@@ -56,12 +56,14 @@ def test_texture_map_to_plane_preserves_points() -> None:
 
 def test_texture_map_to_plane_generic_polydata() -> None:
     """Test texture_map_to_plane on custom PolyData."""
-    points = np.array([
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-    ])
+    points = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ]
+    )
     faces = np.array([[0, 1, 2, 3]])
     mesh = PolyData(points, faces)
     mapped = mesh.texture_map_to_plane()
@@ -148,12 +150,14 @@ def test_texture_with_custom_polydata_and_tcoords(monkeypatch) -> None:
     """Test texture on custom PolyData with explicit texture coordinates."""
     monkeypatch.setattr(webbrowser, "open", lambda x: None)
 
-    points = np.array([
-        [0.0, 0.0, 0.0],
-        [1.0, 0.0, 0.0],
-        [1.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-    ])
+    points = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ]
+    )
     faces = np.array([[0, 1, 2, 3]])
     mesh = PolyData(points, faces)
     mapped = mesh.texture_map_to_plane()
@@ -174,11 +178,14 @@ def test_polydata_t_coords_none_by_default() -> None:
     assert mesh.t_coords is None
 
 
-@pytest.mark.parametrize("primitive_factory", [
-    lambda: pv.Sphere(),
-    lambda: pv.Cube(),
-    lambda: pv.Cylinder(),
-])
+@pytest.mark.parametrize(
+    "primitive_factory",
+    [
+        lambda: pv.Sphere(),
+        lambda: pv.Cube(),
+        lambda: pv.Cylinder(),
+    ],
+)
 def test_primitives_t_coords_none_by_default(primitive_factory) -> None:
     """Test that primitive meshes have t_coords=None by default."""
     mesh = primitive_factory()
