@@ -277,7 +277,7 @@ class Plotter:
     def camera(self, cam: Camera) -> None:
         """Set the camera."""
         self._camera = cam
-        self._renderer.set_camera(cam)
+        self._renderer.camera = cam
 
     @property
     def background_color(self) -> tuple[float, float, float]:

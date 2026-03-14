@@ -156,7 +156,7 @@ def test_camera_generates_html(monkeypatch) -> None:
         view_angle=30.0,
         clipping_range=(0.01, 1000.0),
     )
-    renderer.set_camera(camera)
+    renderer.camera = camera
 
     assert renderer._camera is camera
 
