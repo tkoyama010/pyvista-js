@@ -79,6 +79,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .camera import Camera
     from .mesh import PolyData
 
 from .examples import CubeMap
@@ -179,6 +180,7 @@ class _BaseHTMLRenderer:
         self._environment_texture_cubemap: CubeMap | None = None
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
+        self._camera: Camera | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Store the container ID for later HTML generation.
@@ -290,6 +292,17 @@ class _BaseHTMLRenderer:
         if viewup is not None:
             self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
 
+    def set_camera(self, camera: Camera) -> None:
+        """Set the camera for the renderer.
+
+        Parameters
+        ----------
+        camera : Camera
+            The camera object to use for rendering.
+
+        """
+        self._camera = camera
+
     def clear(self) -> None:
         """Remove all actors from the renderer."""
         self.actors = []
@@ -399,7 +412,21 @@ class _BaseHTMLRenderer:
             env_code = ""
 
         # Build camera code
-        if self._view_vector is not None:
+        if self._camera is not None:
+            px, py, pz = self._camera.position
+            fx, fy, fz = self._camera.focal_point
+            ux, uy, uz = self._camera.view_up
+            angle = self._camera.view_angle
+            near, far = self._camera.clipping_range
+            camera_code = (
+                "      const cam = renderer.getActiveCamera();\n"
+                f"      cam.setPosition({px}, {py}, {pz});\n"
+                f"      cam.setFocalPoint({fx}, {fy}, {fz});\n"
+                f"      cam.setViewUp({ux}, {uy}, {uz});\n"
+                f"      cam.setViewAngle({angle});\n"
+                f"      cam.setClippingRange({near}, {far});"
+            )
+        elif self._view_vector is not None:
             vx, vy, vz = self._view_vector
             ux, uy, uz = self._view_up
             camera_code = (
@@ -685,6 +712,7 @@ class MockRenderer:
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
+        self._camera: Camera | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
         """Mock container creation.
@@ -791,6 +819,18 @@ class MockRenderer:
         if viewup is not None:
             self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
         logger.info("Set view vector: %s (viewup=%s)", vector, viewup)
+
+    def set_camera(self, camera: Camera) -> None:
+        """Mock set_camera.
+
+        Parameters
+        ----------
+        camera : Camera
+            Camera object (stored but not rendered).
+
+        """
+        self._camera = camera
+        logger.info("Set camera: %s", camera)
 
     def set_environment_texture(self, texture: object) -> None:
         """Mock environment texture.
