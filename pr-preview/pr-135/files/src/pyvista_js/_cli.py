@@ -165,10 +165,7 @@ def _cmd_plot(args: argparse.Namespace) -> None:
     for file_str in args.files:
         path = Path(file_str)
         mesh = _read_mesh(path)
-        kwargs: dict[str, object] = {"opacity": args.opacity}
-        if args.color is not None:
-            kwargs["color"] = args.color
-        plotter.add_mesh(mesh, **kwargs)
+        plotter.add_mesh(mesh, color=args.color, opacity=args.opacity)
 
     plotter.show()
 
