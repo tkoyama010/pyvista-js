@@ -17,9 +17,9 @@ class Light:
 
     Wraps ``vtk.Rendering.Core.vtkLight`` and supports three placement modes:
 
-    - **SceneLight** – fixed in world space (default).
-    - **CameraLight** – moves with the camera.
-    - **Headlight** – always at the camera position, shining toward the focal point.
+    - **SceneLight** - fixed in world space (default).
+    - **CameraLight** - moves with the camera.
+    - **Headlight** - always at the camera position, shining toward the focal point.
 
     Parameters
     ----------
@@ -69,7 +69,7 @@ class Light:
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         position: tuple[float, float, float] = (0.0, 0.0, 1.0),
         focal_point: tuple[float, float, float] = (0.0, 0.0, 0.0),

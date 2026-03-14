@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from pyvista_js import Cube, Cylinder, Sphere, rendering
+from pyvista_js import Cube, Cylinder, PolyData, Sphere, rendering
 from pyvista_js.rendering import BrowserRenderer, MockRenderer, get_renderer
 
 
@@ -74,39 +74,32 @@ def test_mock_create_container(caplog) -> None:
 
 
 @pytest.mark.parametrize(
-    ("mesh_factory", "mesh_type", "params"),
+    ("mesh_factory", "expected_n_points"),
     [
         (
             lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=40, phi_resolution=50),
-            "Sphere",
-            {"radius": 2.0, "center": (1, 2, 3), "theta_resolution": 40, "phi_resolution": 50},
+            40 * 50,
         ),
         (
             lambda: Cube(center=(1, 1, 1), x_length=2.0, y_length=3.0, z_length=4.0),
-            "Cube",
-            {"center": (1, 1, 1), "x_length": 2.0, "y_length": 3.0, "z_length": 4.0},
+            8,
         ),
         (
             lambda: Cylinder(center=(0, 0, 0), radius=1.5, height=3.0, resolution=50),
-            "Cylinder",
-            {"center": (0, 0, 0), "radius": 1.5, "height": 3.0, "resolution": 50},
+            100,
         ),
     ],
 )
-def test_mesh_type_rendering(mesh_factory, mesh_type, params) -> None:
-    """Test that different mesh types render with correct parameters."""
+def test_mesh_type_rendering(mesh_factory, expected_n_points) -> None:
+    """Test that different mesh types render correctly."""
     renderer = MockRenderer()
     mesh = mesh_factory()
 
     actor = renderer.add_mesh_actor(mesh, color=(1, 0, 0), opacity=0.9)
 
     assert actor["mesh"] is mesh
-    assert hasattr(mesh, "_mesh_type")
-    assert mesh._mesh_type == mesh_type
-    assert hasattr(mesh, "_params")
-
-    for key, value in params.items():
-        assert mesh._params[key] == value
+    assert isinstance(mesh, PolyData)
+    assert mesh.n_points == expected_n_points
 
 
 def test_multiple_mesh_types_rendering() -> None:
@@ -122,9 +115,7 @@ def test_multiple_mesh_types_rendering() -> None:
     renderer.add_mesh_actor(cylinder, color=(0, 0, 1))
 
     assert len(renderer.actors) == 3
-    assert renderer.actors[0]["mesh"]._mesh_type == "Sphere"
-    assert renderer.actors[1]["mesh"]._mesh_type == "Cube"
-    assert renderer.actors[2]["mesh"]._mesh_type == "Cylinder"
+    assert all(isinstance(actor["mesh"], PolyData) for actor in renderer.actors)
 
 
 @pytest.mark.parametrize(
