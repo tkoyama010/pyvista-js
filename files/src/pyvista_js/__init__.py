@@ -26,6 +26,7 @@ from .light import Light
 from .mesh import Cube, Cylinder, Mesh, PolyData, Sphere
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader
+from .texture import Texture
 
 # Streamlit integration (optional)
 try:
@@ -43,6 +44,7 @@ try:
         "PolyData",
         "PolyDataReader",
         "Sphere",
+        "Texture",
         "__version__",
         "examples",
         "pyvista_chart",
@@ -61,6 +63,7 @@ except ImportError:
         "PolyData",
         "PolyDataReader",
         "Sphere",
+        "Texture",
         "__version__",
         "examples",
     ]
