@@ -4,6 +4,7 @@ import pytest
 
 import pyvista_js as pv
 from pyvista_js.camera import Camera
+from pyvista_js.rendering import MockRenderer
 
 
 def test_camera_default_values() -> None:
@@ -146,8 +147,6 @@ def test_plotter_camera_updates_renderer() -> None:
 def test_camera_generates_html(monkeypatch) -> None:
     """Test that setting a camera generates correct vtk.js camera code in HTML."""
     monkeypatch.setenv("PYVISTA_JS_NO_BROWSER", "1")
-
-    from pyvista_js.rendering import MockRenderer
 
     renderer = MockRenderer()
     camera = Camera(
