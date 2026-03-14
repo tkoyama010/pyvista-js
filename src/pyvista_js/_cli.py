@@ -76,7 +76,7 @@ def _add_plot_subcommand(subparsers: argparse._SubParsersAction) -> None:  # typ
         "--color",
         default=None,
         metavar="COLOR",
-        help="Mesh colour applied to all files (e.g. ``red``, ``#ff0000``). Default: vtk.js default.",
+        help="Mesh colour applied to all files (e.g. ``red``, ``#ff0000``).",
     )
     plot_parser.add_argument(
         "--background",

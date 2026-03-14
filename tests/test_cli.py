@@ -25,19 +25,19 @@ def test_info_logs_version(caplog) -> None:
     assert "Platform" in messages
 
 
-def test_plot_vtk(caplog) -> None:
+def test_plot_vtk() -> None:
     """``pyvista-js plot`` runs without error on a .vtk file."""
     with patch("pyvista_js.Plotter.show"):
         main(["plot", str(VTK_FILE)])
 
 
-def test_plot_ply(caplog) -> None:
+def test_plot_ply() -> None:
     """``pyvista-js plot`` runs without error on a .ply file."""
     with patch("pyvista_js.Plotter.show"):
         main(["plot", str(PLY_FILE)])
 
 
-def test_plot_obj(caplog) -> None:
+def test_plot_obj() -> None:
     """``pyvista-js plot`` runs without error on a .obj file."""
     with patch("pyvista_js.Plotter.show"):
         main(["plot", str(OBJ_FILE)])
@@ -49,7 +49,7 @@ def test_plot_with_color_and_background() -> None:
         main(["plot", str(VTK_FILE), "--color", "red", "--background", "white"])
 
 
-def test_plot_missing_file_exits(caplog) -> None:
+def test_plot_missing_file_exits() -> None:
     """``pyvista-js plot`` exits with code 1 when the file does not exist."""
     with pytest.raises(SystemExit) as exc_info:
         main(["plot", "nonexistent.vtk"])
