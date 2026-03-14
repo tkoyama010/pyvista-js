@@ -39,10 +39,21 @@ This section provides detailed documentation for the pyvista-js public API.
    :toctree: _autosummary
    :nosignatures:
 
+   pyvista_js.PolyData
    pyvista_js.Mesh
    pyvista_js.Sphere
    pyvista_js.Cube
    pyvista_js.Cylinder
+```
+
+## Filters
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.PolyData.shrink
 ```
 
 ## Readers
