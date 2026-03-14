@@ -12,8 +12,10 @@ from typing import TYPE_CHECKING, Any
 from .rendering import get_renderer
 
 if TYPE_CHECKING:
+    from .camera import Camera
     from .examples import CubeMap
-    from .mesh import Mesh
+    from .light import Light
+    from .mesh import PolyData
 
 
 class Plotter:
@@ -38,10 +40,11 @@ class Plotter:
         self._renderer = get_renderer()
         self._background_color = (1.0, 1.0, 1.0)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
+        self._camera: Camera | None = None
 
     def add_mesh(  # noqa: PLR0913
         self,
-        mesh: Mesh,
+        mesh: PolyData,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
@@ -204,6 +207,26 @@ class Plotter:
         """
         self._renderer.set_environment_texture(texture)
 
+    def add_light(self, light: Light) -> None:
+        """Add a light source to the scene.
+
+        Parameters
+        ----------
+        light : Light
+            The :class:`~pyvista_js.light.Light` to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere(), color='white')
+        >>> light = pv.Light(position=(5, 5, 5), color='white', intensity=2.0)
+        >>> plotter.add_light(light)
+        >>> plotter.show()
+
+        """
+        self._renderer.add_light(light)
+
     def clear(self) -> None:
         """Clear all actors from the plotter.
 
@@ -221,6 +244,40 @@ class Plotter:
     def actors(self) -> list[dict[str, Any]]:
         """Return the list of actors in the plotter."""
         return self._actors
+
+    @property
+    def camera(self) -> Camera | None:
+        """Get or set the camera for the plotter.
+
+        Parameters
+        ----------
+        cam : Camera
+            The camera object to use for rendering.
+
+        Returns
+        -------
+        Camera or None
+            The current camera, or None if not set.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere())
+        >>> camera = pv.Camera()
+        >>> camera.position = (5, 5, 5)
+        >>> camera.focal_point = (0, 0, 0)
+        >>> plotter.camera = camera
+        >>> plotter.show()
+
+        """
+        return self._camera
+
+    @camera.setter
+    def camera(self, cam: Camera) -> None:
+        """Set the camera."""
+        self._camera = cam
+        self._renderer.camera = cam
 
     @property
     def background_color(self) -> tuple[float, float, float]:

@@ -5,12 +5,15 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from numpy.typing import ArrayLike
 
 # Load JavaScript templates relative to this file
@@ -21,8 +24,8 @@ _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 
 
-class Mesh:
-    """Base mesh class.
+class PolyData:
+    """Base polygonal mesh class.
 
     Parameters
     ----------
@@ -33,10 +36,19 @@ class Mesh:
 
     """
 
-    def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
-        """Initialize a mesh."""
+    def __init__(
+        self,
+        points: ArrayLike,
+        faces: ArrayLike | None = None,
+        *,
+        _vtk_js_source_fn: Callable[[int], str] | None = None,
+        _mapper_setup_fn: Callable[[int], str] | None = None,
+    ) -> None:
+        """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
         self.faces = np.asarray(faces) if faces is not None else None
+        self._vtk_js_source_fn = _vtk_js_source_fn
+        self._mapper_setup_fn = _mapper_setup_fn
 
     @property
     def n_points(self) -> int:
@@ -155,6 +167,8 @@ class Mesh:
             JavaScript code to create the vtk.js source for this mesh.
 
         """
+        if self._vtk_js_source_fn is not None:
+            return self._vtk_js_source_fn(idx)
         # Default implementation for generic meshes using polydata
         points_flat = self.points.flatten().tolist()
         points_str = ",".join(map(str, points_flat))
@@ -177,116 +191,35 @@ class Mesh:
             JavaScript code to set up the mapper for this mesh.
 
         """
-        # Default implementation for generic meshes
+        if self._mapper_setup_fn is not None:
+            return self._mapper_setup_fn(idx)
         return f"mapper{idx}.setInputData(source{idx});"
 
 
-class SphereMesh(Mesh):
-    """Sphere mesh with vtk.js source generation."""
+class Mesh(PolyData):
+    """Deprecated base mesh class.
 
-    def __init__(
-        self,
-        points: ArrayLike,
-        radius: float,
-        center: tuple[float, float, float],
-        theta_resolution: int,
-        phi_resolution: int,
-    ) -> None:
-        """Initialize a sphere mesh."""
-        super().__init__(points)
-        self.radius = radius
-        self.center = center
-        self.theta_resolution = theta_resolution
-        self.phi_resolution = phi_resolution
+    .. deprecated:: 0.2
+        :class:`Mesh` is deprecated and will be removed in version 0.4.
+        Use :class:`PolyData` instead.
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js sphere source code."""
-        return (
-            _SPHERE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(self.center[0]))
-            .replace("{{CENTER_Y}}", str(self.center[1]))
-            .replace("{{CENTER_Z}}", str(self.center[2]))
-            .replace("{{RADIUS}}", str(self.radius))
-            .replace("{{THETA_RESOLUTION}}", str(self.theta_resolution))
-            .replace("{{PHI_RESOLUTION}}", str(self.phi_resolution))
+    Parameters
+    ----------
+    points : array-like
+        Vertex coordinates as an (n, 3) array.
+    faces : array-like, optional
+        Cell connectivity information.
+
+    """
+
+    def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
+        """Initialize a Mesh (deprecated)."""
+        warnings.warn(
+            "Mesh is deprecated and will be removed in version 0.4. Use PolyData instead.",
+            DeprecationWarning,
+            stacklevel=2,
         )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code for sphere mesh."""
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
-
-class CubeMesh(Mesh):
-    """Cube mesh with vtk.js source generation."""
-
-    def __init__(  # noqa: PLR0913
-        self,
-        points: ArrayLike,
-        faces: ArrayLike,
-        center: tuple[float, float, float],
-        x_length: float,
-        y_length: float,
-        z_length: float,
-    ) -> None:
-        """Initialize a cube mesh."""
         super().__init__(points, faces)
-        self.center = center
-        self.x_length = x_length
-        self.y_length = y_length
-        self.z_length = z_length
-
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js cube source code."""
-        return (
-            _CUBE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(self.center[0]))
-            .replace("{{CENTER_Y}}", str(self.center[1]))
-            .replace("{{CENTER_Z}}", str(self.center[2]))
-            .replace("{{X_LENGTH}}", str(self.x_length))
-            .replace("{{Y_LENGTH}}", str(self.y_length))
-            .replace("{{Z_LENGTH}}", str(self.z_length))
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code for cube mesh."""
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
-
-class CylinderMesh(Mesh):
-    """Cylinder mesh with vtk.js source generation."""
-
-    def __init__(  # noqa: PLR0913
-        self,
-        points: ArrayLike,
-        center: tuple[float, float, float],
-        direction: tuple[float, float, float],
-        radius: float,
-        height: float,
-        resolution: int,
-    ) -> None:
-        """Initialize a cylinder mesh."""
-        super().__init__(points)
-        self.center = center
-        self.direction = direction
-        self.radius = radius
-        self.height = height
-        self.resolution = resolution
-
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js cylinder source code."""
-        return (
-            _CYLINDER_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(self.center[0]))
-            .replace("{{CENTER_Y}}", str(self.center[1]))
-            .replace("{{CENTER_Z}}", str(self.center[2]))
-            .replace("{{RADIUS}}", str(self.radius))
-            .replace("{{HEIGHT}}", str(self.height))
-            .replace("{{RESOLUTION}}", str(self.resolution))
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code for cylinder mesh."""
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
 
 
 def Sphere(  # noqa: N802
@@ -294,7 +227,7 @@ def Sphere(  # noqa: N802
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     theta_resolution: int = 30,
     phi_resolution: int = 30,
-) -> SphereMesh:
+) -> PolyData:
     """Create a sphere mesh.
 
     Parameters
@@ -310,7 +243,7 @@ def Sphere(  # noqa: N802
 
     Returns
     -------
-    SphereMesh
+    PolyData
         A sphere mesh.
 
     Examples
@@ -321,7 +254,6 @@ def Sphere(  # noqa: N802
     902
 
     """
-    # Generate sphere points using spherical coordinates
     theta = np.linspace(0, 2 * np.pi, theta_resolution)
     phi = np.linspace(0, np.pi, phi_resolution)
 
@@ -333,22 +265,25 @@ def Sphere(  # noqa: N802
             z = radius * np.cos(p) + center[2]
             points.append([x, y, z])
 
-    mesh = SphereMesh(
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _SPHERE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(center[0]))
+            .replace("{{CENTER_Y}}", str(center[1]))
+            .replace("{{CENTER_Z}}", str(center[2]))
+            .replace("{{RADIUS}}", str(radius))
+            .replace("{{THETA_RESOLUTION}}", str(theta_resolution))
+            .replace("{{PHI_RESOLUTION}}", str(phi_resolution))
+        )
+
+    def _mapper_setup_sphere(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
         points=np.array(points),
-        radius=radius,
-        center=center,
-        theta_resolution=theta_resolution,
-        phi_resolution=phi_resolution,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_sphere,
     )
-    # Store mesh metadata for backward compatibility
-    mesh.__dict__["_mesh_type"] = "Sphere"
-    mesh.__dict__["_params"] = {
-        "radius": radius,
-        "center": center,
-        "theta_resolution": theta_resolution,
-        "phi_resolution": phi_resolution,
-    }
-    return mesh
 
 
 def Cube(  # noqa: N802
@@ -356,7 +291,7 @@ def Cube(  # noqa: N802
     x_length: float = 1.0,
     y_length: float = 1.0,
     z_length: float = 1.0,
-) -> CubeMesh:
+) -> PolyData:
     """Create a cube mesh.
 
     Parameters
@@ -372,7 +307,7 @@ def Cube(  # noqa: N802
 
     Returns
     -------
-    CubeMesh
+    PolyData
         A cube mesh.
 
     Examples
@@ -383,7 +318,6 @@ def Cube(  # noqa: N802
     8
 
     """
-    # Generate cube vertices
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
 
@@ -400,7 +334,6 @@ def Cube(  # noqa: N802
         ],
     )
 
-    # Define faces (each face has 4 vertices)
     faces = np.array(
         [
             [0, 1, 2, 3],  # Bottom
@@ -412,32 +345,35 @@ def Cube(  # noqa: N802
         ],
     )
 
-    mesh = CubeMesh(
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _CUBE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(center[0]))
+            .replace("{{CENTER_Y}}", str(center[1]))
+            .replace("{{CENTER_Z}}", str(center[2]))
+            .replace("{{X_LENGTH}}", str(x_length))
+            .replace("{{Y_LENGTH}}", str(y_length))
+            .replace("{{Z_LENGTH}}", str(z_length))
+        )
+
+    def _mapper_setup_cube(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
         points=points,
         faces=faces,
-        center=center,
-        x_length=x_length,
-        y_length=y_length,
-        z_length=z_length,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_cube,
     )
-    # Store mesh metadata for backward compatibility
-    mesh.__dict__["_mesh_type"] = "Cube"
-    mesh.__dict__["_params"] = {
-        "center": center,
-        "x_length": x_length,
-        "y_length": y_length,
-        "z_length": z_length,
-    }
-    return mesh
 
 
 def Cylinder(  # noqa: N802
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
-    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),  # noqa: ARG001
     radius: float = 0.5,
     height: float = 1.0,
     resolution: int = 100,
-) -> CylinderMesh:
+) -> PolyData:
     """Create a cylinder mesh.
 
     Parameters
@@ -455,7 +391,7 @@ def Cylinder(  # noqa: N802
 
     Returns
     -------
-    CylinderMesh
+    PolyData
         A cylinder mesh.
 
     Examples
@@ -464,42 +400,40 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    # Generate cylinder points
     theta = np.linspace(0, 2 * np.pi, resolution)
 
-    # Bottom circle
     bottom_points = []
     for t in theta:
-        x = radius * np.cos(t) + center[0]
-        y = radius * np.sin(t) + center[1]
-        z = center[2] - height / 2
-        bottom_points.append([x, y, z])
+        bx = radius * np.cos(t) + center[0]
+        by = radius * np.sin(t) + center[1]
+        bz = center[2] - height / 2
+        bottom_points.append([bx, by, bz])
 
-    # Top circle
     top_points = []
     for t in theta:
-        x = radius * np.cos(t) + center[0]
-        y = radius * np.sin(t) + center[1]
-        z = center[2] + height / 2
-        top_points.append([x, y, z])
+        tx = radius * np.cos(t) + center[0]
+        ty = radius * np.sin(t) + center[1]
+        tz = center[2] + height / 2
+        top_points.append([tx, ty, tz])
 
     points = np.vstack([bottom_points, top_points])
 
-    mesh = CylinderMesh(
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _CYLINDER_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(center[0]))
+            .replace("{{CENTER_Y}}", str(center[1]))
+            .replace("{{CENTER_Z}}", str(center[2]))
+            .replace("{{RADIUS}}", str(radius))
+            .replace("{{HEIGHT}}", str(height))
+            .replace("{{RESOLUTION}}", str(resolution))
+        )
+
+    def _mapper_setup_cylinder(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
         points=points,
-        center=center,
-        direction=direction,
-        radius=radius,
-        height=height,
-        resolution=resolution,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_cylinder,
     )
-    # Store mesh metadata for backward compatibility
-    mesh.__dict__["_mesh_type"] = "Cylinder"
-    mesh.__dict__["_params"] = {
-        "center": center,
-        "direction": direction,
-        "radius": radius,
-        "height": height,
-        "resolution": resolution,
-    }
-    return mesh
