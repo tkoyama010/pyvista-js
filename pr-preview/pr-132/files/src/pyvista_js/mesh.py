@@ -159,6 +159,15 @@ class PolyData:
 
         This filter shrinks the individual cells of a mesh towards their
         centroids, producing visual separation between adjacent cells.
+        It mirrors the PyVista ``shrink`` filter API.
+
+        .. note::
+
+            The shrink is computed in JavaScript at render time by
+            iterating over the cell array from the vtk.js source,
+            moving each vertex toward its cell's centroid.
+            ``vtk.js`` does not include ``vtkShrinkFilter``, so this
+            filter is implemented as a custom JavaScript pass.
 
         Parameters
         ----------
@@ -180,6 +189,10 @@ class PolyData:
         >>> isinstance(shrunk, pv.PolyData)
         True
 
+        Render the shrunk mesh:
+
+        >>> shrunk.plot()  # doctest: +SKIP
+
         """
         if not (0.0 <= shrink_factor <= 1.0):
             msg = f"shrink_factor must be between 0 and 1, got {shrink_factor}"
@@ -196,7 +209,7 @@ class PolyData:
             return base + "\n" + shrink_code
 
         def _mapper_setup_shrink(idx: int) -> str:
-            return f"mapper{idx}.setInputConnection(shrinkFilter{idx}.getOutputPort());"
+            return f"mapper{idx}.setInputData(shrunkPD{idx});"
 
         return PolyData(
             points=self.points,
