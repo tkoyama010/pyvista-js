@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 
 import pyvista_js as pv
-from pyvista_js import PolyData, Sphere, Texture
-from pyvista_js import examples
+from pyvista_js import PolyData, Sphere, Texture, examples
 
 
 def test_texture_creation() -> None:
