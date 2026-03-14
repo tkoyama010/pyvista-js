@@ -311,15 +311,26 @@ class _BaseHTMLRenderer:
         if viewup is not None:
             self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
 
-    def set_camera(self, camera: Camera) -> None:
-        """Set the camera for the renderer.
+    @property
+    def camera(self) -> Camera | None:
+        """Get or set the camera for the renderer.
 
         Parameters
         ----------
         camera : Camera
             The camera object to use for rendering.
 
+        Returns
+        -------
+        Camera or None
+            The current camera, or None if not set.
+
         """
+        return self._camera
+
+    @camera.setter
+    def camera(self, camera: Camera) -> None:
+        """Set the camera."""
         self._camera = camera
 
     def clear(self) -> None:
@@ -883,15 +894,26 @@ class MockRenderer:
             self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
         logger.info("Set view vector: %s (viewup=%s)", vector, viewup)
 
-    def set_camera(self, camera: Camera) -> None:
-        """Mock set_camera.
+    @property
+    def camera(self) -> Camera | None:
+        """Get or set the camera (mock).
 
         Parameters
         ----------
         camera : Camera
             Camera object (stored but not rendered).
 
+        Returns
+        -------
+        Camera or None
+            The current camera, or None if not set.
+
         """
+        return self._camera
+
+    @camera.setter
+    def camera(self, camera: Camera) -> None:
+        """Set the camera."""
         self._camera = camera
         logger.info("Set camera: %s", camera)
 
