@@ -12,6 +12,16 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Plotter
 ```
 
+## Lighting
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.Light
+```
+
 ## Mesh
 
 ```{eval-rst}
