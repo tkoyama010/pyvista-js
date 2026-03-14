@@ -13,7 +13,7 @@ from .rendering import get_renderer
 
 if TYPE_CHECKING:
     from .examples import CubeMap
-    from .mesh import Mesh
+    from .mesh import PolyData
 
 
 class Plotter:
@@ -41,7 +41,7 @@ class Plotter:
 
     def add_mesh(  # noqa: PLR0913
         self,
-        mesh: Mesh,
+        mesh: PolyData,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002

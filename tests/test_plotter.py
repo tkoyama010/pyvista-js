@@ -4,7 +4,7 @@ import webbrowser
 
 import pytest
 
-from pyvista_js import Cube, Cylinder, Plotter, Sphere
+from pyvista_js import Cube, Cylinder, Plotter, PolyData, Sphere
 
 
 def test_plotter_creation() -> None:
@@ -66,26 +66,14 @@ def test_show(monkeypatch) -> None:
 
 
 @pytest.mark.parametrize(
-    ("mesh_factory", "expected_type", "params"),
+    ("mesh_factory", "expected_n_points"),
     [
-        (
-            lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50),
-            "Sphere",
-            {"radius": 2.0, "center": (1, 2, 3), "theta_resolution": 50},
-        ),
-        (
-            lambda: Cube(center=(0, 0, 0), x_length=3.0, y_length=2.0, z_length=1.0),
-            "Cube",
-            {"x_length": 3.0, "y_length": 2.0, "z_length": 1.0},
-        ),
-        (
-            lambda: Cylinder(radius=1.5, height=4.0, resolution=80),
-            "Cylinder",
-            {"radius": 1.5, "height": 4.0, "resolution": 80},
-        ),
+        (lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50), 50 * 30),
+        (lambda: Cube(center=(0, 0, 0), x_length=3.0, y_length=2.0, z_length=1.0), 8),
+        (lambda: Cylinder(radius=1.5, height=4.0, resolution=80), 160),
     ],
 )
-def test_plotter_mesh_with_parameters(mesh_factory, expected_type, params) -> None:
+def test_plotter_mesh_with_parameters(mesh_factory, expected_n_points) -> None:
     """Test plotter correctly handles different mesh types with parameters."""
     plotter = Plotter()
     mesh = mesh_factory()
@@ -94,11 +82,8 @@ def test_plotter_mesh_with_parameters(mesh_factory, expected_type, params) -> No
 
     assert len(plotter.actors) == 1
     actor = plotter.actors[0]
-    assert actor["mesh"]._mesh_type == expected_type
-
-    # Check that key parameters are preserved
-    for key, value in params.items():
-        assert actor["mesh"]._params[key] == value
+    assert isinstance(actor["mesh"], PolyData)
+    assert actor["mesh"].n_points == expected_n_points
 
 
 def test_plotter_all_mesh_types() -> None:
@@ -114,12 +99,7 @@ def test_plotter_all_mesh_types() -> None:
     plotter.add_mesh(cylinder, color="blue")
 
     assert len(plotter.actors) == 3
-
-    # Verify each mesh type is correctly stored
-    mesh_types = [actor["mesh"]._mesh_type for actor in plotter.actors]
-    assert "Sphere" in mesh_types
-    assert "Cube" in mesh_types
-    assert "Cylinder" in mesh_types
+    assert all(isinstance(actor["mesh"], PolyData) for actor in plotter.actors)
 
 
 def test_background_color_default() -> None:

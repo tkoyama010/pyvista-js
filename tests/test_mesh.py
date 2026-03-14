@@ -5,16 +5,25 @@ import webbrowser
 import numpy as np
 import pytest
 
-from pyvista_js import Cube, Cylinder, Mesh, Sphere
+from pyvista_js import Cube, Cylinder, Mesh, PolyData, Sphere
 
 
 def test_mesh_creation() -> None:
     """Test basic mesh creation."""
     points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
-    mesh = Mesh(points)
+    mesh = PolyData(points)
 
     assert mesh.n_points == 3
     assert np.array_equal(mesh.points, points)
+
+
+def test_mesh_deprecated() -> None:
+    """Test that Mesh emits a DeprecationWarning."""
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+    with pytest.warns(DeprecationWarning, match="Mesh is deprecated"):
+        mesh = Mesh(points)
+    assert isinstance(mesh, PolyData)
+    assert mesh.n_points == 3
 
 
 def test_sphere_creation() -> None:
@@ -64,7 +73,7 @@ def test_cylinder_creation() -> None:
 
 def test_bounding_sphere_empty_mesh() -> None:
     """Test bounding_sphere returns NaN values for a mesh with no points."""
-    mesh = Mesh(points=np.empty((0, 3)))
+    mesh = PolyData(points=np.empty((0, 3)))
     r, c = mesh.bounding_sphere
 
     assert np.isnan(r)
@@ -120,12 +129,12 @@ def test_mesh_plot_with_kwargs(monkeypatch) -> None:
 
 
 def test_generic_mesh_plot(monkeypatch) -> None:
-    """Test that generic Mesh instances can also use plot()."""
+    """Test that generic PolyData instances can also use plot()."""
     opened: list[str] = []
     monkeypatch.setattr(webbrowser, "open", opened.append)
 
     points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
-    mesh = Mesh(points)
+    mesh = PolyData(points)
     mesh.plot()
 
     assert len(opened) == 1
