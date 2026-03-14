@@ -79,6 +79,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .light import Light
     from .mesh import Mesh
 
 from .examples import CubeMap
@@ -173,6 +174,7 @@ class _BaseHTMLRenderer:
     def __init__(self) -> None:
         """Initialize shared renderer state."""
         self.actors: list[dict[str, object]] = []
+        self.lights: list[Light] = []
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -243,6 +245,23 @@ class _BaseHTMLRenderer:
         self.actors.append(actor_info)
         return actor_info
 
+    def add_light(self, light: Light) -> None:
+        """Add a light source to the scene.
+
+        Parameters
+        ----------
+        light : Light
+            The :class:`~pyvista_js.light.Light` instance to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> renderer = get_renderer()
+        >>> renderer.add_light(pv.Light(position=(1, 1, 1), intensity=2.0))
+
+        """
+        self.lights.append(light)
+
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting.
 
@@ -291,8 +310,34 @@ class _BaseHTMLRenderer:
             self._view_up = (float(viewup[0]), float(viewup[1]), float(viewup[2]))
 
     def clear(self) -> None:
-        """Remove all actors from the renderer."""
+        """Remove all actors and lights from the renderer."""
         self.actors = []
+        self.lights = []
+
+    def _generate_lights_code(self) -> str:
+        """Generate vtk.js JavaScript for all lights.
+
+        Falls back to a default directional light when no lights have been added.
+        """
+        if not self.lights:
+            # Default angled directional light for specular highlights
+            return (
+                "      // Default directional light\n"
+                "      const light0 = vtk.Rendering.Core.vtkLight.newInstance();\n"
+                "      light0.setLightTypeToSceneLight();\n"
+                "      light0.setPositional(false);\n"
+                "      light0.setIntensity(1.0);\n"
+                "      light0.setPosition(1, 1, 1);\n"
+                "      light0.setFocalPoint(0, 0, 0);\n"
+                "      renderer.addLight(light0);"
+            )
+        lines = []
+        for idx, light in enumerate(self.lights):
+            code = light.generate_vtk_js_code(idx)
+            # Indent each line
+            indented = "\n".join("      " + line for line in code.splitlines())
+            lines.append(indented)
+        return "\n\n".join(lines)
 
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
@@ -398,6 +443,9 @@ class _BaseHTMLRenderer:
         else:
             env_code = ""
 
+        # Build lights code
+        lights_code = self._generate_lights_code()
+
         # Build camera code
         if self._view_vector is not None:
             vx, vy, vz = self._view_vector
@@ -419,6 +467,7 @@ class _BaseHTMLRenderer:
             .replace("{{BACKGROUND_R}}", str(self.background[0]))
             .replace("{{BACKGROUND_G}}", str(self.background[1]))
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
+            .replace("{{LIGHTS_CODE}}", lights_code)
             .replace("{{ACTORS_CODE}}", actors_code)
             .replace("{{ENVIRONMENT_CODE}}", env_code)
             .replace("{{CAMERA_CODE}}", camera_code)
@@ -682,6 +731,7 @@ class MockRenderer:
     def __init__(self) -> None:
         """Initialize mock renderer."""
         self.actors: list[dict[str, object]] = []
+        self.lights: list[Light] = []
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
@@ -753,12 +803,25 @@ class MockRenderer:
         """
         logger.info("Rendering %d actors", len(self.actors))
 
+    def add_light(self, light: Light) -> None:
+        """Mock add_light.
+
+        Parameters
+        ----------
+        light : Light
+            The light to add (stored but not rendered).
+
+        """
+        self.lights.append(light)
+        logger.info("Added light type=%s intensity=%s", light.light_type, light.intensity)
+
     def clear(self) -> None:
         """Mock clear.
 
-        Removes all actors from the mock renderer.
+        Removes all actors and lights from the mock renderer.
         """
         self.actors = []
+        self.lights = []
         logger.info("Cleared all actors")
 
     def set_background(self, color: tuple[float, float, float]) -> None:
