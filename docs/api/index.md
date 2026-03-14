@@ -86,6 +86,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.examples.CubeMap
+   pyvista_js.examples.download_masonry_texture
    pyvista_js.examples.download_sky_box_cube_map
 ```
 
