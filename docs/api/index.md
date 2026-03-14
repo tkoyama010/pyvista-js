@@ -46,6 +46,16 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Cylinder
 ```
 
+## Texture
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.Texture
+```
+
 ## Filters
 
 ```{eval-rst}
@@ -54,6 +64,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.PolyData.shrink
+   pyvista_js.PolyData.texture_map_to_plane
 ```
 
 ## Readers
@@ -75,6 +86,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.examples.CubeMap
+   pyvista_js.examples.download_masonry_texture
    pyvista_js.examples.download_sky_box_cube_map
 ```
 
