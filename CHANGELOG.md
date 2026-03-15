@@ -2,19 +2,17 @@
 
 ## [0.3.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.2.3...pyvista-js-v0.3.0) (2026-03-15)
 
-
 ### Features
 
-* add Circle primitive mirroring pyvista.Circle API ([#138](https://github.com/tkoyama010/pyvista-js/issues/138)) ([555903d](https://github.com/tkoyama010/pyvista-js/commit/555903dfebb5d3b9b6088c42b72249accb4a3798))
-* add CLI with plot and info subcommands ([#135](https://github.com/tkoyama010/pyvista-js/issues/135)) ([86245b7](https://github.com/tkoyama010/pyvista-js/commit/86245b7dc6921f7dffa646dd234a1597475d1012))
-* add PolyData.save() using meshio and examples.download_trumpet() ([#139](https://github.com/tkoyama010/pyvista-js/issues/139)) ([2804ece](https://github.com/tkoyama010/pyvista-js/commit/2804ece0475f7507f5561a9660d1ea793c7e1cd5))
-* add shrink filter to PolyData ([#132](https://github.com/tkoyama010/pyvista-js/issues/132)) ([84de11b](https://github.com/tkoyama010/pyvista-js/commit/84de11b0b5275057e565bd37a0fa028d3c191aec))
-* add Texture class and texture mapping support ([#136](https://github.com/tkoyama010/pyvista-js/issues/136)) ([1659914](https://github.com/tkoyama010/pyvista-js/commit/16599146b3f2093e2aff6af5c427beebafdc39ea))
-
+- add Circle primitive mirroring pyvista.Circle API ([#138](https://github.com/tkoyama010/pyvista-js/issues/138)) ([555903d](https://github.com/tkoyama010/pyvista-js/commit/555903dfebb5d3b9b6088c42b72249accb4a3798))
+- add CLI with plot and info subcommands ([#135](https://github.com/tkoyama010/pyvista-js/issues/135)) ([86245b7](https://github.com/tkoyama010/pyvista-js/commit/86245b7dc6921f7dffa646dd234a1597475d1012))
+- add PolyData.save() using meshio and examples.download_trumpet() ([#139](https://github.com/tkoyama010/pyvista-js/issues/139)) ([2804ece](https://github.com/tkoyama010/pyvista-js/commit/2804ece0475f7507f5561a9660d1ea793c7e1cd5))
+- add shrink filter to PolyData ([#132](https://github.com/tkoyama010/pyvista-js/issues/132)) ([84de11b](https://github.com/tkoyama010/pyvista-js/commit/84de11b0b5275057e565bd37a0fa028d3c191aec))
+- add Texture class and texture mapping support ([#136](https://github.com/tkoyama010/pyvista-js/issues/136)) ([1659914](https://github.com/tkoyama010/pyvista-js/commit/16599146b3f2093e2aff6af5c427beebafdc39ea))
 
 ### Documentation
 
-* add claude as a contributor for code ([#134](https://github.com/tkoyama010/pyvista-js/issues/134)) ([74a63d0](https://github.com/tkoyama010/pyvista-js/commit/74a63d009cca827678880f1869ee4e6e666c08f2))
+- add claude as a contributor for code ([#134](https://github.com/tkoyama010/pyvista-js/issues/134)) ([74a63d0](https://github.com/tkoyama010/pyvista-js/commit/74a63d009cca827678880f1869ee4e6e666c08f2))
 
 ## [0.2.3](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.2.2...pyvista-js-v0.2.3) (2026-03-14)
 
