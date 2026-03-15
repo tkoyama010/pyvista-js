@@ -733,6 +733,8 @@ def Line(  # noqa: N802
     >>> line.n_points
     2
 
+    >>> line.plot(color="black")  # doctest: +SKIP
+
     """
     if resolution < 1:
         msg = f"resolution must be >= 1, got {resolution}"
