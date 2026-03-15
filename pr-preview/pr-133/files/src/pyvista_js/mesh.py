@@ -158,6 +158,74 @@ class PolyData:
         )
         plotter.show()
 
+    def save(self, filename: str | Path) -> None:
+        """Write this mesh to disk using meshio.
+
+        The file format is inferred from the extension of ``filename``.
+        Any format supported by `meshio <https://github.com/nschloe/meshio>`_
+        can be used (e.g. ``'.obj'``, ``'.vtk'``, ``'.ply'``, ``'.stl'``).
+
+        .. note::
+
+            Requires ``meshio`` to be installed::
+
+                pip install "pyvista-js[io]"
+
+            In Pyodide / JupyterLite, install it with micropip before calling
+            this method::
+
+                import micropip
+                await micropip.install("meshio")
+
+        Parameters
+        ----------
+        filename : str or Path
+            Output path. The extension determines the file format.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ImportError
+            If ``meshio`` is not installed.
+
+        Examples
+        --------
+        >>> from pyvista_js import examples
+        >>> mesh = examples.download_trumpet()  # doctest: +SKIP
+        >>> mesh.save('trumpet.obj')  # doctest: +SKIP
+
+        """
+        try:
+            import meshio  # noqa: PLC0415
+        except ImportError:
+            msg = (
+                "meshio is required for save(). "
+                "Install it with: pip install 'pyvista-js[io]'\n"
+                "In Pyodide: await micropip.install('meshio')"
+            )
+            raise ImportError(msg) from None
+
+        cells = self._meshio_cells()
+        mesh = meshio.Mesh(points=self.points, cells=cells)
+        mesh.write(str(filename))
+
+    def _meshio_cells(self) -> list:
+        """Build a meshio-compatible cell list from ``self.faces``."""
+        if self.faces is None or len(self.faces) == 0:
+            return []
+
+        from collections import defaultdict  # noqa: PLC0415
+
+        groups: dict = defaultdict(list)
+        for face in self.faces:
+            groups[len(face)].append(face)
+
+        _CELL_TYPES = {3: "triangle", 4: "quad"}  # noqa: N806
+        return [(_CELL_TYPES.get(n, "polygon"), np.array(faces)) for n, faces in groups.items()]
+
     def shrink(self, shrink_factor: float = 0.8) -> PolyData:
         """Shrink the cells of a mesh towards their centroid.
 
