@@ -253,30 +253,18 @@ def test_circle_mapper_setup() -> None:
     assert "source0" in mapper_code
 
 
+meshio = pytest.importorskip("meshio")
+
+
 def test_save_obj(tmp_path) -> None:
-    """Test that save writes a valid OBJ file."""
+    """Test that save writes a valid OBJ file via meshio."""
     cube = Cube()
     out = tmp_path / "cube.obj"
     cube.save(out)
     assert out.exists()
-    content = out.read_text()
-    lines = content.splitlines()
-    v_lines = [l for l in lines if l.startswith("v ")]
-    f_lines = [l for l in lines if l.startswith("f ")]
-    assert len(v_lines) == cube.n_points
-    assert len(f_lines) == cube.n_faces
-
-
-def test_save_obj_indices_one_based(tmp_path) -> None:
-    """Test that OBJ face indices are 1-based as required by the format."""
-    cube = Cube()
-    out = tmp_path / "cube.obj"
-    cube.save(out)
-    content = out.read_text()
-    for line in content.splitlines():
-        if line.startswith("f "):
-            indices = [int(x) for x in line.split()[1:]]
-            assert all(i >= 1 for i in indices)
+    loaded = meshio.read(str(out))
+    assert len(loaded.points) == cube.n_points
+    assert sum(len(b.data) for b in loaded.cells) == cube.n_faces
 
 
 def test_save_obj_vertex_coords(tmp_path) -> None:
@@ -285,21 +273,34 @@ def test_save_obj_vertex_coords(tmp_path) -> None:
     mesh = PolyData(points)
     out = tmp_path / "mesh.obj"
     mesh.save(out)
-    content = out.read_text()
-    v_lines = [l for l in content.splitlines() if l.startswith("v ")]
-    assert len(v_lines) == 3
-    for i, line in enumerate(v_lines):
-        parts = line.split()
-        assert float(parts[1]) == points[i, 0]
-        assert float(parts[2]) == points[i, 1]
-        assert float(parts[3]) == points[i, 2]
+    loaded = meshio.read(str(out))
+    assert np.allclose(loaded.points, points)
 
 
-def test_save_unsupported_extension(tmp_path) -> None:
-    """Test that save raises ValueError for unsupported extensions."""
+def test_save_vtk(tmp_path) -> None:
+    """Test that save can write VTK format via meshio."""
+    cube = Cube()
+    out = tmp_path / "cube.vtk"
+    cube.save(out)
+    assert out.exists()
+    loaded = meshio.read(str(out))
+    assert len(loaded.points) == cube.n_points
+
+
+def test_save_no_meshio(tmp_path, monkeypatch) -> None:
+    """Test that save raises ImportError when meshio is not installed."""
+    import builtins
+    real_import = builtins.__import__
+
+    def mock_import(name, *args, **kwargs):
+        if name == "meshio":
+            raise ImportError
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mock_import)
     sphere = Sphere()
-    with pytest.raises(ValueError, match="Unsupported file format"):
-        sphere.save(tmp_path / "sphere.stl")
+    with pytest.raises(ImportError, match="meshio is required"):
+        sphere.save(tmp_path / "sphere.obj")
 
 
 def test_save_string_path(tmp_path) -> None:
