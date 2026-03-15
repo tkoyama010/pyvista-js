@@ -224,10 +224,7 @@ class PolyData:
             groups[len(face)].append(face)
 
         _CELL_TYPES = {3: "triangle", 4: "quad"}  # noqa: N806
-        return [
-            (_CELL_TYPES.get(n, "polygon"), np.array(faces))
-            for n, faces in groups.items()
-        ]
+        return [(_CELL_TYPES.get(n, "polygon"), np.array(faces)) for n, faces in groups.items()]
 
     def shrink(self, shrink_factor: float = 0.8) -> PolyData:
         """Shrink the cells of a mesh towards their centroid.
