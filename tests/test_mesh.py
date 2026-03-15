@@ -290,6 +290,7 @@ def test_save_vtk(tmp_path) -> None:
 def test_save_no_meshio(tmp_path, monkeypatch) -> None:
     """Test that save raises ImportError when meshio is not installed."""
     import builtins
+
     real_import = builtins.__import__
 
     def mock_import(name, *args, **kwargs):
@@ -309,4 +310,5 @@ def test_save_string_path(tmp_path) -> None:
     out = str(tmp_path / "cube.obj")
     cube.save(out)
     from pathlib import Path
+
     assert Path(out).exists()
