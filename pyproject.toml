@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.3.dev0"
+version = "0.3.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -44,6 +44,9 @@ optional-dependencies.docs = [
   "sphinx-book-theme==1.1.4; python_version>='3.12'",
   "sphinx-design==0.7; python_version>='3.12'",
 ]
+optional-dependencies.io = [
+  "meshio",
+]
 optional-dependencies.streamlit = [
   "streamlit>=1.30",
 ]
@@ -51,6 +54,7 @@ urls.Documentation = "https://github.com/tkoyama010/pyvista-js"
 urls.Homepage = "https://github.com/tkoyama010/pyvista-js"
 urls.Issues = "https://github.com/tkoyama010/pyvista-js/issues"
 urls.Repository = "https://github.com/tkoyama010/pyvista-js"
+scripts.pyvista-js = "pyvista_js.__main__:main"
 
 [dependency-groups]
 dev = [
