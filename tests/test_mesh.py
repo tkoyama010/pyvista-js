@@ -1,6 +1,8 @@
 """Test mesh creation and properties."""
 
+import builtins
 import webbrowser
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -251,3 +253,60 @@ def test_circle_mapper_setup() -> None:
     mapper_code = circle.get_mapper_setup(0)
     assert "setInputData" in mapper_code
     assert "source0" in mapper_code
+
+
+meshio = pytest.importorskip("meshio")
+
+
+def test_save_obj(tmp_path) -> None:
+    """Test that save writes a valid OBJ file via meshio."""
+    cube = Cube()
+    out = tmp_path / "cube.obj"
+    cube.save(out)
+    assert out.exists()
+    loaded = meshio.read(str(out))
+    assert len(loaded.points) == cube.n_points
+    assert sum(len(b.data) for b in loaded.cells) == cube.n_faces
+
+
+def test_save_obj_vertex_coords(tmp_path) -> None:
+    """Test that saved vertex coordinates match original points."""
+    points = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
+    mesh = PolyData(points)
+    out = tmp_path / "mesh.obj"
+    mesh.save(out)
+    loaded = meshio.read(str(out))
+    assert np.allclose(loaded.points, points)
+
+
+def test_save_vtk(tmp_path) -> None:
+    """Test that save can write VTK format via meshio."""
+    cube = Cube()
+    out = tmp_path / "cube.vtk"
+    cube.save(out)
+    assert out.exists()
+    loaded = meshio.read(str(out))
+    assert len(loaded.points) == cube.n_points
+
+
+def test_save_no_meshio(tmp_path, monkeypatch) -> None:
+    """Test that save raises ImportError when meshio is not installed."""
+    real_import = builtins.__import__
+
+    def mock_import(name, *args, **kwargs):
+        if name == "meshio":
+            raise ImportError
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", mock_import)
+    sphere = Sphere()
+    with pytest.raises(ImportError, match="meshio is required"):
+        sphere.save(tmp_path / "sphere.obj")
+
+
+def test_save_string_path(tmp_path) -> None:
+    """Test that save accepts a string path."""
+    cube = Cube()
+    out = str(tmp_path / "cube.obj")
+    cube.save(out)
+    assert Path(out).exists()

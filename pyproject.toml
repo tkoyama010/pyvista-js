@@ -44,6 +44,9 @@ optional-dependencies.docs = [
   "sphinx-book-theme==1.1.4; python_version>='3.12'",
   "sphinx-design==0.7; python_version>='3.12'",
 ]
+optional-dependencies.io = [
+  "meshio",
+]
 optional-dependencies.streamlit = [
   "streamlit>=1.30",
 ]
