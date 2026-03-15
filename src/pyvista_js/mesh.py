@@ -158,6 +158,50 @@ class PolyData:
         )
         plotter.show()
 
+    def save(self, filename: str | Path) -> None:
+        """Write this mesh to disk in Wavefront OBJ format.
+
+        Serializes the mesh using the same format as vtk.js
+        ``vtkOBJWriter`` and writes the result to ``filename``.
+
+        Parameters
+        ----------
+        filename : str or Path
+            Output path. Must have a ``'.obj'`` extension.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError
+            If the file extension is not ``'.obj'``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere.save('sphere.obj')  # doctest: +SKIP
+
+        """
+        path = Path(filename)
+        if path.suffix.lower() != ".obj":
+            msg = f"Unsupported file format: '{path.suffix}'. Only '.obj' is supported."
+            raise ValueError(msg)
+        path.write_text(self._to_obj(), encoding="ascii")
+
+    def _to_obj(self) -> str:
+        """Serialize mesh to Wavefront OBJ format (vtkOBJWriter-compatible)."""
+        lines = []
+        for p in self.points:
+            lines.append(f"v {p[0]} {p[1]} {p[2]}")
+        if self.faces is not None and len(self.faces) > 0:
+            for row in self.faces:
+                # OBJ face indices are 1-based
+                lines.append("f " + " ".join(str(idx + 1) for idx in row))
+        return "\n".join(lines) + "\n"
+
     def shrink(self, shrink_factor: float = 0.8) -> PolyData:
         """Shrink the cells of a mesh towards their centroid.
 

@@ -251,3 +251,61 @@ def test_circle_mapper_setup() -> None:
     mapper_code = circle.get_mapper_setup(0)
     assert "setInputData" in mapper_code
     assert "source0" in mapper_code
+
+
+def test_save_obj(tmp_path) -> None:
+    """Test that save writes a valid OBJ file."""
+    cube = Cube()
+    out = tmp_path / "cube.obj"
+    cube.save(out)
+    assert out.exists()
+    content = out.read_text()
+    lines = content.splitlines()
+    v_lines = [l for l in lines if l.startswith("v ")]
+    f_lines = [l for l in lines if l.startswith("f ")]
+    assert len(v_lines) == cube.n_points
+    assert len(f_lines) == cube.n_faces
+
+
+def test_save_obj_indices_one_based(tmp_path) -> None:
+    """Test that OBJ face indices are 1-based as required by the format."""
+    cube = Cube()
+    out = tmp_path / "cube.obj"
+    cube.save(out)
+    content = out.read_text()
+    for line in content.splitlines():
+        if line.startswith("f "):
+            indices = [int(x) for x in line.split()[1:]]
+            assert all(i >= 1 for i in indices)
+
+
+def test_save_obj_vertex_coords(tmp_path) -> None:
+    """Test that saved vertex coordinates match original points."""
+    points = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
+    mesh = PolyData(points)
+    out = tmp_path / "mesh.obj"
+    mesh.save(out)
+    content = out.read_text()
+    v_lines = [l for l in content.splitlines() if l.startswith("v ")]
+    assert len(v_lines) == 3
+    for i, line in enumerate(v_lines):
+        parts = line.split()
+        assert float(parts[1]) == points[i, 0]
+        assert float(parts[2]) == points[i, 1]
+        assert float(parts[3]) == points[i, 2]
+
+
+def test_save_unsupported_extension(tmp_path) -> None:
+    """Test that save raises ValueError for unsupported extensions."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Unsupported file format"):
+        sphere.save(tmp_path / "sphere.stl")
+
+
+def test_save_string_path(tmp_path) -> None:
+    """Test that save accepts a string path."""
+    cube = Cube()
+    out = str(tmp_path / "cube.obj")
+    cube.save(out)
+    from pathlib import Path
+    assert Path(out).exists()
