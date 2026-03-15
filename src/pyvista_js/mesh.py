@@ -180,9 +180,9 @@ class PolyData:
 
         Examples
         --------
-        >>> import pyvista_js as pv
-        >>> sphere = pv.Sphere()
-        >>> sphere.save('sphere.obj')  # doctest: +SKIP
+        >>> from pyvista_js import examples
+        >>> mesh = examples.download_trumpet()  # doctest: +SKIP
+        >>> mesh.save('trumpet.obj')  # doctest: +SKIP
 
         """
         path = Path(filename)
@@ -193,13 +193,10 @@ class PolyData:
 
     def _to_obj(self) -> str:
         """Serialize mesh to Wavefront OBJ format (vtkOBJWriter-compatible)."""
-        lines = []
-        for p in self.points:
-            lines.append(f"v {p[0]} {p[1]} {p[2]}")
+        lines = [f"v {p[0]} {p[1]} {p[2]}" for p in self.points]
         if self.faces is not None and len(self.faces) > 0:
-            for row in self.faces:
-                # OBJ face indices are 1-based
-                lines.append("f " + " ".join(str(idx + 1) for idx in row))
+            # OBJ face indices are 1-based
+            lines.extend("f " + " ".join(str(idx + 1) for idx in row) for row in self.faces)
         return "\n".join(lines) + "\n"
 
     def shrink(self, shrink_factor: float = 0.8) -> PolyData:
