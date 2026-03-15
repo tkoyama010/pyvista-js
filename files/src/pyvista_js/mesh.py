@@ -23,6 +23,8 @@ _SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
 _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
+_CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
+_CIRCLE_MIN_RESOLUTION = 3
 
 
 class PolyData:
@@ -155,6 +157,74 @@ class PolyData:
             roughness=roughness,
         )
         plotter.show()
+
+    def save(self, filename: str | Path) -> None:
+        """Write this mesh to disk using meshio.
+
+        The file format is inferred from the extension of ``filename``.
+        Any format supported by `meshio <https://github.com/nschloe/meshio>`_
+        can be used (e.g. ``'.obj'``, ``'.vtk'``, ``'.ply'``, ``'.stl'``).
+
+        .. note::
+
+            Requires ``meshio`` to be installed::
+
+                pip install "pyvista-js[io]"
+
+            In Pyodide / JupyterLite, install it with micropip before calling
+            this method::
+
+                import micropip
+                await micropip.install("meshio")
+
+        Parameters
+        ----------
+        filename : str or Path
+            Output path. The extension determines the file format.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ImportError
+            If ``meshio`` is not installed.
+
+        Examples
+        --------
+        >>> from pyvista_js import examples
+        >>> mesh = examples.download_trumpet()  # doctest: +SKIP
+        >>> mesh.save('trumpet.obj')  # doctest: +SKIP
+
+        """
+        try:
+            import meshio  # noqa: PLC0415
+        except ImportError:
+            msg = (
+                "meshio is required for save(). "
+                "Install it with: pip install 'pyvista-js[io]'\n"
+                "In Pyodide: await micropip.install('meshio')"
+            )
+            raise ImportError(msg) from None
+
+        cells = self._meshio_cells()
+        mesh = meshio.Mesh(points=self.points, cells=cells)
+        mesh.write(str(filename))
+
+    def _meshio_cells(self) -> list:
+        """Build a meshio-compatible cell list from ``self.faces``."""
+        if self.faces is None or len(self.faces) == 0:
+            return []
+
+        from collections import defaultdict  # noqa: PLC0415
+
+        groups: dict = defaultdict(list)
+        for face in self.faces:
+            groups[len(face)].append(face)
+
+        _CELL_TYPES = {3: "triangle", 4: "quad"}  # noqa: N806
+        return [(_CELL_TYPES.get(n, "polygon"), np.array(faces)) for n, faces in groups.items()]
 
     def shrink(self, shrink_factor: float = 0.8) -> PolyData:
         """Shrink the cells of a mesh towards their centroid.
@@ -561,4 +631,66 @@ def Cylinder(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_cylinder,
+    )
+
+
+def Circle(  # noqa: N802
+    radius: float = 0.5,
+    resolution: int = 100,
+) -> PolyData:
+    """Create a circle defined by a set of points in the XY plane.
+
+    This mirrors the :func:`pyvista.Circle` API, producing a closed polygon
+    outline of ``resolution`` points lying in the XY plane.
+
+    Parameters
+    ----------
+    radius : float, optional
+        Radius of the circle. Default is 0.5.
+    resolution : int, optional
+        Number of points on the circle. Default is 100.
+
+    Returns
+    -------
+    PolyData
+        A circle mesh (closed polyline in the XY plane).
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> circle = pv.Circle(radius=1.0)
+    >>> circle.n_points
+    101
+
+    >>> circle.plot(color="black")  # doctest: +SKIP
+
+    """
+    if resolution < _CIRCLE_MIN_RESOLUTION:
+        msg = f"resolution must be >= {_CIRCLE_MIN_RESOLUTION}, got {resolution}"
+        raise ValueError(msg)
+
+    theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
+    points = np.column_stack([radius * np.cos(theta), radius * np.sin(theta), np.zeros(resolution)])
+    # Close the loop by appending the first point
+    points = np.vstack([points, points[0]])
+
+    center = (0.0, 0.0, 0.0)
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _CIRCLE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(center[0]))
+            .replace("{{CENTER_Y}}", str(center[1]))
+            .replace("{{CENTER_Z}}", str(center[2]))
+            .replace("{{RADIUS}}", str(radius))
+            .replace("{{RESOLUTION}}", str(resolution))
+        )
+
+    def _mapper_setup_circle(idx: int) -> str:
+        return f"mapper{idx}.setInputData(source{idx});"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_circle,
     )

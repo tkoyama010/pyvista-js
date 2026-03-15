@@ -6,9 +6,39 @@ Provides download helpers for standard datasets, mirroring the
 
 from __future__ import annotations
 
+import urllib.request
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from pyvista_js.texture import Texture
 
+if TYPE_CHECKING:
+    from pyvista_js.mesh import PolyData
+
 _PYVISTA_DATA_BASE = "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data"
+_CACHE_DIR = Path.home() / ".pyvista_js" / "examples"
+
+
+def _download_file(filename: str) -> Path:
+    """Download a file from the PyVista vtk-data repository to a local cache.
+
+    Parameters
+    ----------
+    filename : str
+        Filename within the vtk-data ``Data/`` directory.
+
+    Returns
+    -------
+    Path
+        Local path to the downloaded file.
+
+    """
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    local = _CACHE_DIR / filename
+    if not local.exists():
+        url = f"{_PYVISTA_DATA_BASE}/{filename}"
+        urllib.request.urlretrieve(url, local)  # noqa: S310
+    return local
 
 
 class CubeMap:
@@ -76,6 +106,32 @@ class CubeMap:
 
         """
         return self
+
+
+def download_trumpet() -> PolyData:
+    """Download the trumpet dataset.
+
+    Downloads ``trumpet.obj`` from the PyVista vtk-data repository and
+    returns it as a :class:`~pyvista_js.PolyData` mesh, mirroring the
+    ``pyvista.examples.download_trumpet`` API.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The trumpet mesh.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_trumpet()  # doctest: +SKIP
+    >>> type(mesh).__name__  # doctest: +SKIP
+    '_OBJMesh'
+
+    """
+    from .readers import OBJReader  # noqa: PLC0415
+
+    path = _download_file("trumpet.obj")
+    return OBJReader(path).read()
 
 
 def download_sky_box_cube_map() -> CubeMap:
