@@ -751,6 +751,10 @@ def Arrow(  # noqa: N802, PLR0913
     >>> isinstance(arrow, pv.PolyData)
     True
 
+    Plot the arrow:
+
+    >>> arrow.plot()  # doctest: +SKIP
+
     """
     direction_arr = np.asarray(direction, dtype=float)
     norm = float(np.linalg.norm(direction_arr))
