@@ -635,7 +635,7 @@ def Cylinder(  # noqa: N802
     )
 
 
-def Disc(  # noqa: N802
+def Disc(  # noqa: N802 PLR0913
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     inner: float = 0.25,
     outer: float = 0.5,
@@ -682,7 +682,7 @@ def Disc(  # noqa: N802
     radii = np.linspace(inner, outer, r_res + 1)
     theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
     pts = np.array(
-        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta]
+        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
     )
 
     # Rotate from default normal (0,0,1) to requested normal
@@ -699,11 +699,13 @@ def Disc(  # noqa: N802
             c, s = np.cos(angle), np.sin(angle)
             t_val = 1.0 - c
             ax, ay, az = axis
-            rot = np.array([
-                [t_val * ax * ax + c, t_val * ax * ay - s * az, t_val * ax * az + s * ay],
-                [t_val * ax * ay + s * az, t_val * ay * ay + c, t_val * ay * az - s * ax],
-                [t_val * ax * az - s * ay, t_val * ay * az + s * ax, t_val * az * az + c],
-            ])
+            rot = np.array(
+                [
+                    [t_val * ax * ax + c, t_val * ax * ay - s * az, t_val * ax * az + s * ay],
+                    [t_val * ax * ay + s * az, t_val * ay * ay + c, t_val * ay * az - s * ax],
+                    [t_val * ax * az - s * ay, t_val * ay * az + s * ax, t_val * az * az + c],
+                ],
+            )
             pts = pts @ rot.T
 
     pts += np.asarray(center, dtype=float)
@@ -789,77 +791,3 @@ def Circle(  # noqa: N802
     )
 
 
-def Disc(  # noqa: N802
-    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
-    inner: float = 0.25,
-    outer: float = 0.5,
-    normal: tuple[float, float, float] = (0.0, 0.0, 1.0),  # noqa: ARG001
-    r_res: int = 1,
-    c_res: int = 6,
-) -> PolyData:
-    """Create a disc (annulus) mesh.
-
-    This mirrors the :func:`pyvista.Disc` API, backed by vtk.js
-    ``vtkDiskSource``.  The disc lies in the XY plane by default; the
-    ``normal`` parameter is accepted for API compatibility but rotation is
-    not yet applied.
-
-    Parameters
-    ----------
-    center : tuple, optional
-        Center of the disc ``(x, y, z)``.  Default is ``(0, 0, 0)``.
-    inner : float, optional
-        Inner radius of the disc.  Default is ``0.25``.
-    outer : float, optional
-        Outer radius of the disc.  Default is ``0.5``.
-    normal : tuple, optional
-        Normal direction of the disc.  Accepted for API compatibility;
-        currently unused — the disc always lies in the XY plane.
-        Default is ``(0, 0, 1)``.
-    r_res : int, optional
-        Number of points in the radial direction.  Default is ``1``.
-    c_res : int, optional
-        Number of points in the circumferential direction.  Default is ``6``.
-
-    Returns
-    -------
-    PolyData
-        A disc (annular) mesh.
-
-    Examples
-    --------
-    >>> import pyvista_js as pv
-    >>> disc = pv.Disc(center=(0, 0, 0), inner=0.25, outer=0.5)
-    >>> isinstance(disc, pv.PolyData)
-    True
-
-    >>> disc.plot()  # doctest: +SKIP
-
-    """
-    # Generate sample points for the Python-side PolyData representation.
-    # The actual geometry rendered in the browser is produced by vtkDiskSource.
-    angles = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
-    radii = np.linspace(inner, outer, r_res + 1)
-    pts = []
-    for r in radii:
-        for a in angles:
-            pts.append([center[0] + r * np.cos(a), center[1] + r * np.sin(a), center[2]])
-    points = np.array(pts)
-
-    def _vtk_js_source(idx: int) -> str:
-        return (
-            _DISK_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{INNER}}", str(inner))
-            .replace("{{OUTER}}", str(outer))
-            .replace("{{R_RES}}", str(r_res))
-            .replace("{{C_RES}}", str(c_res))
-        )
-
-    def _mapper_setup_disc(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
-    return PolyData(
-        points=points,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_disc,
-    )
