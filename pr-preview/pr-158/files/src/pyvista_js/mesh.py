@@ -789,5 +789,3 @@ def Circle(  # noqa: N802
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_circle,
     )
-
-
