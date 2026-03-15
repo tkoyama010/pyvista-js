@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import Circle, Cube, Cylinder, Mesh, PolyData, Sphere
+from pyvista_js import Circle, Cube, Cylinder, Line, Mesh, PolyData, Sphere
 
 
 def test_mesh_creation() -> None:
@@ -252,6 +252,58 @@ def test_circle_mapper_setup() -> None:
     circle = Circle()
     mapper_code = circle.get_mapper_setup(0)
     assert "setInputData" in mapper_code
+    assert "source0" in mapper_code
+
+
+def test_line_creation() -> None:
+    """Test default Line creation."""
+    line = Line()
+
+    assert isinstance(line, PolyData)
+    assert line.n_points == 2
+
+
+def test_line_custom_points() -> None:
+    """Test Line with custom start and end points."""
+    line = Line(pointa=(0, 0, 0), pointb=(2, 0, 0))
+
+    assert np.allclose(line.points[0], [0, 0, 0])
+    assert np.allclose(line.points[-1], [2, 0, 0])
+
+
+def test_line_resolution() -> None:
+    """Test Line with custom resolution produces correct number of points."""
+    line = Line(resolution=5)
+
+    assert line.n_points == 6  # resolution + 1
+
+
+def test_line_invalid_resolution() -> None:
+    """Test that resolution < 1 raises ValueError."""
+    with pytest.raises(ValueError, match="resolution must be >= 1"):
+        Line(resolution=0)
+    with pytest.raises(ValueError, match="resolution must be >= 1"):
+        Line(resolution=-1)
+
+
+def test_line_vtk_js_source() -> None:
+    """Test that Line generates correct vtk.js source code."""
+    line = Line(pointa=(0, 0, 0), pointb=(1, 0, 0), resolution=3)
+    js_source = line.generate_vtk_js_source(0)
+
+    assert "vtkLineSource" in js_source
+    assert "0.0" in js_source
+    assert "1.0" in js_source
+    assert "3" in js_source
+    assert "source0" in js_source
+
+
+def test_line_mapper_setup() -> None:
+    """Test that Line mapper uses setInputConnection."""
+    line = Line()
+    mapper_code = line.get_mapper_setup(0)
+
+    assert "setInputConnection" in mapper_code
     assert "source0" in mapper_code
 
 
