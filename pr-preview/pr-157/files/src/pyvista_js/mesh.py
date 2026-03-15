@@ -697,13 +697,13 @@ def Circle(  # noqa: N802
     )
 
 
-def Cone(  # noqa: N802
+def Cone(  # noqa: N802 PLR0913
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
     height: float = 1.0,
     radius: float = 0.5,
     resolution: int = 6,
-    capping: bool = True,
+    capping: bool = True,  # noqa: FBT001 FBT002
 ) -> PolyData:
     """Create a cone mesh.
 
@@ -740,10 +740,7 @@ def Cone(  # noqa: N802
     d = np.asarray(direction, dtype=float) / (norm if norm > 0 else 1.0)
 
     # Build two perpendicular vectors to d
-    if abs(d[0]) < 0.9:  # noqa: PLR2004
-        perp1 = np.cross(d, [1.0, 0.0, 0.0])
-    else:
-        perp1 = np.cross(d, [0.0, 1.0, 0.0])
+    perp1 = np.cross(d, [1.0, 0.0, 0.0]) if abs(d[0]) < 0.9 else np.cross(d, [0.0, 1.0, 0.0])  # noqa: PLR2004
     perp1 /= np.linalg.norm(perp1)
     perp2 = np.cross(d, perp1)
 
@@ -752,7 +749,10 @@ def Cone(  # noqa: N802
 
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
     base_points = np.array(
-        [base_center + radius * (np.cos(t) * perp1 + np.sin(t) * perp2) for t in theta]
+        [
+            base_center + radius * (np.cos(t) * perp1 + np.sin(t) * perp2)
+            for t in theta
+        ],
     )
 
     points = np.vstack([apex[np.newaxis, :], base_points])
