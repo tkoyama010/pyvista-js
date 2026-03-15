@@ -4,3 +4,5 @@ const source{{INDEX}} = vtk.Filters.Sources.vtkSphereSource.newInstance({
   thetaResolution: {{THETA_RESOLUTION}},
   phiResolution: {{PHI_RESOLUTION}}
 });
+const texMapSphere{{INDEX}} = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
+texMapSphere{{INDEX}}.setInputConnection(source{{INDEX}}.getOutputPort());

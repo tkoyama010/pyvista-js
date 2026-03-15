@@ -23,9 +23,10 @@ if sys.platform == "emscripten":
 from . import examples
 from .camera import Camera
 from .light import Light
-from .mesh import Cube, Cylinder, Mesh, PolyData, Sphere
+from .mesh import Circle, Cube, Cylinder, Mesh, PolyData, Sphere
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader
+from .texture import Texture
 
 # Streamlit integration (optional)
 try:
@@ -33,6 +34,7 @@ try:
 
     __all__ = [
         "Camera",
+        "Circle",
         "Cube",
         "Cylinder",
         "Light",
@@ -43,6 +45,7 @@ try:
         "PolyData",
         "PolyDataReader",
         "Sphere",
+        "Texture",
         "__version__",
         "examples",
         "pyvista_chart",
@@ -51,6 +54,7 @@ except ImportError:
     # Streamlit not available
     __all__ = [
         "Camera",
+        "Circle",
         "Cube",
         "Cylinder",
         "Light",
@@ -61,6 +65,7 @@ except ImportError:
         "PolyData",
         "PolyDataReader",
         "Sphere",
+        "Texture",
         "__version__",
         "examples",
     ]
