@@ -45,6 +45,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Sphere
    pyvista_js.Cube
    pyvista_js.Cylinder
+   pyvista_js.Plane
    pyvista_js.Circle
    pyvista_js.Line
 ```
