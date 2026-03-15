@@ -697,7 +697,7 @@ def Circle(  # noqa: N802
     )
 
 
-def Arrow(  # noqa: N802
+def Arrow(  # noqa: N802, PLR0913
     start: tuple[float, float, float] = (0.0, 0.0, 0.0),
     direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
     tip_length: float = 0.25,
