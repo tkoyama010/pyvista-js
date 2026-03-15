@@ -635,94 +635,6 @@ def Cylinder(  # noqa: N802
     )
 
 
-def Plane(  # noqa: N802
-    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
-    direction: tuple[float, float, float] = (0.0, 0.0, 1.0),  # noqa: ARG001
-    i_size: float = 1.0,
-    j_size: float = 1.0,
-    i_resolution: int = 10,
-    j_resolution: int = 10,
-) -> PolyData:
-    """Create a plane mesh.
-
-    Parameters
-    ----------
-    center : tuple, optional
-        Center of the plane (x, y, z). Default is (0, 0, 0).
-    direction : tuple, optional
-        Normal direction of the plane. Default is (0, 0, 1).
-    i_size : float, optional
-        Size in the i direction. Default is 1.0.
-    j_size : float, optional
-        Size in the j direction. Default is 1.0.
-    i_resolution : int, optional
-        Number of cells in the i direction. Default is 10.
-    j_resolution : int, optional
-        Number of cells in the j direction. Default is 10.
-
-    Returns
-    -------
-    PolyData
-        A plane mesh.
-
-    Examples
-    --------
-    >>> import pyvista_js as pv
-    >>> plane = pv.Plane()
-    >>> plane.n_points
-    121
-
-    """
-    cx, cy, cz = center
-
-    xs = np.linspace(cx - i_size / 2, cx + i_size / 2, i_resolution + 1)
-    ys = np.linspace(cy - j_size / 2, cy + j_size / 2, j_resolution + 1)
-
-    points = []
-    for y in ys:
-        for x in xs:
-            points.append([x, y, cz])
-
-    faces = []
-    for j in range(j_resolution):
-        for i in range(i_resolution):
-            p0 = j * (i_resolution + 1) + i
-            p1 = p0 + 1
-            p2 = p0 + (i_resolution + 1) + 1
-            p3 = p0 + (i_resolution + 1)
-            faces.append([p0, p1, p2, p3])
-
-    origin = (cx - i_size / 2, cy - j_size / 2, cz)
-    point1 = (cx + i_size / 2, cy - j_size / 2, cz)
-    point2 = (cx - i_size / 2, cy + j_size / 2, cz)
-
-    def _vtk_js_source(idx: int) -> str:
-        return (
-            _PLANE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{ORIGIN_X}}", str(origin[0]))
-            .replace("{{ORIGIN_Y}}", str(origin[1]))
-            .replace("{{ORIGIN_Z}}", str(origin[2]))
-            .replace("{{POINT1_X}}", str(point1[0]))
-            .replace("{{POINT1_Y}}", str(point1[1]))
-            .replace("{{POINT1_Z}}", str(point1[2]))
-            .replace("{{POINT2_X}}", str(point2[0]))
-            .replace("{{POINT2_Y}}", str(point2[1]))
-            .replace("{{POINT2_Z}}", str(point2[2]))
-            .replace("{{I_RESOLUTION}}", str(i_resolution))
-            .replace("{{J_RESOLUTION}}", str(j_resolution))
-        )
-
-    def _mapper_setup_plane(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
-    return PolyData(
-        points=np.array(points),
-        faces=np.array(faces),
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_plane,
-    )
-
-
 def Circle(  # noqa: N802
     radius: float = 0.5,
     resolution: int = 100,
@@ -785,7 +697,7 @@ def Circle(  # noqa: N802
     )
 
 
-def Plane(  # noqa: N802
+def Plane(  # noqa: N802 PLR0913
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     direction: tuple[float, float, float] = (0.0, 0.0, 1.0),
     i_size: float = 1.0,
