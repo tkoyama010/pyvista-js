@@ -722,7 +722,7 @@ def Disc(  # noqa: N802, PLR0913
         )
 
     def _mapper_setup_disc(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+        return f"mapper{idx}.setInputData(source{idx});"
 
     return PolyData(
         points=pts,
