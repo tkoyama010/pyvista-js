@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import Circle, Cube, Cylinder, Line, Mesh, PolyData, Sphere
+from pyvista_js import Arrow, Circle, Cube, Cylinder, Line, Mesh, PolyData, Sphere
 
 
 def test_mesh_creation() -> None:
@@ -253,6 +253,61 @@ def test_circle_mapper_setup() -> None:
     mapper_code = circle.get_mapper_setup(0)
     assert "setInputData" in mapper_code
     assert "source0" in mapper_code
+
+
+def test_arrow_creation() -> None:
+    """Test arrow primitive creation with defaults."""
+    arrow = Arrow()
+    assert isinstance(arrow, PolyData)
+    assert arrow.n_points > 0
+    assert arrow.points.shape[1] == 3
+
+
+def test_arrow_custom_parameters() -> None:
+    """Test arrow with custom start, direction, and dimensions."""
+    arrow = Arrow(
+        start=(1.0, 2.0, 3.0),
+        direction=(0.0, 1.0, 0.0),
+        tip_length=0.3,
+        tip_radius=0.15,
+        shaft_radius=0.06,
+    )
+    assert isinstance(arrow, PolyData)
+    assert arrow.n_points > 0
+
+
+def test_arrow_scale() -> None:
+    """Test arrow scale parameter."""
+    arrow = Arrow(scale=2.0)
+    assert isinstance(arrow, PolyData)
+
+
+def test_arrow_zero_direction_raises() -> None:
+    """Test that a zero direction vector raises ValueError."""
+    with pytest.raises(ValueError, match="non-zero"):
+        Arrow(direction=(0.0, 0.0, 0.0))
+
+
+def test_arrow_vtk_js_source() -> None:
+    """Test that the vtk.js source code is generated correctly."""
+    arrow = Arrow(
+        tip_length=0.25,
+        tip_radius=0.1,
+        tip_resolution=20,
+        shaft_radius=0.05,
+        shaft_resolution=20,
+    )
+    js = arrow.generate_vtk_js_source(0)
+    assert "vtkArrowSource" in js
+    assert "tipLength" in js
+    assert "shaftRadius" in js
+
+
+def test_arrow_mapper_setup() -> None:
+    """Test that the mapper setup code references the correct output port."""
+    arrow = Arrow()
+    setup = arrow.get_mapper_setup(0)
+    assert "getOutputPort" in setup
 
 
 def test_line_creation() -> None:
