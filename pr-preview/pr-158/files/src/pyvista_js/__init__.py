@@ -23,7 +23,9 @@ if sys.platform == "emscripten":
 from . import examples
 from .camera import Camera
 from .light import Light
+from .mesh import Arrow, Circle, Cube, Cylinder, Line, Mesh, Plane, PolyData, Sphere
 from .mesh import Arrow, Circle, Cube, Cylinder, Disc, Line, Mesh, PolyData, Sphere
+
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader
 from .texture import Texture
@@ -44,6 +46,7 @@ try:
         "Mesh",
         "OBJReader",
         "PLYReader",
+        "Plane",
         "Plotter",
         "PolyData",
         "PolyDataReader",
@@ -67,6 +70,7 @@ except ImportError:
         "Mesh",
         "OBJReader",
         "PLYReader",
+        "Plane",
         "Plotter",
         "PolyData",
         "PolyDataReader",
