@@ -24,6 +24,11 @@ _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
+_DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
+_ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
+_CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
+_LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
+_PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
 
 
@@ -634,6 +639,115 @@ def Cylinder(  # noqa: N802
     )
 
 
+def Disc(  # noqa: N802, PLR0913
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    inner: float = 0.25,
+    outer: float = 0.5,
+    normal: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    r_res: int = 1,
+    c_res: int = 6,
+) -> PolyData:
+    """Create a disc (annular ring) geometric primitive.
+
+    This mirrors the :func:`pyvista.Disc` API.  The geometry is built
+    directly from ``(r_res + 1)`` rings of ``c_res`` points each, connected
+    as triangles, so it renders correctly in vtk.js without depending on any
+    specific vtk.js source filter.
+
+    Parameters
+    ----------
+    center : tuple, optional
+        Center of the disc (x, y, z). Default is (0, 0, 0).
+    inner : float, optional
+        Inner radius of the disc. Default is 0.25.
+    outer : float, optional
+        Outer radius of the disc. Default is 0.5.
+    normal : tuple, optional
+        Normal vector of the disc. Default is (0, 0, 1).
+    r_res : int, optional
+        Number of radial subdivisions. Default is 1.
+    c_res : int, optional
+        Number of circumferential subdivisions. Default is 6.
+
+    Returns
+    -------
+    PolyData
+        A disc (annular ring) mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> disc = pv.Disc(center=(0, 0, 0), inner=0.25, outer=0.5)
+    >>> disc.n_points
+    12
+
+    >>> disc.plot()  # doctest: +SKIP
+
+    """
+    # Generate points in XY plane: (r_res+1) rings * c_res points
+    radii = np.linspace(inner, outer, r_res + 1)
+    theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
+    pts = np.array(
+        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
+    )
+
+    # Build triangular faces: two triangles per quad between adjacent rings
+    faces = []
+    for ring in range(r_res):
+        for ci in range(c_res):
+            ci1 = (ci + 1) % c_res
+            i00 = ring * c_res + ci
+            i01 = ring * c_res + ci1
+            i10 = (ring + 1) * c_res + ci
+            i11 = (ring + 1) * c_res + ci1
+            faces.append([i00, i01, i11])
+            faces.append([i00, i11, i10])
+
+    # Rotate from default normal (0,0,1) to requested normal
+    n = np.asarray(normal, dtype=float)
+    n = n / np.linalg.norm(n)
+    z = np.array([0.0, 0.0, 1.0])
+    if not np.allclose(n, z):
+        if np.allclose(n, -z):
+            pts[:, 2] = -pts[:, 2]
+        else:
+            axis = np.cross(z, n)
+            axis = axis / np.linalg.norm(axis)
+            angle = np.arccos(np.clip(np.dot(z, n), -1.0, 1.0))
+            c, s = np.cos(angle), np.sin(angle)
+            t_val = 1.0 - c
+            ax, ay, az = axis
+            rot = np.array(
+                [
+                    [t_val * ax * ax + c, t_val * ax * ay - s * az, t_val * ax * az + s * ay],
+                    [t_val * ax * ay + s * az, t_val * ay * ay + c, t_val * ay * az - s * ax],
+                    [t_val * ax * az - s * ay, t_val * ay * az + s * ax, t_val * az * az + c],
+                ],
+            )
+            pts = pts @ rot.T
+
+    pts += np.asarray(center, dtype=float)
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _DISK_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{INNER}}", str(inner))
+            .replace("{{OUTER}}", str(outer))
+            .replace("{{R_RES}}", str(r_res))
+            .replace("{{C_RES}}", str(c_res))
+        )
+
+    def _mapper_setup_disc(idx: int) -> str:
+        return f"mapper{idx}.setInputData(source{idx});"
+
+    return PolyData(
+        points=pts,
+        faces=np.array(faces) if faces else None,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_disc,
+    )
+
+
 def Circle(  # noqa: N802
     radius: float = 0.5,
     resolution: int = 100,
@@ -693,4 +807,356 @@ def Circle(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_circle,
+    )
+
+
+def Arrow(  # noqa: N802, PLR0913
+    start: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    tip_length: float = 0.25,
+    tip_radius: float = 0.1,
+    tip_resolution: int = 20,
+    shaft_radius: float = 0.05,
+    shaft_resolution: int = 20,
+    scale: float | None = None,
+) -> PolyData:
+    """Create an arrow mesh.
+
+    Returns a :class:`PolyData` representing an arrow starting at ``start``
+    and pointing in ``direction``, backed by vtk.js ``vtkArrowSource``.
+
+    Parameters
+    ----------
+    start : tuple, optional
+        Starting point of the arrow ``(x, y, z)``. Default is ``(0, 0, 0)``.
+    direction : tuple, optional
+        Direction vector of the arrow. Default is ``(1, 0, 0)``.
+    tip_length : float, optional
+        Length of the conical tip as a fraction of the total arrow length.
+        Default is 0.25.
+    tip_radius : float, optional
+        Radius of the base of the tip. Default is 0.1.
+    tip_resolution : int, optional
+        Number of faces around the tip cone. Default is 20.
+    shaft_radius : float, optional
+        Radius of the cylindrical shaft. Default is 0.05.
+    shaft_resolution : int, optional
+        Number of faces around the shaft cylinder. Default is 20.
+    scale : float, optional
+        Scaling factor applied to the entire arrow. When ``None`` the arrow
+        is not scaled.
+
+    Returns
+    -------
+    PolyData
+        An arrow mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> arrow = pv.Arrow()
+    >>> isinstance(arrow, pv.PolyData)
+    True
+
+    Create an arrow with a custom start point and direction:
+
+    >>> arrow = pv.Arrow(start=(1, 0, 0), direction=(0, 1, 0))
+    >>> isinstance(arrow, pv.PolyData)
+    True
+
+    Plot the arrow:
+
+    >>> arrow.plot()  # doctest: +SKIP
+
+    """
+    direction_arr = np.asarray(direction, dtype=float)
+    norm = float(np.linalg.norm(direction_arr))
+    if norm == 0.0:
+        msg = "direction must be a non-zero vector"
+        raise ValueError(msg)
+    unit_dir = direction_arr / norm
+
+    length = 1.0 if scale is None else float(scale)
+
+    # Build a simple representative point set: shaft start + tip end
+    start_arr = np.asarray(start, dtype=float)
+    end = start_arr + unit_dir * length
+    points = np.array([start_arr, end])
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _ARROW_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{TIP_LENGTH}}", str(tip_length))
+            .replace("{{TIP_RADIUS}}", str(tip_radius))
+            .replace("{{TIP_RESOLUTION}}", str(tip_resolution))
+            .replace("{{SHAFT_RADIUS}}", str(shaft_radius))
+            .replace("{{SHAFT_RESOLUTION}}", str(shaft_resolution))
+            .replace("{{DIR_X}}", str(float(unit_dir[0])))
+            .replace("{{DIR_Y}}", str(float(unit_dir[1])))
+            .replace("{{DIR_Z}}", str(float(unit_dir[2])))
+        )
+
+    def _mapper_setup_arrow(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_arrow,
+    )
+
+
+def Cone(  # noqa: N802 PLR0913
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    height: float = 1.0,
+    radius: float = 0.5,
+    resolution: int = 6,
+    capping: bool = True,  # noqa: FBT001 FBT002
+) -> PolyData:
+    """Create a cone mesh.
+
+    Parameters
+    ----------
+    center : tuple, optional
+        Center of the cone (x, y, z). Default is (0, 0, 0).
+    direction : tuple, optional
+        Direction vector of the cone axis. Default is (1, 0, 0).
+    height : float, optional
+        Height of the cone. Default is 1.0.
+    radius : float, optional
+        Base radius of the cone. Default is 0.5.
+    resolution : int, optional
+        Number of facets around the cone. Default is 6.
+    capping : bool, optional
+        Whether to cap the base of the cone. Default is True.
+
+    Returns
+    -------
+    PolyData
+        A cone mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
+    >>> cone.plot()
+
+    """
+    # Generate approximate points for the cone
+    norm = np.linalg.norm(direction)
+    d = np.asarray(direction, dtype=float) / (norm if norm > 0 else 1.0)
+
+    # Build two perpendicular vectors to d
+    perp1 = np.cross(d, [1.0, 0.0, 0.0]) if abs(d[0]) < 0.9 else np.cross(d, [0.0, 1.0, 0.0])  # noqa: PLR2004
+    perp1 /= np.linalg.norm(perp1)
+    perp2 = np.cross(d, perp1)
+
+    apex = np.asarray(center, dtype=float) + d * (height / 2.0)
+    base_center = np.asarray(center, dtype=float) - d * (height / 2.0)
+
+    theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
+    base_points = np.array(
+        [base_center + radius * (np.cos(t) * perp1 + np.sin(t) * perp2) for t in theta],
+    )
+
+    points = np.vstack([apex[np.newaxis, :], base_points])
+    if capping:
+        points = np.vstack([points, base_center[np.newaxis, :]])
+
+    def _vtk_js_source(idx: int) -> str:
+        capping_str = "true" if capping else "false"
+        return (
+            _CONE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(center[0]))
+            .replace("{{CENTER_Y}}", str(center[1]))
+            .replace("{{CENTER_Z}}", str(center[2]))
+            .replace("{{DIRECTION_X}}", str(d[0]))
+            .replace("{{DIRECTION_Y}}", str(d[1]))
+            .replace("{{DIRECTION_Z}}", str(d[2]))
+            .replace("{{HEIGHT}}", str(height))
+            .replace("{{RADIUS}}", str(radius))
+            .replace("{{RESOLUTION}}", str(resolution))
+            .replace("{{CAPPING}}", capping_str)
+        )
+
+    def _mapper_setup_cone(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_cone,
+    )
+
+
+def Line(  # noqa: N802
+    pointa: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    pointb: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    resolution: int = 1,
+) -> PolyData:
+    """Create a line segment between two points.
+
+    This mirrors the :func:`pyvista.Line` API, producing a polyline of
+    ``resolution + 1`` evenly spaced points from ``pointa`` to ``pointb``.
+
+    Parameters
+    ----------
+    pointa : tuple, optional
+        Start point of the line (x, y, z). Default is (0, 0, 0).
+    pointb : tuple, optional
+        End point of the line (x, y, z). Default is (1, 0, 0).
+    resolution : int, optional
+        Number of line segments (i.e. ``resolution + 1`` points). Default is 1.
+
+    Returns
+    -------
+    PolyData
+        A line mesh.
+
+    Raises
+    ------
+    ValueError
+        If ``resolution`` is less than 1.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> line = pv.Line(pointa=(0, 0, 0), pointb=(1, 0, 0), resolution=1)
+    >>> line.n_points
+    2
+
+    >>> line.plot(color="black")  # doctest: +SKIP
+
+    """
+    if resolution < 1:
+        msg = f"resolution must be >= 1, got {resolution}"
+        raise ValueError(msg)
+
+    points = np.linspace(pointa, pointb, resolution + 1)
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _LINE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{POINT_A_X}}", str(float(pointa[0])))
+            .replace("{{POINT_A_Y}}", str(float(pointa[1])))
+            .replace("{{POINT_A_Z}}", str(float(pointa[2])))
+            .replace("{{POINT_B_X}}", str(float(pointb[0])))
+            .replace("{{POINT_B_Y}}", str(float(pointb[1])))
+            .replace("{{POINT_B_Z}}", str(float(pointb[2])))
+            .replace("{{RESOLUTION}}", str(resolution))
+        )
+
+    def _mapper_setup_line(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_line,
+    )
+
+
+def Plane(  # noqa: N802 PLR0913
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    i_size: float = 1.0,
+    j_size: float = 1.0,
+    i_resolution: int = 10,
+    j_resolution: int = 10,
+) -> PolyData:
+    """Create a plane mesh.
+
+    This mirrors the :func:`pyvista.Plane` API, producing a flat rectangular
+    mesh oriented according to the given normal ``direction``.
+
+    Parameters
+    ----------
+    center : tuple, optional
+        Center of the plane (x, y, z). Default is (0, 0, 0).
+    direction : tuple, optional
+        Normal direction of the plane (x, y, z). Default is (0, 0, 1).
+    i_size : float, optional
+        Size in the i (first) direction. Default is 1.0.
+    j_size : float, optional
+        Size in the j (second) direction. Default is 1.0.
+    i_resolution : int, optional
+        Number of subdivisions in the i direction. Default is 10.
+    j_resolution : int, optional
+        Number of subdivisions in the j direction. Default is 10.
+
+    Returns
+    -------
+    PolyData
+        A plane mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> plane = pv.Plane()
+    >>> plane.n_points
+    121
+
+    >>> plane.plot()  # doctest: +SKIP
+
+    """
+    n = np.array(direction, dtype=float)
+    n = n / np.linalg.norm(n)
+
+    # Find two orthogonal vectors in the plane
+    if not np.allclose(np.abs(n), [0.0, 1.0, 0.0]):
+        ref = np.array([0.0, 1.0, 0.0])
+    else:
+        ref = np.array([1.0, 0.0, 0.0])
+    i_hat = np.cross(ref, n)
+    i_hat = i_hat / np.linalg.norm(i_hat)
+    j_hat = np.cross(n, i_hat)
+    j_hat = j_hat / np.linalg.norm(j_hat)
+
+    c = np.array(center, dtype=float)
+    origin = c - (i_size / 2) * i_hat - (j_size / 2) * j_hat
+    point1 = c + (i_size / 2) * i_hat - (j_size / 2) * j_hat
+    point2 = c - (i_size / 2) * i_hat + (j_size / 2) * j_hat
+
+    # Build Python points grid for PolyData
+    points = []
+    for j in range(j_resolution + 1):
+        for i in range(i_resolution + 1):
+            p = origin + (i / i_resolution) * i_size * i_hat + (j / j_resolution) * j_size * j_hat
+            points.append(p)
+
+    # Build quad faces
+    faces = []
+    for j in range(j_resolution):
+        for i in range(i_resolution):
+            idx0 = j * (i_resolution + 1) + i
+            idx1 = idx0 + 1
+            idx2 = idx0 + i_resolution + 2
+            idx3 = idx0 + i_resolution + 1
+            faces.append([idx0, idx1, idx2, idx3])
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _PLANE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{ORIGIN_X}}", str(float(origin[0])))
+            .replace("{{ORIGIN_Y}}", str(float(origin[1])))
+            .replace("{{ORIGIN_Z}}", str(float(origin[2])))
+            .replace("{{POINT1_X}}", str(float(point1[0])))
+            .replace("{{POINT1_Y}}", str(float(point1[1])))
+            .replace("{{POINT1_Z}}", str(float(point1[2])))
+            .replace("{{POINT2_X}}", str(float(point2[0])))
+            .replace("{{POINT2_Y}}", str(float(point2[1])))
+            .replace("{{POINT2_Z}}", str(float(point2[2])))
+            .replace("{{I_RESOLUTION}}", str(i_resolution))
+            .replace("{{J_RESOLUTION}}", str(j_resolution))
+        )
+
+    def _mapper_setup_plane(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=np.array(points),
+        faces=np.array(faces),
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_plane,
     )

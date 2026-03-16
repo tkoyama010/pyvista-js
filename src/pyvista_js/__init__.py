@@ -23,7 +23,7 @@ if sys.platform == "emscripten":
 from . import examples
 from .camera import Camera
 from .light import Light
-from .mesh import Circle, Cube, Cylinder, Mesh, PolyData, Sphere
+from .mesh import Arrow, Circle, Cone, Cube, Cylinder, Disc, Line, Mesh, Plane, PolyData, Sphere
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader
 from .texture import Texture
@@ -33,14 +33,19 @@ try:
     from .streamlit_integration import pyvista_chart
 
     __all__ = [
+        "Arrow",
         "Camera",
         "Circle",
+        "Cone",
         "Cube",
         "Cylinder",
+        "Disc",
         "Light",
+        "Line",
         "Mesh",
         "OBJReader",
         "PLYReader",
+        "Plane",
         "Plotter",
         "PolyData",
         "PolyDataReader",
@@ -53,14 +58,19 @@ try:
 except ImportError:
     # Streamlit not available
     __all__ = [
+        "Arrow",
         "Camera",
         "Circle",
+        "Cone",
         "Cube",
         "Cylinder",
+        "Disc",
         "Light",
+        "Line",
         "Mesh",
         "OBJReader",
         "PLYReader",
+        "Plane",
         "Plotter",
         "PolyData",
         "PolyDataReader",

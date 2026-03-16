@@ -7,7 +7,19 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import Circle, Cube, Cylinder, Mesh, PolyData, Sphere
+from pyvista_js import (
+    Arrow,
+    Circle,
+    Cone,
+    Cube,
+    Cylinder,
+    Disc,
+    Line,
+    Mesh,
+    Plane,
+    PolyData,
+    Sphere,
+)
 
 
 def test_mesh_creation() -> None:
@@ -252,6 +264,284 @@ def test_circle_mapper_setup() -> None:
     circle = Circle()
     mapper_code = circle.get_mapper_setup(0)
     assert "setInputData" in mapper_code
+    assert "source0" in mapper_code
+
+
+def test_disc_creation() -> None:
+    """Test disc primitive creation."""
+    disc = Disc()
+    assert isinstance(disc, PolyData)
+    assert disc.n_points > 0
+    assert disc.points.shape[1] == 3
+
+
+def test_disc_default_radii() -> None:
+    """Test that default disc has inner=0.25 and outer=0.5."""
+    disc = Disc()
+    radii = np.linalg.norm(disc.points[:, :2], axis=1)
+    assert radii.min() >= 0.25 - 1e-10
+    assert radii.max() <= 0.5 + 1e-10
+
+
+def test_disc_custom_radii() -> None:
+    """Test disc with custom inner and outer radii."""
+    disc = Disc(inner=0.1, outer=1.0)
+    radii = np.linalg.norm(disc.points[:, :2], axis=1)
+    assert radii.min() >= 0.1 - 1e-10
+    assert radii.max() <= 1.0 + 1e-10
+
+
+def test_disc_center() -> None:
+    """Test disc with a custom center."""
+    disc = Disc(center=(1.0, 2.0, 3.0))
+    assert np.allclose(disc.points[:, 2], 3.0)
+
+
+def test_disc_vtk_js_source() -> None:
+    """Test that Disc generates vtk.js source code with correct parameters."""
+    disc = Disc(inner=0.1, outer=0.8, r_res=2, c_res=12)
+    js_source = disc.generate_vtk_js_source(0)
+    assert "0.1" in js_source
+    assert "0.8" in js_source
+    assert "2" in js_source
+    assert "12" in js_source
+    assert "vtkPolyData" in js_source
+
+
+def test_disc_mapper_setup() -> None:
+    """Test that Disc mapper uses setInputData."""
+    disc = Disc()
+    mapper_code = disc.get_mapper_setup(0)
+    assert "setInputData" in mapper_code
+    assert "source0" in mapper_code
+
+
+def test_arrow_creation() -> None:
+    """Test arrow primitive creation with defaults."""
+    arrow = Arrow()
+    assert isinstance(arrow, PolyData)
+    assert arrow.n_points > 0
+    assert arrow.points.shape[1] == 3
+
+
+def test_arrow_custom_parameters() -> None:
+    """Test arrow with custom start, direction, and dimensions."""
+    arrow = Arrow(
+        start=(1.0, 2.0, 3.0),
+        direction=(0.0, 1.0, 0.0),
+        tip_length=0.3,
+        tip_radius=0.15,
+        shaft_radius=0.06,
+    )
+    assert isinstance(arrow, PolyData)
+    assert arrow.n_points > 0
+
+
+def test_arrow_scale() -> None:
+    """Test arrow scale parameter."""
+    arrow = Arrow(scale=2.0)
+    assert isinstance(arrow, PolyData)
+
+
+def test_arrow_zero_direction_raises() -> None:
+    """Test that a zero direction vector raises ValueError."""
+    with pytest.raises(ValueError, match="non-zero"):
+        Arrow(direction=(0.0, 0.0, 0.0))
+
+
+def test_arrow_vtk_js_source() -> None:
+    """Test that the vtk.js source code is generated correctly."""
+    arrow = Arrow(
+        tip_length=0.25,
+        tip_radius=0.1,
+        tip_resolution=20,
+        shaft_radius=0.05,
+        shaft_resolution=20,
+    )
+    js = arrow.generate_vtk_js_source(0)
+    assert "vtkArrowSource" in js
+    assert "tipLength" in js
+    assert "shaftRadius" in js
+
+
+def test_arrow_mapper_setup() -> None:
+    """Test that the mapper setup code references the correct output port."""
+    arrow = Arrow()
+    setup = arrow.get_mapper_setup(0)
+    assert "getOutputPort" in setup
+
+
+def test_cone_creation() -> None:
+    """Test cone primitive creation with default parameters."""
+    cone = Cone()
+
+    assert isinstance(cone, PolyData)
+    assert cone.n_points > 0
+    assert cone.points.shape[1] == 3
+
+
+def test_cone_custom_parameters() -> None:
+    """Test cone with custom parameters."""
+    cone = Cone(center=(1, 2, 3), direction=(0, 1, 0), height=2.0, radius=1.0, resolution=8)
+
+    assert cone.n_points > 0
+    # Apex should be at center + direction * height/2
+    apex = cone.points[0]
+    assert np.allclose(apex, [1.0, 3.0, 3.0], atol=1e-5)
+
+
+def test_cone_resolution() -> None:
+    """Test that resolution controls the number of base facets."""
+    cone6 = Cone(resolution=6)
+    cone12 = Cone(resolution=12)
+
+    # With capping=True: apex + resolution base points + base center
+    assert cone6.n_points == 6 + 2
+    assert cone12.n_points == 12 + 2
+
+
+def test_cone_no_capping() -> None:
+    """Test cone without capping has no base center point."""
+    cone = Cone(resolution=6, capping=False)
+
+    # apex + resolution base points (no base center)
+    assert cone.n_points == 6 + 1
+
+
+def test_cone_vtk_js_source() -> None:
+    """Test that Cone generates valid vtk.js source code."""
+    cone = Cone(center=(0, 0, 0), direction=(1, 0, 0), height=2.0, radius=0.5, resolution=6)
+    js_source = cone.generate_vtk_js_source(0)
+
+    assert "vtkConeSource" in js_source
+    assert "2.0" in js_source
+    assert "0.5" in js_source
+    assert "6" in js_source
+    assert "true" in js_source  # capping
+
+
+def test_cone_vtk_js_source_no_capping() -> None:
+    """Test that capping=False is reflected in vtk.js source."""
+    cone = Cone(capping=False)
+    js_source = cone.generate_vtk_js_source(0)
+
+    assert "false" in js_source
+
+
+def test_cone_mapper_setup() -> None:
+    """Test that Cone mapper uses setInputConnection."""
+    cone = Cone()
+    mapper_code = cone.get_mapper_setup(0)
+
+    assert "setInputConnection" in mapper_code
+    assert "source0" in mapper_code
+
+
+def test_line_creation() -> None:
+    """Test default Line creation."""
+    line = Line()
+
+    assert isinstance(line, PolyData)
+    assert line.n_points == 2
+
+
+def test_line_custom_points() -> None:
+    """Test Line with custom start and end points."""
+    line = Line(pointa=(0, 0, 0), pointb=(2, 0, 0))
+
+    assert np.allclose(line.points[0], [0, 0, 0])
+    assert np.allclose(line.points[-1], [2, 0, 0])
+
+
+def test_line_resolution() -> None:
+    """Test Line with custom resolution produces correct number of points."""
+    line = Line(resolution=5)
+
+    assert line.n_points == 6  # resolution + 1
+
+
+def test_line_invalid_resolution() -> None:
+    """Test that resolution < 1 raises ValueError."""
+    with pytest.raises(ValueError, match="resolution must be >= 1"):
+        Line(resolution=0)
+    with pytest.raises(ValueError, match="resolution must be >= 1"):
+        Line(resolution=-1)
+
+
+def test_line_vtk_js_source() -> None:
+    """Test that Line generates correct vtk.js source code."""
+    line = Line(pointa=(0, 0, 0), pointb=(1, 0, 0), resolution=3)
+    js_source = line.generate_vtk_js_source(0)
+
+    assert "vtkLineSource" in js_source
+    assert "0.0" in js_source
+    assert "1.0" in js_source
+    assert "3" in js_source
+    assert "source0" in js_source
+
+
+def test_line_mapper_setup() -> None:
+    """Test that Line mapper uses setInputConnection."""
+    line = Line()
+    mapper_code = line.get_mapper_setup(0)
+    assert "setInputConnection" in mapper_code
+    assert "source0" in mapper_code
+
+
+def test_plane_creation() -> None:
+    """Test plane primitive creation with default parameters."""
+    plane = Plane()
+
+    assert isinstance(plane, PolyData)
+    assert plane.n_points == 121  # (10+1) * (10+1)
+    assert plane.n_faces == 100  # 10 * 10
+    assert plane.points.shape[1] == 3
+
+
+def test_plane_custom_resolution() -> None:
+    """Test plane with custom resolution."""
+    plane = Plane(i_resolution=5, j_resolution=4)
+
+    assert plane.n_points == 30  # (5+1) * (4+1)
+    assert plane.n_faces == 20  # 5 * 4
+
+
+def test_plane_center() -> None:
+    """Test plane is centered at the specified center."""
+    plane = Plane(center=(1.0, 2.0, 0.0))
+    centroid = np.mean(plane.points, axis=0)
+    assert np.allclose(centroid, [1.0, 2.0, 0.0], atol=1e-10)
+
+
+def test_plane_size() -> None:
+    """Test plane size in i and j directions."""
+    plane = Plane(center=(0.0, 0.0, 0.0), direction=(0.0, 0.0, 1.0), i_size=2.0, j_size=4.0)
+    x_extent = np.max(plane.points[:, 0]) - np.min(plane.points[:, 0])
+    y_extent = np.max(plane.points[:, 1]) - np.min(plane.points[:, 1])
+    assert np.isclose(x_extent, 2.0, atol=1e-10)
+    assert np.isclose(y_extent, 4.0, atol=1e-10)
+
+
+def test_plane_default_in_xy_plane() -> None:
+    """Test that the default plane lies in the XY plane (direction=(0,0,1))."""
+    plane = Plane()
+    assert np.allclose(plane.points[:, 2], 0.0, atol=1e-10)
+
+
+def test_plane_vtk_js_source() -> None:
+    """Test that Plane generates vtk.js source code with PlaneSource."""
+    plane = Plane(i_resolution=5, j_resolution=5)
+    js_source = plane.generate_vtk_js_source(0)
+    assert "vtkPlaneSource" in js_source
+    assert "xResolution" in js_source
+    assert "5" in js_source
+
+
+def test_plane_mapper_setup() -> None:
+    """Test that Plane mapper uses setInputConnection."""
+    plane = Plane()
+    mapper_code = plane.get_mapper_setup(0)
+    assert "setInputConnection" in mapper_code
     assert "source0" in mapper_code
 
 
