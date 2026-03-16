@@ -8,6 +8,8 @@ import numpy as np
 import pytest
 
 from pyvista_js import Arrow, Circle, Cube, Cylinder, Line, Mesh, Plane, PolyData, Sphere
+from pyvista_js import Arrow, Circle, Cube, Cylinder, Disc, Line, Mesh, PolyData, Sphere
+
 
 
 def test_mesh_creation() -> None:
@@ -252,6 +254,55 @@ def test_circle_mapper_setup() -> None:
     circle = Circle()
     mapper_code = circle.get_mapper_setup(0)
     assert "setInputData" in mapper_code
+    assert "source0" in mapper_code
+
+
+def test_disc_creation() -> None:
+    """Test disc primitive creation."""
+    disc = Disc()
+    assert isinstance(disc, PolyData)
+    assert disc.n_points > 0
+    assert disc.points.shape[1] == 3
+
+
+def test_disc_default_radii() -> None:
+    """Test that default disc has inner=0.25 and outer=0.5."""
+    disc = Disc()
+    radii = np.linalg.norm(disc.points[:, :2], axis=1)
+    assert radii.min() >= 0.25 - 1e-10
+    assert radii.max() <= 0.5 + 1e-10
+
+
+def test_disc_custom_radii() -> None:
+    """Test disc with custom inner and outer radii."""
+    disc = Disc(inner=0.1, outer=1.0)
+    radii = np.linalg.norm(disc.points[:, :2], axis=1)
+    assert radii.min() >= 0.1 - 1e-10
+    assert radii.max() <= 1.0 + 1e-10
+
+
+def test_disc_center() -> None:
+    """Test disc with a custom center."""
+    disc = Disc(center=(1.0, 2.0, 3.0))
+    assert np.allclose(disc.points[:, 2], 3.0)
+
+
+def test_disc_vtk_js_source() -> None:
+    """Test that Disc generates vtk.js source code with correct parameters."""
+    disc = Disc(inner=0.1, outer=0.8, r_res=2, c_res=12)
+    js_source = disc.generate_vtk_js_source(0)
+    assert "0.1" in js_source
+    assert "0.8" in js_source
+    assert "2" in js_source
+    assert "12" in js_source
+    assert "vtkDiskSource" in js_source
+
+
+def test_disc_mapper_setup() -> None:
+    """Test that Disc mapper uses setInputConnection."""
+    disc = Disc()
+    mapper_code = disc.get_mapper_setup(0)
+    assert "setInputConnection" in mapper_code
     assert "source0" in mapper_code
 
 

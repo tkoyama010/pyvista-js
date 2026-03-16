@@ -24,6 +24,7 @@ _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
+_DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
 _ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
@@ -634,6 +635,100 @@ def Cylinder(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_cylinder,
+    )
+
+
+def Disc(  # noqa: N802, PLR0913
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    inner: float = 0.25,
+    outer: float = 0.5,
+    normal: tuple[float, float, float] = (0.0, 0.0, 1.0),
+    r_res: int = 1,
+    c_res: int = 6,
+) -> PolyData:
+    """Create a disc (annular ring) geometric primitive.
+
+    This mirrors the :func:`pyvista.Disc` API, backed by vtk.js
+    ``vtkDiskSource``.
+
+    Parameters
+    ----------
+    center : tuple, optional
+        Center of the disc (x, y, z). Default is (0, 0, 0).
+    inner : float, optional
+        Inner radius of the disc. Default is 0.25.
+    outer : float, optional
+        Outer radius of the disc. Default is 0.5.
+    normal : tuple, optional
+        Normal vector of the disc. Default is (0, 0, 1).
+    r_res : int, optional
+        Number of radial subdivisions. Default is 1.
+    c_res : int, optional
+        Number of circumferential subdivisions. Default is 6.
+
+    Returns
+    -------
+    PolyData
+        A disc (annular ring) mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> disc = pv.Disc(center=(0, 0, 0), inner=0.25, outer=0.5)
+    >>> disc.n_points
+    12
+
+    >>> disc.plot()  # doctest: +SKIP
+
+    """
+    # Generate points in XY plane: (r_res+1) rings * c_res points
+    radii = np.linspace(inner, outer, r_res + 1)
+    theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
+    pts = np.array(
+        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
+    )
+
+    # Rotate from default normal (0,0,1) to requested normal
+    n = np.asarray(normal, dtype=float)
+    n = n / np.linalg.norm(n)
+    z = np.array([0.0, 0.0, 1.0])
+    if not np.allclose(n, z):
+        if np.allclose(n, -z):
+            pts[:, 2] = -pts[:, 2]
+        else:
+            axis = np.cross(z, n)
+            axis = axis / np.linalg.norm(axis)
+            angle = np.arccos(np.clip(np.dot(z, n), -1.0, 1.0))
+            c, s = np.cos(angle), np.sin(angle)
+            t_val = 1.0 - c
+            ax, ay, az = axis
+            rot = np.array(
+                [
+                    [t_val * ax * ax + c, t_val * ax * ay - s * az, t_val * ax * az + s * ay],
+                    [t_val * ax * ay + s * az, t_val * ay * ay + c, t_val * ay * az - s * ax],
+                    [t_val * ax * az - s * ay, t_val * ay * az + s * ax, t_val * az * az + c],
+                ],
+            )
+            pts = pts @ rot.T
+
+    pts += np.asarray(center, dtype=float)
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _DISK_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{INNER}}", str(inner))
+            .replace("{{OUTER}}", str(outer))
+            .replace("{{R_RES}}", str(r_res))
+            .replace("{{C_RES}}", str(c_res))
+        )
+
+    def _mapper_setup_disc(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=pts,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_disc,
     )
 
 
