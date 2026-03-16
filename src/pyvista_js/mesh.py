@@ -648,8 +648,10 @@ def Disc(  # noqa: N802, PLR0913
 ) -> PolyData:
     """Create a disc (annular ring) geometric primitive.
 
-    This mirrors the :func:`pyvista.Disc` API, backed by vtk.js
-    ``vtkDiskSource``.
+    This mirrors the :func:`pyvista.Disc` API.  The geometry is built
+    directly from ``(r_res + 1)`` rings of ``c_res`` points each, connected
+    as triangles, so it renders correctly in vtk.js without depending on any
+    specific vtk.js source filter.
 
     Parameters
     ----------
@@ -687,6 +689,18 @@ def Disc(  # noqa: N802, PLR0913
     pts = np.array(
         [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
     )
+
+    # Build triangular faces: two triangles per quad between adjacent rings
+    faces = []
+    for ring in range(r_res):
+        for ci in range(c_res):
+            ci1 = (ci + 1) % c_res
+            i00 = ring * c_res + ci
+            i01 = ring * c_res + ci1
+            i10 = (ring + 1) * c_res + ci
+            i11 = (ring + 1) * c_res + ci1
+            faces.append([i00, i01, i11])
+            faces.append([i00, i11, i10])
 
     # Rotate from default normal (0,0,1) to requested normal
     n = np.asarray(normal, dtype=float)
@@ -727,6 +741,7 @@ def Disc(  # noqa: N802, PLR0913
 
     return PolyData(
         points=pts,
+        faces=np.array(faces) if faces else None,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_disc,
     )
