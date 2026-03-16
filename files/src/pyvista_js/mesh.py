@@ -25,6 +25,7 @@ _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
 _ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
+_LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
 
 
@@ -790,4 +791,71 @@ def Arrow(  # noqa: N802, PLR0913
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_arrow,
+    )
+
+
+def Line(  # noqa: N802
+    pointa: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    pointb: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    resolution: int = 1,
+) -> PolyData:
+    """Create a line segment between two points.
+
+    This mirrors the :func:`pyvista.Line` API, producing a polyline of
+    ``resolution + 1`` evenly spaced points from ``pointa`` to ``pointb``.
+
+    Parameters
+    ----------
+    pointa : tuple, optional
+        Start point of the line (x, y, z). Default is (0, 0, 0).
+    pointb : tuple, optional
+        End point of the line (x, y, z). Default is (1, 0, 0).
+    resolution : int, optional
+        Number of line segments (i.e. ``resolution + 1`` points). Default is 1.
+
+    Returns
+    -------
+    PolyData
+        A line mesh.
+
+    Raises
+    ------
+    ValueError
+        If ``resolution`` is less than 1.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> line = pv.Line(pointa=(0, 0, 0), pointb=(1, 0, 0), resolution=1)
+    >>> line.n_points
+    2
+
+    >>> line.plot(color="black")  # doctest: +SKIP
+
+    """
+    if resolution < 1:
+        msg = f"resolution must be >= 1, got {resolution}"
+        raise ValueError(msg)
+
+    points = np.linspace(pointa, pointb, resolution + 1)
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _LINE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{POINT_A_X}}", str(float(pointa[0])))
+            .replace("{{POINT_A_Y}}", str(float(pointa[1])))
+            .replace("{{POINT_A_Z}}", str(float(pointa[2])))
+            .replace("{{POINT_B_X}}", str(float(pointb[0])))
+            .replace("{{POINT_B_Y}}", str(float(pointb[1])))
+            .replace("{{POINT_B_Z}}", str(float(pointb[2])))
+            .replace("{{RESOLUTION}}", str(resolution))
+        )
+
+    def _mapper_setup_line(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_line,
     )
