@@ -24,6 +24,8 @@ _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
+_ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
+_LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
 
@@ -697,6 +699,169 @@ def Circle(  # noqa: N802
     )
 
 
+def Arrow(  # noqa: N802, PLR0913
+    start: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    tip_length: float = 0.25,
+    tip_radius: float = 0.1,
+    tip_resolution: int = 20,
+    shaft_radius: float = 0.05,
+    shaft_resolution: int = 20,
+    scale: float | None = None,
+) -> PolyData:
+    """Create an arrow mesh.
+
+    Returns a :class:`PolyData` representing an arrow starting at ``start``
+    and pointing in ``direction``, backed by vtk.js ``vtkArrowSource``.
+
+    Parameters
+    ----------
+    start : tuple, optional
+        Starting point of the arrow ``(x, y, z)``. Default is ``(0, 0, 0)``.
+    direction : tuple, optional
+        Direction vector of the arrow. Default is ``(1, 0, 0)``.
+    tip_length : float, optional
+        Length of the conical tip as a fraction of the total arrow length.
+        Default is 0.25.
+    tip_radius : float, optional
+        Radius of the base of the tip. Default is 0.1.
+    tip_resolution : int, optional
+        Number of faces around the tip cone. Default is 20.
+    shaft_radius : float, optional
+        Radius of the cylindrical shaft. Default is 0.05.
+    shaft_resolution : int, optional
+        Number of faces around the shaft cylinder. Default is 20.
+    scale : float, optional
+        Scaling factor applied to the entire arrow. When ``None`` the arrow
+        is not scaled.
+
+    Returns
+    -------
+    PolyData
+        An arrow mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> arrow = pv.Arrow()
+    >>> isinstance(arrow, pv.PolyData)
+    True
+
+    Create an arrow with a custom start point and direction:
+
+    >>> arrow = pv.Arrow(start=(1, 0, 0), direction=(0, 1, 0))
+    >>> isinstance(arrow, pv.PolyData)
+    True
+
+    Plot the arrow:
+
+    >>> arrow.plot()  # doctest: +SKIP
+
+    """
+    direction_arr = np.asarray(direction, dtype=float)
+    norm = float(np.linalg.norm(direction_arr))
+    if norm == 0.0:
+        msg = "direction must be a non-zero vector"
+        raise ValueError(msg)
+    unit_dir = direction_arr / norm
+
+    length = 1.0 if scale is None else float(scale)
+
+    # Build a simple representative point set: shaft start + tip end
+    start_arr = np.asarray(start, dtype=float)
+    end = start_arr + unit_dir * length
+    points = np.array([start_arr, end])
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _ARROW_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{TIP_LENGTH}}", str(tip_length))
+            .replace("{{TIP_RADIUS}}", str(tip_radius))
+            .replace("{{TIP_RESOLUTION}}", str(tip_resolution))
+            .replace("{{SHAFT_RADIUS}}", str(shaft_radius))
+            .replace("{{SHAFT_RESOLUTION}}", str(shaft_resolution))
+            .replace("{{DIR_X}}", str(float(unit_dir[0])))
+            .replace("{{DIR_Y}}", str(float(unit_dir[1])))
+            .replace("{{DIR_Z}}", str(float(unit_dir[2])))
+        )
+
+    def _mapper_setup_arrow(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_arrow,
+    )
+
+
+def Line(  # noqa: N802
+    pointa: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    pointb: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    resolution: int = 1,
+) -> PolyData:
+    """Create a line segment between two points.
+
+    This mirrors the :func:`pyvista.Line` API, producing a polyline of
+    ``resolution + 1`` evenly spaced points from ``pointa`` to ``pointb``.
+
+    Parameters
+    ----------
+    pointa : tuple, optional
+        Start point of the line (x, y, z). Default is (0, 0, 0).
+    pointb : tuple, optional
+        End point of the line (x, y, z). Default is (1, 0, 0).
+    resolution : int, optional
+        Number of line segments (i.e. ``resolution + 1`` points). Default is 1.
+
+    Returns
+    -------
+    PolyData
+        A line mesh.
+
+    Raises
+    ------
+    ValueError
+        If ``resolution`` is less than 1.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> line = pv.Line(pointa=(0, 0, 0), pointb=(1, 0, 0), resolution=1)
+    >>> line.n_points
+    2
+
+    >>> line.plot(color="black")  # doctest: +SKIP
+
+    """
+    if resolution < 1:
+        msg = f"resolution must be >= 1, got {resolution}"
+        raise ValueError(msg)
+
+    points = np.linspace(pointa, pointb, resolution + 1)
+
+    def _vtk_js_source(idx: int) -> str:
+        return (
+            _LINE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{POINT_A_X}}", str(float(pointa[0])))
+            .replace("{{POINT_A_Y}}", str(float(pointa[1])))
+            .replace("{{POINT_A_Z}}", str(float(pointa[2])))
+            .replace("{{POINT_B_X}}", str(float(pointb[0])))
+            .replace("{{POINT_B_Y}}", str(float(pointb[1])))
+            .replace("{{POINT_B_Z}}", str(float(pointb[2])))
+            .replace("{{RESOLUTION}}", str(resolution))
+        )
+
+    def _mapper_setup_line(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_line,
+    )
+
+
 def Plane(  # noqa: N802 PLR0913
     center: tuple[float, float, float] = (0.0, 0.0, 0.0),
     direction: tuple[float, float, float] = (0.0, 0.0, 1.0),
@@ -706,6 +871,9 @@ def Plane(  # noqa: N802 PLR0913
     j_resolution: int = 10,
 ) -> PolyData:
     """Create a plane mesh.
+
+    This mirrors the :func:`pyvista.Plane` API, producing a flat rectangular
+    mesh oriented according to the given normal ``direction``.
 
     Parameters
     ----------
