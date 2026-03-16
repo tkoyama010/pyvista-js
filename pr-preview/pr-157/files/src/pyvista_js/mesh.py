@@ -958,10 +958,7 @@ def Cone(  # noqa: N802 PLR0913
 
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
     base_points = np.array(
-        [
-            base_center + radius * (np.cos(t) * perp1 + np.sin(t) * perp2)
-            for t in theta
-        ],
+        [base_center + radius * (np.cos(t) * perp1 + np.sin(t) * perp2) for t in theta],
     )
 
     points = np.vstack([apex[np.newaxis, :], base_points])
