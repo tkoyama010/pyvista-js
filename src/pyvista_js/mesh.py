@@ -26,6 +26,7 @@ _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
 _DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
 _ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
+_CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
@@ -902,6 +903,94 @@ def Arrow(  # noqa: N802, PLR0913
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_arrow,
+    )
+
+
+def Cone(  # noqa: N802 PLR0913
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
+    height: float = 1.0,
+    radius: float = 0.5,
+    resolution: int = 6,
+    capping: bool = True,  # noqa: FBT001 FBT002
+) -> PolyData:
+    """Create a cone mesh.
+
+    Parameters
+    ----------
+    center : tuple, optional
+        Center of the cone (x, y, z). Default is (0, 0, 0).
+    direction : tuple, optional
+        Direction vector of the cone axis. Default is (1, 0, 0).
+    height : float, optional
+        Height of the cone. Default is 1.0.
+    radius : float, optional
+        Base radius of the cone. Default is 0.5.
+    resolution : int, optional
+        Number of facets around the cone. Default is 6.
+    capping : bool, optional
+        Whether to cap the base of the cone. Default is True.
+
+    Returns
+    -------
+    PolyData
+        A cone mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
+    >>> cone.n_points > 0
+    True
+
+    """
+    # Generate approximate points for the cone
+    norm = np.linalg.norm(direction)
+    d = np.asarray(direction, dtype=float) / (norm if norm > 0 else 1.0)
+
+    # Build two perpendicular vectors to d
+    perp1 = np.cross(d, [1.0, 0.0, 0.0]) if abs(d[0]) < 0.9 else np.cross(d, [0.0, 1.0, 0.0])  # noqa: PLR2004
+    perp1 /= np.linalg.norm(perp1)
+    perp2 = np.cross(d, perp1)
+
+    apex = np.asarray(center, dtype=float) + d * (height / 2.0)
+    base_center = np.asarray(center, dtype=float) - d * (height / 2.0)
+
+    theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
+    base_points = np.array(
+        [
+            base_center + radius * (np.cos(t) * perp1 + np.sin(t) * perp2)
+            for t in theta
+        ],
+    )
+
+    points = np.vstack([apex[np.newaxis, :], base_points])
+    if capping:
+        points = np.vstack([points, base_center[np.newaxis, :]])
+
+    def _vtk_js_source(idx: int) -> str:
+        capping_str = "true" if capping else "false"
+        return (
+            _CONE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
+            .replace("{{CENTER_X}}", str(center[0]))
+            .replace("{{CENTER_Y}}", str(center[1]))
+            .replace("{{CENTER_Z}}", str(center[2]))
+            .replace("{{DIRECTION_X}}", str(d[0]))
+            .replace("{{DIRECTION_Y}}", str(d[1]))
+            .replace("{{DIRECTION_Z}}", str(d[2]))
+            .replace("{{HEIGHT}}", str(height))
+            .replace("{{RADIUS}}", str(radius))
+            .replace("{{RESOLUTION}}", str(resolution))
+            .replace("{{CAPPING}}", capping_str)
+        )
+
+    def _mapper_setup_cone(idx: int) -> str:
+        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
+
+    return PolyData(
+        points=points,
+        _vtk_js_source_fn=_vtk_js_source,
+        _mapper_setup_fn=_mapper_setup_cone,
     )
 
 
