@@ -7,7 +7,19 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import Arrow, Circle, Cube, Cylinder, Disc, Line, Mesh, Plane, PolyData, Sphere
+from pyvista_js import (
+    Arrow,
+    Circle,
+    Cone,
+    Cube,
+    Cylinder,
+    Disc,
+    Line,
+    Mesh,
+    Plane,
+    PolyData,
+    Sphere,
+)
 
 
 def test_mesh_creation() -> None:
@@ -357,6 +369,72 @@ def test_arrow_mapper_setup() -> None:
     arrow = Arrow()
     setup = arrow.get_mapper_setup(0)
     assert "getOutputPort" in setup
+
+
+def test_cone_creation() -> None:
+    """Test cone primitive creation with default parameters."""
+    cone = Cone()
+
+    assert isinstance(cone, PolyData)
+    assert cone.n_points > 0
+    assert cone.points.shape[1] == 3
+
+
+def test_cone_custom_parameters() -> None:
+    """Test cone with custom parameters."""
+    cone = Cone(center=(1, 2, 3), direction=(0, 1, 0), height=2.0, radius=1.0, resolution=8)
+
+    assert cone.n_points > 0
+    # Apex should be at center + direction * height/2
+    apex = cone.points[0]
+    assert np.allclose(apex, [1.0, 3.0, 3.0], atol=1e-5)
+
+
+def test_cone_resolution() -> None:
+    """Test that resolution controls the number of base facets."""
+    cone6 = Cone(resolution=6)
+    cone12 = Cone(resolution=12)
+
+    # With capping=True: apex + resolution base points + base center
+    assert cone6.n_points == 6 + 2
+    assert cone12.n_points == 12 + 2
+
+
+def test_cone_no_capping() -> None:
+    """Test cone without capping has no base center point."""
+    cone = Cone(resolution=6, capping=False)
+
+    # apex + resolution base points (no base center)
+    assert cone.n_points == 6 + 1
+
+
+def test_cone_vtk_js_source() -> None:
+    """Test that Cone generates valid vtk.js source code."""
+    cone = Cone(center=(0, 0, 0), direction=(1, 0, 0), height=2.0, radius=0.5, resolution=6)
+    js_source = cone.generate_vtk_js_source(0)
+
+    assert "vtkConeSource" in js_source
+    assert "2.0" in js_source
+    assert "0.5" in js_source
+    assert "6" in js_source
+    assert "true" in js_source  # capping
+
+
+def test_cone_vtk_js_source_no_capping() -> None:
+    """Test that capping=False is reflected in vtk.js source."""
+    cone = Cone(capping=False)
+    js_source = cone.generate_vtk_js_source(0)
+
+    assert "false" in js_source
+
+
+def test_cone_mapper_setup() -> None:
+    """Test that Cone mapper uses setInputConnection."""
+    cone = Cone()
+    mapper_code = cone.get_mapper_setup(0)
+
+    assert "setInputConnection" in mapper_code
+    assert "source0" in mapper_code
 
 
 def test_line_creation() -> None:
