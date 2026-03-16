@@ -940,8 +940,7 @@ def Cone(  # noqa: N802 PLR0913
     --------
     >>> import pyvista_js as pv
     >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
-    >>> cone.n_points > 0
-    True
+    >>> cone.plot()
 
     """
     # Generate approximate points for the cone
