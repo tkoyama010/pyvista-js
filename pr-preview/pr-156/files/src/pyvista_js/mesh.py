@@ -902,6 +902,8 @@ def Plane(  # noqa: N802 PLR0913
     >>> plane.n_points
     121
 
+    >>> plane.plot()  # doctest: +SKIP
+
     """
     n = np.array(direction, dtype=float)
     n = n / np.linalg.norm(n)
