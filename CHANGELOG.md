@@ -2,18 +2,16 @@
 
 ## [0.4.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.3.0...pyvista-js-v0.4.0) (2026-03-16)
 
-
 ### Features
 
-* add Cone geometric primitive ([#157](https://github.com/tkoyama010/pyvista-js/issues/157)) ([7425084](https://github.com/tkoyama010/pyvista-js/commit/742508477217f4fe22b1c3e43f0cd45973411356))
-* add Disc geometric primitive ([#158](https://github.com/tkoyama010/pyvista-js/issues/158)) ([268f9e6](https://github.com/tkoyama010/pyvista-js/commit/268f9e680945be070505be62e0850905cb048193))
-* Add Line geometric primitive ([#159](https://github.com/tkoyama010/pyvista-js/issues/159)) ([9381a10](https://github.com/tkoyama010/pyvista-js/commit/9381a10b7a8355f43a4c55fb38fd7607a1c350c7))
-* add Plane geometric primitive ([#156](https://github.com/tkoyama010/pyvista-js/issues/156)) ([e8870bc](https://github.com/tkoyama010/pyvista-js/commit/e8870bca2b091fbee7d37046eeb86bb473499ed4))
-
+- add Cone geometric primitive ([#157](https://github.com/tkoyama010/pyvista-js/issues/157)) ([7425084](https://github.com/tkoyama010/pyvista-js/commit/742508477217f4fe22b1c3e43f0cd45973411356))
+- add Disc geometric primitive ([#158](https://github.com/tkoyama010/pyvista-js/issues/158)) ([268f9e6](https://github.com/tkoyama010/pyvista-js/commit/268f9e680945be070505be62e0850905cb048193))
+- Add Line geometric primitive ([#159](https://github.com/tkoyama010/pyvista-js/issues/159)) ([9381a10](https://github.com/tkoyama010/pyvista-js/commit/9381a10b7a8355f43a4c55fb38fd7607a1c350c7))
+- add Plane geometric primitive ([#156](https://github.com/tkoyama010/pyvista-js/issues/156)) ([e8870bc](https://github.com/tkoyama010/pyvista-js/commit/e8870bca2b091fbee7d37046eeb86bb473499ed4))
 
 ### Continuous Integration
 
-* add Conventional Commits PR title check ([#162](https://github.com/tkoyama010/pyvista-js/issues/162)) ([ec91fc6](https://github.com/tkoyama010/pyvista-js/commit/ec91fc65062791b136bd40b48bf6adebb36b82f1))
+- add Conventional Commits PR title check ([#162](https://github.com/tkoyama010/pyvista-js/issues/162)) ([ec91fc6](https://github.com/tkoyama010/pyvista-js/commit/ec91fc65062791b136bd40b48bf6adebb36b82f1))
 
 ## [0.3.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.2.3...pyvista-js-v0.3.0) (2026-03-15)
 
