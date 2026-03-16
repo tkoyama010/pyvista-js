@@ -7,9 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import Arrow, Circle, Cube, Cylinder, Line, Mesh, Plane, PolyData, Sphere
-from pyvista_js import Arrow, Circle, Cube, Cylinder, Disc, Line, Mesh, PolyData, Sphere
-
+from pyvista_js import Arrow, Circle, Cube, Cylinder, Disc, Line, Mesh, Plane, PolyData, Sphere
 
 
 def test_mesh_creation() -> None:
