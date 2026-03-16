@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import Arrow, Circle, Cube, Cylinder, Line, Mesh, PolyData, Sphere
+from pyvista_js import Arrow, Circle, Cube, Cylinder, Line, Mesh, Plane, PolyData, Sphere
 
 
 def test_mesh_creation() -> None:
@@ -357,7 +357,63 @@ def test_line_mapper_setup() -> None:
     """Test that Line mapper uses setInputConnection."""
     line = Line()
     mapper_code = line.get_mapper_setup(0)
+    assert "setInputConnection" in mapper_code
+    assert "source0" in mapper_code
 
+
+def test_plane_creation() -> None:
+    """Test plane primitive creation with default parameters."""
+    plane = Plane()
+
+    assert isinstance(plane, PolyData)
+    assert plane.n_points == 121  # (10+1) * (10+1)
+    assert plane.n_faces == 100  # 10 * 10
+    assert plane.points.shape[1] == 3
+
+
+def test_plane_custom_resolution() -> None:
+    """Test plane with custom resolution."""
+    plane = Plane(i_resolution=5, j_resolution=4)
+
+    assert plane.n_points == 30  # (5+1) * (4+1)
+    assert plane.n_faces == 20  # 5 * 4
+
+
+def test_plane_center() -> None:
+    """Test plane is centered at the specified center."""
+    plane = Plane(center=(1.0, 2.0, 0.0))
+    centroid = np.mean(plane.points, axis=0)
+    assert np.allclose(centroid, [1.0, 2.0, 0.0], atol=1e-10)
+
+
+def test_plane_size() -> None:
+    """Test plane size in i and j directions."""
+    plane = Plane(center=(0.0, 0.0, 0.0), direction=(0.0, 0.0, 1.0), i_size=2.0, j_size=4.0)
+    x_extent = np.max(plane.points[:, 0]) - np.min(plane.points[:, 0])
+    y_extent = np.max(plane.points[:, 1]) - np.min(plane.points[:, 1])
+    assert np.isclose(x_extent, 2.0, atol=1e-10)
+    assert np.isclose(y_extent, 4.0, atol=1e-10)
+
+
+def test_plane_default_in_xy_plane() -> None:
+    """Test that the default plane lies in the XY plane (direction=(0,0,1))."""
+    plane = Plane()
+    assert np.allclose(plane.points[:, 2], 0.0, atol=1e-10)
+
+
+def test_plane_vtk_js_source() -> None:
+    """Test that Plane generates vtk.js source code with PlaneSource."""
+    plane = Plane(i_resolution=5, j_resolution=5)
+    js_source = plane.generate_vtk_js_source(0)
+    assert "vtkPlaneSource" in js_source
+    assert "xResolution" in js_source
+    assert "5" in js_source
+
+
+def test_plane_mapper_setup() -> None:
+    """Test that Plane mapper uses setInputConnection."""
+    plane = Plane()
+    mapper_code = plane.get_mapper_setup(0)
     assert "setInputConnection" in mapper_code
     assert "source0" in mapper_code
 
