@@ -295,14 +295,14 @@ def test_disc_vtk_js_source() -> None:
     assert "0.8" in js_source
     assert "2" in js_source
     assert "12" in js_source
-    assert "vtkDiskSource" in js_source
+    assert "vtkPolyData" in js_source
 
 
 def test_disc_mapper_setup() -> None:
-    """Test that Disc mapper uses setInputConnection."""
+    """Test that Disc mapper uses setInputData."""
     disc = Disc()
     mapper_code = disc.get_mapper_setup(0)
-    assert "setInputConnection" in mapper_code
+    assert "setInputData" in mapper_code
     assert "source0" in mapper_code
 
 
