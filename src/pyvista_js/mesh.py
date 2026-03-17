@@ -969,7 +969,7 @@ def Cylinder(  # noqa: N802
                 radius * np.cos(i * angle) + cx,
                 cy + height / 2,
                 -radius * np.sin(i * angle) + cz,
-            ]
+            ],
         )
     # Bottom cap (reversed order, y = -h/2)
     for k in range(resolution):
@@ -979,7 +979,7 @@ def Cylinder(  # noqa: N802
                 radius * np.cos(i * angle) + cx,
                 cy - height / 2,
                 -radius * np.sin(i * angle) + cz,
-            ]
+            ],
         )
     points = np.array(points_list)
 
