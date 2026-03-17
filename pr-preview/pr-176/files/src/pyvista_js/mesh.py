@@ -165,6 +165,7 @@ class PolyData:
         t_coords: ArrayLike | None = None,
         _vtk_js_source_fn: Callable[[int], str] | None = None,
         _mapper_setup_fn: Callable[[int], str] | None = None,
+        _vtk_js_source_is_filter: bool = True,
     ) -> None:
         """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
@@ -172,6 +173,7 @@ class PolyData:
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
+        self._vtk_js_source_is_filter = _vtk_js_source_is_filter
         self._point_data = PointData()
 
     @property
@@ -648,14 +650,22 @@ class PolyData:
 
         # Inject point data scalar arrays
         if len(self._point_data) > 0:
-            # For primitives (source-based), extract output polydata first.
-            # For generic meshes, polydata{idx} already exists.
+            # For primitives (source-based), make polydata{idx} available.
+            # For generic meshes, polydata{idx} already exists (from mesh_source.js).
             if self._vtk_js_source_fn is not None:
-                source_code += (
-                    f"\n// Extract output polydata from source for scalar injection\n"
-                    f"source{idx}.update();\n"
-                    f"const polydata{idx} = source{idx}.getOutputData();\n"
-                )
+                if self._vtk_js_source_is_filter:
+                    # source{idx} is a vtk.js filter - extract its output polydata
+                    source_code += (
+                        f"\n// Extract output polydata from source for scalar injection\n"
+                        f"source{idx}.update();\n"
+                        f"const polydata{idx} = source{idx}.getOutputData();\n"
+                    )
+                else:
+                    # source{idx} is already a vtkPolyData - alias it directly
+                    source_code += (
+                        f"\n// source{idx} is already a vtkPolyData\n"
+                        f"const polydata{idx} = source{idx};\n"
+                    )
 
             for name, array in self._point_data.items():
                 array_flat = array.flatten().tolist()
@@ -1044,24 +1054,32 @@ def Disc(  # noqa: N802, PLR0913
     >>> disc.plot()  # doctest: +SKIP
 
     """
-    # Generate points in XY plane: (r_res+1) rings * c_res points
-    radii = np.linspace(inner, outer, r_res + 1)
-    theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
-    pts = np.array(
-        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
-    )
+    # Generate points matching vtk.js vtkDiskSource ordering:
+    # outer loop circumferential (i), inner loop radial (j)
+    # point index = i * (r_res + 1) + j
+    theta_step = 2.0 * np.pi / c_res
+    delta_r = (outer - inner) / r_res
+    pts_list = []
+    for i in range(c_res):
+        theta = i * theta_step
+        cos_t = np.cos(theta)
+        sin_t = np.sin(theta)
+        for j in range(r_res + 1):
+            r = inner + j * delta_r
+            pts_list.append([r * cos_t, r * sin_t, 0.0])
+    pts = np.array(pts_list)
 
     # Build triangular faces: two triangles per quad between adjacent rings
     faces = []
-    for ring in range(r_res):
-        for ci in range(c_res):
-            ci1 = (ci + 1) % c_res
-            i00 = ring * c_res + ci
-            i01 = ring * c_res + ci1
-            i10 = (ring + 1) * c_res + ci
-            i11 = (ring + 1) * c_res + ci1
-            faces.append([i00, i01, i11])
-            faces.append([i00, i11, i10])
+    for i in range(c_res):
+        next_i = (i + 1) % c_res
+        for j in range(r_res):
+            p0 = i * (r_res + 1) + j
+            p1 = p0 + 1
+            p2 = next_i * (r_res + 1) + j + 1
+            p3 = p2 - 1
+            faces.append([p0, p1, p2])
+            faces.append([p0, p2, p3])
 
     # Rotate from default normal (0,0,1) to requested normal
     n = np.asarray(normal, dtype=float)
@@ -1105,6 +1123,7 @@ def Disc(  # noqa: N802, PLR0913
         faces=np.array(faces) if faces else None,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_disc,
+        _vtk_js_source_is_filter=False,
     )
 
 
@@ -1167,6 +1186,7 @@ def Circle(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_circle,
+        _vtk_js_source_is_filter=False,
     )
 
 
