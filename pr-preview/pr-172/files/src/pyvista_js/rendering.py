@@ -455,7 +455,7 @@ class _BaseHTMLRenderer:
             f"{mapper_override}"
             f"// Configure mapper for scalar coloring\n"
             f"mapper{idx}.setScalarVisibility(true);\n"
-            f"mapper{idx}.setScalarModeToUsePointData();\n"
+            f"mapper{idx}.setScalarModeToUsePointFieldData();\n"
             f"mapper{idx}.setColorByArrayName('{scalars}');\n"
             f"mapper{idx}.setLookupTable(lut{idx});\n"
             f"mapper{idx}.setScalarRange({scalar_min}, {scalar_max});"
