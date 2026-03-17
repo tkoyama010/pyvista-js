@@ -1049,24 +1049,32 @@ def Disc(  # noqa: N802, PLR0913
     >>> disc.plot()  # doctest: +SKIP
 
     """
-    # Generate points in XY plane: (r_res+1) rings * c_res points
-    radii = np.linspace(inner, outer, r_res + 1)
-    theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
-    pts = np.array(
-        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
-    )
+    # Generate points matching vtk.js vtkDiskSource ordering:
+    # outer loop circumferential (i), inner loop radial (j)
+    # point index = i * (r_res + 1) + j
+    theta_step = 2.0 * np.pi / c_res
+    delta_r = (outer - inner) / r_res
+    pts_list = []
+    for i in range(c_res):
+        theta = i * theta_step
+        cos_t = np.cos(theta)
+        sin_t = np.sin(theta)
+        for j in range(r_res + 1):
+            r = inner + j * delta_r
+            pts_list.append([r * cos_t, r * sin_t, 0.0])
+    pts = np.array(pts_list)
 
     # Build triangular faces: two triangles per quad between adjacent rings
     faces = []
-    for ring in range(r_res):
-        for ci in range(c_res):
-            ci1 = (ci + 1) % c_res
-            i00 = ring * c_res + ci
-            i01 = ring * c_res + ci1
-            i10 = (ring + 1) * c_res + ci
-            i11 = (ring + 1) * c_res + ci1
-            faces.append([i00, i01, i11])
-            faces.append([i00, i11, i10])
+    for i in range(c_res):
+        next_i = (i + 1) % c_res
+        for j in range(r_res):
+            p0 = i * (r_res + 1) + j
+            p1 = p0 + 1
+            p2 = next_i * (r_res + 1) + j + 1
+            p3 = p2 - 1
+            faces.append([p0, p1, p2])
+            faces.append([p0, p2, p3])
 
     # Rotate from default normal (0,0,1) to requested normal
     n = np.asarray(normal, dtype=float)
