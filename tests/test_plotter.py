@@ -276,3 +276,202 @@ def test_view_vector_common_directions(vector) -> None:
     plotter.view_vector(vector)
 
     assert plotter._renderer._view_vector == tuple(float(v) for v in vector)
+
+
+def test_view_xy() -> None:
+    """Test view_xy() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xy()
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_xy_negative() -> None:
+    """Test view_xy(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xy(negative=True)
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, -1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_xz() -> None:
+    """Test view_xz() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xz()
+
+    assert plotter._renderer._view_vector == (0.0, 1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_view_xz_negative() -> None:
+    """Test view_xz(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xz(negative=True)
+
+    assert plotter._renderer._view_vector == (0.0, -1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_view_yz() -> None:
+    """Test view_yz() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_yz()
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_yz_negative() -> None:
+    """Test view_yz(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_yz(negative=True)
+
+    assert plotter._renderer._view_vector == (-1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_isometric() -> None:
+    """Test view_isometric() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Cube())
+    plotter.view_isometric()
+
+    assert plotter._renderer._view_vector == (1.0, 1.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_add_mesh_with_show_edges() -> None:
+    """Test adding a mesh with edge visibility enabled."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh, show_edges=True)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["show_edges"] is True
+
+
+def test_add_mesh_with_edge_color() -> None:
+    """Test adding a mesh with custom edge color."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh, show_edges=True, edge_color="red")
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["show_edges"] is True
+    assert plotter.actors[0]["edge_color"] == "red"
+
+
+def test_add_mesh_with_edge_color_rgb() -> None:
+    """Test adding a mesh with RGB edge color."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh, show_edges=True, edge_color=(1.0, 0.0, 0.0))
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["show_edges"] is True
+    assert plotter.actors[0]["edge_color"] == (1.0, 0.0, 0.0)
+
+
+def test_add_mesh_with_wireframe_style() -> None:
+    """Test adding a mesh with wireframe style."""
+    plotter = Plotter()
+    mesh = Cube()
+
+    plotter.add_mesh(mesh, style="wireframe")
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["style"] == "wireframe"
+
+
+def test_add_mesh_with_points_style() -> None:
+    """Test adding a mesh with points style."""
+    plotter = Plotter()
+    mesh = Cube()
+
+    plotter.add_mesh(mesh, style="points")
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["style"] == "points"
+
+
+def test_add_mesh_with_surface_style() -> None:
+    """Test adding a mesh with surface style (default)."""
+    plotter = Plotter()
+    mesh = Cube()
+
+    plotter.add_mesh(mesh, style="surface")
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["style"] == "surface"
+
+
+def test_add_mesh_surface_with_edges() -> None:
+    """Test adding a mesh with surface style and edges."""
+    plotter = Plotter()
+    mesh = Cube()
+
+    plotter.add_mesh(mesh, style="surface", show_edges=True, edge_color="black")
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["style"] == "surface"
+    assert plotter.actors[0]["show_edges"] is True
+    assert plotter.actors[0]["edge_color"] == "black"
+
+
+@pytest.mark.parametrize(
+    "style",
+    ["surface", "wireframe", "points"],
+)
+def test_add_mesh_all_styles(style) -> None:
+    """Test all supported rendering styles."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh, style=style)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["style"] == style
+
+
+def test_add_mesh_default_style() -> None:
+    """Test that default style is 'surface'."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["style"] == "surface"
+
+
+def test_add_mesh_default_show_edges() -> None:
+    """Test that default show_edges is False."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["show_edges"] is False
+
+
+def test_add_mesh_default_edge_color() -> None:
+    """Test that default edge_color is None."""
+    plotter = Plotter()
+    mesh = Sphere()
+
+    plotter.add_mesh(mesh)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["edge_color"] is None
