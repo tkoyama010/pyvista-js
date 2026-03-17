@@ -245,8 +245,8 @@ def _open_notebook(page, screenshots_dir: Path) -> bool:  # noqa: ANN001
     for selector in notebook_selectors:
         element = page.query_selector(selector)
         if element is not None:
-            element.click()
-            logger.info("Clicked on notebook using selector: %s", selector)
+            element.dblclick()
+            logger.info("Double-clicked on notebook using selector: %s", selector)
             return True
 
     logger.warning("Could not find notebook, taking screenshot of main page")
