@@ -211,6 +211,9 @@ class _BaseHTMLRenderer:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
@@ -231,6 +234,13 @@ class _BaseHTMLRenderer:
         texture : Texture, optional
             Surface texture to apply. The texture image is loaded from the
             URL stored in the :class:`~pyvista_js.Texture` object.
+        show_edges : bool, default=False
+            Show the edges of the mesh.
+        edge_color : tuple or str, optional
+            RGB color tuple (0-1) or color name for edges when ``show_edges=True``.
+            If not specified, defaults to black.
+        style : str, default='surface'
+            Visualization style. One of 'surface', 'wireframe', or 'points'.
 
         Returns
         -------
@@ -241,6 +251,10 @@ class _BaseHTMLRenderer:
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
 
+        # Convert edge_color if it's a string
+        if isinstance(edge_color, str):
+            edge_color = self._color_name_to_rgb(edge_color)
+
         actor_info: dict[str, object] = {
             "mesh": mesh,
             "color": color,
@@ -249,6 +263,9 @@ class _BaseHTMLRenderer:
             "metallic": metallic,
             "roughness": roughness,
             "texture": texture,
+            "show_edges": show_edges,
+            "edge_color": edge_color,
+            "style": style,
         }
         self.actors.append(actor_info)
         return actor_info
@@ -404,7 +421,7 @@ class _BaseHTMLRenderer:
             lines.append(indented)
         return "\n\n".join(lines)
 
-    def _generate_html(self) -> str:
+    def _generate_html(self) -> str:  # noqa: C901, PLR0912, PLR0915
         """Generate HTML fragment with embedded vtk.js JavaScript."""
         container_id = self.container_id
 
@@ -417,6 +434,9 @@ class _BaseHTMLRenderer:
             pbr = actor_info.get("pbr", False)
             metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
             roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
+            show_edges = actor_info.get("show_edges", False)
+            edge_color = actor_info.get("edge_color")
+            style = actor_info.get("style", "surface")
 
             source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
             mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
@@ -442,6 +462,28 @@ class _BaseHTMLRenderer:
             else:
                 pbr_code = ""
 
+            # Build edge visibility code
+            edge_code = ""
+            if show_edges:
+                # Default edge color to black if not specified
+                if edge_color is None:
+                    edge_color = (0.0, 0.0, 0.0)
+                edge_r, edge_g, edge_b = edge_color[0], edge_color[1], edge_color[2]  # type: ignore[index]
+                edge_code = (
+                    f"actor{idx}.getProperty().setEdgeVisibility(true);\n"
+                    f"actor{idx}.getProperty().setEdgeColor({edge_r}, {edge_g}, {edge_b});"
+                )
+
+            # Build style/representation code
+            # vtk.js Representation constants: POINTS=0, WIREFRAME=1, SURFACE=2
+            style_code = ""
+            if style == "wireframe":
+                style_code = f"actor{idx}.getProperty().setRepresentation(1);"
+            elif style == "points":
+                style_code = f"actor{idx}.getProperty().setRepresentation(0);"
+            elif style == "surface":
+                style_code = f"actor{idx}.getProperty().setRepresentation(2);"
+
             texture_code = self._generate_texture_code(actor_info, idx)
 
             actor_code = (
@@ -452,6 +494,8 @@ class _BaseHTMLRenderer:
                 .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
                 .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
                 .replace("{{OPACITY}}", str(opacity))
+                .replace("{{EDGE_CODE}}", edge_code)
+                .replace("{{STYLE_CODE}}", style_code)
                 .replace("{{PBR_CODE}}", pbr_code)
                 .replace("{{TEXTURE_CODE}}", texture_code)
             )

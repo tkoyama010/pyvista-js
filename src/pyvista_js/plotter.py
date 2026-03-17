@@ -52,6 +52,9 @@ class Plotter:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -78,6 +81,14 @@ class Plotter:
             coordinates set (e.g., via
             :meth:`~pyvista_js.PolyData.texture_map_to_plane`) or use a
             primitive (Sphere, Cube, Cylinder) that generates them automatically.
+        show_edges : bool, optional
+            Show the edges of the mesh. Default is False.
+        edge_color : str or tuple, optional
+            Color of the edges when ``show_edges=True``. Can be a color name
+            or RGB tuple. If not specified, defaults to black.
+        style : str, optional
+            Visualization style of the mesh. One of ``'surface'`` (default),
+            ``'wireframe'``, or ``'points'``.
         **kwargs
             Additional rendering options.
 
@@ -107,6 +118,27 @@ class Plotter:
         >>> plotter.add_mesh(sphere, texture=texture)
         >>> plotter.show()
 
+        Show edges:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> plotter.add_mesh(mesh, show_edges=True, edge_color='black')
+        >>> plotter.show()
+
+        Wireframe rendering:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Cube()
+        >>> plotter.add_mesh(mesh, style='wireframe')
+        >>> plotter.show()
+
+        Surface with edges:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Cube()
+        >>> plotter.add_mesh(mesh, style='surface', show_edges=True)
+        >>> plotter.show()
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -117,6 +149,9 @@ class Plotter:
             metallic=metallic,
             roughness=roughness,
             texture=texture,
+            show_edges=show_edges,
+            edge_color=edge_color,
+            style=style,
         )
 
         # Store reference
@@ -129,6 +164,9 @@ class Plotter:
                 "metallic": metallic,
                 "roughness": roughness,
                 "texture": texture,
+                "show_edges": show_edges,
+                "edge_color": edge_color,
+                "style": style,
                 "actor": actor,
                 "kwargs": kwargs,
             },
