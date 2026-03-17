@@ -31,6 +31,7 @@ _VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
 _PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
 _OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
 _STL_READER_SOURCE_TEMPLATE = (_JS_DIR / "stl_reader_source.js").read_text()
+_GLTF_READER_SOURCE_TEMPLATE = (_JS_DIR / "gltf_reader_source.js").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -57,6 +58,36 @@ class _OBJMesh(PolyData):
             "{{INDEX}}",
             str(idx),
         ).replace("{{OBJ_BASE64}}", escaped)
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code."""
+        return f"mapper{idx}.setInputData(source{idx});"
+
+
+class _GLTFMesh(PolyData):
+    """Mesh loaded from a glTF file, rendered via vtk.js GLTF importer."""
+
+    def __init__(self, points: np.ndarray, gltf_base64: str) -> None:
+        """Initialize with points and base64-encoded glTF file content.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            Vertex coordinates (N, 3) extracted for bounding sphere computation.
+        gltf_base64 : str
+            Base64-encoded content of the glTF file passed to vtk.js for rendering.
+
+        """
+        super().__init__(points)
+        self._gltf_base64 = gltf_base64
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code using vtkGLTFImporter."""
+        escaped = json.dumps(self._gltf_base64)
+        return _GLTF_READER_SOURCE_TEMPLATE.replace(
+            "{{INDEX}}",
+            str(idx),
+        ).replace("{{GLTF_BASE64}}", escaped)
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -713,4 +744,173 @@ class STLReader:
 
         if not points:
             return np.empty((0, 3))
+        return np.array(points)
+
+
+class GLTFReader:
+    """Reader for glTF (GL Transmission Format) files (``.gltf`` or ``.glb``).
+
+    Reads a glTF file and produces a :class:`Mesh` that delegates parsing
+    to vtk.js's ``vtkGLTFImporter`` at render time. Python extracts
+    vertex coordinates from the JSON structure so that camera framing and
+    bounding-sphere queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.gltf`` or ``.glb`` file.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.GLTFReader("model.gltf")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() not in (".gltf", ".glb"):
+            msg = f"Expected a .gltf or .glb file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the glTF file.
+
+        """
+        return self._path
+
+    def read(self) -> _GLTFMesh:
+        """Read the glTF file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Vertex coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the glTF file content.
+
+        Raises
+        ------
+        ValueError
+            If the file format is invalid.
+
+        """
+        raw = self._path.read_bytes()
+
+        # Extract points from glTF JSON structure
+        points = self._extract_points(raw)
+        gltf_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _GLTFMesh(points=points, gltf_base64=gltf_base64)
+
+    @staticmethod
+    def _extract_points(raw: bytes) -> np.ndarray:
+        """Extract vertex coordinates from glTF file.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw content of the glTF file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        # Parse glTF JSON
+        try:
+            text = raw.decode("utf-8")
+            gltf_data = json.loads(text)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return np.empty((0, 3))
+
+        # Extract position accessor
+        accessor = GLTFReader._get_position_accessor(gltf_data)
+        if accessor is None:
+            return np.empty((0, 3))
+
+        # Extract bounding box from accessor min/max
+        return GLTFReader._extract_bounds_points(accessor)
+
+    @staticmethod
+    def _get_position_accessor(gltf_data: dict) -> dict | None:
+        """Get the position accessor from glTF data.
+
+        Parameters
+        ----------
+        gltf_data : dict
+            Parsed glTF JSON data.
+
+        Returns
+        -------
+        dict or None
+            The position accessor or None if not found.
+
+        """
+        if "meshes" not in gltf_data or not gltf_data["meshes"]:
+            return None
+
+        first_mesh = gltf_data["meshes"][0]
+        if "primitives" not in first_mesh or not first_mesh["primitives"]:
+            return None
+
+        primitives = first_mesh["primitives"][0]
+        if "attributes" not in primitives or "POSITION" not in primitives["attributes"]:
+            return None
+
+        position_accessor_idx = primitives["attributes"]["POSITION"]
+        if "accessors" not in gltf_data or position_accessor_idx >= len(
+            gltf_data["accessors"],
+        ):
+            return None
+
+        return gltf_data["accessors"][position_accessor_idx]
+
+    @staticmethod
+    def _extract_bounds_points(accessor: dict) -> np.ndarray:
+        """Extract bounding box corners from accessor.
+
+        Parameters
+        ----------
+        accessor : dict
+            The position accessor from glTF.
+
+        Returns
+        -------
+        np.ndarray
+            Array of 8 bounding box corners or empty array.
+
+        """
+        if "min" not in accessor or "max" not in accessor:
+            return np.empty((0, 3))
+
+        min_vals = accessor["min"]
+        max_vals = accessor["max"]
+        if len(min_vals) < _N_COORDS or len(max_vals) < _N_COORDS:
+            return np.empty((0, 3))
+
+        # Generate 8 corners of bounding box
+        points = [
+            [x, y, z]
+            for x in [min_vals[0], max_vals[0]]
+            for y in [min_vals[1], max_vals[1]]
+            for z in [min_vals[2], max_vals[2]]
+        ]
         return np.array(points)

@@ -37,7 +37,7 @@ from .mesh import (
     Sphere,
 )
 from .plotter import Plotter
-from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
+from .readers import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader
 from .texture import Texture
 
 # Streamlit integration (optional)
@@ -52,6 +52,7 @@ try:
         "Cube",
         "Cylinder",
         "Disc",
+        "GLTFReader",
         "Light",
         "Line",
         "OBJReader",
@@ -78,6 +79,7 @@ except ImportError:
         "Cube",
         "Cylinder",
         "Disc",
+        "GLTFReader",
         "Light",
         "Line",
         "OBJReader",
