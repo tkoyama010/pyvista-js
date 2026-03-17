@@ -5,9 +5,6 @@ from pathlib import Path
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
-import numpy as np
-import pytest
-
 from pyvista_js import Plotter, Sphere
 
 
