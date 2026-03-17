@@ -31,6 +31,7 @@ _CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
+_TUBE_MIN_SIDES = 3
 
 
 class PolyData:
@@ -298,6 +299,7 @@ class PolyData:
 
     def tube(
         self,
+        *,
         radius: float = 0.5,
         n_sides: int = 20,
         capping: bool = True,
@@ -347,8 +349,8 @@ class PolyData:
         if radius <= 0:
             msg = f"radius must be positive, got {radius}"
             raise ValueError(msg)
-        if n_sides < 3:
-            msg = f"n_sides must be at least 3, got {n_sides}"
+        if n_sides < _TUBE_MIN_SIDES:
+            msg = f"n_sides must be at least {_TUBE_MIN_SIDES}, got {n_sides}"
             raise ValueError(msg)
 
         orig_vtk_js_source_fn = self._vtk_js_source_fn
