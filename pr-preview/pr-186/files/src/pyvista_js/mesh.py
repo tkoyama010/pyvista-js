@@ -126,7 +126,6 @@ class PointData:
         """
         return list(self._arrays.values())
 
-
 # Load JavaScript templates relative to this file
 _JS_DIR = Path(__file__).parent / "js"
 _MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
