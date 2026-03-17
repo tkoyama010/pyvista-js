@@ -16,6 +16,117 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
+
+class PointData:
+    """Dict-like container for point data arrays.
+
+    This class provides a dictionary interface for storing named scalar arrays
+    associated with mesh points, mimicking PyVista's point_data API.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> mesh = pv.Sphere()
+    >>> mesh.point_data['elevation'] = mesh.points[:, 2]
+    >>> 'elevation' in mesh.point_data
+    True
+
+    Render with scalar coloring:
+
+    >>> plotter = pv.Plotter()
+    >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+    >>> plotter.show()
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize an empty PointData container."""
+        self._arrays: dict[str, np.ndarray] = {}
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a named array.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        """
+        self._arrays[name] = np.asarray(array)
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a named array.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        """
+        return self._arrays[name]
+
+    def __contains__(self, name: str) -> bool:
+        """Check if an array with the given name exists.
+
+        Parameters
+        ----------
+        name : str
+            Name to check.
+
+        Returns
+        -------
+        bool
+            True if the array exists.
+
+        """
+        return name in self._arrays
+
+    def __len__(self) -> int:
+        """Return the number of arrays."""
+        return len(self._arrays)
+
+    def keys(self) -> list[str]:
+        """Return the names of all arrays.
+
+        Returns
+        -------
+        list
+            List of array names.
+
+        """
+        return list(self._arrays.keys())
+
+    def items(self) -> list[tuple[str, np.ndarray]]:
+        """Return (name, array) pairs.
+
+        Returns
+        -------
+        list
+            List of (name, array) tuples.
+
+        """
+        return list(self._arrays.items())
+
+    def values(self) -> list[np.ndarray]:
+        """Return all arrays.
+
+        Returns
+        -------
+        list
+            List of arrays.
+
+        """
+        return list(self._arrays.values())
+
+
 # Load JavaScript templates relative to this file
 _JS_DIR = Path(__file__).parent / "js"
 _MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
@@ -61,11 +172,91 @@ class PolyData:
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
+        self._point_data = PointData()
+
+    @property
+    def point_data(self) -> PointData:
+        """Access point data arrays.
+
+        Returns
+        -------
+        PointData
+            Dict-like container for point data arrays.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh.point_data['elevation'] = mesh.points[:, 2]
+        >>> 'elevation' in mesh.point_data
+        True
+
+        Render with scalar coloring:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()
+
+        """
+        return self._point_data
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()
+
+        """
+        self._point_data[name] = array
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        """
+        return self._point_data[name]
 
     @property
     def n_points(self) -> int:
         """Return the number of points."""
         return len(self.points)
+
+    @property
+    def is_primitive(self) -> bool:
+        """Return whether this mesh is backed by a vtk.js source primitive.
+
+        Returns
+        -------
+        bool
+            ``True`` if the mesh was created from a primitive factory
+            (e.g. :func:`Sphere`, :func:`Cube`), ``False`` otherwise.
+
+        """
+        return self._vtk_js_source_fn is not None
 
     @property
     def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
@@ -454,6 +645,42 @@ class PolyData:
                 f"}});\n"
                 f"polydata{idx}.getPointData().setTCoords(tcoords{idx});\n"
             )
+
+        # Inject point data scalar arrays
+        if len(self._point_data) > 0:
+            # For primitives (source-based), extract output polydata first.
+            # For generic meshes, polydata{idx} already exists.
+            if self._vtk_js_source_fn is not None:
+                source_code += (
+                    f"\n// Extract output polydata from source for scalar injection\n"
+                    f"source{idx}.update();\n"
+                    f"const polydata{idx} = source{idx}.getOutputData();\n"
+                )
+
+            for name, array in self._point_data.items():
+                array_flat = array.flatten().tolist()
+                array_str = ",".join(map(str, array_flat))
+                # Determine number of components based on array shape
+                if array.ndim == 1:
+                    n_components = 1
+                elif array.ndim == 2:  # noqa: PLR2004
+                    n_components = array.shape[1]
+                else:
+                    msg = f"Point data array '{name}' must be 1D or 2D, got shape {array.shape}"
+                    raise ValueError(msg)
+
+                safe_name = name.replace(" ", "_")
+                source_code += (
+                    f"\n// Inject point data array '{name}'\n"
+                    f"const pointArray{idx}_{safe_name} = "
+                    f"vtk.Common.Core.vtkDataArray.newInstance({{\n"
+                    f"  numberOfComponents: {n_components},\n"
+                    f"  values: Float32Array.from([{array_str}]),\n"
+                    f"  name: '{name}'\n"
+                    f"}});\n"
+                    f"polydata{idx}.getPointData().addArray("
+                    f"pointArray{idx}_{safe_name});\n"
+                )
 
         return source_code
 
