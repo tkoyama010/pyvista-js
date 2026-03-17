@@ -452,7 +452,9 @@ class _BaseHTMLRenderer:
 
         pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
         edge_code = self._generate_edge_code(
-            idx, show_edges, edge_color,  # type: ignore[arg-type]
+            idx,
+            show_edges,
+            edge_color,  # type: ignore[arg-type]
         )
         style_code = self._generate_style_code(idx, str(style))
         texture_code = self._generate_texture_code(actor_info, idx)
