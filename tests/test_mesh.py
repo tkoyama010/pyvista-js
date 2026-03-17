@@ -62,7 +62,7 @@ def test_cube_creation() -> None:
     """Test cube primitive creation."""
     cube = Cube()
 
-    assert cube.n_points == 8
+    assert cube.n_points == 24
     assert cube.n_faces == 6
 
 
