@@ -23,6 +23,7 @@ _SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
 _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
+_CLIP_FILTER_TEMPLATE = (_JS_DIR / "clip_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
 _DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
 _ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
@@ -293,6 +294,133 @@ class PolyData:
             faces=self.faces,
             _vtk_js_source_fn=_vtk_js_source_with_shrink,
             _mapper_setup_fn=_mapper_setup_shrink,
+        )
+
+    def clip(
+        self,
+        normal: str | tuple[float, float, float] = "x",
+        origin: tuple[float, float, float] | None = None,
+        invert: bool = False,
+    ) -> PolyData:
+        """Clip the mesh with a plane.
+
+        This filter clips the mesh with a plane defined by a normal vector
+        and an origin point. Points on one side of the plane are removed.
+        It mirrors the PyVista ``clip`` filter API.
+
+        .. note::
+
+            The clipping is computed in JavaScript at render time by
+            evaluating the signed distance of each vertex from the clip plane.
+            Cells with all vertices on the clipped side are removed.
+            ``vtk.js`` does not include a built-in clipping filter with
+            the exact PyVista API, so this filter is implemented as a
+            custom JavaScript pass.
+
+        Parameters
+        ----------
+        normal : str or tuple of float, optional
+            The normal vector of the clipping plane. Can be a string
+            specifying a cardinal direction ('x', 'y', 'z', '-x', '-y', '-z')
+            or a 3-tuple of floats (nx, ny, nz). Default is 'x'.
+        origin : tuple of float, optional
+            The origin point of the clipping plane as (x, y, z).
+            If not provided, defaults to the center of the mesh's bounding box.
+        invert : bool, optional
+            If True, flip the clipping direction to keep the part that would
+            normally be removed. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with clipped cells removed.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> clipped = sphere.clip(normal='x', origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip along the negative Y axis:
+
+        >>> clipped = sphere.clip(normal='-y')
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip with a custom normal vector:
+
+        >>> clipped = sphere.clip(normal=(1, 1, 0), origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Render the clipped mesh:
+
+        >>> clipped.plot()  # doctest: +SKIP
+
+        """
+        # Parse normal vector
+        if isinstance(normal, str):
+            normal_map = {
+                "x": (1.0, 0.0, 0.0),
+                "+x": (1.0, 0.0, 0.0),
+                "-x": (-1.0, 0.0, 0.0),
+                "y": (0.0, 1.0, 0.0),
+                "+y": (0.0, 1.0, 0.0),
+                "-y": (0.0, -1.0, 0.0),
+                "z": (0.0, 0.0, 1.0),
+                "+z": (0.0, 0.0, 1.0),
+                "-z": (0.0, 0.0, -1.0),
+            }
+            if normal not in normal_map:
+                msg = f"Invalid normal string '{normal}'. Must be one of {list(normal_map.keys())}"
+                raise ValueError(msg)
+            normal_vec = normal_map[normal]
+        else:
+            if len(normal) != 3:  # type: ignore[arg-type]
+                msg = f"Normal vector must have 3 components, got {len(normal)}"  # type: ignore[arg-type]
+                raise ValueError(msg)
+            normal_vec = tuple(float(x) for x in normal)  # type: ignore[arg-type]
+
+        # Compute origin if not provided (use center of bounding box)
+        if origin is None:
+            pts = self.points
+            origin = (
+                float((pts[:, 0].min() + pts[:, 0].max()) / 2),
+                float((pts[:, 1].min() + pts[:, 1].max()) / 2),
+                float((pts[:, 2].min() + pts[:, 2].max()) / 2),
+            )
+        else:
+            if len(origin) != 3:
+                msg = f"Origin must have 3 components, got {len(origin)}"
+                raise ValueError(msg)
+            origin = tuple(float(x) for x in origin)
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_clip(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            clip_code = (
+                _CLIP_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
+                .replace("{{NORMAL_X}}", str(normal_vec[0]))
+                .replace("{{NORMAL_Y}}", str(normal_vec[1]))
+                .replace("{{NORMAL_Z}}", str(normal_vec[2]))
+                .replace("{{ORIGIN_X}}", str(origin[0]))
+                .replace("{{ORIGIN_Y}}", str(origin[1]))
+                .replace("{{ORIGIN_Z}}", str(origin[2]))
+                .replace("{{INVERT}}", "true" if invert else "false")
+            )
+            return base + "\n" + clip_code
+
+        def _mapper_setup_clip(idx: int) -> str:
+            return f"mapper{idx}.setInputData(clippedPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_clip,
+            _mapper_setup_fn=_mapper_setup_clip,
         )
 
     def texture_map_to_plane(self) -> PolyData:
