@@ -5,12 +5,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import OBJReader, PLYReader, PolyDataReader
+from pyvista_js import OBJReader, PLYReader, PolyDataReader, STLReader
 
 DATA_DIR = Path(__file__).parent / "data"
 TRIANGLE_VTK = DATA_DIR / "triangle.vtk"
 TRIANGLE_PLY = DATA_DIR / "triangle.ply"
 TRIANGLE_OBJ = DATA_DIR / "triangle.obj"
+TRIANGLE_STL = DATA_DIR / "triangle.stl"
 
 
 # --- PolyDataReader tests ---
@@ -308,4 +309,102 @@ def test_obj_reader_no_vertices(tmp_path: Path) -> None:
     obj_file = tmp_path / "empty.obj"
     obj_file.write_text("# empty obj file\n")
     mesh = OBJReader(obj_file).read()
+    assert mesh.n_points == 0
+
+
+# --- STLReader tests ---
+
+
+def test_stl_reader_path() -> None:
+    """Test that the reader exposes the path property."""
+    reader = STLReader(TRIANGLE_STL)
+    assert reader.path == TRIANGLE_STL
+
+
+def test_stl_reader_read_points() -> None:
+    """Test reading points from an STL file."""
+    reader = STLReader(TRIANGLE_STL)
+    mesh = reader.read()
+
+    assert mesh.n_points == 3
+    expected = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.5, 1.0, 0.0]])
+    assert np.allclose(mesh.points, expected)
+
+
+def test_stl_reader_string_path() -> None:
+    """Test that string paths are accepted."""
+    reader = STLReader(str(TRIANGLE_STL))
+    mesh = reader.read()
+    assert mesh.n_points == 3
+
+
+@pytest.mark.parametrize(
+    ("method", "expected"),
+    [
+        ("generate_vtk_js_source", "vtkSTLReader"),
+        ("generate_vtk_js_source", "parseAsArrayBuffer"),
+        ("generate_vtk_js_source", "source0"),
+        ("get_mapper_setup", "setInputData"),
+    ],
+)
+def test_stl_reader_js_output(method: str, expected: str) -> None:
+    """Test that generated JavaScript contains expected strings."""
+    mesh = STLReader(TRIANGLE_STL).read()
+    result = getattr(mesh, method)(0)
+    assert expected in result
+
+
+@pytest.mark.parametrize(
+    ("filename", "content", "error_type", "match"),
+    [
+        (
+            "bad.stl",
+            "NOT AN STL FILE\nfacet normal 0.0 0.0 1.0\nendsolid\n",
+            ValueError,
+            "missing 'solid' header",
+        ),
+    ],
+)
+def test_stl_reader_invalid_files(
+    tmp_path: Path,
+    filename: str,
+    content: str,
+    error_type: type,
+    match: str,
+) -> None:
+    """Test ValueError for various invalid STL files."""
+    bad_file = tmp_path / filename
+    bad_file.write_text(content)
+    with pytest.raises(error_type, match=match):
+        STLReader(bad_file).read()
+
+
+@pytest.mark.parametrize(
+    ("fixture_type", "match"),
+    [
+        ("not_found", "File not found"),
+        ("wrong_ext", "Expected a .stl file"),
+    ],
+)
+def test_stl_reader_init_errors(
+    tmp_path: Path,
+    fixture_type: str,
+    match: str,
+) -> None:
+    """Test errors raised during reader initialization."""
+    if fixture_type == "not_found":
+        with pytest.raises(FileNotFoundError, match=match):
+            STLReader("nonexistent.stl")
+    else:
+        bad_file = tmp_path / "data.txt"
+        bad_file.write_text("hello")
+        with pytest.raises(ValueError, match=match):
+            STLReader(bad_file)
+
+
+def test_stl_reader_no_vertices(tmp_path: Path) -> None:
+    """Test reading an STL file with no vertices yields empty mesh."""
+    stl_file = tmp_path / "empty.stl"
+    stl_file.write_text("solid empty\nendsolid empty\n")
+    mesh = STLReader(stl_file).read()
     assert mesh.n_points == 0
