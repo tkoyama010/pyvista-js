@@ -835,22 +835,37 @@ def Cube(  # noqa: N802
     >>> import pyvista_js as pv
     >>> cube = pv.Cube()
     >>> cube.n_points
-    8
+    24
 
     """
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
 
+    # Generate 24 points matching vtk.js vtkCubeSource ordering:
+    # 4 points per face, 6 faces (3 axis pairs), each corner duplicated 3x with face normal.
+    # Block 1 – X-facing faces (i=0: -hx face, i=1: +hx face), inner order: j(y), k(z)
+    # Block 2 – Y-facing faces (i=0: -hy face, i=1: +hy face), inner order: j(x), k(z)
+    # Block 3 – Z-facing faces (i=0: -hz face, i=1: +hz face), inner order: j(y), k(x)
+    px = [x - dx, x + dx]
+    py = [y - dy, y + dy]
+    pz = [z - dz, z + dz]
     points = np.array(
         [
-            [x - dx, y - dy, z - dz],
-            [x + dx, y - dy, z - dz],
-            [x + dx, y + dy, z - dz],
-            [x - dx, y + dy, z - dz],
-            [x - dx, y - dy, z + dz],
-            [x + dx, y - dy, z + dz],
-            [x + dx, y + dy, z + dz],
-            [x - dx, y + dy, z + dz],
+            # Block 1: X-facing faces
+            [px[0], py[0], pz[0]], [px[0], py[0], pz[1]],
+            [px[0], py[1], pz[0]], [px[0], py[1], pz[1]],
+            [px[1], py[0], pz[0]], [px[1], py[0], pz[1]],
+            [px[1], py[1], pz[0]], [px[1], py[1], pz[1]],
+            # Block 2: Y-facing faces
+            [px[0], py[0], pz[0]], [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[0]], [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[0]], [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[0]], [px[1], py[1], pz[1]],
+            # Block 3: Z-facing faces
+            [px[0], py[0], pz[0]], [px[1], py[0], pz[0]],
+            [px[0], py[1], pz[0]], [px[1], py[1], pz[0]],
+            [px[0], py[0], pz[1]], [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[1]], [px[1], py[1], pz[1]],
         ],
     )
 
