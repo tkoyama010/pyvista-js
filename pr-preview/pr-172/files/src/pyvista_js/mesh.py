@@ -165,6 +165,7 @@ class PolyData:
         t_coords: ArrayLike | None = None,
         _vtk_js_source_fn: Callable[[int], str] | None = None,
         _mapper_setup_fn: Callable[[int], str] | None = None,
+        _vtk_js_source_is_filter: bool = True,
     ) -> None:
         """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
@@ -172,6 +173,7 @@ class PolyData:
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
+        self._vtk_js_source_is_filter = _vtk_js_source_is_filter
         self._point_data = PointData()
 
     @property
@@ -648,14 +650,22 @@ class PolyData:
 
         # Inject point data scalar arrays
         if len(self._point_data) > 0:
-            # For primitives (source-based), extract output polydata first.
-            # For generic meshes, polydata{idx} already exists.
+            # For primitives (source-based), make polydata{idx} available.
+            # For generic meshes, polydata{idx} already exists (from mesh_source.js).
             if self._vtk_js_source_fn is not None:
-                source_code += (
-                    f"\n// Extract output polydata from source for scalar injection\n"
-                    f"source{idx}.update();\n"
-                    f"const polydata{idx} = source{idx}.getOutputData();\n"
-                )
+                if self._vtk_js_source_is_filter:
+                    # source{idx} is a vtk.js filter - extract its output polydata
+                    source_code += (
+                        f"\n// Extract output polydata from source for scalar injection\n"
+                        f"source{idx}.update();\n"
+                        f"const polydata{idx} = source{idx}.getOutputData();\n"
+                    )
+                else:
+                    # source{idx} is already a vtkPolyData - alias it directly
+                    source_code += (
+                        f"\n// source{idx} is already a vtkPolyData\n"
+                        f"const polydata{idx} = source{idx};\n"
+                    )
 
             for name, array in self._point_data.items():
                 array_flat = array.flatten().tolist()
@@ -1113,6 +1123,7 @@ def Disc(  # noqa: N802, PLR0913
         faces=np.array(faces) if faces else None,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_disc,
+        _vtk_js_source_is_filter=False,
     )
 
 
@@ -1175,6 +1186,7 @@ def Circle(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_circle,
+        _vtk_js_source_is_filter=False,
     )
 
 
