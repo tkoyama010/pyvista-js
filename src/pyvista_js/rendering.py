@@ -90,6 +90,7 @@ from .examples import CubeMap
 _JS_DIR = pathlib.Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
+_POINTS_SOURCE_TEMPLATE = (_JS_DIR / "points_source.js").read_text()
 
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
@@ -253,6 +254,61 @@ class _BaseHTMLRenderer:
         self.actors.append(actor_info)
         return actor_info
 
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Add a point cloud to the renderer.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates as an (n, 3) array or PolyData object.
+        color : tuple or str, optional
+            RGB color tuple (0-1) or color name ('red', 'blue', etc.).
+        opacity : float, default=1.0
+            Opacity value between 0 and 1.
+        point_size : float, default=5.0
+            Size of points in pixels.
+        render_points_as_spheres : bool, default=False
+            Render points as spheres instead of screen-space squares.
+
+        Returns
+        -------
+        dict
+            Actor information dictionary.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = self._color_name_to_rgb(color)
+
+        # Convert to PolyData if needed
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor_info: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
+        }
+        self.actors.append(actor_info)
+        return actor_info
+
     def add_light(self, light: Light) -> None:
         """Add a light source to the scene.
 
@@ -404,7 +460,7 @@ class _BaseHTMLRenderer:
             lines.append(indented)
         return "\n\n".join(lines)
 
-    def _generate_html(self) -> str:
+    def _generate_html(self) -> str:  # noqa: PLR0915 PLR0912
         """Generate HTML fragment with embedded vtk.js JavaScript."""
         container_id = self.container_id
 
@@ -414,47 +470,86 @@ class _BaseHTMLRenderer:
             mesh = actor_info["mesh"]
             color = actor_info.get("color") or (0.5, 0.5, 0.5)
             opacity = actor_info.get("opacity", 1.0)
-            pbr = actor_info.get("pbr", False)
-            metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
-            roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
+            actor_type = actor_info.get("type", "mesh")
 
-            source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
-            mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
+            # Handle point cloud actors
+            if actor_type == "points":
+                point_size = float(actor_info.get("point_size", 5.0))  # type: ignore[arg-type]
+                render_points_as_spheres = actor_info.get("render_points_as_spheres", False)
 
-            # Build PBR code snippet if enabled.
-            # vtk.js WebGL uses Phong shading; map metallic/roughness to
-            # Phong parameters so both axes are visually distinct:
-            #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
-            #   roughness → specularPower (128 → 1)
-            if pbr:
-                specular = round(metallic * 0.5 + 0.5, 4)
-                specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
-                diffuse = round(1.0 - metallic * 0.7, 4)
-                pbr_code = (
-                    f"actor{idx}.getProperty().setInterpolationToPhong();\n"
-                    f"actor{idx}.getProperty().setMetallic({metallic});\n"
-                    f"actor{idx}.getProperty().setRoughness({roughness});\n"
-                    f"actor{idx}.getProperty().setAmbient(0.1);\n"
-                    f"actor{idx}.getProperty().setSpecular({specular});\n"
-                    f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
-                    f"actor{idx}.getProperty().setDiffuse({diffuse});"
+                # Generate point cloud source
+                points_flat = mesh.points.flatten().tolist()  # type: ignore[attr-defined]
+                points_str = ",".join(map(str, points_flat))
+                source_code = _POINTS_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+                    "{{POINTS_DATA}}",
+                    points_str,
+                )
+                mapper_setup = f"mapper{idx}.setInputData(source{idx});"
+
+                # Build point properties code
+                point_props_code = (
+                    f"actor{idx}.getProperty().setPointSize({point_size});\n"
+                    f"actor{idx}.getProperty().setRepresentationToPoints();"
+                )
+                if render_points_as_spheres:
+                    point_props_code += (
+                        f"\nactor{idx}.getProperty().setRenderPointsAsSpheres(true);"
+                    )
+
+                actor_code = (
+                    _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
+                    .replace("{{INDEX}}", str(idx))
+                    .replace("{{MAPPER_SETUP}}", mapper_setup)
+                    .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
+                    .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
+                    .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
+                    .replace("{{OPACITY}}", str(opacity))
+                    .replace("{{PBR_CODE}}", point_props_code)
+                    .replace("{{TEXTURE_CODE}}", "")
                 )
             else:
-                pbr_code = ""
+                # Handle mesh actors
+                pbr = actor_info.get("pbr", False)
+                metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
+                roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
 
-            texture_code = self._generate_texture_code(actor_info, idx)
+                source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
+                mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
-            actor_code = (
-                _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
-                .replace("{{INDEX}}", str(idx))
-                .replace("{{MAPPER_SETUP}}", mapper_setup)
-                .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
-                .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
-                .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
-                .replace("{{OPACITY}}", str(opacity))
-                .replace("{{PBR_CODE}}", pbr_code)
-                .replace("{{TEXTURE_CODE}}", texture_code)
-            )
+                # Build PBR code snippet if enabled.
+                # vtk.js WebGL uses Phong shading; map metallic/roughness to
+                # Phong parameters so both axes are visually distinct:
+                #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
+                #   roughness → specularPower (128 → 1)
+                if pbr:
+                    specular = round(metallic * 0.5 + 0.5, 4)
+                    specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
+                    diffuse = round(1.0 - metallic * 0.7, 4)
+                    pbr_code = (
+                        f"actor{idx}.getProperty().setInterpolationToPhong();\n"
+                        f"actor{idx}.getProperty().setMetallic({metallic});\n"
+                        f"actor{idx}.getProperty().setRoughness({roughness});\n"
+                        f"actor{idx}.getProperty().setAmbient(0.1);\n"
+                        f"actor{idx}.getProperty().setSpecular({specular});\n"
+                        f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
+                        f"actor{idx}.getProperty().setDiffuse({diffuse});"
+                    )
+                else:
+                    pbr_code = ""
+
+                texture_code = self._generate_texture_code(actor_info, idx)
+
+                actor_code = (
+                    _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
+                    .replace("{{INDEX}}", str(idx))
+                    .replace("{{MAPPER_SETUP}}", mapper_setup)
+                    .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
+                    .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
+                    .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
+                    .replace("{{OPACITY}}", str(opacity))
+                    .replace("{{PBR_CODE}}", pbr_code)
+                    .replace("{{TEXTURE_CODE}}", texture_code)
+                )
             actor_js_code.append(actor_code)
 
         indented_actors = []
