@@ -191,3 +191,30 @@ def download_masonry_texture() -> Texture:
 
     """
     return Texture(f"{_PYVISTA_DATA_BASE}/masonry.bmp")
+
+
+def download_cad_model() -> PolyData:
+    """Download a CAD model dataset.
+
+    Downloads ``42400-IDGH.stl`` from the PyVista vtk-data repository and
+    returns it as a :class:`~pyvista_js.PolyData` mesh, mirroring the
+    ``pyvista.examples.download_cad_model`` API.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The CAD model mesh.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_cad_model()  # doctest: +SKIP
+    >>> type(mesh).__name__  # doctest: +SKIP
+    '_STLMesh'
+
+    """
+    from .readers import STLReader  # noqa: PLC0415
+
+    path = _download_file("42400-IDGH.stl")
+    return STLReader(path).read()
+

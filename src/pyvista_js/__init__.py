@@ -25,7 +25,7 @@ from .camera import Camera
 from .light import Light
 from .mesh import Arrow, Circle, Cone, Cube, Cylinder, Disc, Line, Mesh, Plane, PolyData, Sphere
 from .plotter import Plotter
-from .readers import OBJReader, PLYReader, PolyDataReader
+from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .texture import Texture
 
 # Streamlit integration (optional)
@@ -49,6 +49,7 @@ try:
         "Plotter",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",
@@ -74,6 +75,7 @@ except ImportError:
         "Plotter",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",

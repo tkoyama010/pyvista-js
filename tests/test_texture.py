@@ -189,3 +189,21 @@ def test_texture_in_public_api() -> None:
     """Test that Texture is accessible from the top-level pyvista_js module."""
     assert hasattr(pv, "Texture")
     assert pv.Texture is Texture
+
+
+def test_download_cad_model() -> None:
+    """Test download_cad_model function."""
+    mesh = examples.download_cad_model()
+    assert mesh is not None
+    assert mesh.n_points > 0
+    # Verify it's an STL mesh
+    assert type(mesh).__name__ == "_STLMesh"
+
+
+def test_download_cad_model_has_points() -> None:
+    """Test that downloaded CAD model has valid points."""
+    mesh = examples.download_cad_model()
+    assert mesh.points is not None
+    assert len(mesh.points) > 0
+    assert mesh.points.shape[1] == 3  # x, y, z coordinates
+
