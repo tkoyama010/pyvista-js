@@ -442,8 +442,17 @@ class _BaseHTMLRenderer:
         # Generate lookup table based on colormap
         lut_code = self._generate_lut_code(str(cmap), idx, scalar_min, scalar_max)
 
+        # For primitives with point_data, switch mapper to use the modified polydata
+        mapper_override = ""
+        if hasattr(mesh, "is_primitive") and mesh.is_primitive:  # type: ignore[union-attr]
+            mapper_override = (
+                f"// Switch mapper to use polydata with scalar arrays\n"
+                f"mapper{idx}.setInputData(polydata{idx});\n"
+            )
+
         return (
             f"{lut_code}\n"
+            f"{mapper_override}"
             f"// Configure mapper for scalar coloring\n"
             f"mapper{idx}.setScalarVisibility(true);\n"
             f"mapper{idx}.setScalarModeToUsePointData();\n"

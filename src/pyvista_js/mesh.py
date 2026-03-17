@@ -230,6 +230,19 @@ class PolyData:
         return len(self.points)
 
     @property
+    def is_primitive(self) -> bool:
+        """Return whether this mesh is backed by a vtk.js source primitive.
+
+        Returns
+        -------
+        bool
+            ``True`` if the mesh was created from a primitive factory
+            (e.g. :func:`Sphere`, :func:`Cube`), ``False`` otherwise.
+
+        """
+        return self._vtk_js_source_fn is not None
+
+    @property
     def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
         """Compute the radius and center of a bounding sphere.
 
@@ -619,6 +632,15 @@ class PolyData:
 
         # Inject point data scalar arrays
         if len(self._point_data) > 0:
+            # For primitives (source-based), extract output polydata first.
+            # For generic meshes, polydata{idx} already exists.
+            if self._vtk_js_source_fn is not None:
+                source_code += (
+                    f"\n// Extract output polydata from source for scalar injection\n"
+                    f"source{idx}.update();\n"
+                    f"const polydata{idx} = source{idx}.getOutputData();\n"
+                )
+
             for name, array in self._point_data.items():
                 array_flat = array.flatten().tolist()
                 array_str = ",".join(map(str, array_flat))
