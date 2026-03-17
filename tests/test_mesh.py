@@ -204,6 +204,79 @@ def test_shrink_preserves_faces() -> None:
     assert shrunk.n_faces == cube.n_faces
 
 
+def test_tube_returns_polydata() -> None:
+    """Test that tube returns a PolyData instance."""
+    line = Line()
+    tube = line.tube(radius=0.5, n_sides=20)
+    assert isinstance(tube, PolyData)
+    assert tube.n_points == line.n_points
+
+
+def test_tube_default_parameters() -> None:
+    """Test that tube works with default parameters."""
+    line = Line()
+    tube = line.tube()
+    assert isinstance(tube, PolyData)
+
+
+def test_tube_vtk_js_source_contains_tube_logic() -> None:
+    """Test that tubed mesh generates JS with the tube filter."""
+    line = Line()
+    tube = line.tube(radius=0.1, n_sides=12)
+    js_source = tube.generate_vtk_js_source(0)
+    assert "tubedPD0" in js_source
+    assert "0.1" in js_source
+    assert "12" in js_source
+    assert "vtkTubeFilter" in js_source
+
+
+def test_tube_mapper_setup_uses_tubed_pd() -> None:
+    """Test that tubed mesh mapper uses setInputData with the tubed polydata."""
+    line = Line()
+    tube = line.tube(radius=0.5, n_sides=20)
+    mapper_code = tube.get_mapper_setup(0)
+    assert "tubedPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_tube_invalid_radius() -> None:
+    """Test that an invalid radius raises ValueError."""
+    line = Line()
+    with pytest.raises(ValueError, match="radius must be positive"):
+        line.tube(radius=0)
+    with pytest.raises(ValueError, match="radius must be positive"):
+        line.tube(radius=-0.1)
+
+
+def test_tube_invalid_n_sides() -> None:
+    """Test that invalid n_sides raises ValueError."""
+    line = Line()
+    with pytest.raises(ValueError, match="n_sides must be at least 3"):
+        line.tube(n_sides=2)
+    with pytest.raises(ValueError, match="n_sides must be at least 3"):
+        line.tube(n_sides=0)
+
+
+def test_tube_capping_parameter() -> None:
+    """Test that capping parameter is properly propagated."""
+    line = Line()
+    tube_capped = line.tube(radius=0.5, capping=True)
+    tube_uncapped = line.tube(radius=0.5, capping=False)
+
+    js_capped = tube_capped.generate_vtk_js_source(0)
+    js_uncapped = tube_uncapped.generate_vtk_js_source(0)
+
+    assert "capping: true" in js_capped
+    assert "capping: false" in js_uncapped
+
+
+def test_tube_preserves_faces() -> None:
+    """Test that tube preserves face information."""
+    line = Line()
+    tube = line.tube(radius=0.5, n_sides=20)
+    assert tube.n_faces == line.n_faces
+
+
 def test_circle_creation() -> None:
     """Test circle primitive creation."""
     circle = Circle()
