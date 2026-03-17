@@ -278,6 +278,76 @@ def test_view_vector_common_directions(vector) -> None:
     assert plotter._renderer._view_vector == tuple(float(v) for v in vector)
 
 
+def test_view_xy() -> None:
+    """Test view_xy() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xy()
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_xy_negative() -> None:
+    """Test view_xy(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xy(negative=True)
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, -1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_xz() -> None:
+    """Test view_xz() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xz()
+
+    assert plotter._renderer._view_vector == (0.0, 1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_view_xz_negative() -> None:
+    """Test view_xz(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xz(negative=True)
+
+    assert plotter._renderer._view_vector == (0.0, -1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_view_yz() -> None:
+    """Test view_yz() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_yz()
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_yz_negative() -> None:
+    """Test view_yz(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_yz(negative=True)
+
+    assert plotter._renderer._view_vector == (-1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_isometric() -> None:
+    """Test view_isometric() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Cube())
+    plotter.view_isometric()
+
+    assert plotter._renderer._view_vector == (1.0, 1.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
 def test_add_mesh_with_show_edges() -> None:
     """Test adding a mesh with edge visibility enabled."""
     plotter = Plotter()
@@ -405,4 +475,3 @@ def test_add_mesh_default_edge_color() -> None:
 
     assert len(plotter.actors) == 1
     assert plotter.actors[0]["edge_color"] is None
-
