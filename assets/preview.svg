@@ -1,0 +1,107 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#1e1e1e"/>
+
+  <!-- JupyterLite window frame -->
+  <rect x="50" y="50" width="700" height="500" rx="10" fill="#2d2d2d" stroke="#404040" stroke-width="2"/>
+
+  <!-- Window title bar -->
+  <rect x="50" y="50" width="700" height="40" rx="10" fill="#3d3d3d"/>
+  <rect x="50" y="75" width="700" height="15" fill="#3d3d3d"/>
+
+  <!-- Window controls -->
+  <circle cx="70" cy="70" r="6" fill="#ff5f56"/>
+  <circle cx="90" cy="70" r="6" fill="#ffbd2e"/>
+  <circle cx="110" cy="70" r="6" fill="#27c93f"/>
+
+  <!-- Title text -->
+  <text x="400" y="75" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#cccccc" text-anchor="middle">simple_demo.ipynb - JupyterLite</text>
+
+  <!-- Code cell -->
+  <rect x="80" y="110" width="640" height="120" fill="#1e1e1e" stroke="#404040" stroke-width="1"/>
+  <text x="95" y="135" font-family="monospace" font-size="12" fill="#9cdcfe">import</text>
+  <text x="145" y="135" font-family="monospace" font-size="12" fill="#dcdcaa"> pyvista_js </text>
+  <text x="255" y="135" font-family="monospace" font-size="12" fill="#c586c0">as</text>
+  <text x="275" y="135" font-family="monospace" font-size="12" fill="#4ec9b0"> pv</text>
+
+  <text x="95" y="160" font-family="monospace" font-size="12" fill="#dcdcaa">plotter </text>
+  <text x="165" y="160" font-family="monospace" font-size="12" fill="#d4d4d4">= </text>
+  <text x="185" y="160" font-family="monospace" font-size="12" fill="#4ec9b0">pv</text>
+  <text x="205" y="160" font-family="monospace" font-size="12" fill="#d4d4d4">.</text>
+  <text x="215" y="160" font-family="monospace" font-size="12" fill="#dcdcaa">Plotter</text>
+  <text x="275" y="160" font-family="monospace" font-size="12" fill="#d4d4d4">()</text>
+
+  <text x="95" y="185" font-family="monospace" font-size="12" fill="#4ec9b0">plotter</text>
+  <text x="165" y="185" font-family="monospace" font-size="12" fill="#d4d4d4">.</text>
+  <text x="175" y="185" font-family="monospace" font-size="12" fill="#dcdcaa">add_mesh</text>
+  <text x="255" y="185" font-family="monospace" font-size="12" fill="#d4d4d4">(</text>
+  <text x="265" y="185" font-family="monospace" font-size="12" fill="#4ec9b0">pv</text>
+  <text x="285" y="185" font-family="monospace" font-size="12" fill="#d4d4d4">.</text>
+  <text x="295" y="185" font-family="monospace" font-size="12" fill="#dcdcaa">Sphere</text>
+  <text x="355" y="185" font-family="monospace" font-size="12" fill="#d4d4d4">(), </text>
+  <text x="385" y="185" font-family="monospace" font-size="12" fill="#9cdcfe">color</text>
+  <text x="430" y="185" font-family="monospace" font-size="12" fill="#d4d4d4">=</text>
+  <text x="440" y="185" font-family="monospace" font-size="12" fill="#ce9178">"red"</text>
+  <text x="485" y="185" font-family="monospace" font-size="12" fill="#d4d4d4">)</text>
+
+  <text x="95" y="210" font-family="monospace" font-size="12" fill="#4ec9b0">plotter</text>
+  <text x="165" y="210" font-family="monospace" font-size="12" fill="#d4d4d4">.</text>
+  <text x="175" y="210" font-family="monospace" font-size="12" fill="#dcdcaa">show</text>
+  <text x="215" y="210" font-family="monospace" font-size="12" fill="#d4d4d4">()</text>
+
+  <!-- 3D Viewport -->
+  <rect x="80" y="250" width="640" height="280" fill="#000000" stroke="#404040" stroke-width="1"/>
+
+  <!-- Grid lines (subtle) -->
+  <line x1="400" y1="250" x2="400" y2="530" stroke="#333333" stroke-width="1" opacity="0.3"/>
+  <line x1="80" y1="390" x2="720" y2="390" stroke="#333333" stroke-width="1" opacity="0.3"/>
+
+  <!-- Lighting gradient for sphere -->
+  <defs>
+    <radialGradient id="sphereGradient" cx="35%" cy="35%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ee5a52;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c92a2a;stop-opacity:1" />
+    </radialGradient>
+
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Shadow -->
+  <ellipse cx="400" cy="450" rx="80" ry="15" fill="#000000" opacity="0.3"/>
+
+  <!-- 3D Sphere -->
+  <circle cx="400" cy="390" r="100" fill="url(#sphereGradient)" filter="url(#shadow)"/>
+
+  <!-- Highlight on sphere -->
+  <ellipse cx="370" cy="360" rx="30" ry="35" fill="#ffffff" opacity="0.3"/>
+  <ellipse cx="365" cy="355" rx="15" ry="20" fill="#ffffff" opacity="0.5"/>
+
+  <!-- Axes indicators (small, in corner) -->
+  <g transform="translate(650, 490)">
+    <!-- X axis - red -->
+    <line x1="0" y1="0" x2="25" y2="0" stroke="#ff0000" stroke-width="2" stroke-linecap="round"/>
+    <text x="30" y="5" font-family="sans-serif" font-size="10" fill="#ff0000">X</text>
+
+    <!-- Y axis - green -->
+    <line x1="0" y1="0" x2="0" y2="-25" stroke="#00ff00" stroke-width="2" stroke-linecap="round"/>
+    <text x="5" y="-28" font-family="sans-serif" font-size="10" fill="#00ff00">Y</text>
+
+    <!-- Z axis - blue -->
+    <line x1="0" y1="0" x2="-15" y2="-15" stroke="#0080ff" stroke-width="2" stroke-linecap="round"/>
+    <text x="-25" y="-18" font-family="sans-serif" font-size="10" fill="#0080ff">Z</text>
+  </g>
+
+  <!-- Info text -->
+  <text x="400" y="280" font-family="sans-serif" font-size="11" fill="#888888" text-anchor="middle">Interactive 3D Visualization</text>
+</svg>
