@@ -55,6 +55,8 @@ class Plotter:
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
         style: str = "surface",
+        scalars: str | None = None,
+        cmap: str = "viridis",
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -89,6 +91,13 @@ class Plotter:
         style : str, optional
             Visualization style of the mesh. One of ``'surface'`` (default),
             ``'wireframe'``, or ``'points'``.
+        scalars : str, optional
+            Name of the scalar array to use for coloring. The array must exist
+            in ``mesh.point_data``.
+        cmap : str, optional
+            Name of the colormap to use when rendering scalars. Default is 'viridis'.
+            Supported colormaps: 'viridis', 'plasma', 'inferno', 'magma', 'jet',
+            'rainbow', 'turbo', 'coolwarm'.
         **kwargs
             Additional rendering options.
 
@@ -139,6 +148,15 @@ class Plotter:
         >>> plotter.add_mesh(mesh, style='surface', show_edges=True)
         >>> plotter.show()
 
+        Scalar coloring example:
+
+        >>> import numpy as np
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -152,6 +170,8 @@ class Plotter:
             show_edges=show_edges,
             edge_color=edge_color,
             style=style,
+            scalars=scalars,
+            cmap=cmap,
         )
 
         # Store reference
@@ -167,6 +187,8 @@ class Plotter:
                 "show_edges": show_edges,
                 "edge_color": edge_color,
                 "style": style,
+                "scalars": scalars,
+                "cmap": cmap,
                 "actor": actor,
                 "kwargs": kwargs,
             },
