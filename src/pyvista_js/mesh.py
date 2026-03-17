@@ -947,20 +947,36 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    # Generate points matching vtk.js vtkCylinderSource ordering:
-    # Cylinder axis is Y. For each of resolution steps, two side points are emitted
-    # alternately: points[2*i] at y=+h/2 ("xbot"), points[2*i+1] at y=-h/2 ("xtop").
-    # x = radius * cos(i * angle), z = -radius * sin(i * angle)  (vtk.js uses -sin for z)
-    # theta does NOT include the 2*pi endpoint.
+    # Generate points matching vtk.js vtkCylinderSource ordering (capping=true default):
+    # Cylinder axis is Y. Total = 4 * resolution points:
+    #   indices 0..2R-1:   side wall, interleaved pairs [y=+h/2, y=-h/2] per angle step
+    #   indices 2R..3R-1:  top cap ring at y=+h/2, forward angular order
+    #   indices 3R..4R-1:  bottom cap ring at y=-h/2, REVERSED angular order
+    # x = radius*cos(i*angle), z = -radius*sin(i*angle) (vtk.js uses -sin for z)
     angle = 2.0 * np.pi / resolution
+    cx, cy, cz = center
     points_list = []
+    # Side wall
     for i in range(resolution):
-        c = np.cos(i * angle)
-        s = np.sin(i * angle)
-        px = radius * c + center[0]
-        pz = -radius * s + center[2]
-        points_list.append([px, center[1] + height / 2, pz])  # y = +h/2
-        points_list.append([px, center[1] - height / 2, pz])  # y = -h/2
+        px = radius * np.cos(i * angle) + cx
+        pz = -radius * np.sin(i * angle) + cz
+        points_list.append([px, cy + height / 2, pz])  # y = +h/2
+        points_list.append([px, cy - height / 2, pz])  # y = -h/2
+    # Top cap (forward order, y = +h/2)
+    for i in range(resolution):
+        points_list.append([
+            radius * np.cos(i * angle) + cx,
+            cy + height / 2,
+            -radius * np.sin(i * angle) + cz,
+        ])
+    # Bottom cap (reversed order, y = -h/2)
+    for k in range(resolution):
+        i = resolution - 1 - k
+        points_list.append([
+            radius * np.cos(i * angle) + cx,
+            cy - height / 2,
+            -radius * np.sin(i * angle) + cz,
+        ])
     points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
