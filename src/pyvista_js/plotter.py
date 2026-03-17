@@ -148,6 +148,15 @@ class Plotter:
         >>> plotter.add_mesh(mesh, style='surface', show_edges=True)
         >>> plotter.show()
 
+        Scalar coloring:
+
+        >>> import pyvista_js as pv
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
