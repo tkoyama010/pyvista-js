@@ -1135,6 +1135,8 @@ class MockRenderer:
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
         style: str = "surface",
+        scalars: str | None = None,
+        cmap: str = "viridis",
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -1160,6 +1162,10 @@ class MockRenderer:
             Edge color (stored but not rendered).
         style : str
             Rendering style (stored but not rendered).
+        scalars : str, optional
+            Scalar array name (stored but not rendered).
+        cmap : str
+            Colormap name (stored but not rendered).
 
         Returns
         -------
@@ -1178,6 +1184,8 @@ class MockRenderer:
             "show_edges": show_edges,
             "edge_color": edge_color,
             "style": style,
+            "scalars": scalars,
+            "cmap": cmap,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
