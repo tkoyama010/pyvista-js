@@ -1,26 +1,46 @@
 name: Update Preview GIF
 on:
-  workflow_dispatch:
+  issue_comment:
+    types: [created]
 
 permissions: {}
 
 jobs:
   update-preview:
+    if: >-
+      github.event.issue.pull_request
+      && contains(github.event.comment.body, '/update-preview')
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
+      - name: Get PR branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_json=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+          echo "ref=$(echo "$pr_json" | jq -r .head.ref)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(echo "$pr_json" | jq -r .head.sha)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
-          persist-credentials: false
+          ref: ${{ steps.pr.outputs.ref }}
+          persist-credentials: true
+
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
         with:
           python-version: "3.12"
+
       - run: |
           pip install playwright "imageio[ffmpeg]" pillow
           playwright install chromium
+
       - run: python -m pyvista_js capture-preview
+
       - uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403  # v5
         with:
           commit_message: "chore: update preview GIF"
           file_pattern: assets/preview.gif
+          branch: ${{ steps.pr.outputs.ref }}
