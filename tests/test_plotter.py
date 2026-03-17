@@ -68,7 +68,7 @@ def test_show(monkeypatch) -> None:
 @pytest.mark.parametrize(
     ("mesh_factory", "expected_n_points"),
     [
-        (lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50), 50 * 30),
+        (lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50), (30 - 2) * 50 + 2),
         (lambda: Cube(center=(0, 0, 0), x_length=3.0, y_length=2.0, z_length=1.0), 8),
         (lambda: Cylinder(radius=1.5, height=4.0, resolution=80), 160),
     ],

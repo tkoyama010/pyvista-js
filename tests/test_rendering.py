@@ -78,7 +78,7 @@ def test_mock_create_container(caplog) -> None:
     [
         (
             lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=40, phi_resolution=50),
-            40 * 50,
+            (50 - 2) * 40 + 2,
         ),
         (
             lambda: Cube(center=(1, 1, 1), x_length=2.0, y_length=3.0, z_length=4.0),
