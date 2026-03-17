@@ -52,6 +52,9 @@ class Plotter:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
         scalars: str | None = None,
         cmap: str = "viridis",
         **kwargs: object,
@@ -80,6 +83,14 @@ class Plotter:
             coordinates set (e.g., via
             :meth:`~pyvista_js.PolyData.texture_map_to_plane`) or use a
             primitive (Sphere, Cube, Cylinder) that generates them automatically.
+        show_edges : bool, optional
+            Show the edges of the mesh. Default is False.
+        edge_color : str or tuple, optional
+            Color of the edges when ``show_edges=True``. Can be a color name
+            or RGB tuple. If not specified, defaults to black.
+        style : str, optional
+            Visualization style of the mesh. One of ``'surface'`` (default),
+            ``'wireframe'``, or ``'points'``.
         scalars : str, optional
             Name of the scalar array to use for coloring. The array must exist
             in ``mesh.point_data``.
@@ -116,13 +127,25 @@ class Plotter:
         >>> plotter.add_mesh(sphere, texture=texture)
         >>> plotter.show()
 
-        Scalar coloring example:
+        Show edges:
 
-        >>> import numpy as np
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
-        >>> mesh['elevation'] = mesh.points[:, 2]
-        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.add_mesh(mesh, show_edges=True, edge_color='black')
+        >>> plotter.show()
+
+        Wireframe rendering:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Cube()
+        >>> plotter.add_mesh(mesh, style='wireframe')
+        >>> plotter.show()
+
+        Surface with edges:
+
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Cube()
+        >>> plotter.add_mesh(mesh, style='surface', show_edges=True)
         >>> plotter.show()
 
         """
@@ -135,6 +158,9 @@ class Plotter:
             metallic=metallic,
             roughness=roughness,
             texture=texture,
+            show_edges=show_edges,
+            edge_color=edge_color,
+            style=style,
             scalars=scalars,
             cmap=cmap,
         )
@@ -149,6 +175,9 @@ class Plotter:
                 "metallic": metallic,
                 "roughness": roughness,
                 "texture": texture,
+                "show_edges": show_edges,
+                "edge_color": edge_color,
+                "style": style,
                 "scalars": scalars,
                 "cmap": cmap,
                 "actor": actor,
@@ -214,6 +243,116 @@ class Plotter:
 
         """
         self._renderer.view_vector(vector, viewup=viewup)
+
+    def view_xy(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the XY plane.
+
+        Look down the Z-axis, with the positive Z-axis pointing toward
+        the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative Z direction (down the +Z axis). Default is
+            False (look down the -Z axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_xy()
+        >>> plotter.show()
+
+        View from the negative Z direction:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Cube())
+        >>> plotter.view_xy(negative=True)
+        >>> plotter.show()
+
+        """
+        vector = (0.0, 0.0, -1.0) if negative else (0.0, 0.0, 1.0)
+        self.view_vector(vector)
+
+    def view_xz(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the XZ plane.
+
+        Look down the Y-axis, with the positive Y-axis pointing toward
+        the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative Y direction (down the +Y axis). Default is
+            False (look down the -Y axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_xz()
+        >>> plotter.show()
+
+        View from the negative Y direction:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Cube())
+        >>> plotter.view_xz(negative=True)
+        >>> plotter.show()
+
+        """
+        vector = (0.0, -1.0, 0.0) if negative else (0.0, 1.0, 0.0)
+        self.view_vector(vector, viewup=(0.0, 0.0, 1.0))
+
+    def view_yz(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the YZ plane.
+
+        Look down the X-axis, with the positive X-axis pointing toward
+        the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative X direction (down the +X axis). Default is
+            False (look down the -X axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_yz()
+        >>> plotter.show()
+
+        View from the negative X direction:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Cube())
+        >>> plotter.view_yz(negative=True)
+        >>> plotter.show()
+
+        """
+        vector = (-1.0, 0.0, 0.0) if negative else (1.0, 0.0, 0.0)
+        self.view_vector(vector)
+
+    def view_isometric(self) -> None:
+        """View the scene from an isometric angle.
+
+        The isometric view shows all three axes equally, looking from the
+        (1, 1, 1) direction.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(pv.Cube())
+        >>> plotter.view_isometric()
+        >>> plotter.show()
+
+        """
+        self.view_vector((1.0, 1.0, 1.0))
 
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting (IBL).
