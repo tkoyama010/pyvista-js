@@ -11,7 +11,6 @@ Usage:
     python scripts/capture_preview.py
 """
 
-import time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -26,6 +25,7 @@ def capture_demo(output_dir: Path, demo_url: str = "https://tkoyama010.github.io
 
     Returns:
         Path to the screenshots directory
+
     """
     screenshots_dir = output_dir / "screenshots"
     screenshots_dir.mkdir(parents=True, exist_ok=True)
@@ -158,6 +158,7 @@ def create_gif_from_screenshots(screenshots_dir: Path, output_path: Path, fps: i
 
     Returns:
         True if successful, False otherwise
+
     """
     import imageio.v3 as iio
 
@@ -235,15 +236,15 @@ def main():
             print("✓ SUCCESS!")
             print("=" * 60)
             print(f"Preview GIF saved to: {output_gif}")
-            print(f"You can now commit this file and update the README.md")
+            print("You can now commit this file and update the README.md")
             return 0
-        else:
-            print("\n✗ Failed to create GIF")
-            return 1
+        print("\n✗ Failed to create GIF")
+        return 1
 
     except Exception as e:
         print(f"\n✗ Error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
