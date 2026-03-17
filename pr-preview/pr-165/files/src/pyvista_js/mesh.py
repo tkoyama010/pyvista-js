@@ -34,7 +34,6 @@ _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 
 
-
 class PolyData:
     """Base polygonal mesh class.
 
