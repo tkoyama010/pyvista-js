@@ -86,7 +86,7 @@ def test_mock_create_container(caplog) -> None:
         ),
         (
             lambda: Cylinder(center=(0, 0, 0), radius=1.5, height=3.0, resolution=50),
-            100,
+            4 * 50,
         ),
     ],
 )
