@@ -959,8 +959,8 @@ def Cylinder(  # noqa: N802
         s = np.sin(i * angle)
         px = radius * c + center[0]
         pz = -radius * s + center[2]
-        points_list.append([px, center[1] + height / 2, pz])   # y = +h/2
-        points_list.append([px, center[1] - height / 2, pz])   # y = -h/2
+        points_list.append([px, center[1] + height / 2, pz])  # y = +h/2
+        points_list.append([px, center[1] - height / 2, pz])  # y = -h/2
     points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
