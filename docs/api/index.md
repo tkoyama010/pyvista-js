@@ -92,6 +92,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :toctree: _autosummary
    :nosignatures:
 
+   pyvista_js.GLTFReader
    pyvista_js.OBJReader
    pyvista_js.PLYReader
    pyvista_js.PolyDataReader
