@@ -758,20 +758,23 @@ def Sphere(  # noqa: N802
     >>> import pyvista_js as pv
     >>> sphere = pv.Sphere(radius=1.0)
     >>> sphere.n_points
-    842
+    902
 
     """
     # Generate points matching vtk.js vtkSphereSource ordering:
-    # single north pole, (phi_resolution-2) rings of theta_resolution points, single south pole.
+    # single north pole, phi_resolution rings of theta_resolution points (poles excluded from
+    # ring count), single south pole.
+    # phi[i] = (i+1) * pi / (phi_resolution + 1) so rings never sit exactly at 0 or pi.
     # theta does NOT include the 2*pi endpoint (ring closes implicitly in vtk.js).
-    phi_vals = np.linspace(0, np.pi, phi_resolution)
+    delta_phi = np.pi / (phi_resolution + 1)
     theta_vals = np.linspace(0, 2 * np.pi, theta_resolution, endpoint=False)
 
     points = []
     # North pole
     points.append([center[0], center[1], center[2] + radius])
-    # Middle rings (phi[1] .. phi[phi_resolution-2])
-    for p in phi_vals[1:-1]:
+    # Intermediate rings
+    for i in range(phi_resolution):
+        p = (i + 1) * delta_phi
         for t in theta_vals:
             x = radius * np.sin(p) * np.cos(t) + center[0]
             y = radius * np.sin(p) * np.sin(t) + center[1]
