@@ -52,6 +52,8 @@ class Plotter:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        scalars: str | None = None,
+        cmap: str = "viridis",
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -78,6 +80,13 @@ class Plotter:
             coordinates set (e.g., via
             :meth:`~pyvista_js.PolyData.texture_map_to_plane`) or use a
             primitive (Sphere, Cube, Cylinder) that generates them automatically.
+        scalars : str, optional
+            Name of the scalar array to use for coloring. The array must exist
+            in ``mesh.point_data``.
+        cmap : str, optional
+            Name of the colormap to use when rendering scalars. Default is 'viridis'.
+            Supported colormaps: 'viridis', 'plasma', 'inferno', 'magma', 'jet',
+            'rainbow', 'turbo', 'coolwarm'.
         **kwargs
             Additional rendering options.
 
@@ -107,6 +116,15 @@ class Plotter:
         >>> plotter.add_mesh(sphere, texture=texture)
         >>> plotter.show()
 
+        Scalar coloring example:
+
+        >>> import numpy as np
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -117,6 +135,8 @@ class Plotter:
             metallic=metallic,
             roughness=roughness,
             texture=texture,
+            scalars=scalars,
+            cmap=cmap,
         )
 
         # Store reference
@@ -129,6 +149,8 @@ class Plotter:
                 "metallic": metallic,
                 "roughness": roughness,
                 "texture": texture,
+                "scalars": scalars,
+                "cmap": cmap,
                 "actor": actor,
                 "kwargs": kwargs,
             },

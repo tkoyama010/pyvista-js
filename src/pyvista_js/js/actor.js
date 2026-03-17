@@ -4,6 +4,8 @@
 const mapper{{INDEX}} = vtk.Rendering.Core.vtkMapper.newInstance();
 {{MAPPER_SETUP}}
 
+{{SCALAR_CODE}}
+
 // Create actor
 const actor{{INDEX}} = vtk.Rendering.Core.vtkActor.newInstance();
 actor{{INDEX}}.setMapper(mapper{{INDEX}});
