@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: |
-          pip install playwright "imageio[ffmpeg]" pillow
+          pip install . playwright "imageio[ffmpeg]" pillow
           playwright install chromium
       - run: python -m pyvista_js capture-preview
       - uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403  # v5
