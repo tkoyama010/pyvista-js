@@ -768,18 +768,31 @@ def Sphere(  # noqa: N802
     >>> import pyvista_js as pv
     >>> sphere = pv.Sphere(radius=1.0)
     >>> sphere.n_points
-    902
+    842
 
     """
-    theta = np.linspace(0, 2 * np.pi, theta_resolution)
-    phi = np.linspace(0, np.pi, phi_resolution)
+    # Generate points matching vtk.js vtkSphereSource ordering exactly:
+    #   index 0: north pole
+    #   index 1: south pole
+    #   then theta (outer) x phi (inner) for intermediate rows
+    # phi[j] = j * pi / (phi_resolution - 1)  for j = 1 .. phi_resolution-2
+    # theta[i] = i * 2*pi / theta_resolution   for i = 0 .. theta_resolution-1
+    delta_phi = np.pi / (phi_resolution - 1)
+    delta_theta = 2.0 * np.pi / theta_resolution
 
     points = []
-    for p in phi:
-        for t in theta:
-            x = radius * np.sin(p) * np.cos(t) + center[0]
-            y = radius * np.sin(p) * np.sin(t) + center[1]
-            z = radius * np.cos(p) + center[2]
+    # North pole (index 0)
+    points.append([center[0], center[1], center[2] + radius])
+    # South pole (index 1)
+    points.append([center[0], center[1], center[2] - radius])
+    # Intermediate points: theta outer loop, phi inner loop
+    for i in range(theta_resolution):
+        theta = i * delta_theta
+        for j in range(1, phi_resolution - 1):
+            phi = j * delta_phi
+            x = radius * np.sin(phi) * np.cos(theta) + center[0]
+            y = radius * np.sin(phi) * np.sin(theta) + center[1]
+            z = radius * np.cos(phi) + center[2]
             points.append([x, y, z])
 
     def _vtk_js_source(idx: int) -> str:
@@ -832,22 +845,49 @@ def Cube(  # noqa: N802
     >>> import pyvista_js as pv
     >>> cube = pv.Cube()
     >>> cube.n_points
-    8
+    24
 
     """
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
 
+    # Generate 24 points matching vtk.js vtkCubeSource ordering:
+    # 4 points per face, 6 faces (3 axis pairs), each corner duplicated 3x with face normal.
+    # Block 1 - X-facing faces (i=0: -hx face, i=1: +hx face), inner order: j(y), k(z)
+    # Block 2 - Y-facing faces (i=0: -hy face, i=1: +hy face), inner order: j(x), k(z)
+    # Block 3 - Z-facing faces (i=0: -hz face, i=1: +hz face), inner order: j(y), k(x)
+    px = [x - dx, x + dx]
+    py = [y - dy, y + dy]
+    pz = [z - dz, z + dz]
     points = np.array(
         [
-            [x - dx, y - dy, z - dz],
-            [x + dx, y - dy, z - dz],
-            [x + dx, y + dy, z - dz],
-            [x - dx, y + dy, z - dz],
-            [x - dx, y - dy, z + dz],
-            [x + dx, y - dy, z + dz],
-            [x + dx, y + dy, z + dz],
-            [x - dx, y + dy, z + dz],
+            # Block 1: X-facing faces
+            [px[0], py[0], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[0], py[1], pz[0]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[0], pz[0]],
+            [px[1], py[0], pz[1]],
+            [px[1], py[1], pz[0]],
+            [px[1], py[1], pz[1]],
+            # Block 2: Y-facing faces
+            [px[0], py[0], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[0]],
+            [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[0]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[0]],
+            [px[1], py[1], pz[1]],
+            # Block 3: Z-facing faces
+            [px[0], py[0], pz[0]],
+            [px[1], py[0], pz[0]],
+            [px[0], py[1], pz[0]],
+            [px[1], py[1], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[1]],
         ],
     )
 
@@ -917,23 +957,36 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    theta = np.linspace(0, 2 * np.pi, resolution)
-
-    bottom_points = []
-    for t in theta:
-        bx = radius * np.cos(t) + center[0]
-        by = radius * np.sin(t) + center[1]
-        bz = center[2] - height / 2
-        bottom_points.append([bx, by, bz])
-
-    top_points = []
-    for t in theta:
-        tx = radius * np.cos(t) + center[0]
-        ty = radius * np.sin(t) + center[1]
-        tz = center[2] + height / 2
-        top_points.append([tx, ty, tz])
-
-    points = np.vstack([bottom_points, top_points])
+    # Generate points matching vtk.js vtkCylinderSource ordering (capping=true default):
+    # Cylinder axis is Y. Total = 4 * resolution points:
+    #   indices 0..2R-1:   side wall, interleaved pairs [y=+h/2, y=-h/2] per angle step
+    #   indices 2R..3R-1:  top cap ring at y=+h/2, forward angular order
+    #   indices 3R..4R-1:  bottom cap ring at y=-h/2, REVERSED angular order
+    # x = radius*cos(i*angle), z = -radius*sin(i*angle) (vtk.js uses -sin for z)
+    angle = 2.0 * np.pi / resolution
+    cx, cy, cz = center
+    points_list = []
+    # Side wall
+    for i in range(resolution):
+        px = radius * np.cos(i * angle) + cx
+        pz = -radius * np.sin(i * angle) + cz
+        points_list.append([px, cy + height / 2, pz])  # y = +h/2
+        points_list.append([px, cy - height / 2, pz])  # y = -h/2
+    # Top cap (forward order, y = +h/2)
+    points_list.extend(
+        [radius * np.cos(i * angle) + cx, cy + height / 2, -radius * np.sin(i * angle) + cz]
+        for i in range(resolution)
+    )
+    # Bottom cap (reversed order, y = -h/2)
+    points_list.extend(
+        [
+            radius * np.cos((resolution - 1 - k) * angle) + cx,
+            cy - height / 2,
+            -radius * np.sin((resolution - 1 - k) * angle) + cz,
+        ]
+        for k in range(resolution)
+    )
+    points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
         return (
