@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.5.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.4.0...pyvista-js-v0.5.0) (2026-03-17)
+
+
+### Features
+
+* add edge and wireframe rendering options to add_mesh ([#173](https://github.com/tkoyama010/pyvista-js/issues/173)) ([930f476](https://github.com/tkoyama010/pyvista-js/commit/930f476419aa803ead2d6f0ddce58143190a9be9))
+* add PointData class with scalar array support and colormap rendering ([#190](https://github.com/tkoyama010/pyvista-js/issues/190)) ([b43d7f3](https://github.com/tkoyama010/pyvista-js/commit/b43d7f3c6f7acf117b320d819631d61f48ec2ca3))
+* add preview image to README with automated capture script ([#180](https://github.com/tkoyama010/pyvista-js/issues/180)) ([4957d0a](https://github.com/tkoyama010/pyvista-js/commit/4957d0a88d0721f5687d5e1e3ae854e04980048b))
+* add standard camera view methods to Plotter ([#171](https://github.com/tkoyama010/pyvista-js/issues/171)) ([bc2e53e](https://github.com/tkoyama010/pyvista-js/commit/bc2e53ec520ba4db31f29da71e004c717be5a7ff))
+* add tube filter to PolyData ([#166](https://github.com/tkoyama010/pyvista-js/issues/166)) ([01145e8](https://github.com/tkoyama010/pyvista-js/commit/01145e89fc3f1672dbcbf75f12f4613fbed5acbc))
+
+
+### Bug Fixes
+
+* enable persist-credentials for git-auto-commit-action ([#182](https://github.com/tkoyama010/pyvista-js/issues/182)) ([8166602](https://github.com/tkoyama010/pyvista-js/commit/8166602544be46250ce8a9cf9c5543e0dbb9a7e9))
+* install pyvista-js package in update-preview workflow ([#181](https://github.com/tkoyama010/pyvista-js/issues/181)) ([2047a96](https://github.com/tkoyama010/pyvista-js/commit/2047a96ec7945faac69e5bd780c2302a4797345a))
+* match Cube point generation to vtk.js vtkCubeSource (24 points per mesh) ([#187](https://github.com/tkoyama010/pyvista-js/issues/187)) ([54db900](https://github.com/tkoyama010/pyvista-js/commit/54db9007817ff7f3f63272465e8be0d73770de5c))
+* match Cylinder point generation to vtk.js vtkCylinderSource ordering ([#188](https://github.com/tkoyama010/pyvista-js/issues/188)) ([e4679bf](https://github.com/tkoyama010/pyvista-js/commit/e4679bfbaa79f11cfa160df3a62f85887a05b332))
+* match Disc/Circle point generation to vtk.js vtkDiskSource ordering ([#189](https://github.com/tkoyama010/pyvista-js/issues/189)) ([154484f](https://github.com/tkoyama010/pyvista-js/commit/154484f3fc6de8288db500e31dd643b993e9fcd4))
+* match Sphere point generation to vtk.js vtkSphereSource ordering ([#186](https://github.com/tkoyama010/pyvista-js/issues/186)) ([18180df](https://github.com/tkoyama010/pyvista-js/commit/18180dfa5b577bffd1b74eaa2acd66146a43dfa1))
+* use double-click to open notebook in JupyterLite ([#183](https://github.com/tkoyama010/pyvista-js/issues/183)) ([4c81ce4](https://github.com/tkoyama010/pyvista-js/commit/4c81ce4b11d9b298a949d80438df27f51803034e))
+
+
+### Documentation
+
+* center "Try it in your browser" link in README ([#184](https://github.com/tkoyama010/pyvista-js/issues/184)) ([66f9b4f](https://github.com/tkoyama010/pyvista-js/commit/66f9b4f325389ba5197132c064b7446c2ae634b4))
+
 ## [0.4.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.3.0...pyvista-js-v0.4.0) (2026-03-16)
 
 ### Features
