@@ -23,6 +23,7 @@ _SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
 _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
+_TUBE_FILTER_TEMPLATE = (_JS_DIR / "tube_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
 _DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
 _ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
@@ -30,6 +31,7 @@ _CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
+_TUBE_MIN_SIDES = 3
 
 
 class PolyData:
@@ -293,6 +295,84 @@ class PolyData:
             faces=self.faces,
             _vtk_js_source_fn=_vtk_js_source_with_shrink,
             _mapper_setup_fn=_mapper_setup_shrink,
+        )
+
+    def tube(
+        self,
+        *,
+        radius: float = 0.5,
+        n_sides: int = 20,
+        capping: bool = True,
+    ) -> PolyData:
+        """Generate a tube around a line polydata.
+
+        This filter creates a tube representation around lines in the mesh
+        by sweeping a polygonal cross-section along each line. It mirrors
+        the PyVista ``tube`` filter API and is backed by vtk.js's
+        ``vtkTubeFilter``.
+
+        .. note::
+
+            This filter is intended for use with line-based polydata (such as
+            the output of :class:`Line`). It uses vtk.js's ``vtkTubeFilter``,
+            which generates a tube by sweeping a circle with ``n_sides`` sides
+            along the line segments.
+
+        Parameters
+        ----------
+        radius : float, optional
+            The radius of the tube. Default is 0.5.
+        n_sides : int, optional
+            The number of sides for the tube cross-section.
+            Higher values produce smoother tubes. Default is 20.
+        capping : bool, optional
+            Whether to cap the ends of the tube. Default is True.
+
+        Returns
+        -------
+        PolyData
+            A new mesh representing the tube.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> line = pv.Line()
+        >>> tube = line.tube(radius=0.05, n_sides=20)
+        >>> isinstance(tube, pv.PolyData)
+        True
+
+        Render the tube:
+
+        >>> tube.plot()  # doctest: +SKIP
+
+        """
+        if radius <= 0:
+            msg = f"radius must be positive, got {radius}"
+            raise ValueError(msg)
+        if n_sides < _TUBE_MIN_SIDES:
+            msg = f"n_sides must be at least {_TUBE_MIN_SIDES}, got {n_sides}"
+            raise ValueError(msg)
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_tube(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            tube_code = (
+                _TUBE_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
+                .replace("{{RADIUS}}", str(radius))
+                .replace("{{N_SIDES}}", str(n_sides))
+                .replace("{{CAPPING}}", "true" if capping else "false")
+            )
+            return base + "\n" + tube_code
+
+        def _mapper_setup_tube(idx: int) -> str:
+            return f"mapper{idx}.setInputData(tubedPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_tube,
+            _mapper_setup_fn=_mapper_setup_tube,
         )
 
     def texture_map_to_plane(self) -> PolyData:
