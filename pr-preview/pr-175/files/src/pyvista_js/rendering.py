@@ -297,14 +297,24 @@ class _BaseHTMLRenderer:
     ) -> None:
         """Add a scalar bar to the scene.
 
+        The scalar bar displays a color legend mapping scalar values to
+        colors using ``vtkScalarBarActor``.
+
         Parameters
         ----------
         title : str, optional
-            Title text for the scalar bar.
+            Title text displayed on the scalar bar. Default is ``""``.
         vertical : bool, optional
-            Whether to orient the scalar bar vertically.
+            Whether to orient the scalar bar vertically (``True``) or
+            horizontally (``False``). Default is ``True``.
         n_labels : int, optional
-            Number of labels to display on the scalar bar.
+            Number of labels to display on the scalar bar. Default is ``5``.
+
+        Examples
+        --------
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> renderer.add_scalar_bar(title="Height", vertical=True, n_labels=5)
 
         """
         self._scalar_bar = {
