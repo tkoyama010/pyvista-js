@@ -455,7 +455,7 @@ class _BaseHTMLRenderer:
             f"{mapper_override}"
             f"// Configure mapper for scalar coloring\n"
             f"mapper{idx}.setScalarVisibility(true);\n"
-            f"mapper{idx}.setScalarModeToUsePointData();\n"
+            f"mapper{idx}.setScalarModeToUsePointFieldData();\n"
             f"mapper{idx}.setColorByArrayName('{scalars}');\n"
             f"mapper{idx}.setLookupTable(lut{idx});\n"
             f"mapper{idx}.setScalarRange({scalar_min}, {scalar_max});"
@@ -598,7 +598,6 @@ class _BaseHTMLRenderer:
         edge_color = actor_info.get("edge_color")
         style = actor_info.get("style", "surface")
 
-<<<<<<< HEAD
         source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
         mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
@@ -610,24 +609,7 @@ class _BaseHTMLRenderer:
         )
         style_code = self._generate_style_code(idx, str(style))
         texture_code = self._generate_texture_code(actor_info, idx)
-=======
-            texture_code = self._generate_texture_code(actor_info, idx)
-            scalar_code = self._generate_scalar_code(actor_info, idx)
-
-            actor_code = (
-                _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
-                .replace("{{INDEX}}", str(idx))
-                .replace("{{MAPPER_SETUP}}", mapper_setup)
-                .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
-                .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
-                .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
-                .replace("{{OPACITY}}", str(opacity))
-                .replace("{{PBR_CODE}}", pbr_code)
-                .replace("{{TEXTURE_CODE}}", texture_code)
-                .replace("{{SCALAR_CODE}}", scalar_code)
-            )
-            actor_js_code.append(actor_code)
->>>>>>> 4990bf9 (Add scalar array support to PolyData with colormap rendering)
+        scalar_code = self._generate_scalar_code(actor_info, idx)
 
         return (
             _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
@@ -641,6 +623,7 @@ class _BaseHTMLRenderer:
             .replace("{{STYLE_CODE}}", style_code)
             .replace("{{PBR_CODE}}", pbr_code)
             .replace("{{TEXTURE_CODE}}", texture_code)
+            .replace("{{SCALAR_CODE}}", scalar_code)
         )
 
     @staticmethod
