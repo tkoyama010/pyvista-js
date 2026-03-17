@@ -638,9 +638,9 @@ class _BaseHTMLRenderer:
         if self._scalar_bar is None:
             return ""
 
-        title = self._scalar_bar.get("title", "")
-        vertical = self._scalar_bar.get("vertical", True)
-        n_labels = self._scalar_bar.get("n_labels", 5)
+        title = str(self._scalar_bar["title"])
+        vertical = bool(self._scalar_bar["vertical"])
+        n_labels = int(str(self._scalar_bar["n_labels"]))
 
         # Generate orientation-specific code
         if vertical:
@@ -1249,6 +1249,7 @@ class MockRenderer:
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
         self._camera: Camera | None = None
+        self._scalar_bar: dict[str, object] | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
         """Mock container creation.
@@ -1353,6 +1354,31 @@ class MockRenderer:
         self.lights.append(light)
         logger.info("Added light type=%s intensity=%s", light.light_type, light.intensity)
 
+    def add_scalar_bar(
+        self,
+        title: str = "",
+        vertical: bool = True,  # noqa: FBT001, FBT002
+        n_labels: int = 5,
+    ) -> None:
+        """Mock add_scalar_bar.
+
+        Parameters
+        ----------
+        title : str, optional
+            Title text for the scalar bar. Default is ``""``.
+        vertical : bool, optional
+            Whether to orient vertically. Default is ``True``.
+        n_labels : int, optional
+            Number of labels. Default is ``5``.
+
+        """
+        self._scalar_bar = {
+            "title": title,
+            "vertical": vertical,
+            "n_labels": n_labels,
+        }
+        logger.info("Added scalar bar title=%s vertical=%s n_labels=%d", title, vertical, n_labels)
+
     def clear(self) -> None:
         """Mock clear.
 
@@ -1360,6 +1386,7 @@ class MockRenderer:
         """
         self.actors = []
         self.lights = []
+        self._scalar_bar = None
         logger.info("Cleared all actors")
 
     def set_background(self, color: tuple[float, float, float]) -> None:
