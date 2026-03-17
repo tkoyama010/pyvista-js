@@ -964,19 +964,23 @@ def Cylinder(  # noqa: N802
         points_list.append([px, cy - height / 2, pz])  # y = -h/2
     # Top cap (forward order, y = +h/2)
     for i in range(resolution):
-        points_list.append([
-            radius * np.cos(i * angle) + cx,
-            cy + height / 2,
-            -radius * np.sin(i * angle) + cz,
-        ])
+        points_list.append(
+            [
+                radius * np.cos(i * angle) + cx,
+                cy + height / 2,
+                -radius * np.sin(i * angle) + cz,
+            ]
+        )
     # Bottom cap (reversed order, y = -h/2)
     for k in range(resolution):
         i = resolution - 1 - k
-        points_list.append([
-            radius * np.cos(i * angle) + cx,
-            cy - height / 2,
-            -radius * np.sin(i * angle) + cz,
-        ])
+        points_list.append(
+            [
+                radius * np.cos(i * angle) + cx,
+                cy - height / 2,
+                -radius * np.sin(i * angle) + cz,
+            ]
+        )
     points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
