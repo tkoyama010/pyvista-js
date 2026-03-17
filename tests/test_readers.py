@@ -1,5 +1,6 @@
 """Test readers module."""
 
+import struct
 from pathlib import Path
 
 import numpy as np
@@ -387,8 +388,6 @@ def test_stl_reader_no_vertices(tmp_path: Path) -> None:
 
 def test_stl_reader_binary(tmp_path: Path) -> None:
     """Test reading a binary STL file."""
-    import struct
-
     stl_file = tmp_path / "binary.stl"
 
     # Create a simple binary STL with one triangle
