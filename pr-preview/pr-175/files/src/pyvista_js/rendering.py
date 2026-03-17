@@ -213,6 +213,9 @@ class _BaseHTMLRenderer:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
@@ -233,6 +236,13 @@ class _BaseHTMLRenderer:
         texture : Texture, optional
             Surface texture to apply. The texture image is loaded from the
             URL stored in the :class:`~pyvista_js.Texture` object.
+        show_edges : bool, default=False
+            Show the edges of the mesh.
+        edge_color : tuple or str, optional
+            RGB color tuple (0-1) or color name for edges when ``show_edges=True``.
+            If not specified, defaults to black.
+        style : str, default='surface'
+            Visualization style. One of 'surface', 'wireframe', or 'points'.
 
         Returns
         -------
@@ -243,6 +253,10 @@ class _BaseHTMLRenderer:
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
 
+        # Convert edge_color if it's a string
+        if isinstance(edge_color, str):
+            edge_color = self._color_name_to_rgb(edge_color)
+
         actor_info: dict[str, object] = {
             "mesh": mesh,
             "color": color,
@@ -251,6 +265,9 @@ class _BaseHTMLRenderer:
             "metallic": metallic,
             "roughness": roughness,
             "texture": texture,
+            "show_edges": show_edges,
+            "edge_color": edge_color,
+            "style": style,
         }
         self.actors.append(actor_info)
         return actor_info
@@ -494,69 +511,171 @@ class _BaseHTMLRenderer:
         # Indent for consistency with other generated code
         return "\n".join("      " + line for line in code.splitlines())
 
-    def _generate_html(self) -> str:
-        """Generate HTML fragment with embedded vtk.js JavaScript."""
-        container_id = self.container_id
+    def _generate_actor_code(self, idx: int, actor_info: dict[str, object]) -> str:
+        """Generate vtk.js JavaScript for a single actor.
 
-        # Generate JavaScript code for each actor
-        actor_js_code = []
-        for idx, actor_info in enumerate(self.actors):
-            mesh = actor_info["mesh"]
-            color = actor_info.get("color") or (0.5, 0.5, 0.5)
-            opacity = actor_info.get("opacity", 1.0)
-            pbr = actor_info.get("pbr", False)
-            metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
-            roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
+        Parameters
+        ----------
+        idx : int
+            Actor index used for unique JS variable names.
+        actor_info : dict
+            Actor dictionary with mesh, color, opacity, etc.
 
-            source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
-            mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
+        Returns
+        -------
+        str
+            JavaScript code for the actor.
 
-            # Build PBR code snippet if enabled.
-            # vtk.js WebGL uses Phong shading; map metallic/roughness to
-            # Phong parameters so both axes are visually distinct:
-            #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
-            #   roughness → specularPower (128 → 1)
-            if pbr:
-                specular = round(metallic * 0.5 + 0.5, 4)
-                specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
-                diffuse = round(1.0 - metallic * 0.7, 4)
-                pbr_code = (
-                    f"actor{idx}.getProperty().setInterpolationToPhong();\n"
-                    f"actor{idx}.getProperty().setMetallic({metallic});\n"
-                    f"actor{idx}.getProperty().setRoughness({roughness});\n"
-                    f"actor{idx}.getProperty().setAmbient(0.1);\n"
-                    f"actor{idx}.getProperty().setSpecular({specular});\n"
-                    f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
-                    f"actor{idx}.getProperty().setDiffuse({diffuse});"
-                )
-            else:
-                pbr_code = ""
+        """
+        mesh = actor_info["mesh"]
+        color = actor_info.get("color") or (0.5, 0.5, 0.5)
+        opacity = actor_info.get("opacity", 1.0)
+        pbr = actor_info.get("pbr", False)
+        metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
+        roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
+        show_edges = actor_info.get("show_edges", False)
+        edge_color = actor_info.get("edge_color")
+        style = actor_info.get("style", "surface")
 
-            texture_code = self._generate_texture_code(actor_info, idx)
+        source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
+        mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
-            actor_code = (
-                _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
-                .replace("{{INDEX}}", str(idx))
-                .replace("{{MAPPER_SETUP}}", mapper_setup)
-                .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
-                .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
-                .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
-                .replace("{{OPACITY}}", str(opacity))
-                .replace("{{PBR_CODE}}", pbr_code)
-                .replace("{{TEXTURE_CODE}}", texture_code)
-            )
-            actor_js_code.append(actor_code)
+        pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
+        edge_code = self._generate_edge_code(
+            idx,
+            show_edges,
+            edge_color,  # type: ignore[arg-type]
+        )
+        style_code = self._generate_style_code(idx, str(style))
+        texture_code = self._generate_texture_code(actor_info, idx)
 
-        indented_actors = []
-        for actor in actor_js_code:
-            lines = actor.split("\n")
-            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
-            indented_actors.append(indented_lines)
-        actors_code = "\n\n".join(indented_actors)
+        return (
+            _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
+            .replace("{{INDEX}}", str(idx))
+            .replace("{{MAPPER_SETUP}}", mapper_setup)
+            .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
+            .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
+            .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
+            .replace("{{OPACITY}}", str(opacity))
+            .replace("{{EDGE_CODE}}", edge_code)
+            .replace("{{STYLE_CODE}}", style_code)
+            .replace("{{PBR_CODE}}", pbr_code)
+            .replace("{{TEXTURE_CODE}}", texture_code)
+        )
 
-        # Build environment texture code
+    @staticmethod
+    def _generate_pbr_code(
+        idx: int,
+        pbr: object,
+        metallic: float,
+        roughness: float,
+    ) -> str:
+        """Generate vtk.js PBR property code for an actor.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        pbr : object
+            Whether PBR is enabled.
+        metallic : float
+            Metallic factor.
+        roughness : float
+            Roughness factor.
+
+        Returns
+        -------
+        str
+            JavaScript code or empty string.
+
+        """
+        if not pbr:
+            return ""
+        # vtk.js WebGL uses Phong shading; map metallic/roughness to
+        # Phong parameters so both axes are visually distinct:
+        #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
+        #   roughness → specularPower (128 → 1)
+        specular = round(metallic * 0.5 + 0.5, 4)
+        specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
+        diffuse = round(1.0 - metallic * 0.7, 4)
+        return (
+            f"actor{idx}.getProperty().setInterpolationToPhong();\n"
+            f"actor{idx}.getProperty().setMetallic({metallic});\n"
+            f"actor{idx}.getProperty().setRoughness({roughness});\n"
+            f"actor{idx}.getProperty().setAmbient(0.1);\n"
+            f"actor{idx}.getProperty().setSpecular({specular});\n"
+            f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
+            f"actor{idx}.getProperty().setDiffuse({diffuse});"
+        )
+
+    @staticmethod
+    def _generate_edge_code(
+        idx: int,
+        show_edges: object,
+        edge_color: str | tuple[float, float, float] | None,
+    ) -> str:
+        """Generate vtk.js edge visibility code for an actor.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        show_edges : object
+            Whether edges are visible.
+        edge_color : str or tuple or None
+            Edge color.
+
+        Returns
+        -------
+        str
+            JavaScript code or empty string.
+
+        """
+        if not show_edges:
+            return ""
+        if edge_color is None:
+            edge_color = (0.0, 0.0, 0.0)
+        edge_r, edge_g, edge_b = edge_color[0], edge_color[1], edge_color[2]  # type: ignore[index]
+        return (
+            f"actor{idx}.getProperty().setEdgeVisibility(true);\n"
+            f"actor{idx}.getProperty().setEdgeColor({edge_r}, {edge_g}, {edge_b});"
+        )
+
+    @staticmethod
+    def _generate_style_code(idx: int, style: str) -> str:
+        """Generate vtk.js representation code for an actor.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        style : str
+            Rendering style ('surface', 'wireframe', or 'points').
+
+        Returns
+        -------
+        str
+            JavaScript code or empty string.
+
+        """
+        # vtk.js Representation constants: POINTS=0, WIREFRAME=1, SURFACE=2
+        style_map = {"wireframe": 1, "points": 0, "surface": 2}
+        rep = style_map.get(style)
+        if rep is not None:
+            return f"actor{idx}.getProperty().setRepresentation({rep});"
+        return ""
+
+    def _generate_environment_code(self) -> str:
+        """Generate vtk.js JavaScript for environment textures.
+
+        Returns
+        -------
+        str
+            JavaScript code for environment lighting, or empty string.
+
+        """
         if self._environment_texture_url:
-            env_code = (
+            return (
                 "      // Load environment texture for image-based lighting\n"
                 "      const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
                 "      const envImg = new Image();\n"
@@ -568,10 +687,10 @@ class _BaseHTMLRenderer:
                 "      };\n"
                 f"      envImg.src = '{self._environment_texture_url}';"
             )
-        elif self._environment_texture_cubemap:
+        if self._environment_texture_cubemap:
             urls = self._environment_texture_cubemap.face_urls
             urls_js = ", ".join(f"'{u}'" for u in urls)
-            env_code = (
+            return (
                 "      // Load cubemap faces and stitch into a canvas for IBL\n"
                 f"      const faceUrls = [{urls_js}];\n"
                 "      Promise.all(faceUrls.map(function(url) {\n"
@@ -598,23 +717,24 @@ class _BaseHTMLRenderer:
                 "        renderWindow.render();\n"
                 "      });"
             )
-        else:
-            env_code = ""
+        return ""
 
-        # Build lights code
-        lights_code = self._generate_lights_code()
+    def _generate_camera_code(self) -> str:
+        """Generate vtk.js JavaScript for camera setup.
 
-        # Build scalar bar code
-        scalar_bar_code = self._generate_scalar_bar_code()
+        Returns
+        -------
+        str
+            JavaScript code for camera positioning, or empty string.
 
-        # Build camera code
+        """
         if self._camera is not None:
             px, py, pz = self._camera.position
             fx, fy, fz = self._camera.focal_point
             ux, uy, uz = self._camera.view_up
             angle = self._camera.view_angle
             near, far = self._camera.clipping_range
-            camera_code = (
+            return (
                 "      const cam = renderer.getActiveCamera();\n"
                 f"      cam.setPosition({px}, {py}, {pz});\n"
                 f"      cam.setFocalPoint({fx}, {fy}, {fz});\n"
@@ -622,10 +742,10 @@ class _BaseHTMLRenderer:
                 f"      cam.setViewAngle({angle});\n"
                 f"      cam.setClippingRange({near}, {far});"
             )
-        elif self._view_vector is not None:
+        if self._view_vector is not None:
             vx, vy, vz = self._view_vector
             ux, uy, uz = self._view_up
-            camera_code = (
+            return (
                 "      const cam = renderer.getActiveCamera();\n"
                 "      const fp = cam.getFocalPoint();\n"
                 "      const dist = cam.getDistance();\n"
@@ -634,19 +754,31 @@ class _BaseHTMLRenderer:
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 "      renderer.resetCameraClippingRange();"
             )
-        else:
-            camera_code = ""
+        return ""
+
+    def _generate_html(self) -> str:
+        """Generate HTML fragment with embedded vtk.js JavaScript."""
+        actor_js_code = [
+            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
+        ]
+
+        indented_actors = []
+        for actor in actor_js_code:
+            lines = actor.split("\n")
+            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
+            indented_actors.append(indented_lines)
+        actors_code = "\n\n".join(indented_actors)
 
         return (
-            _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", container_id)
+            _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", self.container_id)
             .replace("{{BACKGROUND_R}}", str(self.background[0]))
             .replace("{{BACKGROUND_G}}", str(self.background[1]))
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
-            .replace("{{LIGHTS_CODE}}", lights_code)
+            .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
             .replace("{{ACTORS_CODE}}", actors_code)
-            .replace("{{SCALAR_BAR_CODE}}", scalar_bar_code)
-            .replace("{{ENVIRONMENT_CODE}}", env_code)
-            .replace("{{CAMERA_CODE}}", camera_code)
+            .replace("{{SCALAR_BAR_CODE}}", self._generate_scalar_bar_code())
+            .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
+            .replace("{{CAMERA_CODE}}", self._generate_camera_code())
         )
 
     def _repr_html_(self) -> str:
@@ -938,6 +1070,9 @@ class MockRenderer:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -957,6 +1092,12 @@ class MockRenderer:
             Roughness factor (stored but not rendered).
         texture : Texture, optional
             Surface texture (stored but not rendered).
+        show_edges : bool
+            Edge visibility (stored but not rendered).
+        edge_color : str or tuple, optional
+            Edge color (stored but not rendered).
+        style : str
+            Rendering style (stored but not rendered).
 
         Returns
         -------
@@ -972,6 +1113,9 @@ class MockRenderer:
             "metallic": metallic,
             "roughness": roughness,
             "texture": texture,
+            "show_edges": show_edges,
+            "edge_color": edge_color,
+            "style": style,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
