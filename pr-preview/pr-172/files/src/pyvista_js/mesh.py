@@ -843,9 +843,9 @@ def Cube(  # noqa: N802
 
     # Generate 24 points matching vtk.js vtkCubeSource ordering:
     # 4 points per face, 6 faces (3 axis pairs), each corner duplicated 3x with face normal.
-    # Block 1 – X-facing faces (i=0: -hx face, i=1: +hx face), inner order: j(y), k(z)
-    # Block 2 – Y-facing faces (i=0: -hy face, i=1: +hy face), inner order: j(x), k(z)
-    # Block 3 – Z-facing faces (i=0: -hz face, i=1: +hz face), inner order: j(y), k(x)
+    # Block 1 - X-facing faces (i=0: -hx face, i=1: +hx face), inner order: j(y), k(z)
+    # Block 2 - Y-facing faces (i=0: -hy face, i=1: +hy face), inner order: j(x), k(z)
+    # Block 3 - Z-facing faces (i=0: -hz face, i=1: +hz face), inner order: j(y), k(x)
     px = [x - dx, x + dx]
     py = [y - dy, y + dy]
     pz = [z - dz, z + dz]
