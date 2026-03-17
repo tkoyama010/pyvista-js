@@ -91,6 +91,7 @@ from .examples import CubeMap
 _JS_DIR = pathlib.Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
+_SCALAR_BAR_TEMPLATE = (_JS_DIR / "scalar_bar.js").read_text()
 
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
@@ -186,6 +187,7 @@ class _BaseHTMLRenderer:
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
         self._camera: Camera | None = None
         self._axes_enabled: bool = False
+        self._scalar_bar: dict[str, object] | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Store the container ID for later HTML generation.
@@ -312,6 +314,30 @@ class _BaseHTMLRenderer:
         """
         self._axes_enabled = True
 
+    def add_scalar_bar(
+        self,
+        title: str = "",
+        vertical: bool = True,  # noqa: FBT001, FBT002
+        n_labels: int = 5,
+    ) -> None:
+        """Add a scalar bar to the scene.
+
+        Parameters
+        ----------
+        title : str, optional
+            Title text for the scalar bar.
+        vertical : bool, optional
+            Whether to orient the scalar bar vertically.
+        n_labels : int, optional
+            Number of labels to display on the scalar bar.
+
+        """
+        self._scalar_bar = {
+            "title": title,
+            "vertical": vertical,
+            "n_labels": n_labels,
+        }
+
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting.
 
@@ -385,6 +411,7 @@ class _BaseHTMLRenderer:
         """Remove all actors and lights from the renderer."""
         self.actors = []
         self.lights = []
+        self._scalar_bar = None
 
     def _generate_texture_code(self, actor_info: dict[str, object], idx: int) -> str:
         """Generate vtk.js JavaScript to load and bind a surface texture.
@@ -587,6 +614,69 @@ class _BaseHTMLRenderer:
             indented = "\n".join("      " + line for line in code.splitlines())
             lines.append(indented)
         return "\n\n".join(lines)
+
+    def _generate_scalar_bar_code(self) -> str:
+        """Generate vtk.js JavaScript for the scalar bar.
+
+        Returns
+        -------
+        str
+            JavaScript code to create and configure a scalar bar actor,
+            or an empty string if no scalar bar has been added.
+
+        """
+        if self._scalar_bar is None:
+            return ""
+
+        title = self._scalar_bar.get("title", "")
+        vertical = self._scalar_bar.get("vertical", True)
+        n_labels = self._scalar_bar.get("n_labels", 5)
+
+        # Generate orientation-specific code
+        if vertical:
+            orientation_code = (
+                "scalarBarActor.setAxisTextStyle({\n"
+                "  fontFamily: 'Arial',\n"
+                "  fontSize: 14,\n"
+                "});\n"
+                "scalarBarActor.setTickTextStyle({\n"
+                "  fontFamily: 'Arial',\n"
+                "  fontSize: 12,\n"
+                "});\n"
+                "// Position on the right side\n"
+                "scalarBarActor.getScalarBarRepresentation().setPosition(0.85, 0.15);\n"
+                "scalarBarActor.getScalarBarRepresentation().setPosition2(0.1, 0.7);\n"
+                "scalarBarActor.setDrawNanAnnotation(false);\n"
+                "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
+                "scalarBarActor.setDrawAboveRangeSwatch(false);"
+            )
+        else:
+            orientation_code = (
+                "scalarBarActor.setAxisTextStyle({\n"
+                "  fontFamily: 'Arial',\n"
+                "  fontSize: 14,\n"
+                "});\n"
+                "scalarBarActor.setTickTextStyle({\n"
+                "  fontFamily: 'Arial',\n"
+                "  fontSize: 12,\n"
+                "});\n"
+                "// Position at the bottom\n"
+                "scalarBarActor.getScalarBarRepresentation().setPosition(0.15, 0.05);\n"
+                "scalarBarActor.getScalarBarRepresentation().setPosition2(0.7, 0.1);\n"
+                "scalarBarActor.getScalarBarRepresentation().setOrientation(1);\n"
+                "scalarBarActor.setDrawNanAnnotation(false);\n"
+                "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
+                "scalarBarActor.setDrawAboveRangeSwatch(false);"
+            )
+
+        code = (
+            _SCALAR_BAR_TEMPLATE.replace("{{TITLE}}", title)
+            .replace("{{N_LABELS}}", str(n_labels))
+            .replace("{{ORIENTATION_CODE}}", orientation_code)
+        )
+
+        # Indent for consistency with other generated code
+        return "\n".join("      " + line for line in code.splitlines())
 
     def _generate_axes_code(self) -> str:
         """Generate vtk.js JavaScript for the orientation marker widget.
@@ -883,6 +973,7 @@ class _BaseHTMLRenderer:
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
             .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
             .replace("{{ACTORS_CODE}}", actors_code)
+            .replace("{{SCALAR_BAR_CODE}}", self._generate_scalar_bar_code())
             .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
             .replace("{{AXES_CODE}}", self._generate_axes_code())
             .replace("{{CAMERA_CODE}}", self._generate_camera_code())
