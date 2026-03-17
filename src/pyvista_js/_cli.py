@@ -220,6 +220,69 @@ def _cmd_info(args: argparse.Namespace) -> None:  # noqa: ARG001
     logger.info("Platform   : %s", platform.platform())
 
 
+def _open_notebook(page, screenshots_dir: Path) -> bool:  # noqa: ANN001
+    """Find and open the demo notebook in the JupyterLite file browser.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    screenshots_dir : Path
+        Directory to save fallback screenshots.
+
+    Returns
+    -------
+    bool
+        ``True`` if the notebook was opened successfully.
+
+    """
+    notebook_selectors = [
+        "text=simple_demo.ipynb",
+        "[title*='simple_demo']",
+        ".jp-DirListing-itemText:has-text('simple_demo')",
+    ]
+
+    for selector in notebook_selectors:
+        try:
+            page.wait_for_selector(selector, timeout=5000)
+            page.click(selector)
+            logger.info("Clicked on notebook using selector: %s", selector)
+            return True
+        except Exception:  # noqa: BLE001
+            continue
+
+    logger.warning("Could not find notebook, taking screenshot of main page")
+    page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
+    return False
+
+
+def _run_notebook_cells(page) -> None:  # noqa: ANN001
+    """Execute all cells in the currently open notebook.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+
+    """
+    page.wait_for_selector(".jp-Cell", timeout=10000)
+    page.click(".jp-Cell")
+    page.wait_for_timeout(1000)
+
+    try:
+        page.click("text=Run", timeout=5000)
+        page.wait_for_timeout(500)
+        page.click("text=Run All Cells", timeout=5000)
+        logger.info("Clicked 'Run All Cells' from menu")
+    except Exception:  # noqa: BLE001
+        logger.info("Could not use menu, trying keyboard shortcuts")
+        page.keyboard.press("Control+Shift+Enter")
+        page.wait_for_timeout(1000)
+        page.keyboard.press("Shift+Enter")
+        page.wait_for_timeout(1000)
+        page.keyboard.press("Shift+Enter")
+
+
 def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
     """Capture screenshots from the JupyterLite demo using Playwright.
 
@@ -236,6 +299,8 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
         Path to the directory containing screenshots.
 
     """
+    import contextlib  # noqa: PLC0415
+
     from playwright.sync_api import sync_playwright  # noqa: PLC0415
 
     screenshots_dir = output_dir / "screenshots"
@@ -258,50 +323,15 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
             logger.info("Looking for simple_demo.ipynb...")
             page.wait_for_selector(".jp-DirListing-content", timeout=20000)
 
-            notebook_selectors = [
-                "text=simple_demo.ipynb",
-                "[title*='simple_demo']",
-                ".jp-DirListing-itemText:has-text('simple_demo')",
-            ]
-
-            notebook_found = False
-            for selector in notebook_selectors:
-                try:
-                    page.wait_for_selector(selector, timeout=5000)
-                    page.click(selector)
-                    notebook_found = True
-                    logger.info("Clicked on notebook using selector: %s", selector)
-                    break
-                except Exception:  # noqa: BLE001
-                    continue
-
-            if not notebook_found:
-                logger.warning("Could not find notebook, taking screenshot of main page")
-                page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
+            if not _open_notebook(page, screenshots_dir):
                 return screenshots_dir
 
             logger.info("Waiting for notebook to open...")
             page.wait_for_timeout(5000)
-
             page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
 
             logger.info("Attempting to run notebook cells...")
-            page.wait_for_selector(".jp-Cell", timeout=10000)
-            page.click(".jp-Cell")
-            page.wait_for_timeout(1000)
-
-            try:
-                page.click("text=Run", timeout=5000)
-                page.wait_for_timeout(500)
-                page.click("text=Run All Cells", timeout=5000)
-                logger.info("Clicked 'Run All Cells' from menu")
-            except Exception:  # noqa: BLE001
-                logger.info("Could not use menu, trying keyboard shortcuts")
-                page.keyboard.press("Control+Shift+Enter")
-                page.wait_for_timeout(1000)
-                page.keyboard.press("Shift+Enter")
-                page.wait_for_timeout(1000)
-                page.keyboard.press("Shift+Enter")
+            _run_notebook_cells(page)
 
             logger.info("Waiting for 3D rendering to appear...")
             page.wait_for_timeout(15000)
@@ -315,10 +345,8 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
 
         except Exception:
             logger.exception("Error during demo capture")
-            try:
+            with contextlib.suppress(Exception):
                 page.screenshot(path=str(screenshots_dir / "error_screenshot.png"))
-            except Exception:  # noqa: BLE001
-                pass
         finally:
             context.close()
             browser.close()
