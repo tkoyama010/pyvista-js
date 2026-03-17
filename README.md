@@ -18,7 +18,7 @@
 
 ✨ **[Try it in your browser](https://tkoyama010.github.io/pyvista-js/)** ✨
 
-![pyvista-js rendering in JupyterLite](assets/preview.png)
+![pyvista-js rendering in JupyterLite](assets/preview.gif)
 
 ## Table of Contents
 
