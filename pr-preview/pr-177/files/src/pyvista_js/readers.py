@@ -29,6 +29,7 @@ _JS_DIR = Path(__file__).parent / "js"
 _VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
 _PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
 _OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
+_STL_READER_SOURCE_TEMPLATE = (_JS_DIR / "stl_reader_source.js").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -497,6 +498,216 @@ class OBJReader:
                     points.append(
                         [float(parts[1]), float(parts[2]), float(parts[3])],
                     )
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+
+class _STLMesh(PolyData):
+    """Mesh loaded from an STL file, rendered via vtk.js STL reader."""
+
+    def __init__(self, points: np.ndarray, stl_base64: str) -> None:
+        """Initialize with points and base64-encoded STL file content.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            Vertex coordinates (N, 3) extracted for bounding sphere computation.
+        stl_base64 : str
+            Base64-encoded content of the STL file passed to vtk.js for rendering.
+
+        """
+        super().__init__(points)
+        self._stl_base64 = stl_base64
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code using vtkSTLReader."""
+        escaped = json.dumps(self._stl_base64)
+        return _STL_READER_SOURCE_TEMPLATE.replace(
+            "{{INDEX}}",
+            str(idx),
+        ).replace("{{STL_BASE64}}", escaped)
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code."""
+        return f"mapper{idx}.setInputData(source{idx});"
+
+
+class STLReader:
+    """Reader for STL (STereoLithography) files (``.stl``).
+
+    Reads an STL file (both ASCII and binary) and produces a :class:`Mesh` that
+    delegates parsing to vtk.js's ``vtkSTLReader`` at render time. Python extracts
+    only the vertex coordinates so that camera framing and bounding-sphere
+    queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.stl`` file.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.STLReader("model.stl")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() != ".stl":
+            msg = f"Expected a .stl file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the STL file.
+
+        """
+        return self._path
+
+    def read(self) -> _STLMesh:
+        """Read the STL file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Vertex coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the STL file content.
+
+        Raises
+        ------
+        ValueError
+            If the file contains no vertex data.
+
+        """
+        raw = self._path.read_bytes()
+        points = self._extract_points(raw)
+        stl_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _STLMesh(points=points, stl_base64=stl_base64)
+
+    @staticmethod
+    def _extract_points(raw: bytes) -> np.ndarray:
+        """Extract vertex coordinates from STL file content.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Supports both ASCII and binary STL formats.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw content of the STL file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        # Check if it's ASCII STL (starts with "solid")
+        try:
+            text = raw.decode("ascii", errors="strict")
+            if text.strip().startswith("solid"):
+                return STLReader._extract_points_ascii(text)
+        except (UnicodeDecodeError, ValueError):
+            pass
+
+        # Try binary STL format
+        return STLReader._extract_points_binary(raw)
+
+    @staticmethod
+    def _extract_points_ascii(text: str) -> np.ndarray:
+        """Extract points from ASCII STL format.
+
+        Parameters
+        ----------
+        text : str
+            ASCII STL file content.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        points = []
+        lines = text.splitlines()
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("vertex"):
+                parts = stripped.split()
+                if len(parts) >= 4:
+                    points.append(
+                        [float(parts[1]), float(parts[2]), float(parts[3])],
+                    )
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+    @staticmethod
+    def _extract_points_binary(raw: bytes) -> np.ndarray:
+        """Extract points from binary STL format.
+
+        Binary STL format:
+        - 80 byte header
+        - 4 byte unsigned int (number of triangles)
+        - For each triangle (50 bytes):
+          - 3 floats (12 bytes): normal vector
+          - 3 floats (12 bytes): vertex 1
+          - 3 floats (12 bytes): vertex 2
+          - 3 floats (12 bytes): vertex 3
+          - 2 bytes: attribute byte count (unused)
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw content of the binary STL file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        if len(raw) < 84:  # Minimum size: 80 header + 4 count
+            return np.empty((0, 3))
+
+        # Skip 80-byte header, read triangle count
+        import struct
+
+        num_triangles = struct.unpack("<I", raw[80:84])[0]
+
+        expected_size = 84 + num_triangles * 50
+        if len(raw) < expected_size:
+            return np.empty((0, 3))
+
+        points = []
+        offset = 84
+        for _ in range(num_triangles):
+            # Skip normal (12 bytes), read 3 vertices (36 bytes each = 3 * 12)
+            offset += 12  # Skip normal
+            for _ in range(3):
+                x, y, z = struct.unpack("<fff", raw[offset : offset + 12])
+                points.append([x, y, z])
+                offset += 12
+            offset += 2  # Skip attribute byte count
+
         if not points:
             return np.empty((0, 3))
         return np.array(points)
