@@ -758,18 +758,31 @@ def Sphere(  # noqa: N802
     >>> import pyvista_js as pv
     >>> sphere = pv.Sphere(radius=1.0)
     >>> sphere.n_points
-    902
+    842
 
     """
-    theta = np.linspace(0, 2 * np.pi, theta_resolution)
-    phi = np.linspace(0, np.pi, phi_resolution)
+    # Generate points matching vtk.js vtkSphereSource ordering exactly:
+    #   index 0: north pole
+    #   index 1: south pole
+    #   then theta (outer) x phi (inner) for intermediate rows
+    # phi[j] = j * pi / (phi_resolution - 1)  for j = 1 .. phi_resolution-2
+    # theta[i] = i * 2*pi / theta_resolution   for i = 0 .. theta_resolution-1
+    delta_phi = np.pi / (phi_resolution - 1)
+    delta_theta = 2.0 * np.pi / theta_resolution
 
     points = []
-    for p in phi:
-        for t in theta:
-            x = radius * np.sin(p) * np.cos(t) + center[0]
-            y = radius * np.sin(p) * np.sin(t) + center[1]
-            z = radius * np.cos(p) + center[2]
+    # North pole (index 0)
+    points.append([center[0], center[1], center[2] + radius])
+    # South pole (index 1)
+    points.append([center[0], center[1], center[2] - radius])
+    # Intermediate points: theta outer loop, phi inner loop
+    for i in range(theta_resolution):
+        theta = i * delta_theta
+        for j in range(1, phi_resolution - 1):
+            phi = j * delta_phi
+            x = radius * np.sin(phi) * np.cos(theta) + center[0]
+            y = radius * np.sin(phi) * np.sin(theta) + center[1]
+            z = radius * np.cos(phi) + center[2]
             points.append([x, y, z])
 
     def _vtk_js_source(idx: int) -> str:
