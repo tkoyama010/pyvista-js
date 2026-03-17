@@ -272,7 +272,7 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
                     notebook_found = True
                     logger.info("Clicked on notebook using selector: %s", selector)
                     break
-                except Exception:  # noqa: BLE001, PERF203
+                except Exception:  # noqa: BLE001
                     continue
 
             if not notebook_found:
@@ -313,7 +313,7 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
 
             logger.info("Captured 14 screenshots successfully")
 
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.exception("Error during demo capture")
             try:
                 page.screenshot(path=str(screenshots_dir / "error_screenshot.png"))
@@ -360,8 +360,12 @@ def _create_gif(screenshots_dir: Path, output_path: Path, fps: int = 2) -> bool:
     logger.info("Creating GIF at %s (%d fps)...", output_path, fps)
     iio.imwrite(output_path, images, duration=duration_ms, loop=0)
 
-    logger.info("GIF created: %s (%.1f KB, %d frames)", output_path,
-                output_path.stat().st_size / 1024, len(images))
+    logger.info(
+        "GIF created: %s (%.1f KB, %d frames)",
+        output_path,
+        output_path.stat().st_size / 1024,
+        len(images),
+    )
     return True
 
 
