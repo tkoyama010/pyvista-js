@@ -957,23 +957,36 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    theta = np.linspace(0, 2 * np.pi, resolution)
-
-    bottom_points = []
-    for t in theta:
-        bx = radius * np.cos(t) + center[0]
-        by = radius * np.sin(t) + center[1]
-        bz = center[2] - height / 2
-        bottom_points.append([bx, by, bz])
-
-    top_points = []
-    for t in theta:
-        tx = radius * np.cos(t) + center[0]
-        ty = radius * np.sin(t) + center[1]
-        tz = center[2] + height / 2
-        top_points.append([tx, ty, tz])
-
-    points = np.vstack([bottom_points, top_points])
+    # Generate points matching vtk.js vtkCylinderSource ordering (capping=true default):
+    # Cylinder axis is Y. Total = 4 * resolution points:
+    #   indices 0..2R-1:   side wall, interleaved pairs [y=+h/2, y=-h/2] per angle step
+    #   indices 2R..3R-1:  top cap ring at y=+h/2, forward angular order
+    #   indices 3R..4R-1:  bottom cap ring at y=-h/2, REVERSED angular order
+    # x = radius*cos(i*angle), z = -radius*sin(i*angle) (vtk.js uses -sin for z)
+    angle = 2.0 * np.pi / resolution
+    cx, cy, cz = center
+    points_list = []
+    # Side wall
+    for i in range(resolution):
+        px = radius * np.cos(i * angle) + cx
+        pz = -radius * np.sin(i * angle) + cz
+        points_list.append([px, cy + height / 2, pz])  # y = +h/2
+        points_list.append([px, cy - height / 2, pz])  # y = -h/2
+    # Top cap (forward order, y = +h/2)
+    points_list.extend(
+        [radius * np.cos(i * angle) + cx, cy + height / 2, -radius * np.sin(i * angle) + cz]
+        for i in range(resolution)
+    )
+    # Bottom cap (reversed order, y = -h/2)
+    points_list.extend(
+        [
+            radius * np.cos((resolution - 1 - k) * angle) + cx,
+            cy - height / 2,
+            -radius * np.sin((resolution - 1 - k) * angle) + cz,
+        ]
+        for k in range(resolution)
+    )
+    points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
         return (
