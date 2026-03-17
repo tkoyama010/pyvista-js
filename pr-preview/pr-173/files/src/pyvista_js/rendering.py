@@ -451,8 +451,10 @@ class _BaseHTMLRenderer:
         mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
         pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
-        edge_code = self._generate_edge_code(idx, show_edges, edge_color)
-        style_code = self._generate_style_code(idx, style)
+        edge_code = self._generate_edge_code(
+            idx, show_edges, edge_color,  # type: ignore[arg-type]
+        )
+        style_code = self._generate_style_code(idx, str(style))
         texture_code = self._generate_texture_code(actor_info, idx)
 
         return (
@@ -548,14 +550,14 @@ class _BaseHTMLRenderer:
         )
 
     @staticmethod
-    def _generate_style_code(idx: int, style: object) -> str:
+    def _generate_style_code(idx: int, style: str) -> str:
         """Generate vtk.js representation code for an actor.
 
         Parameters
         ----------
         idx : int
             Actor index.
-        style : object
+        style : str
             Rendering style ('surface', 'wireframe', or 'points').
 
         Returns
@@ -566,7 +568,7 @@ class _BaseHTMLRenderer:
         """
         # vtk.js Representation constants: POINTS=0, WIREFRAME=1, SURFACE=2
         style_map = {"wireframe": 1, "points": 0, "surface": 2}
-        rep = style_map.get(style)  # type: ignore[arg-type]
+        rep = style_map.get(style)
         if rep is not None:
             return f"actor{idx}.getProperty().setRepresentation({rep});"
         return ""
@@ -975,6 +977,9 @@ class MockRenderer:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -994,6 +999,12 @@ class MockRenderer:
             Roughness factor (stored but not rendered).
         texture : Texture, optional
             Surface texture (stored but not rendered).
+        show_edges : bool
+            Edge visibility (stored but not rendered).
+        edge_color : str or tuple, optional
+            Edge color (stored but not rendered).
+        style : str
+            Rendering style (stored but not rendered).
 
         Returns
         -------
@@ -1009,6 +1020,9 @@ class MockRenderer:
             "metallic": metallic,
             "roughness": roughness,
             "texture": texture,
+            "show_edges": show_edges,
+            "edge_color": edge_color,
+            "style": style,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
