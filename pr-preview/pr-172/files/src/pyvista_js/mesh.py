@@ -947,23 +947,21 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    theta = np.linspace(0, 2 * np.pi, resolution)
-
-    bottom_points = []
-    for t in theta:
-        bx = radius * np.cos(t) + center[0]
-        by = radius * np.sin(t) + center[1]
-        bz = center[2] - height / 2
-        bottom_points.append([bx, by, bz])
-
-    top_points = []
-    for t in theta:
-        tx = radius * np.cos(t) + center[0]
-        ty = radius * np.sin(t) + center[1]
-        tz = center[2] + height / 2
-        top_points.append([tx, ty, tz])
-
-    points = np.vstack([bottom_points, top_points])
+    # Generate points matching vtk.js vtkCylinderSource ordering:
+    # Cylinder axis is Y. For each of resolution steps, two side points are emitted
+    # alternately: points[2*i] at y=+h/2 ("xbot"), points[2*i+1] at y=-h/2 ("xtop").
+    # x = radius * cos(i * angle), z = -radius * sin(i * angle)  (vtk.js uses -sin for z)
+    # theta does NOT include the 2*pi endpoint.
+    angle = 2.0 * np.pi / resolution
+    points_list = []
+    for i in range(resolution):
+        c = np.cos(i * angle)
+        s = np.sin(i * angle)
+        px = radius * c + center[0]
+        pz = -radius * s + center[2]
+        points_list.append([px, center[1] + height / 2, pz])   # y = +h/2
+        points_list.append([px, center[1] - height / 2, pz])   # y = -h/2
+    points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
         return (
