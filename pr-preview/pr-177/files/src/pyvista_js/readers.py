@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import struct
 from pathlib import Path
 
 import numpy as np
@@ -23,6 +24,12 @@ _MIN_VTK_LINES = 4
 
 # Number of coordinate components per vertex (x, y, z)
 _N_COORDS = 3
+
+# STL format constants
+_STL_HEADER_SIZE = 80  # Binary STL header size in bytes
+_STL_COUNT_SIZE = 4  # Size of triangle count field in bytes
+_STL_MIN_SIZE = _STL_HEADER_SIZE + _STL_COUNT_SIZE  # Minimum binary STL file size
+_STL_VERTEX_FIELDS = 4  # Number of fields in ASCII STL vertex line (vertex x y z)
 
 # Load JavaScript templates
 _JS_DIR = Path(__file__).parent / "js"
@@ -652,7 +659,7 @@ class STLReader:
             stripped = line.strip()
             if stripped.startswith("vertex"):
                 parts = stripped.split()
-                if len(parts) >= 4:
+                if len(parts) >= _STL_VERTEX_FIELDS:
                     points.append(
                         [float(parts[1]), float(parts[2]), float(parts[3])],
                     )
@@ -685,20 +692,18 @@ class STLReader:
             Points array with shape (N, 3).
 
         """
-        if len(raw) < 84:  # Minimum size: 80 header + 4 count
+        if len(raw) < _STL_MIN_SIZE:
             return np.empty((0, 3))
 
         # Skip 80-byte header, read triangle count
-        import struct
+        num_triangles = struct.unpack("<I", raw[_STL_HEADER_SIZE:_STL_MIN_SIZE])[0]
 
-        num_triangles = struct.unpack("<I", raw[80:84])[0]
-
-        expected_size = 84 + num_triangles * 50
+        expected_size = _STL_MIN_SIZE + num_triangles * 50
         if len(raw) < expected_size:
             return np.empty((0, 3))
 
         points = []
-        offset = 84
+        offset = _STL_MIN_SIZE
         for _ in range(num_triangles):
             # Skip normal (12 bytes), read 3 vertices (36 bytes each = 3 * 12)
             offset += 12  # Skip normal
