@@ -32,6 +32,12 @@ class PointData:
     >>> 'elevation' in mesh.point_data
     True
 
+    Render with scalar coloring:
+
+    >>> plotter = pv.Plotter()
+    >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+    >>> plotter.show()
+
     """
 
     def __init__(self) -> None:
@@ -185,6 +191,12 @@ class PolyData:
         >>> 'elevation' in mesh.point_data
         True
 
+        Render with scalar coloring:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()
+
         """
         return self._point_data
 
@@ -204,6 +216,9 @@ class PolyData:
         >>> import numpy as np
         >>> mesh = pv.Sphere()
         >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()
 
         """
         self._point_data[name] = array

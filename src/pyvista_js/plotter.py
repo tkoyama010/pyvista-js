@@ -155,7 +155,7 @@ class Plotter:
         >>> mesh['elevation'] = mesh.points[:, 2]
         >>> plotter = pv.Plotter()
         >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-        >>> plotter.show()  # doctest: +SKIP
+        >>> plotter.show()
 
         """
         # Add mesh to vtk.js renderer
