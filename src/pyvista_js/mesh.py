@@ -31,6 +31,8 @@ _CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
+_VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
+
 
 
 class PolyData:
@@ -300,6 +302,7 @@ class PolyData:
         self,
         normal: str | tuple[float, float, float] = "x",
         origin: tuple[float, float, float] | None = None,
+        *,
         invert: bool = False,
     ) -> PolyData:
         """Clip the mesh with a plane.
@@ -378,8 +381,8 @@ class PolyData:
                 raise ValueError(msg)
             normal_vec = normal_map[normal]
         else:
-            if len(normal) != 3:  # type: ignore[arg-type]
-                msg = f"Normal vector must have 3 components, got {len(normal)}"  # type: ignore[arg-type]
+            if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
+                msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"  # type: ignore[arg-type]
                 raise ValueError(msg)
             normal_vec = tuple(float(x) for x in normal)  # type: ignore[arg-type]
 
@@ -392,8 +395,8 @@ class PolyData:
                 float((pts[:, 2].min() + pts[:, 2].max()) / 2),
             )
         else:
-            if len(origin) != 3:
-                msg = f"Origin must have 3 components, got {len(origin)}"
+            if len(origin) != _VECTOR_COMPONENTS:
+                msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
                 raise ValueError(msg)
             origin = tuple(float(x) for x in origin)
 
