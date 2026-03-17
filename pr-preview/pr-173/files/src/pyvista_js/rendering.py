@@ -665,8 +665,7 @@ class _BaseHTMLRenderer:
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
         actor_js_code = [
-            self._generate_actor_code(idx, actor_info)
-            for idx, actor_info in enumerate(self.actors)
+            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
         ]
 
         indented_actors = []
