@@ -243,13 +243,11 @@ def _open_notebook(page, screenshots_dir: Path) -> bool:  # noqa: ANN001
     ]
 
     for selector in notebook_selectors:
-        try:
-            page.wait_for_selector(selector, timeout=5000)
-            page.click(selector)
+        element = page.query_selector(selector)
+        if element is not None:
+            element.click()
             logger.info("Clicked on notebook using selector: %s", selector)
             return True
-        except Exception:  # noqa: BLE001
-            continue
 
     logger.warning("Could not find notebook, taking screenshot of main page")
     page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
