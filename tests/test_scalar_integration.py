@@ -1,5 +1,10 @@
 """Integration test to verify scalar rendering generates correct HTML."""
 
+import webbrowser
+from pathlib import Path
+from urllib.parse import urlparse
+from urllib.request import url2pathname
+
 import numpy as np
 import pytest
 
@@ -8,8 +13,6 @@ from pyvista_js import Plotter, Sphere
 
 def test_scalar_rendering_html_generation(monkeypatch) -> None:
     """Test that scalar coloring generates correct HTML with vtk.js code."""
-    import webbrowser
-
     opened: list[str] = []
 
     def _capture(url: str) -> None:
@@ -31,8 +34,8 @@ def test_scalar_rendering_html_generation(monkeypatch) -> None:
     assert opened[0].startswith("file://")
 
     # Read the generated HTML file
-    html_path = opened[0].replace("file://", "")
-    with open(html_path) as f:
+    html_path = url2pathname(urlparse(opened[0]).path)
+    with Path(html_path).open() as f:
         html_content = f.read()
 
     # Verify vtk.js scalar-related code is present
@@ -48,8 +51,6 @@ def test_scalar_rendering_html_generation(monkeypatch) -> None:
 
 def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     """Test that different colormaps generate different lookup tables."""
-    import webbrowser
-
     opened: list[str] = []
 
     def _capture(url: str) -> None:
@@ -64,8 +65,8 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     plotter1.add_mesh(mesh1, scalars="data", cmap="viridis")
     plotter1.show()
 
-    html_path1 = opened[-1].replace("file://", "")
-    with open(html_path1) as f:
+    html_path1 = url2pathname(urlparse(opened[-1]).path)
+    with Path(html_path1).open() as f:
         html1 = f.read()
 
     assert "viridis" in html1
@@ -77,8 +78,8 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     plotter2.add_mesh(mesh2, scalars="data", cmap="plasma")
     plotter2.show()
 
-    html_path2 = opened[-1].replace("file://", "")
-    with open(html_path2) as f:
+    html_path2 = url2pathname(urlparse(opened[-1]).path)
+    with Path(html_path2).open() as f:
         html2 = f.read()
 
     assert "plasma" in html2
@@ -86,8 +87,6 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
 
 def test_no_scalars_no_lut(monkeypatch) -> None:
     """Test that meshes without scalars don't generate lookup table code."""
-    import webbrowser
-
     opened: list[str] = []
 
     def _capture(url: str) -> None:
@@ -100,8 +99,8 @@ def test_no_scalars_no_lut(monkeypatch) -> None:
     plotter.add_mesh(mesh, color="red")
     plotter.show()
 
-    html_path = opened[0].replace("file://", "")
-    with open(html_path) as f:
+    html_path = url2pathname(urlparse(opened[0]).path)
+    with Path(html_path).open() as f:
         html_content = f.read()
 
     # Verify scalar-related code is NOT present
