@@ -775,6 +775,7 @@ class PolyData:
 
         Render the contours with scalar coloring:
 
+        >>> contours['scalars'] = sphere_scalars
         >>> plotter = pv.Plotter()
         >>> _ = plotter.add_mesh(contours, scalars='scalars', cmap='viridis')
         >>> plotter.show()  # doctest: +SKIP
