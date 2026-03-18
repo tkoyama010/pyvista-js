@@ -443,6 +443,24 @@ def test_stl_reader_no_vertices(tmp_path: Path) -> None:
     assert mesh.n_points == 0
 
 
+# --- download_damaged_helmet tests ---
+
+
+def test_download_damaged_helmet_returns_gltf_mesh() -> None:
+    """Test that download_damaged_helmet returns a mesh with points."""
+    mesh = examples.download_damaged_helmet()
+    assert mesh.n_points > 0
+
+
+def test_download_damaged_helmet_js_output() -> None:
+    """Test that download_damaged_helmet mesh generates valid vtk.js source."""
+    mesh = examples.download_damaged_helmet()
+    source = mesh.generate_vtk_js_source(0)
+    assert "GLTFImporter" in source
+    assert "parseAsArrayBuffer" in source
+    assert "source0" in source
+
+
 # --- download_cad_model tests ---
 
 

@@ -17,7 +17,34 @@ if TYPE_CHECKING:
     from pyvista_js.mesh import PolyData
 
 _PYVISTA_DATA_BASE = "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data"
+_GLTF_SAMPLE_BASE = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0"
 _CACHE_DIR = Path.home() / ".pyvista_js" / "examples"
+
+
+def _download_url(url: str, filename: str) -> Path:
+    """Download a file from an arbitrary URL to the local cache.
+
+    Parameters
+    ----------
+    url : str
+        Full URL of the file to download.
+    filename : str
+        Local filename to save the file as inside the cache directory.
+
+    Returns
+    -------
+    Path
+        Local path to the downloaded file.
+
+    """
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    local = _CACHE_DIR / filename
+    if not local.exists():
+        if "pyodide" in sys.modules:
+            _fetch_with_js(url, local)
+        else:
+            urllib.request.urlretrieve(url, local)  # noqa: S310
+    return local
 
 
 def _download_file(filename: str) -> Path:
@@ -219,6 +246,33 @@ def download_masonry_texture() -> Texture:
 
     """
     return Texture(f"{_PYVISTA_DATA_BASE}/masonry.bmp")
+
+
+def download_damaged_helmet() -> PolyData:
+    """Download the damaged helmet glTF example.
+
+    Downloads ``DamagedHelmet.gltf`` from the KhronosGroup glTF-Sample-Models
+    repository and returns it as a :class:`~pyvista_js.PolyData` mesh,
+    mirroring the ``pyvista.examples.gltf.download_damaged_helmet`` API.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The damaged helmet mesh.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_damaged_helmet()  # doctest: +SKIP
+    >>> type(mesh).__name__  # doctest: +SKIP
+    '_GLTFMesh'
+
+    """
+    from .readers import GLTFReader  # noqa: PLC0415
+
+    url = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
+    path = _download_url(url, "DamagedHelmet.gltf")
+    return GLTFReader(path).read()
 
 
 def download_cad_model() -> PolyData:
