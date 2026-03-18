@@ -40,6 +40,7 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
 
 # Distribution
 *.whl
@@ -47,5 +48,7 @@ htmlcov/
 # Documentation
 docs/_build/
 docs/.jupyterlite/
+docs/.jupyterlite.doit.db
 docs/content/
 docs/stlite_demo.md
+docs/api/_autosummary/

@@ -23,9 +23,21 @@ if sys.platform == "emscripten":
 from . import examples
 from .camera import Camera
 from .light import Light
-from .mesh import Arrow, Circle, Cone, Cube, Cylinder, Disc, Line, Mesh, Plane, PolyData, Sphere
+from .mesh import (
+    Arrow,
+    Circle,
+    Cone,
+    Cube,
+    Cylinder,
+    Disc,
+    Line,
+    Plane,
+    PointData,
+    PolyData,
+    Sphere,
+)
 from .plotter import Plotter
-from .readers import OBJReader, PLYReader, PolyDataReader
+from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .texture import Texture
 
 # Streamlit integration (optional)
@@ -42,13 +54,14 @@ try:
         "Disc",
         "Light",
         "Line",
-        "Mesh",
         "OBJReader",
         "PLYReader",
         "Plane",
         "Plotter",
+        "PointData",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",
@@ -67,13 +80,14 @@ except ImportError:
         "Disc",
         "Light",
         "Line",
-        "Mesh",
         "OBJReader",
         "PLYReader",
         "Plane",
         "Plotter",
+        "PointData",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",

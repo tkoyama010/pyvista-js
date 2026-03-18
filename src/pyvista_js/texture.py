@@ -25,8 +25,8 @@ class Texture:
     >>> texture = examples.download_masonry_texture()
     >>> plotter = pv.Plotter()
     >>> sphere = pv.Sphere()
-    >>> plotter.add_mesh(sphere, texture=texture)
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(sphere, texture=texture)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
