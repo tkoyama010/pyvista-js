@@ -1282,6 +1282,61 @@ class MockRenderer:
         logger.info("Added mesh with %d points", mesh.n_points)
         return actor
 
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Mock point cloud addition.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates (stored but not rendered).
+        color : str or tuple, optional
+            Color (stored but not rendered).
+        opacity : float
+            Opacity (stored but not rendered).
+        point_size : float
+            Point size (stored but not rendered).
+        render_points_as_spheres : bool
+            Sphere rendering flag (stored but not rendered).
+
+        Returns
+        -------
+        dict
+            Mock actor dictionary with point data.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = _BaseHTMLRenderer._color_name_to_rgb(color)
+
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
+        }
+        self.actors.append(actor)
+        logger.info("Added point cloud with %d points", points.n_points)
+        return actor
+
     def render(self) -> None:
         """Mock rendering.
 
