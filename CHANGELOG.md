@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.5.0...pyvista-js-v0.5.1) (2026-03-18)
+
+
+### Bug Fixes
+
+* use absolute GitHub URL for preview.gif to render on PyPI ([#192](https://github.com/tkoyama010/pyvista-js/issues/192)) ([b679882](https://github.com/tkoyama010/pyvista-js/commit/b6798821c4d6318585a979fb0ff68ab99d5c6fb4))
+
 ## [0.5.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.4.0...pyvista-js-v0.5.0) (2026-03-17)
 
 ### Features
