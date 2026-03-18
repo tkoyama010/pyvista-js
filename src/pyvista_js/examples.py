@@ -6,6 +6,7 @@ Provides download helpers for standard datasets, mirroring the
 
 from __future__ import annotations
 
+import sys
 import urllib.request
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -37,8 +38,35 @@ def _download_file(filename: str) -> Path:
     local = _CACHE_DIR / filename
     if not local.exists():
         url = f"{_PYVISTA_DATA_BASE}/{filename}"
-        urllib.request.urlretrieve(url, local)  # noqa: S310
+        if "pyodide" in sys.modules:
+            _fetch_with_js(url, local)
+        else:
+            urllib.request.urlretrieve(url, local)  # noqa: S310
     return local
+
+
+def _fetch_with_js(url: str, local: Path) -> None:
+    """Download a file using JavaScript XMLHttpRequest (Pyodide fallback).
+
+    Parameters
+    ----------
+    url : str
+        URL to download.
+    local : Path
+        Local path to save the file.
+
+    """
+    from js import Uint8Array, XMLHttpRequest  # noqa: PLC0415
+
+    req = XMLHttpRequest.new()
+    req.open("GET", url, False)
+    req.responseType = "arraybuffer"
+    req.send(None)
+    if req.status != 200:  # noqa: PLR2004
+        msg = f"Failed to download {url}: HTTP {req.status}"
+        raise OSError(msg)
+    js_array = Uint8Array.new(req.response)
+    local.write_bytes(js_array.to_py().tobytes())
 
 
 class CubeMap:
