@@ -2,7 +2,7 @@
 
 import pyvista_js as pv
 from pyvista_js import examples
-from pyvista_js.examples import _GLTF_SAMPLE_BASE, _CACHE_DIR, _download_url
+from pyvista_js.examples import _GLTF_SAMPLE_BASE, _download_url
 
 # Download the damaged helmet glTF file
 _URL = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
