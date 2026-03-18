@@ -186,6 +186,7 @@ class _BaseHTMLRenderer:
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
         self._camera: Camera | None = None
+        self._axes_enabled: bool = False
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Store the container ID for later HTML generation.
@@ -352,6 +353,20 @@ class _BaseHTMLRenderer:
 
         """
         self.lights.append(light)
+
+    def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Add an orientation marker (axes indicator) to the viewport.
+
+        Displays XYZ axes in the corner of the viewport to help orient
+        the viewer. Backed by vtk.js ``vtkOrientationMarkerWidget``.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation. Currently accepts no parameters.
+
+        """
+        self._axes_enabled = True
 
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting.
@@ -628,6 +643,31 @@ class _BaseHTMLRenderer:
             indented = "\n".join("      " + line for line in code.splitlines())
             lines.append(indented)
         return "\n\n".join(lines)
+
+    def _generate_axes_code(self) -> str:
+        """Generate vtk.js JavaScript for the orientation marker widget.
+
+        Returns empty string if axes are not enabled.
+        """
+        if not self._axes_enabled:
+            return ""
+
+        return """
+      // Create axes actor for orientation marker
+      const axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
+
+      // Create orientation marker widget
+      const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
+        actor: axes,
+        interactor: renderWindow.getInteractor()
+      });
+      orientationWidget.setEnabled(true);
+      orientationWidget.setViewportCorner(
+        vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT
+      );
+      orientationWidget.setViewportSize(0.15);
+      orientationWidget.setMinPixelSize(100);
+      orientationWidget.setMaxPixelSize(300);"""
 
     def _generate_actor_code(self, idx: int, actor_info: dict[str, object]) -> str:
         """Generate vtk.js JavaScript for a single actor.
@@ -934,6 +974,7 @@ class _BaseHTMLRenderer:
             .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
             .replace("{{ACTORS_CODE}}", actors_code)
             .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
+            .replace("{{AXES_CODE}}", self._generate_axes_code())
             .replace("{{CAMERA_CODE}}", self._generate_camera_code())
         )
 
@@ -1282,6 +1323,61 @@ class MockRenderer:
         logger.info("Added mesh with %d points", mesh.n_points)
         return actor
 
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Mock point cloud addition.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates (stored but not rendered).
+        color : str or tuple, optional
+            Color (stored but not rendered).
+        opacity : float
+            Opacity (stored but not rendered).
+        point_size : float
+            Point size (stored but not rendered).
+        render_points_as_spheres : bool
+            Sphere rendering flag (stored but not rendered).
+
+        Returns
+        -------
+        dict
+            Mock actor dictionary with point data.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = _BaseHTMLRenderer._color_name_to_rgb(color)
+
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
+        }
+        self.actors.append(actor)
+        logger.info("Added point cloud with %d points", points.n_points)
+        return actor
+
     def render(self) -> None:
         """Mock rendering.
 
@@ -1363,6 +1459,17 @@ class MockRenderer:
         """Set the camera."""
         self._camera = camera
         logger.info("Set camera: %s", camera)
+
+    def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Mock add_axes.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation.
+
+        """
+        logger.info("add_axes called (mock)")
 
     def set_environment_texture(self, texture: object) -> None:
         """Mock environment texture.
