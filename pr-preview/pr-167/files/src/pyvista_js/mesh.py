@@ -778,7 +778,7 @@ class PolyData:
         def _vtk_js_source_with_contour(idx: int) -> str:
             base = self._get_base_source(idx, orig_vtk_js_source_fn)
             scalar_injection = self._build_scalar_injection(idx, scalar_data, scalar_name_final)
-            contour_code = self._build_contour_code(idx, scalar_name_final, contour_values)
+            contour_code = self._build_contour_code(idx, contour_values)
             return base + "\n" + scalar_injection + "\n" + contour_code
 
         def _mapper_setup_contour(idx: int) -> str:
@@ -872,13 +872,12 @@ class PolyData:
     def _build_contour_code(
         self,
         idx: int,
-        scalar_name: str,
         contour_values: list[float],
     ) -> str:
         """Build JavaScript code for contour filter."""
         values_str = ",".join(map(str, contour_values))
         return _CONTOUR_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-            "{{CONTOUR_VALUES}}", values_str
+            "{{CONTOUR_VALUES}}", values_str,
         )
 
     def texture_map_to_plane(self) -> PolyData:
