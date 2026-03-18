@@ -59,7 +59,7 @@ def _fetch_with_js(url: str, local: Path) -> None:
     from js import Uint8Array, XMLHttpRequest  # noqa: PLC0415
 
     req = XMLHttpRequest.new()
-    req.open("GET", url, False)
+    req.open("GET", url, False)  # noqa: FBT003
     req.responseType = "arraybuffer"
     req.send(None)
     if req.status != 200:  # noqa: PLR2004
