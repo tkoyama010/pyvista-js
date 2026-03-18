@@ -2,10 +2,9 @@
 
 ## [0.7.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.7.0...pyvista-js-v0.7.1) (2026-03-18)
 
-
 ### Continuous Integration
 
-* add token parameter to Codecov action for authentication ([#217](https://github.com/tkoyama010/pyvista-js/issues/217)) ([0f33f44](https://github.com/tkoyama010/pyvista-js/commit/0f33f44094fb90da5cf7148f197c61fe08d1245f))
+- add token parameter to Codecov action for authentication ([#217](https://github.com/tkoyama010/pyvista-js/issues/217)) ([0f33f44](https://github.com/tkoyama010/pyvista-js/commit/0f33f44094fb90da5cf7148f197c61fe08d1245f))
 
 ## [0.7.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.6.0...pyvista-js-v0.7.0) (2026-03-18)
 
