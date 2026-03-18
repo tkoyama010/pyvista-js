@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import struct
 from pathlib import Path
 
 import numpy as np
@@ -536,10 +537,10 @@ class OBJReader:
 class STLReader:
     """Reader for STL (STereoLithography) files (``.stl``).
 
-    Reads an STL ASCII file and produces a :class:`Mesh` that delegates
-    parsing to vtk.js's ``vtkSTLReader`` at render time. Python extracts
-    only the vertex coordinates so that camera framing and bounding-sphere
-    queries work before rendering.
+    Reads an STL file (ASCII or binary) and produces a :class:`Mesh` that
+    delegates parsing to vtk.js's ``vtkSTLReader`` at render time. Python
+    extracts only the vertex coordinates so that camera framing and
+    bounding-sphere queries work before rendering.
 
     Parameters
     ----------
@@ -595,14 +596,14 @@ class STLReader:
 
         """
         raw = self._path.read_bytes()
-        text = raw.decode("ascii", errors="replace")
-        lines = text.splitlines()
 
-        if not lines or "solid" not in lines[0].lower():
-            msg = "Invalid STL file: missing 'solid' header"
-            raise ValueError(msg)
+        if self._is_ascii_stl(raw):
+            text = raw.decode("ascii", errors="replace")
+            lines = text.splitlines()
+            points = self._extract_points(lines)
+        else:
+            points = self._extract_points_binary(raw)
 
-        points = self._extract_points(lines)
         stl_base64 = base64.b64encode(raw).decode("ascii")
         logger.info("Read %d points from %s", len(points), self._path)
         return _STLMesh(points=points, stl_base64=stl_base64)
@@ -634,6 +635,89 @@ class STLReader:
                     points.append(
                         [float(parts[1]), float(parts[2]), float(parts[3])],
                     )
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+    @staticmethod
+    def _is_ascii_stl(raw: bytes) -> bool:
+        """Check whether raw bytes represent an ASCII STL file.
+
+        A binary STL header can also start with ``solid``, so this
+        cross-checks the expected binary size against the actual file
+        size to disambiguate.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw file content.
+
+        Returns
+        -------
+        bool
+            True if the file appears to be ASCII STL.
+
+        """
+        _header_size = 80
+        _count_size = 4
+        _triangle_size = 50
+
+        try:
+            header = raw[:_header_size].decode("ascii").lower()
+        except UnicodeDecodeError:
+            return False
+        if not header.lstrip().startswith("solid"):
+            return False
+
+        # A binary STL with N triangles is exactly 84 + 50*N bytes.
+        # If the file matches that size, treat it as binary.
+        if len(raw) >= _header_size + _count_size:
+            (n_triangles,) = struct.unpack_from("<I", raw, _header_size)
+            expected = _header_size + _count_size + _triangle_size * n_triangles
+            if len(raw) == expected:
+                return False
+
+        return True
+
+    @staticmethod
+    def _extract_points_binary(raw: bytes) -> np.ndarray:
+        """Extract vertex coordinates from a binary STL file.
+
+        Binary STL layout: 80-byte header, 4-byte triangle count,
+        then 50 bytes per triangle (12 normal + 36 vertices + 2 attr).
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw file content.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        _header_size = 80
+        _count_size = 4
+        _triangle_size = 50
+
+        if len(raw) < _header_size + _count_size:
+            return np.empty((0, 3))
+
+        (n_triangles,) = struct.unpack_from("<I", raw, _header_size)
+        offset = _header_size + _count_size
+        points = []
+
+        for _ in range(n_triangles):
+            if offset + _triangle_size > len(raw):
+                break
+            # Skip 12-byte normal, read 3 vertices (each 3 floats = 12 bytes)
+            v = struct.unpack_from("<9f", raw, offset + 12)
+            points.append([v[0], v[1], v[2]])
+            points.append([v[3], v[4], v[5]])
+            points.append([v[6], v[7], v[8]])
+            offset += _triangle_size
+
         if not points:
             return np.empty((0, 3))
         return np.array(points)
