@@ -49,3 +49,4 @@ docs/_build/
 docs/.jupyterlite/
 docs/content/
 docs/stlite_demo.md
+docs/api/_autosummary/
