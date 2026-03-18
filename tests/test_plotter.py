@@ -717,3 +717,55 @@ def test_show_without_cpos() -> None:
 
     # Camera should remain as set by view_xy()
     assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
+
+
+def test_add_axes() -> None:
+    """Test add_axes() method enables axes widget."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Initially axes should not be enabled
+    assert plotter._renderer._axes_enabled is False
+
+    # Add axes
+    plotter.add_axes()
+
+    # Axes should now be enabled
+    assert plotter._renderer._axes_enabled is True
+
+
+def test_add_axes_generates_code() -> None:
+    """Test that add_axes() generates vtk.js code."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_axes()
+
+    # Generate HTML to check if axes code is included
+    html = plotter._renderer._generate_html()
+
+    # Check that axes-related vtk.js code is in the output
+    assert "vtkAxesActor" in html
+    assert "vtkOrientationMarkerWidget" in html
+    assert "orientationWidget" in html
+
+
+def test_add_axes_without_meshes() -> None:
+    """Test add_axes() can be called without any meshes."""
+    plotter = Plotter()
+    plotter.add_axes()
+
+    assert plotter._renderer._axes_enabled is True
+
+
+def test_multiple_axes_calls() -> None:
+    """Test calling add_axes() multiple times doesn't cause issues."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Call add_axes multiple times
+    plotter.add_axes()
+    plotter.add_axes()
+    plotter.add_axes()
+
+    # Should still be enabled
+    assert plotter._renderer._axes_enabled is True
