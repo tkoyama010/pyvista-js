@@ -53,10 +53,10 @@ class Light:
 
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(pv.Sphere(), color='white')
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
     >>> light = pv.Light(position=(1, 1, 1), color='white', intensity=1.5)
     >>> plotter.add_light(light)
-    >>> plotter.show()
+    >>> plotter.show()  # doctest: +SKIP
 
     Spotlight example:
 

@@ -5,7 +5,6 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -16,6 +15,117 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
+
+class PointData:
+    """Dict-like container for point data arrays.
+
+    This class provides a dictionary interface for storing named scalar arrays
+    associated with mesh points, mimicking PyVista's point_data API.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> mesh = pv.Sphere()
+    >>> mesh.point_data['elevation'] = mesh.points[:, 2]
+    >>> 'elevation' in mesh.point_data
+    True
+
+    Render with scalar coloring:
+
+    >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+    >>> plotter.show()  # doctest: +SKIP
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize an empty PointData container."""
+        self._arrays: dict[str, np.ndarray] = {}
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a named array.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        """
+        self._arrays[name] = np.asarray(array)
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a named array.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        """
+        return self._arrays[name]
+
+    def __contains__(self, name: str) -> bool:
+        """Check if an array with the given name exists.
+
+        Parameters
+        ----------
+        name : str
+            Name to check.
+
+        Returns
+        -------
+        bool
+            True if the array exists.
+
+        """
+        return name in self._arrays
+
+    def __len__(self) -> int:
+        """Return the number of arrays."""
+        return len(self._arrays)
+
+    def keys(self) -> list[str]:
+        """Return the names of all arrays.
+
+        Returns
+        -------
+        list
+            List of array names.
+
+        """
+        return list(self._arrays.keys())
+
+    def items(self) -> list[tuple[str, np.ndarray]]:
+        """Return (name, array) pairs.
+
+        Returns
+        -------
+        list
+            List of (name, array) tuples.
+
+        """
+        return list(self._arrays.items())
+
+    def values(self) -> list[np.ndarray]:
+        """Return all arrays.
+
+        Returns
+        -------
+        list
+            List of arrays.
+
+        """
+        return list(self._arrays.values())
+
+
 # Load JavaScript templates relative to this file
 _JS_DIR = Path(__file__).parent / "js"
 _MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
@@ -23,6 +133,7 @@ _SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
 _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
+_CLIP_FILTER_TEMPLATE = (_JS_DIR / "clip_filter.js").read_text()
 _TUBE_FILTER_TEMPLATE = (_JS_DIR / "tube_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
 _DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
@@ -31,6 +142,7 @@ _CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
+_VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3
 
 
@@ -54,6 +166,7 @@ class PolyData:
         t_coords: ArrayLike | None = None,
         _vtk_js_source_fn: Callable[[int], str] | None = None,
         _mapper_setup_fn: Callable[[int], str] | None = None,
+        _vtk_js_source_is_filter: bool = True,
     ) -> None:
         """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
@@ -61,11 +174,92 @@ class PolyData:
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
+        self._vtk_js_source_is_filter = _vtk_js_source_is_filter
+        self._point_data = PointData()
+
+    @property
+    def point_data(self) -> PointData:
+        """Access point data arrays.
+
+        Returns
+        -------
+        PointData
+            Dict-like container for point data arrays.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh.point_data['elevation'] = mesh.points[:, 2]
+        >>> 'elevation' in mesh.point_data
+        True
+
+        Render with scalar coloring:
+
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        return self._point_data
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._point_data[name] = array
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        """
+        return self._point_data[name]
 
     @property
     def n_points(self) -> int:
         """Return the number of points."""
         return len(self.points)
+
+    @property
+    def is_primitive(self) -> bool:
+        """Return whether this mesh is backed by a vtk.js source primitive.
+
+        Returns
+        -------
+        bool
+            ``True`` if the mesh was created from a primitive factory
+            (e.g. :func:`Sphere`, :func:`Cube`), ``False`` otherwise.
+
+        """
+        return self._vtk_js_source_fn is not None
 
     @property
     def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
@@ -149,7 +343,7 @@ class PolyData:
         --------
         >>> import pyvista_js as pv
         >>> sphere = pv.Sphere()
-        >>> sphere.plot(color='red')
+        >>> sphere.plot(color='red')  # doctest: +SKIP
 
         """
         from .plotter import Plotter  # noqa: PLC0415
@@ -295,6 +489,136 @@ class PolyData:
             faces=self.faces,
             _vtk_js_source_fn=_vtk_js_source_with_shrink,
             _mapper_setup_fn=_mapper_setup_shrink,
+        )
+
+    def clip(
+        self,
+        normal: str | tuple[float, float, float] = "x",
+        origin: tuple[float, float, float] | None = None,
+        *,
+        invert: bool = False,
+    ) -> PolyData:
+        """Clip the mesh with a plane.
+
+        This filter clips the mesh with a plane defined by a normal vector
+        and an origin point. Points on one side of the plane are removed.
+        It mirrors the PyVista ``clip`` filter API.
+
+        .. note::
+
+            The clipping is computed in JavaScript at render time by
+            evaluating the signed distance of each vertex from the clip plane.
+            Cells with all vertices on the clipped side are removed.
+            ``vtk.js`` does not include a built-in clipping filter with
+            the exact PyVista API, so this filter is implemented as a
+            custom JavaScript pass.
+
+        Parameters
+        ----------
+        normal : str or tuple of float, optional
+            The normal vector of the clipping plane. Can be a string
+            specifying a cardinal direction ('x', 'y', 'z', '-x', '-y', '-z')
+            or a 3-tuple of floats (nx, ny, nz). Default is 'x'.
+        origin : tuple of float, optional
+            The origin point of the clipping plane as (x, y, z).
+            If not provided, defaults to the center of the mesh's bounding box.
+        invert : bool, optional
+            If True, flip the clipping direction to keep the part that would
+            normally be removed. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with clipped cells removed.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> clipped = sphere.clip(normal='x', origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip along the negative Y axis:
+
+        >>> clipped = sphere.clip(normal='-y')
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip with a custom normal vector:
+
+        >>> clipped = sphere.clip(normal=(1, 1, 0), origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Render the clipped mesh:
+
+        >>> clipped.plot()  # doctest: +SKIP
+
+        """
+        # Parse normal vector
+        if isinstance(normal, str):
+            normal_map = {
+                "x": (1.0, 0.0, 0.0),
+                "+x": (1.0, 0.0, 0.0),
+                "-x": (-1.0, 0.0, 0.0),
+                "y": (0.0, 1.0, 0.0),
+                "+y": (0.0, 1.0, 0.0),
+                "-y": (0.0, -1.0, 0.0),
+                "z": (0.0, 0.0, 1.0),
+                "+z": (0.0, 0.0, 1.0),
+                "-z": (0.0, 0.0, -1.0),
+            }
+            if normal not in normal_map:
+                msg = f"Invalid normal string '{normal}'. Must be one of {list(normal_map.keys())}"
+                raise ValueError(msg)
+            normal_vec = normal_map[normal]
+        else:
+            if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
+                msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"  # type: ignore[arg-type]
+                raise ValueError(msg)
+            n = [float(x) for x in normal]  # type: ignore[arg-type]
+            normal_vec = (n[0], n[1], n[2])
+
+        # Compute origin if not provided (use center of bounding box)
+        if origin is None:
+            pts = self.points
+            origin = (
+                float((pts[:, 0].min() + pts[:, 0].max()) / 2),
+                float((pts[:, 1].min() + pts[:, 1].max()) / 2),
+                float((pts[:, 2].min() + pts[:, 2].max()) / 2),
+            )
+        else:
+            if len(origin) != _VECTOR_COMPONENTS:
+                msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
+                raise ValueError(msg)
+            o = [float(x) for x in origin]
+            origin = (o[0], o[1], o[2])
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_clip(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            clip_code = (
+                _CLIP_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
+                .replace("{{NORMAL_X}}", str(normal_vec[0]))
+                .replace("{{NORMAL_Y}}", str(normal_vec[1]))
+                .replace("{{NORMAL_Z}}", str(normal_vec[2]))
+                .replace("{{ORIGIN_X}}", str(origin[0]))
+                .replace("{{ORIGIN_Y}}", str(origin[1]))
+                .replace("{{ORIGIN_Z}}", str(origin[2]))
+                .replace("{{INVERT}}", "true" if invert else "false")
+            )
+            return base + "\n" + clip_code
+
+        def _mapper_setup_clip(idx: int) -> str:
+            return f"mapper{idx}.setInputData(clippedPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_clip,
+            _mapper_setup_fn=_mapper_setup_clip,
         )
 
     def tube(
@@ -455,6 +779,50 @@ class PolyData:
                 f"polydata{idx}.getPointData().setTCoords(tcoords{idx});\n"
             )
 
+        # Inject point data scalar arrays
+        if len(self._point_data) > 0:
+            # For primitives (source-based), make polydata{idx} available.
+            # For generic meshes, polydata{idx} already exists (from mesh_source.js).
+            if self._vtk_js_source_fn is not None:
+                if self._vtk_js_source_is_filter:
+                    # source{idx} is a vtk.js filter - extract its output polydata
+                    source_code += (
+                        f"\n// Extract output polydata from source for scalar injection\n"
+                        f"source{idx}.update();\n"
+                        f"const polydata{idx} = source{idx}.getOutputData();\n"
+                    )
+                else:
+                    # source{idx} is already a vtkPolyData - alias it directly
+                    source_code += (
+                        f"\n// source{idx} is already a vtkPolyData\n"
+                        f"const polydata{idx} = source{idx};\n"
+                    )
+
+            for name, array in self._point_data.items():
+                array_flat = array.flatten().tolist()
+                array_str = ",".join(map(str, array_flat))
+                # Determine number of components based on array shape
+                if array.ndim == 1:
+                    n_components = 1
+                elif array.ndim == 2:  # noqa: PLR2004
+                    n_components = array.shape[1]
+                else:
+                    msg = f"Point data array '{name}' must be 1D or 2D, got shape {array.shape}"
+                    raise ValueError(msg)
+
+                safe_name = name.replace(" ", "_")
+                source_code += (
+                    f"\n// Inject point data array '{name}'\n"
+                    f"const pointArray{idx}_{safe_name} = "
+                    f"vtk.Common.Core.vtkDataArray.newInstance({{\n"
+                    f"  numberOfComponents: {n_components},\n"
+                    f"  values: Float32Array.from([{array_str}]),\n"
+                    f"  name: '{name}'\n"
+                    f"}});\n"
+                    f"polydata{idx}.getPointData().addArray("
+                    f"pointArray{idx}_{safe_name});\n"
+                )
+
         return source_code
 
     def get_mapper_setup(self, idx: int) -> str:
@@ -474,32 +842,6 @@ class PolyData:
         if self._mapper_setup_fn is not None:
             return self._mapper_setup_fn(idx)
         return f"mapper{idx}.setInputData(source{idx});"
-
-
-class Mesh(PolyData):
-    """Deprecated base mesh class.
-
-    .. deprecated:: 0.2
-        :class:`Mesh` is deprecated and will be removed in version 0.4.
-        Use :class:`PolyData` instead.
-
-    Parameters
-    ----------
-    points : array-like
-        Vertex coordinates as an (n, 3) array.
-    faces : array-like, optional
-        Cell connectivity information.
-
-    """
-
-    def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
-        """Initialize a Mesh (deprecated)."""
-        warnings.warn(
-            "Mesh is deprecated and will be removed in version 0.4. Use PolyData instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(points, faces)
 
 
 def Sphere(  # noqa: N802
@@ -531,18 +873,31 @@ def Sphere(  # noqa: N802
     >>> import pyvista_js as pv
     >>> sphere = pv.Sphere(radius=1.0)
     >>> sphere.n_points
-    902
+    842
 
     """
-    theta = np.linspace(0, 2 * np.pi, theta_resolution)
-    phi = np.linspace(0, np.pi, phi_resolution)
+    # Generate points matching vtk.js vtkSphereSource ordering exactly:
+    #   index 0: north pole
+    #   index 1: south pole
+    #   then theta (outer) x phi (inner) for intermediate rows
+    # phi[j] = j * pi / (phi_resolution - 1)  for j = 1 .. phi_resolution-2
+    # theta[i] = i * 2*pi / theta_resolution   for i = 0 .. theta_resolution-1
+    delta_phi = np.pi / (phi_resolution - 1)
+    delta_theta = 2.0 * np.pi / theta_resolution
 
     points = []
-    for p in phi:
-        for t in theta:
-            x = radius * np.sin(p) * np.cos(t) + center[0]
-            y = radius * np.sin(p) * np.sin(t) + center[1]
-            z = radius * np.cos(p) + center[2]
+    # North pole (index 0)
+    points.append([center[0], center[1], center[2] + radius])
+    # South pole (index 1)
+    points.append([center[0], center[1], center[2] - radius])
+    # Intermediate points: theta outer loop, phi inner loop
+    for i in range(theta_resolution):
+        theta = i * delta_theta
+        for j in range(1, phi_resolution - 1):
+            phi = j * delta_phi
+            x = radius * np.sin(phi) * np.cos(theta) + center[0]
+            y = radius * np.sin(phi) * np.sin(theta) + center[1]
+            z = radius * np.cos(phi) + center[2]
             points.append([x, y, z])
 
     def _vtk_js_source(idx: int) -> str:
@@ -595,22 +950,49 @@ def Cube(  # noqa: N802
     >>> import pyvista_js as pv
     >>> cube = pv.Cube()
     >>> cube.n_points
-    8
+    24
 
     """
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
 
+    # Generate 24 points matching vtk.js vtkCubeSource ordering:
+    # 4 points per face, 6 faces (3 axis pairs), each corner duplicated 3x with face normal.
+    # Block 1 - X-facing faces (i=0: -hx face, i=1: +hx face), inner order: j(y), k(z)
+    # Block 2 - Y-facing faces (i=0: -hy face, i=1: +hy face), inner order: j(x), k(z)
+    # Block 3 - Z-facing faces (i=0: -hz face, i=1: +hz face), inner order: j(y), k(x)
+    px = [x - dx, x + dx]
+    py = [y - dy, y + dy]
+    pz = [z - dz, z + dz]
     points = np.array(
         [
-            [x - dx, y - dy, z - dz],
-            [x + dx, y - dy, z - dz],
-            [x + dx, y + dy, z - dz],
-            [x - dx, y + dy, z - dz],
-            [x - dx, y - dy, z + dz],
-            [x + dx, y - dy, z + dz],
-            [x + dx, y + dy, z + dz],
-            [x - dx, y + dy, z + dz],
+            # Block 1: X-facing faces
+            [px[0], py[0], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[0], py[1], pz[0]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[0], pz[0]],
+            [px[1], py[0], pz[1]],
+            [px[1], py[1], pz[0]],
+            [px[1], py[1], pz[1]],
+            # Block 2: Y-facing faces
+            [px[0], py[0], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[0]],
+            [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[0]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[0]],
+            [px[1], py[1], pz[1]],
+            # Block 3: Z-facing faces
+            [px[0], py[0], pz[0]],
+            [px[1], py[0], pz[0]],
+            [px[0], py[1], pz[0]],
+            [px[1], py[1], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[1]],
         ],
     )
 
@@ -680,23 +1062,36 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    theta = np.linspace(0, 2 * np.pi, resolution)
-
-    bottom_points = []
-    for t in theta:
-        bx = radius * np.cos(t) + center[0]
-        by = radius * np.sin(t) + center[1]
-        bz = center[2] - height / 2
-        bottom_points.append([bx, by, bz])
-
-    top_points = []
-    for t in theta:
-        tx = radius * np.cos(t) + center[0]
-        ty = radius * np.sin(t) + center[1]
-        tz = center[2] + height / 2
-        top_points.append([tx, ty, tz])
-
-    points = np.vstack([bottom_points, top_points])
+    # Generate points matching vtk.js vtkCylinderSource ordering (capping=true default):
+    # Cylinder axis is Y. Total = 4 * resolution points:
+    #   indices 0..2R-1:   side wall, interleaved pairs [y=+h/2, y=-h/2] per angle step
+    #   indices 2R..3R-1:  top cap ring at y=+h/2, forward angular order
+    #   indices 3R..4R-1:  bottom cap ring at y=-h/2, REVERSED angular order
+    # x = radius*cos(i*angle), z = -radius*sin(i*angle) (vtk.js uses -sin for z)
+    angle = 2.0 * np.pi / resolution
+    cx, cy, cz = center
+    points_list = []
+    # Side wall
+    for i in range(resolution):
+        px = radius * np.cos(i * angle) + cx
+        pz = -radius * np.sin(i * angle) + cz
+        points_list.append([px, cy + height / 2, pz])  # y = +h/2
+        points_list.append([px, cy - height / 2, pz])  # y = -h/2
+    # Top cap (forward order, y = +h/2)
+    points_list.extend(
+        [radius * np.cos(i * angle) + cx, cy + height / 2, -radius * np.sin(i * angle) + cz]
+        for i in range(resolution)
+    )
+    # Bottom cap (reversed order, y = -h/2)
+    points_list.extend(
+        [
+            radius * np.cos((resolution - 1 - k) * angle) + cx,
+            cy - height / 2,
+            -radius * np.sin((resolution - 1 - k) * angle) + cz,
+        ]
+        for k in range(resolution)
+    )
+    points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
         return (
@@ -764,24 +1159,32 @@ def Disc(  # noqa: N802, PLR0913
     >>> disc.plot()  # doctest: +SKIP
 
     """
-    # Generate points in XY plane: (r_res+1) rings * c_res points
-    radii = np.linspace(inner, outer, r_res + 1)
-    theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
-    pts = np.array(
-        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
-    )
+    # Generate points matching vtk.js vtkDiskSource ordering:
+    # outer loop circumferential (i), inner loop radial (j)
+    # point index = i * (r_res + 1) + j
+    theta_step = 2.0 * np.pi / c_res
+    delta_r = (outer - inner) / r_res
+    pts_list = []
+    for i in range(c_res):
+        theta = i * theta_step
+        cos_t = np.cos(theta)
+        sin_t = np.sin(theta)
+        for j in range(r_res + 1):
+            r = inner + j * delta_r
+            pts_list.append([r * cos_t, r * sin_t, 0.0])
+    pts = np.array(pts_list)
 
     # Build triangular faces: two triangles per quad between adjacent rings
     faces = []
-    for ring in range(r_res):
-        for ci in range(c_res):
-            ci1 = (ci + 1) % c_res
-            i00 = ring * c_res + ci
-            i01 = ring * c_res + ci1
-            i10 = (ring + 1) * c_res + ci
-            i11 = (ring + 1) * c_res + ci1
-            faces.append([i00, i01, i11])
-            faces.append([i00, i11, i10])
+    for i in range(c_res):
+        next_i = (i + 1) % c_res
+        for j in range(r_res):
+            p0 = i * (r_res + 1) + j
+            p1 = p0 + 1
+            p2 = next_i * (r_res + 1) + j + 1
+            p3 = p2 - 1
+            faces.append([p0, p1, p2])
+            faces.append([p0, p2, p3])
 
     # Rotate from default normal (0,0,1) to requested normal
     n = np.asarray(normal, dtype=float)
@@ -825,6 +1228,7 @@ def Disc(  # noqa: N802, PLR0913
         faces=np.array(faces) if faces else None,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_disc,
+        _vtk_js_source_is_filter=False,
     )
 
 
@@ -887,6 +1291,7 @@ def Circle(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_circle,
+        _vtk_js_source_is_filter=False,
     )
 
 
@@ -1020,7 +1425,7 @@ def Cone(  # noqa: N802 PLR0913
     --------
     >>> import pyvista_js as pv
     >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
-    >>> cone.plot()
+    >>> cone.plot()  # doctest: +SKIP
 
     """
     # Generate approximate points for the cone
