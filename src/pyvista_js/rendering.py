@@ -1312,6 +1312,17 @@ class MockRenderer:
         self._camera = camera
         logger.info("Set camera: %s", camera)
 
+    def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Mock add_axes.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation.
+
+        """
+        logger.info("add_axes called (mock)")
+
     def set_environment_texture(self, texture: object) -> None:
         """Mock environment texture.
 
