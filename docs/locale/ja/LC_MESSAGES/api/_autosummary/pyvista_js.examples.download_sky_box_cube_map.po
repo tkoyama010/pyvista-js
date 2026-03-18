@@ -48,4 +48,3 @@ msgstr ""
 #: of pyvista_js.examples.download_sky_box_cube_map:10
 msgid "Examples"
 msgstr ""
-

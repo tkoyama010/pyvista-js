@@ -290,4 +290,3 @@ msgstr ""
 #: ../../api/index.md:120:<autosummary>:1
 msgid "PyVista-like CLI for browser-based 3-D visualization with vtk.js."
 msgstr ""
-

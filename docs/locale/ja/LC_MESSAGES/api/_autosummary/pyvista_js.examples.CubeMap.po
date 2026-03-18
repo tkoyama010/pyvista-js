@@ -106,4 +106,3 @@ msgstr ""
 #: ../../api/_autosummary/pyvista_js.examples.CubeMap.rst
 msgid "Return type"
 msgstr ""
-

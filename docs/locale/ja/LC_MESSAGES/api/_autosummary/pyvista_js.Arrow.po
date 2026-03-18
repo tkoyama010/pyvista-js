@@ -96,4 +96,3 @@ msgstr ""
 #: of pyvista_js.mesh.Arrow:44
 msgid "Plot the arrow:"
 msgstr ""
-

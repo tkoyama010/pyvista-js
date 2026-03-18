@@ -111,4 +111,3 @@ msgstr ""
 #: of pyvista_js.readers.PolyDataReader.read:10
 msgid "If the file format is invalid or unsupported."
 msgstr ""
-

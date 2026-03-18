@@ -78,4 +78,3 @@ msgstr ""
 #: of pyvista_js.mesh.Disc:25
 msgid "Examples"
 msgstr ""
-

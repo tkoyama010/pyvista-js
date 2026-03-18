@@ -26,4 +26,3 @@ msgstr ""
 #: of pyvista_js._cli.main:1
 msgid "PyVista-like CLI for browser-based 3-D visualization with vtk.js."
 msgstr ""
-

@@ -159,4 +159,3 @@ msgstr ""
 #: of pyvista_js.Camera.view_up:3 pyvista_js.Camera.view_up:6
 msgid "View-up vector as (x, y, z)."
 msgstr ""
-

@@ -60,4 +60,3 @@ msgstr ""
 #: of pyvista_js.mesh.Circle:15
 msgid "Examples"
 msgstr ""
-

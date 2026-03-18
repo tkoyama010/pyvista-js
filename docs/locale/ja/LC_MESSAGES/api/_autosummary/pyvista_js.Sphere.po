@@ -62,4 +62,3 @@ msgstr ""
 #: of pyvista_js.mesh.Sphere:16
 msgid "Examples"
 msgstr ""
-

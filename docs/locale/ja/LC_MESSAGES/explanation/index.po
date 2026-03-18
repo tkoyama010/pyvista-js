@@ -82,4 +82,3 @@ msgstr ""
 #: ../../explanation/index.md:24
 msgid "Environment textures for image-based lighting"
 msgstr ""
-

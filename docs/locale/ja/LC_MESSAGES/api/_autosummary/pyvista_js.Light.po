@@ -179,4 +179,3 @@ msgstr ""
 #: ../../api/_autosummary/pyvista_js.Light.rst
 msgid "Return type"
 msgstr ""
-

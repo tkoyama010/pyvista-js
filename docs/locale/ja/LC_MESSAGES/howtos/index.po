@@ -37,4 +37,3 @@ msgid ""
 "See the {doc}`Streamlit Demo <../stlite_demo>` page for an interactive "
 "demo using stlite."
 msgstr ""
-

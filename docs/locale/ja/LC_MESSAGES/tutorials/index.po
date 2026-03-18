@@ -34,4 +34,3 @@ msgstr ""
 #: ../../tutorials/index.md:26
 msgid "Physically Based Rendering"
 msgstr ""
-

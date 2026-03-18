@@ -70,4 +70,3 @@ msgstr ""
 #: of pyvista_js.mesh.Cone:20
 msgid "Examples"
 msgstr ""
-

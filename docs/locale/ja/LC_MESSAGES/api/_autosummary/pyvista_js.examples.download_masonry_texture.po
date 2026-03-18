@@ -48,4 +48,3 @@ msgstr ""
 #: of pyvista_js.examples.download_masonry_texture:10
 msgid "Examples"
 msgstr ""
-

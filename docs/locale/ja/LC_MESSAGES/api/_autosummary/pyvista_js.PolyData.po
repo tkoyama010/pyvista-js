@@ -419,4 +419,3 @@ msgstr ""
 #: of pyvista_js.mesh.PolyData.tube:37
 msgid "Render the tube:"
 msgstr ""
-

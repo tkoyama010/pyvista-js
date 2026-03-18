@@ -71,4 +71,3 @@ msgstr ""
 #: of pyvista_js.mesh.PolyData.shrink:34
 msgid "Render the shrunk mesh:"
 msgstr ""
-

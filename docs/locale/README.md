@@ -5,6 +5,7 @@ This directory contains translation files for the pyvista-js documentation using
 ## Overview
 
 The internationalization system uses:
+
 - **Sphinx gettext builder** to extract translatable strings into `.pot` (Portable Object Template) files
 - **sphinx-intl** to manage translation catalogs and create `.po` (Portable Object) files for each language
 - **gettext** to compile `.po` files into binary `.mo` (Machine Object) files used by Sphinx
@@ -96,14 +97,15 @@ docs/
 The i18n configuration in `docs/conf.py`:
 
 ```python
-language = "en"                     # Default language
-locale_dirs = ["locale/"]           # Translation directory
-gettext_compact = False             # One .po file per document
+language = "en"  # Default language
+locale_dirs = ["locale/"]  # Translation directory
+gettext_compact = False  # One .po file per document
 ```
 
 ## Supported Languages
 
 Currently supported languages:
+
 - English (`en`) - default
 - Japanese (`ja`) - example
 

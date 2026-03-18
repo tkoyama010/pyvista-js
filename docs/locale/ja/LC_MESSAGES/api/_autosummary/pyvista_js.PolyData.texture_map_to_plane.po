@@ -49,4 +49,3 @@ msgstr ""
 #: of pyvista_js.mesh.PolyData.texture_map_to_plane:10
 msgid "Examples"
 msgstr ""
-
