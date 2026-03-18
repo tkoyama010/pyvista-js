@@ -548,9 +548,9 @@ class STLReader:
 
     Examples
     --------
-    >>> import pyvista_js as pv
-    >>> reader = pv.STLReader("model.stl")  # doctest: +SKIP
-    >>> mesh = reader.read()  # doctest: +SKIP
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_cad_model()  # doctest: +SKIP
+    >>> mesh.plot()  # doctest: +SKIP
 
     """
 
