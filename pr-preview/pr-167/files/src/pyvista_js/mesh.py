@@ -755,6 +755,10 @@ class PolyData:
 
         >>> contours = sphere.contour(isosurfaces=[0.0, 0.5], scalars=sphere_scalars)
 
+        Render the contours:
+
+        >>> contours.plot()  # doctest: +SKIP
+
         """
         # Determine scalar data to use
         scalar_data = self._get_contour_scalars(scalars)
