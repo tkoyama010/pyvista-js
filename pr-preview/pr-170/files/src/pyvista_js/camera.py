@@ -34,9 +34,9 @@ class Camera:
     >>> camera.position = (5, 5, 5)
     >>> camera.focal_point = (0, 0, 0)
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(pv.Sphere())
+    >>> _ = plotter.add_mesh(pv.Sphere())
     >>> plotter.camera = camera
-    >>> plotter.show()
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -71,6 +71,7 @@ class Camera:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> camera = pv.Camera()
         >>> camera.position = (5, 0, 0)
         >>> camera.position
@@ -100,6 +101,7 @@ class Camera:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> camera = pv.Camera()
         >>> camera.focal_point = (1, 2, 3)
         >>> camera.focal_point
@@ -129,6 +131,7 @@ class Camera:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> camera = pv.Camera()
         >>> camera.view_up = (0, 0, 1)
         >>> camera.view_up
@@ -158,6 +161,7 @@ class Camera:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> camera = pv.Camera()
         >>> camera.view_angle = 45.0
         >>> camera.view_angle
@@ -187,6 +191,7 @@ class Camera:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> camera = pv.Camera()
         >>> camera.clipping_range = (0.1, 100.0)
         >>> camera.clipping_range
