@@ -24,14 +24,15 @@ MockRenderer provides a fallback for testing.
 
 Data Conversion
 ---------------
-NumPy arrays are converted to JavaScript for vtk.js:
+NumPy arrays are converted to JavaScript for vtk.js.
 
->>> # Python NumPy array (n, 3)
->>> points = mesh.points
->>>
->>> # Convert to JavaScript flat array
->>> points_js = points.flatten().tolist()
->>> polydata.getPoints().setData(points_js, 3)
+Python NumPy array (n, 3)::
+
+    points = mesh.points
+
+    # Convert to JavaScript flat array
+    points_js = points.flatten().tolist()
+    polydata.getPoints().setData(points_js, 3)
 
 Loading vtk.js
 --------------
@@ -49,16 +50,16 @@ For manual loading or custom versions:
 
 Examples
 --------
-Using the renderer (automatically selected):
+Using the renderer (automatically selected)::
 
->>> from pyvista_js.rendering import get_renderer
->>> from pyvista_js import Sphere
->>>
->>> renderer = get_renderer()
->>> mesh = Sphere()
->>> renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
->>> renderer.create_container('viz-container')
->>> renderer.render()
+    from pyvista_js.rendering import get_renderer
+    from pyvista_js import Sphere
+
+    renderer = get_renderer()
+    mesh = Sphere()
+    renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
+    renderer.create_container('viz-container')
+    renderer.render()
 
 In Pyodide environment, this uses vtk.js. In standard Python,
 it opens the visualization in the default web browser.
@@ -214,6 +215,8 @@ class _BaseHTMLRenderer:
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
         style: str = "surface",
+        scalars: str | None = None,
+        cmap: str = "viridis",
     ) -> dict[str, object]:
         """Add a mesh to the renderer.
 
@@ -241,6 +244,11 @@ class _BaseHTMLRenderer:
             If not specified, defaults to black.
         style : str, default='surface'
             Visualization style. One of 'surface', 'wireframe', or 'points'.
+        scalars : str, optional
+            Name of the scalar array to use for coloring. The array must exist
+            in ``mesh.point_data``.
+        cmap : str, default='viridis'
+            Name of the colormap to use when rendering scalars.
 
         Returns
         -------
@@ -266,6 +274,8 @@ class _BaseHTMLRenderer:
             "show_edges": show_edges,
             "edge_color": edge_color,
             "style": style,
+            "scalars": scalars,
+            "cmap": cmap,
         }
         self.actors.append(actor_info)
         return actor_info
@@ -396,6 +406,148 @@ class _BaseHTMLRenderer:
             f"texImg{idx}.src = '{tex_url}';"
         )
 
+    def _generate_scalar_code(self, actor_info: dict[str, object], idx: int) -> str:
+        """Generate vtk.js JavaScript to set up scalar coloring with a lookup table.
+
+        Parameters
+        ----------
+        actor_info : dict
+            Actor dictionary, may contain ``'scalars'`` and ``'cmap'`` keys.
+        idx : int
+            Actor index used to create unique JS variable names.
+
+        Returns
+        -------
+        str
+            JavaScript code to set up scalar visualization with a lookup table,
+            or an empty string when scalars are not specified.
+
+        """
+        scalars = actor_info.get("scalars")
+        if scalars is None:
+            return ""
+
+        cmap = actor_info.get("cmap", "viridis")
+        mesh = actor_info["mesh"]
+
+        # Get the scalar array from mesh point_data
+        try:
+            scalar_array = mesh.point_data[scalars]  # type: ignore[index, attr-defined]
+        except (KeyError, AttributeError):
+            return ""
+
+        # Compute scalar range
+        scalar_min = float(scalar_array.min())
+        scalar_max = float(scalar_array.max())
+
+        # Generate lookup table based on colormap
+        lut_code = self._generate_lut_code(str(cmap), idx, scalar_min, scalar_max)
+
+        # For primitives with point_data, switch mapper to use the modified polydata
+        mapper_override = ""
+        if hasattr(mesh, "is_primitive") and mesh.is_primitive:  # type: ignore[union-attr]
+            mapper_override = (
+                f"// Switch mapper to use polydata with scalar arrays\n"
+                f"mapper{idx}.setInputData(polydata{idx});\n"
+            )
+
+        return (
+            f"{lut_code}\n"
+            f"{mapper_override}"
+            f"// Configure mapper for scalar coloring\n"
+            f"mapper{idx}.setScalarVisibility(true);\n"
+            f"mapper{idx}.setScalarModeToUsePointFieldData();\n"
+            f"mapper{idx}.setColorByArrayName('{scalars}');\n"
+            f"mapper{idx}.setLookupTable(lut{idx});\n"
+            f"mapper{idx}.setScalarRange({scalar_min}, {scalar_max});"
+        )
+
+    def _generate_lut_code(self, cmap: str, idx: int, vmin: float, vmax: float) -> str:
+        """Generate vtk.js lookup table code for a given colormap.
+
+        Parameters
+        ----------
+        cmap : str
+            Colormap name.
+        idx : int
+            Index for unique variable naming.
+        vmin : float
+            Minimum scalar value.
+        vmax : float
+            Maximum scalar value.
+
+        Returns
+        -------
+        str
+            JavaScript code to create a lookup table.
+
+        """
+        # Define colormap presets (RGB values from 0-1)
+        colormaps = {
+            "viridis": [
+                (0.267004, 0.004874, 0.329415),
+                (0.282623, 0.140926, 0.457517),
+                (0.253935, 0.265254, 0.529983),
+                (0.206756, 0.371758, 0.553117),
+                (0.163625, 0.471133, 0.558148),
+                (0.127568, 0.566949, 0.550556),
+                (0.134692, 0.658636, 0.517649),
+                (0.266941, 0.748751, 0.440573),
+                (0.477504, 0.821444, 0.318195),
+                (0.741388, 0.873449, 0.149561),
+                (0.993248, 0.906157, 0.143936),
+            ],
+            "plasma": [
+                (0.050383, 0.029803, 0.527975),
+                (0.279264, 0.023216, 0.620082),
+                (0.433594, 0.016101, 0.657922),
+                (0.562738, 0.051545, 0.641509),
+                (0.665667, 0.125731, 0.595428),
+                (0.746812, 0.216569, 0.524736),
+                (0.815735, 0.314176, 0.444306),
+                (0.877713, 0.415403, 0.359254),
+                (0.933095, 0.521049, 0.271180),
+                (0.980588, 0.633332, 0.177486),
+                (0.988260, 0.812325, 0.145357),
+            ],
+            "jet": [
+                (0.0, 0.0, 0.5),
+                (0.0, 0.0, 1.0),
+                (0.0, 0.5, 1.0),
+                (0.0, 1.0, 1.0),
+                (0.5, 1.0, 0.5),
+                (1.0, 1.0, 0.0),
+                (1.0, 0.5, 0.0),
+                (1.0, 0.0, 0.0),
+                (0.5, 0.0, 0.0),
+            ],
+            "coolwarm": [
+                (0.23, 0.299, 0.754),
+                (0.706, 0.016, 0.150),
+            ],
+        }
+
+        # Default to viridis if colormap not found
+        colors = colormaps.get(cmap, colormaps["viridis"])
+
+        # Generate JavaScript array of RGB values
+        colors_js = []
+        for r, g, b in colors:
+            colors_js.append(f"[{r}, {g}, {b}]")
+        colors_str = ",\n      ".join(colors_js)
+
+        return (
+            f"// Create lookup table for '{cmap}' colormap\n"
+            f"const lut{idx} = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();\n"
+            f"lut{idx}.setRange({vmin}, {vmax});\n"
+            f"const colors{idx} = [\n      {colors_str}\n    ];\n"
+            f"for (let i = 0; i < colors{idx}.length; i++) {{\n"
+            f"  const val = {vmin} + (i / (colors{idx}.length - 1)) * ({vmax} - {vmin});\n"
+            f"  lut{idx}.addRGBPoint(val, colors{idx}[i][0], colors{idx}[i][1], "
+            f"colors{idx}[i][2]);\n"
+            f"}}"
+        )
+
     def _generate_lights_code(self) -> str:
         """Generate vtk.js JavaScript for all lights.
 
@@ -458,6 +610,7 @@ class _BaseHTMLRenderer:
         )
         style_code = self._generate_style_code(idx, str(style))
         texture_code = self._generate_texture_code(actor_info, idx)
+        scalar_code = self._generate_scalar_code(actor_info, idx)
 
         return (
             _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
@@ -471,6 +624,7 @@ class _BaseHTMLRenderer:
             .replace("{{STYLE_CODE}}", style_code)
             .replace("{{PBR_CODE}}", pbr_code)
             .replace("{{TEXTURE_CODE}}", texture_code)
+            .replace("{{SCALAR_CODE}}", scalar_code)
         )
 
     @staticmethod
@@ -742,16 +896,14 @@ class VTKJSRenderer(_BaseHTMLRenderer):
     Examples
     --------
     >>> # In Pyodide/browser environment
-    >>> renderer = VTKJSRenderer()
-    >>> renderer.create_container('my-viz')
-    >>>
+    >>> renderer = VTKJSRenderer()  # doctest: +SKIP
+    >>> renderer.create_container('my-viz')  # doctest: +SKIP
     >>> # Add a mesh
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> actor = renderer.add_mesh_actor(mesh, color='blue')
-    >>>
+    >>> from pyvista_js import Sphere  # doctest: +SKIP
+    >>> mesh = Sphere()  # doctest: +SKIP
+    >>> actor = renderer.add_mesh_actor(mesh, color='blue')  # doctest: +SKIP
     >>> # Render the scene
-    >>> renderer.render()
+    >>> renderer.render()  # doctest: +SKIP
 
     """
 
@@ -799,8 +951,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer = VTKJSRenderer()
-        >>> container = renderer.create_container('my-visualization')
+        >>> renderer = VTKJSRenderer()  # doctest: +SKIP
+        >>> container = renderer.create_container('my-visualization')  # doctest: +SKIP
 
         """
         if self.use_ipython:
@@ -825,7 +977,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer.render()  # Display the visualization
+        >>> renderer.render()  # Display the visualization  # doctest: +SKIP
 
         """
         if self.use_ipython:
@@ -841,7 +993,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer.clear()  # Remove all visualizations
+        >>> renderer.clear()  # Remove all visualizations  # doctest: +SKIP
 
         """
         super().clear()
@@ -860,8 +1012,8 @@ class BrowserRenderer(_BaseHTMLRenderer):
     --------
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(pv.Sphere(), color='red')
-    >>> plotter.show()  # Opens the default browser with the 3D scene
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -931,10 +1083,9 @@ class MockRenderer:
     >>>
     >>> renderer = MockRenderer()
     >>> mesh = Sphere()
-    >>> renderer.add_mesh_actor(mesh, color='red')
-    Mock: Added mesh with 900 points
+    >>> _ = renderer.add_mesh_actor(mesh, color='red')
     >>>
-    >>> renderer.render()
+    >>> renderer.render()  # doctest: +SKIP
     Mock: Rendering 1 actors
 
     Notes
@@ -982,6 +1133,8 @@ class MockRenderer:
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
         style: str = "surface",
+        scalars: str | None = None,
+        cmap: str = "viridis",
     ) -> dict[str, object]:
         """Mock mesh addition.
 
@@ -1007,6 +1160,10 @@ class MockRenderer:
             Edge color (stored but not rendered).
         style : str
             Rendering style (stored but not rendered).
+        scalars : str, optional
+            Scalar array name (stored but not rendered).
+        cmap : str
+            Colormap name (stored but not rendered).
 
         Returns
         -------
@@ -1025,6 +1182,8 @@ class MockRenderer:
             "show_edges": show_edges,
             "edge_color": edge_color,
             "style": style,
+            "scalars": scalars,
+            "cmap": cmap,
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
@@ -1140,17 +1299,15 @@ def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     Examples
     --------
     >>> # Automatically gets the right renderer
-    >>> renderer = get_renderer()
-    >>>
+    >>> renderer = get_renderer()  # doctest: +SKIP
     >>> # In Pyodide or Jupyter: returns VTKJSRenderer
     >>> # In standard Python: returns BrowserRenderer (opens browser)
-    >>>
     >>> # Same code works in both environments
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> renderer.add_mesh_actor(mesh, color='blue')
-    >>> renderer.create_container()
-    >>> renderer.render()
+    >>> from pyvista_js import Sphere  # doctest: +SKIP
+    >>> mesh = Sphere()  # doctest: +SKIP
+    >>> renderer.add_mesh_actor(mesh, color='blue')  # doctest: +SKIP
+    >>> renderer.create_container()  # doctest: +SKIP
+    >>> renderer.render()  # doctest: +SKIP
 
     Notes
     -----

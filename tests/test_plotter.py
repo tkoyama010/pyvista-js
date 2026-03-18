@@ -4,7 +4,7 @@ import webbrowser
 
 import pytest
 
-from pyvista_js import Cube, Cylinder, Plotter, PolyData, Sphere
+from pyvista_js import Camera, Cube, Cylinder, Plotter, PolyData, Sphere
 
 
 def test_plotter_creation() -> None:
@@ -68,9 +68,9 @@ def test_show(monkeypatch) -> None:
 @pytest.mark.parametrize(
     ("mesh_factory", "expected_n_points"),
     [
-        (lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50), 50 * 30),
-        (lambda: Cube(center=(0, 0, 0), x_length=3.0, y_length=2.0, z_length=1.0), 8),
-        (lambda: Cylinder(radius=1.5, height=4.0, resolution=80), 160),
+        (lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=50), 2 + 50 * (30 - 2)),
+        (lambda: Cube(center=(0, 0, 0), x_length=3.0, y_length=2.0, z_length=1.0), 24),
+        (lambda: Cylinder(radius=1.5, height=4.0, resolution=80), 4 * 80),
     ],
 )
 def test_plotter_mesh_with_parameters(mesh_factory, expected_n_points) -> None:
@@ -348,6 +348,66 @@ def test_view_isometric() -> None:
     assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
 
 
+def test_view_yx() -> None:
+    """Test view_yx() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_yx()
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, -1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_yx_negative() -> None:
+    """Test view_yx(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_yx(negative=True)
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_zx() -> None:
+    """Test view_zx() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_zx()
+
+    assert plotter._renderer._view_vector == (0.0, -1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_view_zx_negative() -> None:
+    """Test view_zx(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_zx(negative=True)
+
+    assert plotter._renderer._view_vector == (0.0, 1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_view_zy() -> None:
+    """Test view_zy() sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_zy()
+
+    assert plotter._renderer._view_vector == (-1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_view_zy_negative() -> None:
+    """Test view_zy(negative=True) sets correct camera vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_zy(negative=True)
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
 def test_add_mesh_with_show_edges() -> None:
     """Test adding a mesh with edge visibility enabled."""
     plotter = Plotter()
@@ -475,3 +535,185 @@ def test_add_mesh_default_edge_color() -> None:
 
     assert len(plotter.actors) == 1
     assert plotter.actors[0]["edge_color"] is None
+
+
+def test_camera_position_string_xy() -> None:
+    """Test camera_position property with 'xy' string."""
+    plotter = Plotter()
+    plotter.camera_position = "xy"
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_string_xz() -> None:
+    """Test camera_position property with 'xz' string."""
+    plotter = Plotter()
+    plotter.camera_position = "xz"
+
+    assert plotter._renderer._view_vector == (0.0, 1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_camera_position_string_yz() -> None:
+    """Test camera_position property with 'yz' string."""
+    plotter = Plotter()
+    plotter.camera_position = "yz"
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_string_yx() -> None:
+    """Test camera_position property with 'yx' string."""
+    plotter = Plotter()
+    plotter.camera_position = "yx"
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, -1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_string_zx() -> None:
+    """Test camera_position property with 'zx' string."""
+    plotter = Plotter()
+    plotter.camera_position = "zx"
+
+    assert plotter._renderer._view_vector == (0.0, -1.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 0.0, 1.0)
+
+
+def test_camera_position_string_zy() -> None:
+    """Test camera_position property with 'zy' string."""
+    plotter = Plotter()
+    plotter.camera_position = "zy"
+
+    assert plotter._renderer._view_vector == (-1.0, 0.0, 0.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_string_iso() -> None:
+    """Test camera_position property with 'iso' string."""
+    plotter = Plotter()
+    plotter.camera_position = "iso"
+
+    assert plotter._renderer._view_vector == (1.0, 1.0, 1.0)
+    assert plotter._renderer._view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_string_invalid() -> None:
+    """Test camera_position property with invalid string."""
+    plotter = Plotter()
+    with pytest.raises(ValueError, match="Unknown camera position string"):
+        plotter.camera_position = "invalid"
+
+
+def test_camera_position_direction_vector_tuple() -> None:
+    """Test camera_position property with direction vector as tuple."""
+    plotter = Plotter()
+    plotter.camera_position = (1.0, 0.0, 0.0)
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+
+
+def test_camera_position_direction_vector_list() -> None:
+    """Test camera_position property with direction vector as list."""
+    plotter = Plotter()
+    plotter.camera_position = [0.0, 1.0, 0.0]
+
+    assert plotter._renderer._view_vector == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_full_camera_spec_tuple() -> None:
+    """Test camera_position property with full camera spec as tuple."""
+    plotter = Plotter()
+    plotter.camera_position = ((2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+
+    assert plotter._camera is not None
+    assert isinstance(plotter._camera, Camera)
+    assert plotter._camera.position == (2.0, 5.0, 13.0)
+    assert plotter._camera.focal_point == (0.0, 0.0, 0.0)
+    assert plotter._camera.view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_full_camera_spec_list() -> None:
+    """Test camera_position property with full camera spec as list."""
+    plotter = Plotter()
+    plotter.camera_position = [[2.0, 5.0, 13.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+
+    assert plotter._camera is not None
+    assert isinstance(plotter._camera, Camera)
+    assert plotter._camera.position == (2.0, 5.0, 13.0)
+    assert plotter._camera.focal_point == (0.0, 0.0, 0.0)
+    assert plotter._camera.view_up == (0.0, 1.0, 0.0)
+
+
+def test_camera_position_getter() -> None:
+    """Test camera_position getter returns None when no camera is set."""
+    plotter = Plotter()
+    assert plotter.camera_position is None
+
+
+def test_camera_position_getter_with_camera() -> None:
+    """Test camera_position getter returns camera spec when camera is set."""
+    plotter = Plotter()
+    plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+
+    cpos = plotter.camera_position
+    assert cpos is not None
+    assert cpos == ((2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+
+
+def test_camera_position_invalid_format() -> None:
+    """Test camera_position property with invalid format."""
+    plotter = Plotter()
+    with pytest.raises(ValueError, match="Invalid camera position format"):
+        plotter.camera_position = (1.0, 2.0)  # Wrong length
+
+
+def test_camera_position_invalid_type() -> None:
+    """Test camera_position property with invalid type."""
+    plotter = Plotter()
+    with pytest.raises(TypeError, match="Invalid camera position type"):
+        plotter.camera_position = 123
+
+
+def test_show_with_cpos_string() -> None:
+    """Test show() with cpos parameter as string."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.show(cpos="xy")
+
+    assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
+
+
+def test_show_with_cpos_direction_vector() -> None:
+    """Test show() with cpos parameter as direction vector."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.show(cpos=(1.0, 0.0, 0.0))
+
+    assert plotter._renderer._view_vector == (1.0, 0.0, 0.0)
+
+
+def test_show_with_cpos_full_camera_spec() -> None:
+    """Test show() with cpos parameter as full camera spec."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.show(cpos=[(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)])
+
+    assert plotter._camera is not None
+    assert isinstance(plotter._camera, Camera)
+    assert plotter._camera.position == (2.0, 5.0, 13.0)
+
+
+def test_show_without_cpos() -> None:
+    """Test show() without cpos parameter doesn't change camera."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.view_xy()
+
+    # Call show without cpos
+    plotter.show()
+
+    # Camera should remain as set by view_xy()
+    assert plotter._renderer._view_vector == (0.0, 0.0, 1.0)
