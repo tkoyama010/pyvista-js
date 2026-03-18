@@ -30,8 +30,8 @@ class Plotter:
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
     >>> mesh = pv.Sphere()
-    >>> plotter.add_mesh(mesh, color='red')
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(mesh, color='red')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -52,6 +52,11 @@ class Plotter:
         metallic: float = 0.0,
         roughness: float = 0.5,
         texture: Texture | None = None,
+        show_edges: bool = False,  # noqa: FBT001 FBT002
+        edge_color: str | tuple[float, float, float] | None = None,
+        style: str = "surface",
+        scalars: str | None = None,
+        cmap: str = "viridis",
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -78,6 +83,21 @@ class Plotter:
             coordinates set (e.g., via
             :meth:`~pyvista_js.PolyData.texture_map_to_plane`) or use a
             primitive (Sphere, Cube, Cylinder) that generates them automatically.
+        show_edges : bool, optional
+            Show the edges of the mesh. Default is False.
+        edge_color : str or tuple, optional
+            Color of the edges when ``show_edges=True``. Can be a color name
+            or RGB tuple. If not specified, defaults to black.
+        style : str, optional
+            Visualization style of the mesh. One of ``'surface'`` (default),
+            ``'wireframe'``, or ``'points'``.
+        scalars : str, optional
+            Name of the scalar array to use for coloring. The array must exist
+            in ``mesh.point_data``.
+        cmap : str, optional
+            Name of the colormap to use when rendering scalars. Default is 'viridis'.
+            Supported colormaps: 'viridis', 'plasma', 'inferno', 'magma', 'jet',
+            'rainbow', 'turbo', 'coolwarm'.
         **kwargs
             Additional rendering options.
 
@@ -88,24 +108,60 @@ class Plotter:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
-        >>> plotter.add_mesh(mesh, color='red', opacity=0.8)
+        >>> _ = plotter.add_mesh(mesh, color='red', opacity=0.8)
 
         PBR example:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
-        >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+        >>> _ = plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
 
         Texture example:
 
+        >>> import pyvista_js as pv
         >>> from pyvista_js import examples
         >>> plotter = pv.Plotter()
         >>> sphere = pv.Sphere()
-        >>> texture = examples.download_masonry_texture()
-        >>> plotter.add_mesh(sphere, texture=texture)
-        >>> plotter.show()
+        >>> texture = examples.download_masonry_texture()  # doctest: +SKIP
+        >>> _ = plotter.add_mesh(sphere, texture=texture)  # doctest: +SKIP
+        >>> plotter.show()  # doctest: +SKIP
+
+        Show edges:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Sphere()
+        >>> _ = plotter.add_mesh(mesh, show_edges=True, edge_color='black')
+        >>> plotter.show()  # doctest: +SKIP
+
+        Wireframe rendering:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Cube()
+        >>> _ = plotter.add_mesh(mesh, style='wireframe')
+        >>> plotter.show()  # doctest: +SKIP
+
+        Surface with edges:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> mesh = pv.Cube()
+        >>> _ = plotter.add_mesh(mesh, style='surface', show_edges=True)
+        >>> plotter.show()  # doctest: +SKIP
+
+        Scalar coloring:
+
+        >>> import pyvista_js as pv
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         # Add mesh to vtk.js renderer
@@ -117,6 +173,11 @@ class Plotter:
             metallic=metallic,
             roughness=roughness,
             texture=texture,
+            show_edges=show_edges,
+            edge_color=edge_color,
+            style=style,
+            scalars=scalars,
+            cmap=cmap,
         )
 
         # Store reference
@@ -129,6 +190,11 @@ class Plotter:
                 "metallic": metallic,
                 "roughness": roughness,
                 "texture": texture,
+                "show_edges": show_edges,
+                "edge_color": edge_color,
+                "style": style,
+                "scalars": scalars,
+                "cmap": cmap,
                 "actor": actor,
                 "kwargs": kwargs,
             },
@@ -136,7 +202,21 @@ class Plotter:
 
         return actor
 
-    def show(self, container_id: str | None = None) -> None:
+    def show(
+        self,
+        container_id: str | None = None,
+        cpos: str
+        | tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | list[float]
+        | list[tuple[float, float, float]]
+        | list[list[float]]
+        | None = None,
+    ) -> None:
         """Display the visualization.
 
         In browser environments, this will render the scene using vtk.js.
@@ -147,14 +227,46 @@ class Plotter:
             HTML element ID for the visualization container.
             Defaults to a unique ID generated per Plotter instance to avoid
             conflicts when calling show() multiple times in the same session.
+        cpos : str, tuple, or list, optional
+            Camera position specification. Can be:
+
+            - String shortcut: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', or 'iso'
+            - Direction vector: 3-element tuple/list (x, y, z)
+            - Full camera spec: 3-tuple/list of 3-tuples/lists:
+              [(position), (focal_point), (view_up)]
 
         Examples
         --------
+        Basic usage:
+
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.show()  # doctest: +SKIP
+
+        With camera position string shortcut:
+
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.show(cpos='xy')
+
+        With direction vector:
+
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.show(cpos=(1, 0, 0))
+
+        With full camera specification:
+
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.show(cpos=[(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)])
 
         """
+        # Set camera position if provided
+        if cpos is not None:
+            self.camera_position = cpos
+
         # Create container if needed
         self._renderer.create_container(container_id or self._container_id)
 
@@ -179,19 +291,205 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_vector((1, 0, 0))
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         View from an isometric angle:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Cube())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.view_vector((1, 1, 1))
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._renderer.view_vector(vector, viewup=viewup)
+
+    def view_xy(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the XY plane.
+
+        Look down the Z-axis, with the positive Z-axis pointing toward
+        the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative Z direction (down the +Z axis). Default is
+            False (look down the -Z axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_xy()
+        >>> plotter.show()  # doctest: +SKIP
+
+        View from the negative Z direction:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Cube())
+        >>> plotter.view_xy(negative=True)
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        vector = (0.0, 0.0, -1.0) if negative else (0.0, 0.0, 1.0)
+        self.view_vector(vector)
+
+    def view_xz(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the XZ plane.
+
+        Look down the Y-axis, with the positive Y-axis pointing toward
+        the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative Y direction (down the +Y axis). Default is
+            False (look down the -Y axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_xz()
+        >>> plotter.show()  # doctest: +SKIP
+
+        View from the negative Y direction:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Cube())
+        >>> plotter.view_xz(negative=True)
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        vector = (0.0, -1.0, 0.0) if negative else (0.0, 1.0, 0.0)
+        self.view_vector(vector, viewup=(0.0, 0.0, 1.0))
+
+    def view_yz(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the YZ plane.
+
+        Look down the X-axis, with the positive X-axis pointing toward
+        the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative X direction (down the +X axis). Default is
+            False (look down the -X axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_yz()
+        >>> plotter.show()  # doctest: +SKIP
+
+        View from the negative X direction:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Cube())
+        >>> plotter.view_yz(negative=True)
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        vector = (-1.0, 0.0, 0.0) if negative else (1.0, 0.0, 0.0)
+        self.view_vector(vector)
+
+    def view_yx(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the YX plane (inverse of XY).
+
+        Look down the Z-axis from below, with the negative Z-axis pointing
+        toward the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative Z direction (down the +Z axis). Default is
+            False (look down the -Z axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_yx()
+        >>> plotter.show()
+
+        """
+        vector = (0.0, 0.0, 1.0) if negative else (0.0, 0.0, -1.0)
+        self.view_vector(vector)
+
+    def view_zx(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the ZX plane (inverse of XZ).
+
+        Look down the Y-axis from below, with the negative Y-axis pointing
+        toward the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative Y direction (down the +Y axis). Default is
+            False (look down the -Y axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_zx()
+        >>> plotter.show()
+
+        """
+        vector = (0.0, 1.0, 0.0) if negative else (0.0, -1.0, 0.0)
+        self.view_vector(vector, viewup=(0.0, 0.0, 1.0))
+
+    def view_zy(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
+        """View the ZY plane (inverse of YZ).
+
+        Look down the X-axis from the left, with the negative X-axis pointing
+        toward the camera.
+
+        Parameters
+        ----------
+        negative : bool, optional
+            Look in the negative X direction (down the +X axis). Default is
+            False (look down the -X axis).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_zy()
+        >>> plotter.show()
+
+        """
+        vector = (1.0, 0.0, 0.0) if negative else (-1.0, 0.0, 0.0)
+        self.view_vector(vector)
+
+    def view_isometric(self) -> None:
+        """View the scene from an isometric angle.
+
+        The isometric view shows all three axes equally, looking from the
+        (1, 1, 1) direction.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Cube())
+        >>> plotter.view_isometric()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self.view_vector((1.0, 1.0, 1.0))
 
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting (IBL).
@@ -209,19 +507,22 @@ class Plotter:
         --------
         URL string:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
-        >>> plotter.set_environment_texture('https://example.com/env.jpg')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture('https://example.com/env.jpg')  # doctest: +SKIP
+        >>> plotter.show()  # doctest: +SKIP
 
         CubeMap:
 
+        >>> import pyvista_js as pv
         >>> from pyvista_js import examples
-        >>> cubemap = examples.download_sky_box_cube_map()
-        >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
-        >>> plotter.set_environment_texture(cubemap)
-        >>> plotter.show()
+        >>> cubemap = examples.download_sky_box_cube_map()  # doctest: +SKIP
+        >>> plotter = pv.Plotter()  # doctest: +SKIP
+        >>> _ = plotter.add_mesh(  # doctest: +SKIP
+        ...     pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture(cubemap)  # doctest: +SKIP
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._renderer.set_environment_texture(texture)
@@ -238,10 +539,10 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='white')
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
         >>> light = pv.Light(position=(5, 5, 5), color='white', intensity=2.0)
         >>> plotter.add_light(light)
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._renderer.add_light(light)
@@ -251,8 +552,9 @@ class Plotter:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.clear()
 
         """
@@ -282,12 +584,12 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> camera = pv.Camera()
         >>> camera.position = (5, 5, 5)
         >>> camera.focal_point = (0, 0, 0)
         >>> plotter.camera = camera
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         return self._camera
@@ -297,6 +599,155 @@ class Plotter:
         """Set the camera."""
         self._camera = cam
         self._renderer.camera = cam
+
+    @property
+    def camera_position(
+        self,
+    ) -> (
+        tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | None
+    ):
+        """Get the camera position.
+
+        Returns
+        -------
+        tuple or None
+            If a camera is set, returns a 3-tuple of 3-tuples:
+            (position, focal_point, view_up).
+            Otherwise returns None.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+        >>> plotter.camera_position
+        ((2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
+
+        """
+        if self._camera is not None:
+            return (
+                self._camera.position,
+                self._camera.focal_point,
+                self._camera.view_up,
+            )
+        return None
+
+    @camera_position.setter
+    def camera_position(  # noqa: C901
+        self,
+        cpos: str
+        | tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | list[float]
+        | list[tuple[float, float, float]]
+        | list[list[float]],
+    ) -> None:
+        """Set the camera position.
+
+        Parameters
+        ----------
+        cpos : str, tuple, or list
+            Camera position specification. Can be:
+
+            - String shortcut: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', or 'iso'
+            - Direction vector: 3-element tuple/list (x, y, z)
+            - Full camera spec: 3-tuple/list of 3-tuples/lists:
+              [(position), (focal_point), (view_up)]
+
+        Examples
+        --------
+        Using string shortcuts:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = 'xy'
+        >>> plotter.camera_position = 'iso'
+
+        Using direction vector:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = (1, 0, 0)
+
+        Using full camera specification:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+
+        """
+        # Handle string shortcuts
+        if isinstance(cpos, str):
+            cpos_lower = cpos.lower()
+            if cpos_lower == "xy":
+                self.view_xy()
+            elif cpos_lower == "xz":
+                self.view_xz()
+            elif cpos_lower == "yz":
+                self.view_yz()
+            elif cpos_lower == "yx":
+                self.view_yx()
+            elif cpos_lower == "zx":
+                self.view_zx()
+            elif cpos_lower == "zy":
+                self.view_zy()
+            elif cpos_lower == "iso":
+                self.view_isometric()
+            else:
+                msg = (
+                    f"Unknown camera position string: '{cpos}'. "
+                    "Supported: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', 'iso'"
+                )
+                raise ValueError(msg)
+            return
+
+        # Handle tuple/list input
+        if isinstance(cpos, (tuple, list)):
+            vector_length = 3
+            # Check if it's a direction vector (3 numbers)
+            if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
+                # Direction vector
+                self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))  # type: ignore[arg-type]
+                return
+
+            # Check if it's full camera specification (3 tuples/lists of 3 numbers each)
+            if len(cpos) == vector_length and all(
+                isinstance(item, (tuple, list))
+                and len(item) == vector_length
+                and all(isinstance(x, (int, float)) for x in item)
+                for item in cpos
+            ):
+                # Full camera specification
+                position = (float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2]))  # type: ignore[index]
+                focal_point = (float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2]))  # type: ignore[index]
+                view_up = (float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2]))  # type: ignore[index]
+
+                # Import Camera here to avoid circular imports
+                from .camera import Camera  # noqa: PLC0415
+
+                camera = Camera(
+                    position=position,
+                    focal_point=focal_point,
+                    view_up=view_up,
+                )
+                self.camera = camera
+                return
+
+            msg = (
+                "Invalid camera position format. Expected: "
+                "3-element direction vector or 3x3 camera specification"
+            )
+            raise ValueError(msg)
+
+        msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
+        raise TypeError(msg)
 
     @property
     def background_color(self) -> tuple[float, float, float]:
@@ -315,6 +766,7 @@ class Plotter:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> plotter.background_color = 'white'
         >>> plotter.background_color
