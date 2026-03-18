@@ -5,7 +5,6 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -711,32 +710,6 @@ class PolyData:
         if self._mapper_setup_fn is not None:
             return self._mapper_setup_fn(idx)
         return f"mapper{idx}.setInputData(source{idx});"
-
-
-class Mesh(PolyData):
-    """Deprecated base mesh class.
-
-    .. deprecated:: 0.2
-        :class:`Mesh` is deprecated and will be removed in version 0.4.
-        Use :class:`PolyData` instead.
-
-    Parameters
-    ----------
-    points : array-like
-        Vertex coordinates as an (n, 3) array.
-    faces : array-like, optional
-        Cell connectivity information.
-
-    """
-
-    def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
-        """Initialize a Mesh (deprecated)."""
-        warnings.warn(
-            "Mesh is deprecated and will be removed in version 0.4. Use PolyData instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(points, faces)
 
 
 def Sphere(  # noqa: N802

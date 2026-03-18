@@ -15,7 +15,6 @@ from pyvista_js import (
     Cylinder,
     Disc,
     Line,
-    Mesh,
     Plane,
     PolyData,
     Sphere,
@@ -29,15 +28,6 @@ def test_mesh_creation() -> None:
 
     assert mesh.n_points == 3
     assert np.array_equal(mesh.points, points)
-
-
-def test_mesh_deprecated() -> None:
-    """Test that Mesh emits a DeprecationWarning."""
-    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
-    with pytest.warns(DeprecationWarning, match="Mesh is deprecated"):
-        mesh = Mesh(points)
-    assert isinstance(mesh, PolyData)
-    assert mesh.n_points == 3
 
 
 def test_sphere_creation() -> None:
