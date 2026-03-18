@@ -37,7 +37,7 @@ from .mesh import (
     Sphere,
 )
 from .plotter import Plotter
-from .readers import OBJReader, PLYReader, PolyDataReader
+from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .texture import Texture
 
 # Streamlit integration (optional)
@@ -61,6 +61,7 @@ try:
         "PointData",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",
@@ -86,6 +87,7 @@ except ImportError:
         "PointData",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",
