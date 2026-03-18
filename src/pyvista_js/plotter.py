@@ -588,11 +588,15 @@ class Plotter:
     @property
     def camera_position(
         self,
-    ) -> tuple[float, float, float] | tuple[
-        tuple[float, float, float],
-        tuple[float, float, float],
-        tuple[float, float, float],
-    ] | None:
+    ) -> (
+        tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | None
+    ):
         """Get the camera position.
 
         Returns
@@ -693,10 +697,7 @@ class Plotter:
         if isinstance(cpos, (tuple, list)):
             vector_length = 3
             # Check if it's a direction vector (3 numbers)
-            if (
-                len(cpos) == vector_length
-                and all(isinstance(x, (int, float)) for x in cpos)
-            ):
+            if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
                 # Direction vector
                 self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))
                 return
@@ -730,10 +731,7 @@ class Plotter:
             )
             raise ValueError(msg)
 
-        msg = (
-            f"Invalid camera position type: {type(cpos)}. "
-            "Expected string, tuple, or list"
-        )
+        msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"
         raise TypeError(msg)
 
     @property
