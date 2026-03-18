@@ -102,6 +102,7 @@ ini_options.addopts = [
   "--strict-config",
   "--strict-markers",
   "--doctest-modules",
+  "--import-mode=importlib",
 ]
 ini_options.filterwarnings = [
   "error",
