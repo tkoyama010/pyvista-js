@@ -597,12 +597,15 @@ class STLReader:
         """
         raw = self._path.read_bytes()
 
-        if self._is_ascii_stl(raw):
+        if self._is_binary_stl(raw):
+            points = self._extract_points_binary(raw)
+        else:
             text = raw.decode("ascii", errors="replace")
             lines = text.splitlines()
+            if not lines or "solid" not in lines[0].lower():
+                msg = "Invalid STL file: missing 'solid' header"
+                raise ValueError(msg)
             points = self._extract_points(lines)
-        else:
-            points = self._extract_points_binary(raw)
 
         stl_base64 = base64.b64encode(raw).decode("ascii")
         logger.info("Read %d points from %s", len(points), self._path)
@@ -640,12 +643,12 @@ class STLReader:
         return np.array(points)
 
     @staticmethod
-    def _is_ascii_stl(raw: bytes) -> bool:
-        """Check whether raw bytes represent an ASCII STL file.
+    def _is_binary_stl(raw: bytes) -> bool:
+        """Check whether raw bytes represent a binary STL file.
 
-        A binary STL header can also start with ``solid``, so this
-        cross-checks the expected binary size against the actual file
-        size to disambiguate.
+        Binary STL is exactly 84 + 50*N bytes (80-byte header, 4-byte
+        triangle count, 50 bytes per triangle). This size check
+        reliably distinguishes binary from ASCII.
 
         Parameters
         ----------
@@ -655,29 +658,19 @@ class STLReader:
         Returns
         -------
         bool
-            True if the file appears to be ASCII STL.
+            True if the file appears to be binary STL.
 
         """
         _header_size = 80
         _count_size = 4
         _triangle_size = 50
 
-        try:
-            header = raw[:_header_size].decode("ascii").lower()
-        except UnicodeDecodeError:
-            return False
-        if not header.lstrip().startswith("solid"):
+        if len(raw) < _header_size + _count_size:
             return False
 
-        # A binary STL with N triangles is exactly 84 + 50*N bytes.
-        # If the file matches that size, treat it as binary.
-        if len(raw) >= _header_size + _count_size:
-            (n_triangles,) = struct.unpack_from("<I", raw, _header_size)
-            expected = _header_size + _count_size + _triangle_size * n_triangles
-            if len(raw) == expected:
-                return False
-
-        return True
+        (n_triangles,) = struct.unpack_from("<I", raw, _header_size)
+        expected = _header_size + _count_size + _triangle_size * n_triangles
+        return len(raw) == expected
 
     @staticmethod
     def _extract_points_binary(raw: bytes) -> np.ndarray:
