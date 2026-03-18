@@ -70,3 +70,10 @@ jobs:
     - name: Run tests with tox
       run: |
         tox -e py$(echo ${{ matrix.python-version }} | tr -d '.')
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: ./coverage.xml
+        flags: py${{ matrix.python-version }}-${{ matrix.os }}
+        fail_ci_if_error: false
