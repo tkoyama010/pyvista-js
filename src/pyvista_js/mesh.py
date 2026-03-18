@@ -383,7 +383,8 @@ class PolyData:
             if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
                 msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"  # type: ignore[arg-type]
                 raise ValueError(msg)
-            normal_vec = tuple(float(x) for x in normal)  # type: ignore[arg-type]
+            n = [float(x) for x in normal]  # type: ignore[arg-type]
+            normal_vec = (n[0], n[1], n[2])
 
         # Compute origin if not provided (use center of bounding box)
         if origin is None:
@@ -397,7 +398,8 @@ class PolyData:
             if len(origin) != _VECTOR_COMPONENTS:
                 msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
                 raise ValueError(msg)
-            origin = tuple(float(x) for x in origin)
+            o = [float(x) for x in origin]
+            origin = (o[0], o[1], o[2])
 
         orig_vtk_js_source_fn = self._vtk_js_source_fn
 
