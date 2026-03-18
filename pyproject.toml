@@ -131,3 +131,6 @@ check_untyped_defs = false
 # Ignore missing imports for optional dependencies
 ignore_missing_imports = true
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
+
+[tool.jupytext]
+formats = "ipynb,py:percent"
