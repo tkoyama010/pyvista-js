@@ -52,3 +52,6 @@ docs/.jupyterlite.doit.db
 docs/content/
 docs/stlite_demo.md
 docs/api/_autosummary/
+
+# JupyterLite - ignore generated notebooks (source is .py)
+jupyterlite/content/*.ipynb
