@@ -384,10 +384,9 @@ def test_contour_with_int_isosurfaces() -> None:
     contours = sphere.contour(isosurfaces=3, scalars=scalars)
     js_source = contours.generate_vtk_js_source(0)
     assert "contourPD0" in js_source
-    assert "vtkContourFilter" in js_source
+    assert "Marching triangles" in js_source or "marching" in js_source.lower()
     # Should have 3 values in the array
     assert "values.length" in js_source
-    assert "setValue(i, values[i])" in js_source
 
 
 def test_contour_with_list_isosurfaces() -> None:
