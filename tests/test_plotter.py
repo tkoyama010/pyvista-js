@@ -4,7 +4,7 @@ import webbrowser
 
 import pytest
 
-from pyvista_js import Cube, Cylinder, Plotter, PolyData, Sphere
+from pyvista_js import Camera, Cube, Cylinder, Plotter, PolyData, Sphere
 
 
 def test_plotter_creation() -> None:
@@ -625,8 +625,6 @@ def test_camera_position_direction_vector_list() -> None:
 
 def test_camera_position_full_camera_spec_tuple() -> None:
     """Test camera_position property with full camera spec as tuple."""
-    from pyvista_js import Camera
-
     plotter = Plotter()
     plotter.camera_position = ((2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0))
 
@@ -639,8 +637,6 @@ def test_camera_position_full_camera_spec_tuple() -> None:
 
 def test_camera_position_full_camera_spec_list() -> None:
     """Test camera_position property with full camera spec as list."""
-    from pyvista_js import Camera
-
     plotter = Plotter()
     plotter.camera_position = [[2.0, 5.0, 13.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
 
@@ -659,8 +655,6 @@ def test_camera_position_getter() -> None:
 
 def test_camera_position_getter_with_camera() -> None:
     """Test camera_position getter returns camera spec when camera is set."""
-    from pyvista_js import Camera
-
     plotter = Plotter()
     plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
 
@@ -703,8 +697,6 @@ def test_show_with_cpos_direction_vector() -> None:
 
 def test_show_with_cpos_full_camera_spec() -> None:
     """Test show() with cpos parameter as full camera spec."""
-    from pyvista_js import Camera
-
     plotter = Plotter()
     plotter.add_mesh(Sphere())
     plotter.show(cpos=[(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)])

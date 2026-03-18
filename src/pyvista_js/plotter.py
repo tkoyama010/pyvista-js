@@ -620,7 +620,7 @@ class Plotter:
         return None
 
     @camera_position.setter
-    def camera_position(
+    def camera_position(  # noqa: C901
         self,
         cpos: str
         | tuple[float, float, float]
@@ -691,9 +691,10 @@ class Plotter:
 
         # Handle tuple/list input
         if isinstance(cpos, (tuple, list)):
+            vector_length = 3
             # Check if it's a direction vector (3 numbers)
             if (
-                len(cpos) == 3
+                len(cpos) == vector_length
                 and all(isinstance(x, (int, float)) for x in cpos)
             ):
                 # Direction vector
@@ -701,9 +702,9 @@ class Plotter:
                 return
 
             # Check if it's full camera specification (3 tuples/lists of 3 numbers each)
-            if len(cpos) == 3 and all(
+            if len(cpos) == vector_length and all(
                 isinstance(item, (tuple, list))
-                and len(item) == 3
+                and len(item) == vector_length
                 and all(isinstance(x, (int, float)) for x in item)
                 for item in cpos
             ):
@@ -712,7 +713,8 @@ class Plotter:
                 focal_point = (float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2]))
                 view_up = (float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2]))
 
-                from .camera import Camera
+                # Import Camera here to avoid circular imports
+                from .camera import Camera  # noqa: PLC0415
 
                 camera = Camera(
                     position=position,
