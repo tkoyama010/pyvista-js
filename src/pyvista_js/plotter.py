@@ -564,7 +564,7 @@ class Plotter:
 
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.add_axes()
         >>> plotter.show()  # doctest: +SKIP
 
@@ -572,8 +572,8 @@ class Plotter:
 
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='red')
-        >>> plotter.add_mesh(pv.Cube(center=(2, 0, 0)), color='blue')
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+        >>> _ = plotter.add_mesh(pv.Cube(center=(2, 0, 0)), color='blue')
         >>> plotter.add_axes()
         >>> plotter.show()  # doctest: +SKIP
 
