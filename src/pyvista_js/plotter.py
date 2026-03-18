@@ -699,7 +699,7 @@ class Plotter:
             # Check if it's a direction vector (3 numbers)
             if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
                 # Direction vector
-                self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))
+                self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))  # type: ignore[arg-type]
                 return
 
             # Check if it's full camera specification (3 tuples/lists of 3 numbers each)
@@ -710,9 +710,9 @@ class Plotter:
                 for item in cpos
             ):
                 # Full camera specification
-                position = (float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2]))
-                focal_point = (float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2]))
-                view_up = (float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2]))
+                position = (float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2]))  # type: ignore[index]
+                focal_point = (float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2]))  # type: ignore[index]
+                view_up = (float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2]))  # type: ignore[index]
 
                 # Import Camera here to avoid circular imports
                 from .camera import Camera  # noqa: PLC0415
@@ -731,7 +731,7 @@ class Plotter:
             )
             raise ValueError(msg)
 
-        msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"
+        msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
         raise TypeError(msg)
 
     @property
