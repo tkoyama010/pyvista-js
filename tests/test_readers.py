@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from pyvista_js import OBJReader, PLYReader, PolyDataReader, STLReader
+from pyvista_js import examples
 
 DATA_DIR = Path(__file__).parent / "data"
 TRIANGLE_VTK = DATA_DIR / "triangle.vtk"
@@ -415,7 +416,6 @@ def test_stl_reader_no_vertices(tmp_path: Path) -> None:
 
 def test_download_cad_model_returns_stl_mesh() -> None:
     """Test that download_cad_model returns an _STLMesh."""
-    from pyvista_js import examples
 
     mesh = examples.download_cad_model()
     assert mesh.n_points > 0
@@ -423,7 +423,6 @@ def test_download_cad_model_returns_stl_mesh() -> None:
 
 def test_download_cad_model_js_output() -> None:
     """Test that download_cad_model mesh generates valid vtk.js source."""
-    from pyvista_js import examples
 
     mesh = examples.download_cad_model()
     source = mesh.generate_vtk_js_source(0)
