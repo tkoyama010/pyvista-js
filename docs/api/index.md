@@ -50,7 +50,6 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.PolyData
-   pyvista_js.Mesh
    pyvista_js.Arrow
    pyvista_js.Sphere
    pyvista_js.Cube
