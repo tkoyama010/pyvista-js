@@ -1,14 +1,4 @@
-# pyvista-js Documentation
-
-Welcome to the `pyvista-js` documentation!
-
-`pyvista-js` is a PyVista-like API for vtk.js, bringing the intuitive PyVista interface
-to JavaScript-based 3D visualization in browser environments.
-
-## Installation
-
-```bash
-pip install pyvista-js
+```{include} ../README.md
 ```
 
 ______________________________________________________________________
