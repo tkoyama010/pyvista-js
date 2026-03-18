@@ -181,8 +181,8 @@ def download_sky_box_cube_map() -> CubeMap:
     >>> plotter = pv.Plotter()
     >>> plotter.set_environment_texture(cubemap)
     >>> mesh = pv.Sphere()
-    >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
     base = _PYVISTA_DATA_BASE
@@ -214,8 +214,8 @@ def download_masonry_texture() -> Texture:
     >>> texture = examples.download_masonry_texture()
     >>> surf = pv.Cylinder()
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(surf, texture=texture)
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(surf, texture=texture)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
     return Texture(f"{_PYVISTA_DATA_BASE}/masonry.bmp")
