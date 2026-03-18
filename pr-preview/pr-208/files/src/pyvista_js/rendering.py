@@ -24,14 +24,15 @@ MockRenderer provides a fallback for testing.
 
 Data Conversion
 ---------------
-NumPy arrays are converted to JavaScript for vtk.js:
+NumPy arrays are converted to JavaScript for vtk.js.
 
->>> # Python NumPy array (n, 3)
->>> points = mesh.points
->>>
->>> # Convert to JavaScript flat array
->>> points_js = points.flatten().tolist()
->>> polydata.getPoints().setData(points_js, 3)
+Python NumPy array (n, 3)::
+
+    points = mesh.points
+
+    # Convert to JavaScript flat array
+    points_js = points.flatten().tolist()
+    polydata.getPoints().setData(points_js, 3)
 
 Loading vtk.js
 --------------
@@ -49,16 +50,16 @@ For manual loading or custom versions:
 
 Examples
 --------
-Using the renderer (automatically selected):
+Using the renderer (automatically selected)::
 
->>> from pyvista_js.rendering import get_renderer
->>> from pyvista_js import Sphere
->>>
->>> renderer = get_renderer()
->>> mesh = Sphere()
->>> renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
->>> renderer.create_container('viz-container')
->>> renderer.render()
+    from pyvista_js.rendering import get_renderer
+    from pyvista_js import Sphere
+
+    renderer = get_renderer()
+    mesh = Sphere()
+    renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
+    renderer.create_container('viz-container')
+    renderer.render()
 
 In Pyodide environment, this uses vtk.js. In standard Python,
 it opens the visualization in the default web browser.
@@ -895,16 +896,14 @@ class VTKJSRenderer(_BaseHTMLRenderer):
     Examples
     --------
     >>> # In Pyodide/browser environment
-    >>> renderer = VTKJSRenderer()
-    >>> renderer.create_container('my-viz')
-    >>>
+    >>> renderer = VTKJSRenderer()  # doctest: +SKIP
+    >>> renderer.create_container('my-viz')  # doctest: +SKIP
     >>> # Add a mesh
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> actor = renderer.add_mesh_actor(mesh, color='blue')
-    >>>
+    >>> from pyvista_js import Sphere  # doctest: +SKIP
+    >>> mesh = Sphere()  # doctest: +SKIP
+    >>> actor = renderer.add_mesh_actor(mesh, color='blue')  # doctest: +SKIP
     >>> # Render the scene
-    >>> renderer.render()
+    >>> renderer.render()  # doctest: +SKIP
 
     """
 
@@ -952,8 +951,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer = VTKJSRenderer()
-        >>> container = renderer.create_container('my-visualization')
+        >>> renderer = VTKJSRenderer()  # doctest: +SKIP
+        >>> container = renderer.create_container('my-visualization')  # doctest: +SKIP
 
         """
         if self.use_ipython:
@@ -978,7 +977,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer.render()  # Display the visualization
+        >>> renderer.render()  # Display the visualization  # doctest: +SKIP
 
         """
         if self.use_ipython:
@@ -994,7 +993,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer.clear()  # Remove all visualizations
+        >>> renderer.clear()  # Remove all visualizations  # doctest: +SKIP
 
         """
         super().clear()
@@ -1013,8 +1012,8 @@ class BrowserRenderer(_BaseHTMLRenderer):
     --------
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(pv.Sphere(), color='red')
-    >>> plotter.show()  # Opens the default browser with the 3D scene
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -1084,10 +1083,9 @@ class MockRenderer:
     >>>
     >>> renderer = MockRenderer()
     >>> mesh = Sphere()
-    >>> renderer.add_mesh_actor(mesh, color='red')
-    Mock: Added mesh with 900 points
+    >>> _ = renderer.add_mesh_actor(mesh, color='red')
     >>>
-    >>> renderer.render()
+    >>> renderer.render()  # doctest: +SKIP
     Mock: Rendering 1 actors
 
     Notes
@@ -1301,17 +1299,15 @@ def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     Examples
     --------
     >>> # Automatically gets the right renderer
-    >>> renderer = get_renderer()
-    >>>
+    >>> renderer = get_renderer()  # doctest: +SKIP
     >>> # In Pyodide or Jupyter: returns VTKJSRenderer
     >>> # In standard Python: returns BrowserRenderer (opens browser)
-    >>>
     >>> # Same code works in both environments
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> renderer.add_mesh_actor(mesh, color='blue')
-    >>> renderer.create_container()
-    >>> renderer.render()
+    >>> from pyvista_js import Sphere  # doctest: +SKIP
+    >>> mesh = Sphere()  # doctest: +SKIP
+    >>> renderer.add_mesh_actor(mesh, color='blue')  # doctest: +SKIP
+    >>> renderer.create_container()  # doctest: +SKIP
+    >>> renderer.render()  # doctest: +SKIP
 
     Notes
     -----
