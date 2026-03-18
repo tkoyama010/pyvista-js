@@ -194,6 +194,108 @@ def test_shrink_preserves_faces() -> None:
     assert shrunk.n_faces == cube.n_faces
 
 
+def test_clip_returns_polydata() -> None:
+    """Test that clip returns a PolyData instance."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0, 0, 0))
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_default_normal() -> None:
+    """Test that clip works with default normal ('x')."""
+    cube = Cube()
+    clipped = cube.clip()
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_string_normals() -> None:
+    """Test clip with all valid string normal directions."""
+    sphere = Sphere()
+    for normal in ["x", "+x", "-x", "y", "+y", "-y", "z", "+z", "-z"]:
+        clipped = sphere.clip(normal=normal)
+        assert isinstance(clipped, PolyData)
+
+
+def test_clip_tuple_normal() -> None:
+    """Test clip with tuple normal vector."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal=(1.0, 1.0, 0.0), origin=(0, 0, 0))
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_default_origin() -> None:
+    """Test that clip uses mesh center as default origin."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x")
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_custom_origin() -> None:
+    """Test clip with custom origin."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0.5, 0.0, 0.0))
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_invert() -> None:
+    """Test clip with invert flag."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0, 0, 0), invert=True)
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_vtk_js_source_contains_clip_logic() -> None:
+    """Test that clipped mesh generates JS with the custom clip computation."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="y", origin=(0, 0, 0))
+    js_source = clipped.generate_vtk_js_source(0)
+    assert "clippedPD0" in js_source
+    assert "vtkPolyData" in js_source
+    # Check that normal and origin are in the source
+    assert "0.0" in js_source  # normal x component
+    assert "1.0" in js_source  # normal y component
+
+
+def test_clip_mapper_setup_uses_clipped_pd() -> None:
+    """Test that clipped mesh mapper uses setInputData with the clipped polydata."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0, 0, 0))
+    mapper_code = clipped.get_mapper_setup(0)
+    assert "clippedPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_clip_invalid_normal_string() -> None:
+    """Test that an invalid normal string raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Invalid normal string"):
+        sphere.clip(normal="invalid")
+
+
+def test_clip_invalid_normal_tuple_length() -> None:
+    """Test that a normal tuple with wrong length raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Normal vector must have 3 components"):
+        sphere.clip(normal=(1.0, 0.0))  # type: ignore[arg-type]
+
+
+def test_clip_invalid_origin_length() -> None:
+    """Test that an origin with wrong length raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Origin must have 3 components"):
+        sphere.clip(normal="x", origin=(0.0, 0.0))  # type: ignore[arg-type]
+
+
+def test_clip_preserves_points_and_faces() -> None:
+    """Test that clip preserves point and face data structures."""
+    cube = Cube()
+    clipped = cube.clip(normal="x", origin=(0, 0, 0))
+    # The clipped mesh should have the same point and face arrays
+    # (filtering happens in JavaScript)
+    assert clipped.points.shape == cube.points.shape
+    assert clipped.n_faces == cube.n_faces
+
+
 def test_tube_returns_polydata() -> None:
     """Test that tube returns a PolyData instance."""
     line = Line()
