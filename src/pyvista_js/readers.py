@@ -93,7 +93,7 @@ class _GLTFMesh(PolyData):
         """Get the mapper setup code."""
         return f"mapper{idx}.setInputData(source{idx});"
 
-    def generate_full_actor_code(self, idx: int, actor_info: dict) -> str:
+    def generate_full_actor_code(self, idx: int, _actor_info: dict) -> str:
         """Generate complete vtk.js actor code for a glTF mesh.
 
         vtkGLTFImporter adds actors directly via importActors(renderer),
