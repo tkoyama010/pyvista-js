@@ -51,3 +51,4 @@ docs/.jupyterlite.doit.db
 docs/content/
 docs/stlite_demo.md
 docs/api/_autosummary/
+docs/locale/**/*.mo
