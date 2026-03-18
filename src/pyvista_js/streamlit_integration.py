@@ -43,14 +43,12 @@ def pyvista_chart(plotter: Plotter, height: int = 600, key: str | None = None) -
 
     Examples
     --------
-    >>> import pyvista_js as pv
-    >>> import streamlit as st
-    >>>
-    >>> plotter = pv.Plotter()
-    >>> sphere = pv.Sphere()
-    >>> plotter.add_mesh(sphere, color='red')
-    >>>
-    >>> pv.pyvista_chart(plotter, height=500)
+    >>> import pyvista_js as pv  # doctest: +SKIP
+    >>> import streamlit as st  # doctest: +SKIP
+    >>> plotter = pv.Plotter()  # doctest: +SKIP
+    >>> sphere = pv.Sphere()  # doctest: +SKIP
+    >>> plotter.add_mesh(sphere, color='red')  # doctest: +SKIP
+    >>> pv.pyvista_chart(plotter, height=500)  # doctest: +SKIP
 
     """
     if not STREAMLIT_AVAILABLE:

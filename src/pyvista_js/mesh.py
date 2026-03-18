@@ -34,8 +34,8 @@ class PointData:
     Render with scalar coloring:
 
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -196,8 +196,8 @@ class PolyData:
         Render with scalar coloring:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         return self._point_data
@@ -219,8 +219,8 @@ class PolyData:
         >>> mesh = pv.Sphere()
         >>> mesh['elevation'] = mesh.points[:, 2]
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._point_data[name] = array
@@ -341,7 +341,7 @@ class PolyData:
         --------
         >>> import pyvista_js as pv
         >>> sphere = pv.Sphere()
-        >>> sphere.plot(color='red')
+        >>> sphere.plot(color='red')  # doctest: +SKIP
 
         """
         from .plotter import Plotter  # noqa: PLC0415
@@ -1293,7 +1293,7 @@ def Cone(  # noqa: N802 PLR0913
     --------
     >>> import pyvista_js as pv
     >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
-    >>> cone.plot()
+    >>> cone.plot()  # doctest: +SKIP
 
     """
     # Generate approximate points for the cone
