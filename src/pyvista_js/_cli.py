@@ -7,12 +7,13 @@ information) can be done without writing any Python code.
 
 from __future__ import annotations
 
-import argparse
 import logging
 import platform
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
+
+import typer
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -26,27 +27,34 @@ _READER_MAP: dict[str, str] = {
     ".obj": "OBJReader",
 }
 
+# Create the main Typer app
+app = typer.Typer(
+    name="pyvista-js",
+    help="PyVista-like CLI for browser-based 3-D visualization with vtk.js.",
+    no_args_is_help=True,
+)
 
-def _build_parser() -> argparse.ArgumentParser:
-    """Build and return the top-level argument parser."""
-    parser = argparse.ArgumentParser(
-        prog="pyvista-js",
-        description="PyVista-like CLI for browser-based 3-D visualization with vtk.js.",
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=f"%(prog)s {_get_version()}",
-    )
 
-    subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
-    subparsers.required = True
+def _version_callback(value: bool) -> None:  # noqa: FBT001
+    """Show version information and exit."""
+    if value:
+        typer.echo(f"pyvista-js {_get_version()}")
+        raise typer.Exit
 
-    _add_plot_subcommand(subparsers)
-    _add_info_subcommand(subparsers)
-    _add_capture_preview_subcommand(subparsers)
 
-    return parser
+@app.callback()
+def main(
+    version: Annotated[
+        bool | None,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Show version and exit.",
+        ),
+    ] = None,
+) -> None:
+    """PyVista-like CLI for browser-based 3-D visualization with vtk.js."""
 
 
 def _get_version() -> str:
@@ -56,57 +64,8 @@ def _get_version() -> str:
     return __version__
 
 
-def _add_plot_subcommand(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
-    """Register the ``plot`` subcommand."""
-    plot_parser = subparsers.add_parser(
-        "plot",
-        help="Plot one or more mesh files in the browser.",
-        description=(
-            "Open one or more mesh files (.vtk, .ply, .obj) and render them "
-            "in the default web browser using vtk.js."
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    plot_parser.add_argument(
-        "files",
-        nargs="+",
-        metavar="FILE",
-        help="Mesh file(s) to plot. Supported formats: .vtk (ASCII), .ply (ASCII), .obj.",
-    )
-    plot_parser.add_argument(
-        "--color",
-        default=None,
-        metavar="COLOR",
-        help="Mesh colour applied to all files (e.g. ``red``, ``#ff0000``).",
-    )
-    plot_parser.add_argument(
-        "--background",
-        default=None,
-        metavar="COLOR",
-        help="Background colour (e.g. ``white``, ``black``). Default: renderer default.",
-    )
-    plot_parser.add_argument(
-        "--opacity",
-        type=float,
-        default=1.0,
-        metavar="FLOAT",
-        help="Mesh opacity in the range [0, 1]. Default: 1.0.",
-    )
-    plot_parser.set_defaults(func=_cmd_plot)
-
-
-def _add_info_subcommand(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
-    """Register the ``info`` subcommand."""
-    info_parser = subparsers.add_parser(
-        "info",
-        help="Show pyvista-js version and environment information.",
-        description="Print the pyvista-js version and basic Python environment details.",
-    )
-    info_parser.set_defaults(func=_cmd_info)
-
-
 # ---------------------------------------------------------------------------
-# Subcommand implementations
+# Helper functions
 # ---------------------------------------------------------------------------
 
 
@@ -147,71 +106,66 @@ def _read_mesh(path: Path):  # type: ignore[return]  # noqa: ANN202
     return reader_cls(path).read()
 
 
-def _cmd_plot(args: argparse.Namespace) -> None:
-    """Implement the ``plot`` subcommand.
+# ---------------------------------------------------------------------------
+# Subcommand implementations
+# ---------------------------------------------------------------------------
 
-    Parameters
-    ----------
-    args : argparse.Namespace
-        Parsed command-line arguments.
 
+@app.command()
+def plot(
+    files: Annotated[
+        list[Path],
+        typer.Argument(
+            help="Mesh file(s) to plot. Supported formats: .vtk (ASCII), .ply (ASCII), .obj.",
+            metavar="FILE",
+        ),
+    ],
+    color: Annotated[
+        str | None,
+        typer.Option(
+            help="Mesh colour applied to all files (e.g. ``red``, ``#ff0000``).",
+            metavar="COLOR",
+        ),
+    ] = None,
+    background: Annotated[
+        str | None,
+        typer.Option(
+            help="Background colour (e.g. ``white``, ``black``). Default: renderer default.",
+            metavar="COLOR",
+        ),
+    ] = None,
+    opacity: Annotated[
+        float,
+        typer.Option(
+            help="Mesh opacity in the range [0, 1]. Default: 1.0.",
+            metavar="FLOAT",
+        ),
+    ] = 1.0,
+) -> None:
+    """Plot one or more mesh files in the browser.
+
+    Open one or more mesh files (.vtk, .ply, .obj) and render them
+    in the default web browser using vtk.js.
     """
     import pyvista_js as pv  # noqa: PLC0415
 
     plotter = pv.Plotter()
 
-    if args.background is not None:
-        plotter.background_color = args.background
+    if background is not None:
+        plotter.background_color = background
 
-    for file_str in args.files:
-        path = Path(file_str)
-        mesh = _read_mesh(path)
-        plotter.add_mesh(mesh, color=args.color, opacity=args.opacity)
+    for file_path in files:
+        mesh = _read_mesh(file_path)
+        plotter.add_mesh(mesh, color=color, opacity=opacity)
 
     plotter.show()
 
 
-def _add_capture_preview_subcommand(subparsers: argparse._SubParsersAction) -> None:  # type: ignore[type-arg]
-    """Register the ``capture-preview`` subcommand."""
-    capture_parser = subparsers.add_parser(
-        "capture-preview",
-        help="Capture a preview GIF of the JupyterLite demo.",
-        description=(
-            "Automate capturing a preview GIF showing pyvista-js rendering in JupyterLite. "
-            "Requires: playwright, imageio[ffmpeg], pillow."
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    capture_parser.add_argument(
-        "--output",
-        default="assets/preview.gif",
-        metavar="PATH",
-        help="Output path for the GIF. Default: assets/preview.gif.",
-    )
-    capture_parser.add_argument(
-        "--url",
-        default="https://tkoyama010.github.io/pyvista-js/",
-        metavar="URL",
-        help="URL of the JupyterLite demo.",
-    )
-    capture_parser.add_argument(
-        "--fps",
-        type=int,
-        default=2,
-        metavar="INT",
-        help="Frames per second for the GIF. Default: 2.",
-    )
-    capture_parser.set_defaults(func=_cmd_capture_preview)
+@app.command()
+def info() -> None:
+    """Show pyvista-js version and environment information.
 
-
-def _cmd_info(args: argparse.Namespace) -> None:  # noqa: ARG001
-    """Implement the ``info`` subcommand.
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        Parsed command-line arguments (unused).
-
+    Print the pyvista-js version and basic Python environment details.
     """
     import pyvista_js as pv  # noqa: PLC0415
 
@@ -395,29 +349,49 @@ def _create_gif(screenshots_dir: Path, output_path: Path, fps: int = 2) -> bool:
     return True
 
 
-def _cmd_capture_preview(args: argparse.Namespace) -> None:
-    """Implement the ``capture-preview`` subcommand.
+@app.command(name="capture-preview")
+def capture_preview(
+    output: Annotated[
+        Path,
+        typer.Option(
+            help="Output path for the GIF. Default: assets/preview.gif.",
+            metavar="PATH",
+        ),
+    ] = Path("assets/preview.gif"),
+    url: Annotated[
+        str,
+        typer.Option(
+            help="URL of the JupyterLite demo.",
+            metavar="URL",
+        ),
+    ] = "https://tkoyama010.github.io/pyvista-js/",
+    fps: Annotated[
+        int,
+        typer.Option(
+            help="Frames per second for the GIF. Default: 2.",
+            metavar="INT",
+        ),
+    ] = 2,
+) -> None:
+    """Capture a preview GIF of the JupyterLite demo.
 
-    Parameters
-    ----------
-    args : argparse.Namespace
-        Parsed command-line arguments.
-
+    Automate capturing a preview GIF showing pyvista-js rendering in JupyterLite.
+    Requires: playwright, imageio[ffmpeg], pillow.
     """
     import tempfile  # noqa: PLC0415
 
-    output_path = Path(args.output)
+    output_path = output
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = Path(tmp)
-        screenshots_dir = _capture_screenshots(tmp_dir, args.url)
+        screenshots_dir = _capture_screenshots(tmp_dir, url)
 
         screenshot_files = list(screenshots_dir.glob("screenshot_*.png"))
         if not screenshot_files:
             logger.error("No screenshots were captured")
             sys.exit(1)
 
-        if not _create_gif(screenshots_dir, output_path, fps=args.fps):
+        if not _create_gif(screenshots_dir, output_path, fps=fps):
             logger.error("Failed to create GIF")
             sys.exit(1)
 
@@ -425,11 +399,11 @@ def _cmd_capture_preview(args: argparse.Namespace) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Public entry point
+# CLI entry point wrapper for backwards compatibility
 # ---------------------------------------------------------------------------
 
 
-def main(argv: Sequence[str] | None = None) -> None:
+def cli_main(argv: Sequence[str] | None = None) -> None:
     """Entry point for the ``pyvista-js`` command-line interface.
 
     Parameters
@@ -439,6 +413,5 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     """
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    parser = _build_parser()
-    args = parser.parse_args(argv)
-    args.func(args)
+    # Use standalone_mode=False to prevent sys.exit(0) in tests
+    app(argv, standalone_mode=False)
