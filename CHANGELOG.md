@@ -2,13 +2,12 @@
 
 ## [0.7.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.6.0...pyvista-js-v0.7.0) (2026-03-18)
 
-
 ### Features
 
-* add clip filter to PolyData ([#165](https://github.com/tkoyama010/pyvista-js/issues/165)) ([887b78b](https://github.com/tkoyama010/pyvista-js/commit/887b78bed1b972a7a2b37d9765565301c12eddcb))
-* Add Codecov integration for code coverage reporting ([#208](https://github.com/tkoyama010/pyvista-js/issues/208)) ([da0ba52](https://github.com/tkoyama010/pyvista-js/commit/da0ba522188d1adac0b220fd3f9a7b6daf717bbd))
-* Add Plotter.add_axes() orientation marker widget ([#214](https://github.com/tkoyama010/pyvista-js/issues/214)) ([dd75c89](https://github.com/tkoyama010/pyvista-js/commit/dd75c8998c98836059c0f3c522a3d20a93d3fdea))
-* add Zenodo integration for DOI citation ([#209](https://github.com/tkoyama010/pyvista-js/issues/209)) ([2edb753](https://github.com/tkoyama010/pyvista-js/commit/2edb753e2f99d9631e7b0913055dda8b8fbba626))
+- add clip filter to PolyData ([#165](https://github.com/tkoyama010/pyvista-js/issues/165)) ([887b78b](https://github.com/tkoyama010/pyvista-js/commit/887b78bed1b972a7a2b37d9765565301c12eddcb))
+- Add Codecov integration for code coverage reporting ([#208](https://github.com/tkoyama010/pyvista-js/issues/208)) ([da0ba52](https://github.com/tkoyama010/pyvista-js/commit/da0ba522188d1adac0b220fd3f9a7b6daf717bbd))
+- Add Plotter.add_axes() orientation marker widget ([#214](https://github.com/tkoyama010/pyvista-js/issues/214)) ([dd75c89](https://github.com/tkoyama010/pyvista-js/commit/dd75c8998c98836059c0f3c522a3d20a93d3fdea))
+- add Zenodo integration for DOI citation ([#209](https://github.com/tkoyama010/pyvista-js/issues/209)) ([2edb753](https://github.com/tkoyama010/pyvista-js/commit/2edb753e2f99d9631e7b0913055dda8b8fbba626))
 
 ## [0.6.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.5.1...pyvista-js-v0.6.0) (2026-03-18)
 
