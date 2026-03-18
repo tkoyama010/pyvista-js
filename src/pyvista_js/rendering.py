@@ -168,6 +168,33 @@ class _VTKJSLoader:
 logger = logging.getLogger(__name__)
 
 
+def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
+    """Convert color name to RGB tuple.
+
+    Parameters
+    ----------
+    color_name : str
+        Color name (e.g., 'red', 'blue').
+
+    Returns
+    -------
+    tuple of float
+        RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
+
+    """
+    colors = {
+        "red": (1.0, 0.0, 0.0),
+        "green": (0.0, 1.0, 0.0),
+        "blue": (0.0, 0.0, 1.0),
+        "yellow": (1.0, 1.0, 0.0),
+        "cyan": (0.0, 1.0, 1.0),
+        "magenta": (1.0, 0.0, 1.0),
+        "white": (1.0, 1.0, 1.0),
+        "black": (0.0, 0.0, 0.0),
+    }
+    return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
+
+
 class _BaseHTMLRenderer:
     """Base class providing shared state and HTML generation for vtk.js renderers.
 
@@ -259,11 +286,11 @@ class _BaseHTMLRenderer:
 
         """
         if isinstance(color, str):
-            color = self._color_name_to_rgb(color)
+            color = _color_name_to_rgb(color)
 
         # Convert edge_color if it's a string
         if isinstance(edge_color, str):
-            edge_color = self._color_name_to_rgb(edge_color)
+            edge_color = _color_name_to_rgb(edge_color)
 
         actor_info: dict[str, object] = {
             "mesh": mesh,
@@ -316,7 +343,7 @@ class _BaseHTMLRenderer:
         from .mesh import PolyData  # noqa: PLC0415
 
         if isinstance(color, str):
-            color = self._color_name_to_rgb(color)
+            color = _color_name_to_rgb(color)
 
         # Convert to PolyData if needed
         if not isinstance(points, PolyData):
@@ -982,33 +1009,6 @@ class _BaseHTMLRenderer:
         """IPython representation as HTML for Jupyter notebooks."""
         return self._generate_html()
 
-    @staticmethod
-    def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
-        """Convert color name to RGB tuple.
-
-        Parameters
-        ----------
-        color_name : str
-            Color name (e.g., 'red', 'blue').
-
-        Returns
-        -------
-        tuple of float
-            RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
-
-        """
-        colors = {
-            "red": (1.0, 0.0, 0.0),
-            "green": (0.0, 1.0, 0.0),
-            "blue": (0.0, 0.0, 1.0),
-            "yellow": (1.0, 1.0, 0.0),
-            "cyan": (0.0, 1.0, 1.0),
-            "magenta": (1.0, 0.0, 1.0),
-            "white": (1.0, 1.0, 1.0),
-            "black": (0.0, 0.0, 0.0),
-        }
-        return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
-
 
 class VTKJSRenderer(_BaseHTMLRenderer):
     """Renderer using vtk.js for browser visualization.
@@ -1357,7 +1357,7 @@ class MockRenderer:
         from .mesh import PolyData  # noqa: PLC0415
 
         if isinstance(color, str):
-            color = _BaseHTMLRenderer._color_name_to_rgb(color)
+            color = _color_name_to_rgb(color)
 
         if not isinstance(points, PolyData):
             points_array = np.asarray(points)

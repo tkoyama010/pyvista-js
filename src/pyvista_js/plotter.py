@@ -240,13 +240,15 @@ class Plotter:
         >>> import numpy as np
         >>> points = np.random.rand(100, 3)
         >>> plotter = pv.Plotter()
-        >>> plotter.add_points(points, color='red', point_size=10)
+        >>> _ = plotter.add_points(points, color='red', point_size=10)
 
         With spheres:
 
         >>> plotter = pv.Plotter()
         >>> points = np.random.rand(50, 3)
-        >>> plotter.add_points(points, color='blue', point_size=8, render_points_as_spheres=True)
+        >>> _ = plotter.add_points(
+        ...     points, color='blue', point_size=8, render_points_as_spheres=True
+        ... )
 
         """
         # Add points to vtk.js renderer
