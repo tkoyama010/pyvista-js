@@ -1,6 +1,7 @@
 # pyvista-js
 
 [![PyPI](https://img.shields.io/pypi/v/pyvista-js.svg)](https://pypi.org/project/pyvista-js/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg)](https://doi.org/10.5281/zenodo.19092335)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
@@ -25,6 +26,7 @@
 
 - [Install](#install)
 - [Usage](#usage)
+- [Citation](#citation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -51,6 +53,23 @@ plotter = pv.Plotter()
 plotter.add_mesh(pv.Sphere(), color="red")
 plotter.show()
 ```
+
+## Citation
+
+If you use pyvista-js in your research or projects, please cite it using the following:
+
+```bibtex
+@software{koyama_pyvista_js,
+  author       = {Koyama, Tetsuo},
+  title        = {pyvista-js: A PyVista-like API for 3D visualization in the browser},
+  year         = 2026,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.19092335},
+  url          = {https://github.com/tkoyama010/pyvista-js}
+}
+```
+
+Alternatively, you can use the [CITATION.cff](CITATION.cff) file in this repository, which follows the [Citation File Format](https://citation-file-format.github.io/) standard.
 
 ## Contributing
 
