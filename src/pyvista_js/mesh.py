@@ -895,7 +895,8 @@ class PolyData:
         """Build JavaScript code for contour filter."""
         values_str = ",".join(map(str, contour_values))
         return _CONTOUR_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-            "{{CONTOUR_VALUES}}", values_str,
+            "{{CONTOUR_VALUES}}",
+            values_str,
         )
 
     def texture_map_to_plane(self) -> PolyData:
