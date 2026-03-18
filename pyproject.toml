@@ -82,9 +82,9 @@ lint.per-file-ignores."examples/*" = [
   "T201",   # print statements OK in examples
 ]
 lint.per-file-ignores."jupyterlite/content/*" = [
-  "D100",    # missing docstring - jupytext files
-  "ERA001",  # commented-out code - jupytext metadata
-  "INP001",  # implicit namespace package
+  "D100",   # missing docstring - jupytext files
+  "ERA001", # commented-out code - jupytext metadata
+  "INP001", # implicit namespace package
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
