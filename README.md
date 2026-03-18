@@ -63,7 +63,7 @@ If you use pyvista-js in your research or projects, please cite it using the fol
   title        = {pyvista-js: A PyVista-like API for 3D visualization in the browser},
   year         = 2026,
   publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.XXXXXXX},
+  doi          = {10.5281/zenodo.19092335},
   url          = {https://github.com/tkoyama010/pyvista-js}
 }
 ```
