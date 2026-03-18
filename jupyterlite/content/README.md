@@ -16,7 +16,7 @@ The notebooks in this directory are managed using [jupytext](https://jupytext.re
 To edit a notebook:
 
 1. Edit the `.py` file directly (e.g., `simple_demo.py`)
-2. Sync to generate the `.ipynb` file:
+1. Sync to generate the `.ipynb` file:
    ```bash
    jupytext --sync jupyterlite/content/*.py
    ```
