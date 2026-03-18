@@ -32,6 +32,16 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Light
 ```
 
+## Data
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.PointData
+```
+
 ## Mesh
 
 ```{eval-rst}

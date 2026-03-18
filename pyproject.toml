@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.4.0"
+version = "0.5.1"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -27,6 +27,7 @@ classifiers = [
 ]
 dependencies = [
   "numpy>=1.20",
+  "typer>=0.9",
 ]
 optional-dependencies.dev = [
   "mypy>=1",
@@ -54,7 +55,7 @@ urls.Documentation = "https://github.com/tkoyama010/pyvista-js"
 urls.Homepage = "https://github.com/tkoyama010/pyvista-js"
 urls.Issues = "https://github.com/tkoyama010/pyvista-js/issues"
 urls.Repository = "https://github.com/tkoyama010/pyvista-js"
-scripts.pyvista-js = "pyvista_js.__main__:main"
+scripts.pyvista-js = "pyvista_js._cli:cli_main"
 
 [dependency-groups]
 dev = [
