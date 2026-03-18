@@ -23,6 +23,56 @@ Topic driven themed lessons to help you get started with pyvista-js.
    plotter.show()
 ```
 
+## glTF Rendering
+
+### Using GLTFReader
+
+```{eval-rst}
+.. replite::
+   :kernel: pyolite
+   :height: 600px
+
+   import sys
+   sys.path.insert(0, '/drive/src')
+
+   import pyvista_js as pv
+   from pyvista_js.examples import _GLTF_SAMPLE_BASE, _download_url
+
+   _URL = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
+   gltf_path = _download_url(_URL, "DamagedHelmet.gltf")
+
+   reader = pv.GLTFReader(gltf_path)
+   mesh = reader.read()
+
+   plotter = pv.Plotter()
+   plotter.add_mesh(mesh, pbr=True, metallic=0.5, roughness=0.3)
+   plotter.view_isometric()
+   plotter.show()
+```
+
+### Using download_damaged_helmet
+
+```{eval-rst}
+.. replite::
+   :kernel: pyolite
+   :height: 600px
+
+   import sys
+   sys.path.insert(0, '/drive/src')
+
+   import pyvista_js as pv
+   from pyvista_js import examples
+
+   mesh = examples.download_damaged_helmet()
+   cubemap = examples.download_sky_box_cube_map()
+
+   plotter = pv.Plotter()
+   plotter.set_environment_texture(cubemap)
+   plotter.add_mesh(mesh, pbr=True, metallic=0.5, roughness=0.3)
+   plotter.view_isometric()
+   plotter.show()
+```
+
 ## Physically Based Rendering
 
 ```{eval-rst}
