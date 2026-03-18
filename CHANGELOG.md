@@ -2,17 +2,15 @@
 
 ## [0.6.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.5.1...pyvista-js-v0.6.0) (2026-03-18)
 
-
 ### Features
 
-* add cpos parameter to show() method matching PyVista's camera positioning interface ([#204](https://github.com/tkoyama010/pyvista-js/issues/204)) ([d3dc702](https://github.com/tkoyama010/pyvista-js/commit/d3dc70263f9dd47d387b1082ef8933ec2a2f0d7c))
-* add STL file reader ([#168](https://github.com/tkoyama010/pyvista-js/issues/168)) ([cb43ae8](https://github.com/tkoyama010/pyvista-js/commit/cb43ae8318fff83ba8d159f582fded6f94de315c))
-* Migrate CLI from argparse to Typer ([#196](https://github.com/tkoyama010/pyvista-js/issues/196)) ([db23b8a](https://github.com/tkoyama010/pyvista-js/commit/db23b8ae8c49793a86c1fd404ca63c846a8d02b5))
-
+- add cpos parameter to show() method matching PyVista's camera positioning interface ([#204](https://github.com/tkoyama010/pyvista-js/issues/204)) ([d3dc702](https://github.com/tkoyama010/pyvista-js/commit/d3dc70263f9dd47d387b1082ef8933ec2a2f0d7c))
+- add STL file reader ([#168](https://github.com/tkoyama010/pyvista-js/issues/168)) ([cb43ae8](https://github.com/tkoyama010/pyvista-js/commit/cb43ae8318fff83ba8d159f582fded6f94de315c))
+- Migrate CLI from argparse to Typer ([#196](https://github.com/tkoyama010/pyvista-js/issues/196)) ([db23b8a](https://github.com/tkoyama010/pyvista-js/commit/db23b8ae8c49793a86c1fd404ca63c846a8d02b5))
 
 ### Documentation
 
-* add `{include} ../README.md` to docs/index.md ([#201](https://github.com/tkoyama010/pyvista-js/issues/201)) ([04345f5](https://github.com/tkoyama010/pyvista-js/commit/04345f5711338e308ded41c508ece1faf0f419a9))
+- add `{include} ../README.md` to docs/index.md ([#201](https://github.com/tkoyama010/pyvista-js/issues/201)) ([04345f5](https://github.com/tkoyama010/pyvista-js/commit/04345f5711338e308ded41c508ece1faf0f419a9))
 
 ## [0.5.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.5.0...pyvista-js-v0.5.1) (2026-03-18)
 
