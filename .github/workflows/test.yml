@@ -42,6 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
+    environment: codecov
     strategy:
       fail-fast: false
       matrix:
