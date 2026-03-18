@@ -31,14 +31,13 @@ from .mesh import (
     Cylinder,
     Disc,
     Line,
-    Mesh,
     Plane,
     PointData,
     PolyData,
     Sphere,
 )
 from .plotter import Plotter
-from .readers import OBJReader, PLYReader, PolyDataReader
+from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .texture import Texture
 
 # Streamlit integration (optional)
@@ -55,7 +54,6 @@ try:
         "Disc",
         "Light",
         "Line",
-        "Mesh",
         "OBJReader",
         "PLYReader",
         "Plane",
@@ -63,6 +61,7 @@ try:
         "PointData",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",
@@ -81,7 +80,6 @@ except ImportError:
         "Disc",
         "Light",
         "Line",
-        "Mesh",
         "OBJReader",
         "PLYReader",
         "Plane",
@@ -89,6 +87,7 @@ except ImportError:
         "PointData",
         "PolyData",
         "PolyDataReader",
+        "STLReader",
         "Sphere",
         "Texture",
         "__version__",
