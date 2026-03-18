@@ -24,6 +24,7 @@ repos:
     rev: 1.0.0
     hooks:
       - id: mdformat
+        exclude: ^joss/
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.16.2"
