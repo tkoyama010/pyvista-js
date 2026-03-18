@@ -43,7 +43,7 @@ var clippedPD{{INDEX}};
     var allKept = true;
     for (var k = 0; k < npts; k++) {
       var dist = distances[ids[k]];
-      var keep = invert ? (dist < 0) : (dist >= 0);
+      var keep = invert ? (dist >= 0) : (dist <= 0);
       if (!keep) {
         allKept = false;
         break;
