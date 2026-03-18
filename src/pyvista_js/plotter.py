@@ -247,19 +247,19 @@ class Plotter:
         With camera position string shortcut:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.show(cpos='xy')
 
         With direction vector:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.show(cpos=(1, 0, 0))
 
         With full camera specification:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.show(cpos=[(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)])
 
         """
@@ -418,7 +418,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_yx()
         >>> plotter.show()
 
@@ -442,7 +442,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_zx()
         >>> plotter.show()
 
@@ -466,7 +466,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_zy()
         >>> plotter.show()
 
