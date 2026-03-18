@@ -519,7 +519,8 @@ class Plotter:
         >>> from pyvista_js import examples
         >>> cubemap = examples.download_sky_box_cube_map()  # doctest: +SKIP
         >>> plotter = pv.Plotter()  # doctest: +SKIP
-        >>> _ = plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)  # doctest: +SKIP
+        >>> _ = plotter.add_mesh(  # doctest: +SKIP
+        ...     pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
         >>> plotter.set_environment_texture(cubemap)  # doctest: +SKIP
         >>> plotter.show()  # doctest: +SKIP
 
