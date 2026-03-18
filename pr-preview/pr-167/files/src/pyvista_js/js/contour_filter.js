@@ -8,12 +8,6 @@ var contourPD{{INDEX}};
   var contourFilter = vtk.Filters.General.vtkContourFilter.newInstance();
   contourFilter.setInputData(pd);
 
-  // Set scalar array name if provided
-  var scalarName = '{{SCALAR_NAME}}';
-  if (scalarName && scalarName !== '') {
-    contourFilter.setInputArrayToProcess(0, scalarName, 'PointData', 'Scalars');
-  }
-
   // Set contour values
   var values = [{{CONTOUR_VALUES}}];
   contourFilter.setComputeNormals(true);

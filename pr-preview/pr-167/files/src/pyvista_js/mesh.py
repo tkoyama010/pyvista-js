@@ -879,7 +879,6 @@ class PolyData:
         values_str = ",".join(map(str, contour_values))
         return (
             _CONTOUR_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{SCALAR_NAME}}", scalar_name)
             .replace("{{CONTOUR_VALUES}}", values_str)
         )
 
