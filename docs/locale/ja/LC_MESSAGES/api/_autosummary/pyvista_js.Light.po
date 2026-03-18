@@ -1,0 +1,182 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-18 13:08+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ja\n"
+"Language-Team: ja <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../api/_autosummary/pyvista_js.Light.rst:2
+msgid "pyvista\\_js.Light"
+msgstr ""
+
+#: of pyvista_js.light.Light:1
+msgid "A light source for 3D rendering."
+msgstr ""
+
+#: of pyvista_js.light.Light:3
+msgid "Wraps ``vtk.Rendering.Core.vtkLight`` and supports three placement modes:"
+msgstr ""
+
+#: of pyvista_js.light.Light:5
+msgid "**SceneLight** - fixed in world space (default)."
+msgstr ""
+
+#: of pyvista_js.light.Light:6
+msgid "**CameraLight** - moves with the camera."
+msgstr ""
+
+#: of pyvista_js.light.Light:7
+msgid ""
+"**Headlight** - always at the camera position, shining toward the focal "
+"point."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Light.rst
+msgid "Parameters"
+msgstr ""
+
+#: of pyvista_js.light.Light:9
+msgid "(x, y, z) position in world space. Default is ``(0, 0, 1)``."
+msgstr ""
+
+#: of pyvista_js.light.Light:11
+msgid "(x, y, z) point the light shines toward. Default is ``(0, 0, 0)``."
+msgstr ""
+
+#: of pyvista_js.light.Light:13
+msgid "RGB color with values between 0 and 1, or a color name. Default is white."
+msgstr ""
+
+#: of pyvista_js.light.Light:15
+msgid "Brightness of the light. Default is ``1.0``."
+msgstr ""
+
+#: of pyvista_js.light.Light:17
+msgid ""
+"One of ``'SceneLight'``, ``'CameraLight'``, or ``'Headlight'``. Default "
+"is ``'SceneLight'``."
+msgstr ""
+
+#: of pyvista_js.light.Light:20
+msgid ""
+"If ``True``, the light acts as a spotlight using ``cone_angle`` and "
+"``cone_falloff``. Default is ``False``."
+msgstr ""
+
+#: of pyvista_js.light.Light:23
+msgid ""
+"Half-angle (degrees) of the spotlight cone. Values >= 90 disable spot-"
+"lighting. Default is ``30.0``."
+msgstr ""
+
+#: of pyvista_js.light.Light:26
+msgid ""
+"Exponent controlling how sharply the light falls off at the cone edge. "
+"Default is ``5.0``."
+msgstr ""
+
+#: of pyvista_js.light.Light:29
+msgid ""
+"``(constant, linear, quadratic)`` attenuation coefficients. Default is "
+"``(1.0, 0.0, 0.0)``."
+msgstr ""
+
+#: of pyvista_js.light.Light:34
+msgid "Examples"
+msgstr ""
+
+#: of pyvista_js.light.Light:38
+msgid "Add a white scene light:"
+msgstr ""
+
+#: of pyvista_js.light.Light:47
+msgid "Spotlight example:"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.light.Light.__init__:1
+msgid "Initialize a Light instance."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Light.rst:13
+msgid "Methods"
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ""
+":py:obj:`__init__ <pyvista_js.Light.__init__>`\\ \\(\\[position\\, "
+"focal\\_point\\, color\\, ...\\]\\)"
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ""
+":py:obj:`generate_vtk_js_code <pyvista_js.Light.generate_vtk_js_code>`\\ "
+"\\(idx\\)"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.light.Light.generate_vtk_js_code:1
+msgid "Generate vtk.js JavaScript code for this light."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ""
+":py:obj:`set_light_type_to_camera_light "
+"<pyvista_js.Light.set_light_type_to_camera_light>`\\ \\(\\)"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of
+#: pyvista_js.light.Light.set_light_type_to_camera_light:1
+msgid "Set light type to CameraLight (moves with the camera)."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ""
+":py:obj:`set_light_type_to_headlight "
+"<pyvista_js.Light.set_light_type_to_headlight>`\\ \\(\\)"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of
+#: pyvista_js.light.Light.set_light_type_to_headlight:1
+msgid "Set light type to Headlight (at camera position)."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ""
+":py:obj:`set_light_type_to_scene_light "
+"<pyvista_js.Light.set_light_type_to_scene_light>`\\ \\(\\)"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of
+#: pyvista_js.light.Light.set_light_type_to_scene_light:1
+msgid "Set light type to SceneLight (fixed in world space)."
+msgstr ""
+
+#: of pyvista_js.light.Light.generate_vtk_js_code:3
+msgid "Unique index used to avoid variable name collisions in JavaScript."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Light.rst
+msgid "Returns"
+msgstr ""
+
+#: of pyvista_js.light.Light.generate_vtk_js_code:6
+msgid "JavaScript code that creates and configures the light."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Light.rst
+msgid "Return type"
+msgstr ""
+

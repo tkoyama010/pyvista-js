@@ -52,7 +52,14 @@ autodoc_default_options = {
 autosummary_generate = True
 
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "locale/README.md"]
+
+# -- Options for internationalization ----------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-internationalization
+
+language = "en"
+locale_dirs = ["locale/"]
+gettext_compact = False
 
 # Suppress warnings for missing cross-references in included README
 # and pre-existing duplicate object description warnings
