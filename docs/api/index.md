@@ -107,8 +107,11 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.examples.CubeMap
+   pyvista_js.examples.download_cad_model
+   pyvista_js.examples.download_damaged_helmet
    pyvista_js.examples.download_masonry_texture
    pyvista_js.examples.download_sky_box_cube_map
+   pyvista_js.examples.download_trumpet
 ```
 
 ## CLI
