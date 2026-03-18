@@ -34,8 +34,8 @@ class PointData:
     Render with scalar coloring:
 
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -133,6 +133,7 @@ _SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
 _CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
 _CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
 _SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
+_CLIP_FILTER_TEMPLATE = (_JS_DIR / "clip_filter.js").read_text()
 _TUBE_FILTER_TEMPLATE = (_JS_DIR / "tube_filter.js").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
 _DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
@@ -141,6 +142,7 @@ _CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
 _LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
 _PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
+_VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3
 
 
@@ -196,8 +198,8 @@ class PolyData:
         Render with scalar coloring:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         return self._point_data
@@ -219,8 +221,8 @@ class PolyData:
         >>> mesh = pv.Sphere()
         >>> mesh['elevation'] = mesh.points[:, 2]
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._point_data[name] = array
@@ -341,7 +343,7 @@ class PolyData:
         --------
         >>> import pyvista_js as pv
         >>> sphere = pv.Sphere()
-        >>> sphere.plot(color='red')
+        >>> sphere.plot(color='red')  # doctest: +SKIP
 
         """
         from .plotter import Plotter  # noqa: PLC0415
@@ -487,6 +489,136 @@ class PolyData:
             faces=self.faces,
             _vtk_js_source_fn=_vtk_js_source_with_shrink,
             _mapper_setup_fn=_mapper_setup_shrink,
+        )
+
+    def clip(
+        self,
+        normal: str | tuple[float, float, float] = "x",
+        origin: tuple[float, float, float] | None = None,
+        *,
+        invert: bool = False,
+    ) -> PolyData:
+        """Clip the mesh with a plane.
+
+        This filter clips the mesh with a plane defined by a normal vector
+        and an origin point. Points on one side of the plane are removed.
+        It mirrors the PyVista ``clip`` filter API.
+
+        .. note::
+
+            The clipping is computed in JavaScript at render time by
+            evaluating the signed distance of each vertex from the clip plane.
+            Cells with all vertices on the clipped side are removed.
+            ``vtk.js`` does not include a built-in clipping filter with
+            the exact PyVista API, so this filter is implemented as a
+            custom JavaScript pass.
+
+        Parameters
+        ----------
+        normal : str or tuple of float, optional
+            The normal vector of the clipping plane. Can be a string
+            specifying a cardinal direction ('x', 'y', 'z', '-x', '-y', '-z')
+            or a 3-tuple of floats (nx, ny, nz). Default is 'x'.
+        origin : tuple of float, optional
+            The origin point of the clipping plane as (x, y, z).
+            If not provided, defaults to the center of the mesh's bounding box.
+        invert : bool, optional
+            If True, flip the clipping direction to keep the part that would
+            normally be removed. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with clipped cells removed.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> clipped = sphere.clip(normal='x', origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip along the negative Y axis:
+
+        >>> clipped = sphere.clip(normal='-y')
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip with a custom normal vector:
+
+        >>> clipped = sphere.clip(normal=(1, 1, 0), origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Render the clipped mesh:
+
+        >>> clipped.plot()  # doctest: +SKIP
+
+        """
+        # Parse normal vector
+        if isinstance(normal, str):
+            normal_map = {
+                "x": (1.0, 0.0, 0.0),
+                "+x": (1.0, 0.0, 0.0),
+                "-x": (-1.0, 0.0, 0.0),
+                "y": (0.0, 1.0, 0.0),
+                "+y": (0.0, 1.0, 0.0),
+                "-y": (0.0, -1.0, 0.0),
+                "z": (0.0, 0.0, 1.0),
+                "+z": (0.0, 0.0, 1.0),
+                "-z": (0.0, 0.0, -1.0),
+            }
+            if normal not in normal_map:
+                msg = f"Invalid normal string '{normal}'. Must be one of {list(normal_map.keys())}"
+                raise ValueError(msg)
+            normal_vec = normal_map[normal]
+        else:
+            if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
+                msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"  # type: ignore[arg-type]
+                raise ValueError(msg)
+            n = [float(x) for x in normal]  # type: ignore[arg-type]
+            normal_vec = (n[0], n[1], n[2])
+
+        # Compute origin if not provided (use center of bounding box)
+        if origin is None:
+            pts = self.points
+            origin = (
+                float((pts[:, 0].min() + pts[:, 0].max()) / 2),
+                float((pts[:, 1].min() + pts[:, 1].max()) / 2),
+                float((pts[:, 2].min() + pts[:, 2].max()) / 2),
+            )
+        else:
+            if len(origin) != _VECTOR_COMPONENTS:
+                msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
+                raise ValueError(msg)
+            o = [float(x) for x in origin]
+            origin = (o[0], o[1], o[2])
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_clip(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            clip_code = (
+                _CLIP_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
+                .replace("{{NORMAL_X}}", str(normal_vec[0]))
+                .replace("{{NORMAL_Y}}", str(normal_vec[1]))
+                .replace("{{NORMAL_Z}}", str(normal_vec[2]))
+                .replace("{{ORIGIN_X}}", str(origin[0]))
+                .replace("{{ORIGIN_Y}}", str(origin[1]))
+                .replace("{{ORIGIN_Z}}", str(origin[2]))
+                .replace("{{INVERT}}", "true" if invert else "false")
+            )
+            return base + "\n" + clip_code
+
+        def _mapper_setup_clip(idx: int) -> str:
+            return f"mapper{idx}.setInputData(clippedPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_clip,
+            _mapper_setup_fn=_mapper_setup_clip,
         )
 
     def tube(
@@ -1293,7 +1425,7 @@ def Cone(  # noqa: N802 PLR0913
     --------
     >>> import pyvista_js as pv
     >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
-    >>> cone.plot()
+    >>> cone.plot()  # doctest: +SKIP
 
     """
     # Generate approximate points for the cone
