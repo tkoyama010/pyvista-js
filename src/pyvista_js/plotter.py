@@ -619,6 +619,39 @@ class Plotter:
         """
         self._renderer.add_light(light)
 
+    def add_axes(self, **kwargs: object) -> None:
+        """Add an orientation marker (axes indicator) to the viewport.
+
+        Displays XYZ axes in the corner of the viewport to help orient
+        the viewer. Backed by vtk.js ``vtkOrientationMarkerWidget``.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation. Currently accepts no parameters.
+
+        Examples
+        --------
+        Basic usage:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.add_axes()
+        >>> plotter.show()  # doctest: +SKIP
+
+        With multiple meshes:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+        >>> _ = plotter.add_mesh(pv.Cube(center=(2, 0, 0)), color='blue')
+        >>> plotter.add_axes()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._renderer.add_axes(**kwargs)
+
     def clear(self) -> None:
         """Clear all actors from the plotter.
 
