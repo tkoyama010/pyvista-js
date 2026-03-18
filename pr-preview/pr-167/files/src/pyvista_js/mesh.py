@@ -755,9 +755,11 @@ class PolyData:
 
         >>> contours = sphere.contour(isosurfaces=[0.0, 0.5], scalars=sphere_scalars)
 
-        Render the contours:
+        Render the contours with scalar coloring:
 
-        >>> contours.plot()  # doctest: +SKIP
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(contours, scalars='scalars', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         # Determine scalar data to use
