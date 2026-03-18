@@ -668,9 +668,7 @@ class _BaseHTMLRenderer:
                 f"actor{idx}.getProperty().setRepresentationToPoints();"
             )
             if render_points_as_spheres:
-                point_props_code += (
-                    f"\nactor{idx}.getProperty().setRenderPointsAsSpheres(true);"
-                )
+                point_props_code += f"\nactor{idx}.getProperty().setRenderPointsAsSpheres(true);"
 
             return (
                 _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
