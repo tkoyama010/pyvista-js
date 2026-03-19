@@ -1,0 +1,6 @@
+# Ignore JavaScript template files that contain template syntax (e.g., {{VARIABLE}})
+# These files are not valid JavaScript and cannot be parsed by prettier
+src/pyvista_js/js/*.js
+
+# node_modules
+node_modules/

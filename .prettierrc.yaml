@@ -1,0 +1,28 @@
+# Prettier configuration for pyvista-js
+# Formats JavaScript files and embedded JavaScript in HTML files
+
+# Basic formatting options
+printWidth: 100
+tabWidth: 2
+useTabs: false
+semi: true
+singleQuote: false
+trailingComma: es5
+bracketSpacing: true
+arrowParens: always
+
+# Plugin configuration
+# Note: For Prettier 3.x, plugins are loaded via additional_dependencies in pre-commit
+plugins: []
+
+# File-specific overrides
+overrides:
+  # JavaScript template files
+  - files: "*.js"
+    options:
+      parser: babel
+
+  # HTML files with embedded JavaScript
+  - files: "*.html"
+    options:
+      parser: html
