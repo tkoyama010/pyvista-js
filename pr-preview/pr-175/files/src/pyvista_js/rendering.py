@@ -646,10 +646,12 @@ class _BaseHTMLRenderer:
         if vertical:
             orientation_code = (
                 "scalarBarActor.setAxisTextStyle({\n"
+                "  fontColor: 'black',\n"
                 "  fontFamily: 'Arial',\n"
                 "  fontSize: 14,\n"
                 "});\n"
                 "scalarBarActor.setTickTextStyle({\n"
+                "  fontColor: 'black',\n"
                 "  fontFamily: 'Arial',\n"
                 "  fontSize: 12,\n"
                 "});\n"
@@ -663,10 +665,12 @@ class _BaseHTMLRenderer:
         else:
             orientation_code = (
                 "scalarBarActor.setAxisTextStyle({\n"
+                "  fontColor: 'black',\n"
                 "  fontFamily: 'Arial',\n"
                 "  fontSize: 14,\n"
                 "});\n"
                 "scalarBarActor.setTickTextStyle({\n"
+                "  fontColor: 'black',\n"
                 "  fontFamily: 'Arial',\n"
                 "  fontSize: 12,\n"
                 "});\n"
