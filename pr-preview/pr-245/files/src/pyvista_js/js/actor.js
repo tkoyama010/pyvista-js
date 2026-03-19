@@ -13,6 +13,7 @@ actor{{INDEX}}.getProperty().setColor({{COLOR_R}}, {{COLOR_G}}, {{COLOR_B}});
 actor{{INDEX}}.getProperty().setOpacity({{OPACITY}});
 {{EDGE_CODE}}
 {{STYLE_CODE}}
+{{SHADING_CODE}}
 {{PBR_CODE}}
 {{TEXTURE_CODE}}
 // Add actor to renderer

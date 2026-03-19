@@ -223,6 +223,7 @@ class _BaseHTMLRenderer:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -246,6 +247,10 @@ class _BaseHTMLRenderer:
             Metallic factor for PBR.
         roughness : float, default=0.5
             Roughness factor for PBR.
+        smooth_shading : bool, default=True
+            Enable smooth shading (Gouraud interpolation). When True, normals
+            are interpolated across polygons for a smooth appearance. When
+            False, flat shading is used.
         texture : Texture, optional
             Surface texture to apply. The texture image is loaded from the
             URL stored in the :class:`~pyvista_js.Texture` object.
@@ -282,6 +287,7 @@ class _BaseHTMLRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "smooth_shading": smooth_shading,
             "texture": texture,
             "show_edges": show_edges,
             "edge_color": edge_color,
@@ -757,6 +763,7 @@ class _BaseHTMLRenderer:
         pbr = actor_info.get("pbr", False)
         metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
         roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
+        smooth_shading = actor_info.get("smooth_shading", True)
         show_edges = actor_info.get("show_edges", False)
         edge_color = actor_info.get("edge_color")
         style = actor_info.get("style", "surface")
@@ -765,6 +772,7 @@ class _BaseHTMLRenderer:
         mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
         pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
+        shading_code = self._generate_shading_code(idx, smooth_shading)
         edge_code = self._generate_edge_code(
             idx,
             show_edges,
@@ -785,6 +793,7 @@ class _BaseHTMLRenderer:
             .replace("{{EDGE_CODE}}", edge_code)
             .replace("{{STYLE_CODE}}", style_code)
             .replace("{{PBR_CODE}}", pbr_code)
+            .replace("{{SHADING_CODE}}", shading_code)
             .replace("{{TEXTURE_CODE}}", texture_code)
             .replace("{{SCALAR_CODE}}", scalar_code)
         )
@@ -833,6 +842,27 @@ class _BaseHTMLRenderer:
             f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
             f"actor{idx}.getProperty().setDiffuse({diffuse});"
         )
+
+    @staticmethod
+    def _generate_shading_code(idx: int, smooth_shading: object) -> str:
+        """Generate vtk.js shading interpolation code for an actor.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        smooth_shading : object
+            Whether smooth shading (Gouraud interpolation) is enabled.
+
+        Returns
+        -------
+        str
+            JavaScript code or empty string.
+
+        """
+        if smooth_shading:
+            return f"actor{idx}.getProperty().setInterpolationToGouraud();"
+        return f"actor{idx}.getProperty().setInterpolationToFlat();"
 
     @staticmethod
     def _generate_edge_code(
@@ -1312,6 +1342,7 @@ class MockRenderer:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,

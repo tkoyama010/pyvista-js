@@ -76,6 +76,7 @@ class Plotter:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -102,6 +103,11 @@ class Plotter:
         roughness : float, optional
             Roughness factor for PBR, between 0 (mirror-like) and 1 (fully
             rough). Only used when ``pbr=True``. Default is 0.5.
+        smooth_shading : bool, optional
+            Enable smooth shading (Gouraud interpolation). When True, the mesh
+            surface appears smooth by interpolating normals across polygons.
+            When False, flat shading is used where each polygon face has a
+            uniform color. Default is True.
         texture : Texture, optional
             Surface texture to apply to the mesh. Create one with
             :class:`~pyvista_js.Texture`. The mesh should have texture
@@ -197,6 +203,7 @@ class Plotter:
             pbr=pbr,
             metallic=metallic,
             roughness=roughness,
+            smooth_shading=smooth_shading,
             texture=texture,
             show_edges=show_edges,
             edge_color=edge_color,
@@ -214,6 +221,7 @@ class Plotter:
                 "pbr": pbr,
                 "metallic": metallic,
                 "roughness": roughness,
+                "smooth_shading": smooth_shading,
                 "texture": texture,
                 "show_edges": show_edges,
                 "edge_color": edge_color,
