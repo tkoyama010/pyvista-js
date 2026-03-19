@@ -40,56 +40,51 @@ from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .texture import Texture
 
+# MCP server (optional)
+try:
+    from .mcp_server import MCPServer
+
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    MCPServer = None  # type: ignore[assignment,misc]
+
 # Streamlit integration (optional)
 try:
     from .streamlit_integration import pyvista_chart
 
-    __all__ = [
-        "Arrow",
-        "Camera",
-        "Circle",
-        "Cone",
-        "Cube",
-        "Cylinder",
-        "Disc",
-        "Light",
-        "Line",
-        "OBJReader",
-        "PLYReader",
-        "Plane",
-        "Plotter",
-        "PointData",
-        "PolyData",
-        "PolyDataReader",
-        "STLReader",
-        "Sphere",
-        "Texture",
-        "__version__",
-        "examples",
-        "pyvista_chart",
-    ]
+    STREAMLIT_AVAILABLE = True
 except ImportError:
-    # Streamlit not available
-    __all__ = [
-        "Arrow",
-        "Camera",
-        "Circle",
-        "Cone",
-        "Cube",
-        "Cylinder",
-        "Disc",
-        "Light",
-        "Line",
-        "OBJReader",
-        "PLYReader",
-        "Plane",
-        "Plotter",
-        "PointData",
-        "PolyData",
-        "PolyDataReader",
-        "STLReader",
-        "Sphere",
-        "Texture",
-        "__version__",
-        "examples",
-    ]
+    STREAMLIT_AVAILABLE = False
+    pyvista_chart = None  # type: ignore[assignment]
+
+# Build __all__ list dynamically
+__all__ = [
+    "Arrow",
+    "Camera",
+    "Circle",
+    "Cone",
+    "Cube",
+    "Cylinder",
+    "Disc",
+    "Light",
+    "Line",
+    "OBJReader",
+    "PLYReader",
+    "Plane",
+    "Plotter",
+    "PointData",
+    "PolyData",
+    "PolyDataReader",
+    "STLReader",
+    "Sphere",
+    "Texture",
+    "__version__",
+    "examples",
+]
+
+if STREAMLIT_AVAILABLE:
+    __all__ += ["pyvista_chart"]
+
+if MCP_AVAILABLE:
+    __all__ += ["MCPServer"]
