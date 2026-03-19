@@ -838,13 +838,16 @@ class _BaseHTMLRenderer:
             ux, uy, uz = self._camera.view_up
             angle = self._camera.view_angle
             near, far = self._camera.clipping_range
+            parallel = self._camera.parallel_projection
+            parallel_js = "true" if parallel else "false"
             return (
                 "      const cam = renderer.getActiveCamera();\n"
                 f"      cam.setPosition({px}, {py}, {pz});\n"
                 f"      cam.setFocalPoint({fx}, {fy}, {fz});\n"
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 f"      cam.setViewAngle({angle});\n"
-                f"      cam.setClippingRange({near}, {far});"
+                f"      cam.setClippingRange({near}, {far});\n"
+                f"      cam.setParallelProjection({parallel_js});"
             )
         if self._view_vector is not None:
             vx, vy, vz = self._view_vector
