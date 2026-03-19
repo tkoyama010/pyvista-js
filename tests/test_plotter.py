@@ -947,3 +947,62 @@ def test_mesh_pickle_preserves_point_data() -> None:
     assert "pressure" in loaded_mesh.point_data
     assert np.array_equal(loaded_mesh["temperature"], mesh["temperature"])
     assert np.array_equal(loaded_mesh["pressure"], mesh["pressure"])
+
+
+def test_add_scalar_bar() -> None:
+    """Test adding a scalar bar to the plotter."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Test", vertical=True, n_labels=5)
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == "Test"
+    assert plotter._scalar_bar["vertical"] is True
+    assert plotter._scalar_bar["n_labels"] == 5
+
+
+def test_add_scalar_bar_default_params() -> None:
+    """Test adding a scalar bar with default parameters."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar()
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == ""
+    assert plotter._scalar_bar["vertical"] is True
+    assert plotter._scalar_bar["n_labels"] == 5
+
+
+def test_add_scalar_bar_horizontal() -> None:
+    """Test adding a horizontal scalar bar."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Horizontal", vertical=False, n_labels=7)
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == "Horizontal"
+    assert plotter._scalar_bar["vertical"] is False
+    assert plotter._scalar_bar["n_labels"] == 7
+
+
+def test_scalar_bar_cleared_with_plotter() -> None:
+    """Test that scalar bar is cleared when plotter is cleared."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Test")
+
+    assert plotter._scalar_bar is not None
+
+    plotter.clear()
+    assert plotter._scalar_bar is None
+
+
+def test_scalar_bar_updates_renderer() -> None:
+    """Test that scalar bar is added to the renderer."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Height", vertical=True, n_labels=5)
+
+    # Check that renderer has scalar bar
+    assert plotter._renderer._scalar_bar is not None
+    assert plotter._renderer._scalar_bar["title"] == "Height"

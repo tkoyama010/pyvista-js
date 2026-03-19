@@ -66,6 +66,7 @@ class Plotter:
         self._background_color = (1.0, 1.0, 1.0)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
         self._camera: Camera | None = None
+        self._scalar_bar: dict[str, Any] | None = None
 
     def add_mesh(  # noqa: PLR0913
         self,
@@ -604,6 +605,54 @@ class Plotter:
         """
         self._renderer.add_axes(**kwargs)
 
+    def add_scalar_bar(
+        self,
+        title: str = "",
+        vertical: bool = True,  # noqa: FBT001, FBT002
+        n_labels: int = 5,
+    ) -> None:
+        """Add a scalar bar to display the color legend.
+
+        This method adds a scalar bar (color legend) that shows the mapping
+        between scalar values and colors. The scalar bar is linked to the
+        active scalar colormap from the most recently added mesh.
+
+        Parameters
+        ----------
+        title : str, optional
+            Title text to display on the scalar bar. Default is an empty string.
+        vertical : bool, optional
+            Whether to orient the scalar bar vertically (True) or horizontally
+            (False). Default is True.
+        n_labels : int, optional
+            Number of labels to display on the scalar bar. Default is 5.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh['height'] = mesh.points[:, 2]  # doctest: +SKIP
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='height', cmap='viridis')  # doctest: +SKIP
+        >>> plotter.add_scalar_bar(title='Height', vertical=True)
+        >>> plotter.show()  # doctest: +SKIP
+
+        Horizontal scalar bar:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='height', cmap='viridis')  # doctest: +SKIP
+        >>> plotter.add_scalar_bar(title='Height', vertical=False, n_labels=7)
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._scalar_bar = {
+            "title": title,
+            "vertical": vertical,
+            "n_labels": n_labels,
+        }
+        self._renderer.add_scalar_bar(title=title, vertical=vertical, n_labels=n_labels)
+
     def clear(self) -> None:
         """Clear all actors from the plotter.
 
@@ -616,6 +665,7 @@ class Plotter:
 
         """
         self._actors = []
+        self._scalar_bar = None
         self._renderer.clear()
 
     @property
