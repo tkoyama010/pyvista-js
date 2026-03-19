@@ -13,8 +13,7 @@ arrowParens: always
 
 # Plugin configuration
 # Note: For Prettier 3.x, plugins are loaded via additional_dependencies in pre-commit
-plugins:
-  - prettier-plugin-jinja-template
+plugins: []
 
 # File-specific overrides
 overrides:
