@@ -843,6 +843,49 @@ class PolyData:
             return self._mapper_setup_fn(idx)
         return f"mapper{idx}.setInputData(source{idx});"
 
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling.
+
+        Excludes the unpicklable callable functions (_vtk_js_source_fn and
+        _mapper_setup_fn), keeping only the serializable mesh data.
+
+        Returns
+        -------
+        dict
+            State dictionary containing points, faces, texture coordinates,
+            point data, and source type flag.
+
+        """
+        return {
+            "points": self.points,
+            "faces": self.faces,
+            "t_coords": self.t_coords,
+            "_point_data": self._point_data,
+            "_vtk_js_source_is_filter": self._vtk_js_source_is_filter,
+        }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle.
+
+        Reconstructs the mesh from pickled state. Note that primitive
+        meshes will lose their vtk.js source functions and will be
+        treated as generic PolyData after unpickling.
+
+        Parameters
+        ----------
+        state : dict
+            State dictionary from __getstate__.
+
+        """
+        self.points = state["points"]  # type: ignore[assignment]
+        self.faces = state["faces"]  # type: ignore[assignment]
+        self.t_coords = state["t_coords"]  # type: ignore[assignment]
+        self._point_data = state["_point_data"]  # type: ignore[assignment]
+        self._vtk_js_source_is_filter = state["_vtk_js_source_is_filter"]  # type: ignore[assignment]
+        # Set unpicklable callables to None
+        self._vtk_js_source_fn = None
+        self._mapper_setup_fn = None
+
 
 def Sphere(  # noqa: N802
     radius: float = 1.0,
