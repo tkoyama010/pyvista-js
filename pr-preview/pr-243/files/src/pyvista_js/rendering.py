@@ -702,9 +702,9 @@ class _BaseHTMLRenderer:
             )
 
         code = (
-            _SCALAR_BAR_TEMPLATE.replace("{{TITLE}}", title)
-            .replace("{{N_LABELS}}", str(n_labels))
-            .replace("{{ORIENTATION_CODE}}", orientation_code)
+            _SCALAR_BAR_TEMPLATE.replace("{{ TITLE }}", title)
+            .replace("{{ N_LABELS }}", str(n_labels))
+            .replace("{{ ORIENTATION_CODE }}", orientation_code)
         )
 
         # Indent for consistency with other generated code
@@ -775,18 +775,18 @@ class _BaseHTMLRenderer:
         scalar_code = self._generate_scalar_code(actor_info, idx)
 
         return (
-            _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
-            .replace("{{INDEX}}", str(idx))
-            .replace("{{MAPPER_SETUP}}", mapper_setup)
-            .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
-            .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
-            .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
-            .replace("{{OPACITY}}", str(opacity))
-            .replace("{{EDGE_CODE}}", edge_code)
-            .replace("{{STYLE_CODE}}", style_code)
-            .replace("{{PBR_CODE}}", pbr_code)
-            .replace("{{TEXTURE_CODE}}", texture_code)
-            .replace("{{SCALAR_CODE}}", scalar_code)
+            _ACTOR_TEMPLATE.replace("{{ SOURCE_CODE }}", source_code)
+            .replace("{{ INDEX }}", str(idx))
+            .replace("{{ MAPPER_SETUP }}", mapper_setup)
+            .replace("{{ COLOR_R }}", str(color[0]))  # type: ignore[index]
+            .replace("{{ COLOR_G }}", str(color[1]))  # type: ignore[index]
+            .replace("{{ COLOR_B }}", str(color[2]))  # type: ignore[index]
+            .replace("{{ OPACITY }}", str(opacity))
+            .replace("{{ EDGE_CODE }}", edge_code)
+            .replace("{{ STYLE_CODE }}", style_code)
+            .replace("{{ PBR_CODE }}", pbr_code)
+            .replace("{{ TEXTURE_CODE }}", texture_code)
+            .replace("{{ SCALAR_CODE }}", scalar_code)
         )
 
     @staticmethod
