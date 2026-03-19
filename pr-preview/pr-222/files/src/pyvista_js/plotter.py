@@ -872,3 +872,54 @@ class Plotter:
             return (color[0], color[1], color[2])
         msg = f"Color must be a string or RGB tuple, got {type(color)}"  # type: ignore[unreachable]
         raise TypeError(msg)
+
+    def enable_parallel_projection(self) -> None:
+        """Enable parallel (orthographic) projection.
+
+        Switches the camera from perspective projection to parallel projection.
+        This is useful for viewing 2D datasets, CAD-like orthographic views,
+        and scientific visualization where perspective distortion is undesirable.
+
+        If no camera is set, creates a default camera with parallel projection enabled.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.enable_parallel_projection()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        if self._camera is None:
+            from .camera import Camera
+
+            self._camera = Camera()
+            self._renderer.camera = self._camera
+
+        self._camera.enable_parallel_projection()
+
+    def disable_parallel_projection(self) -> None:
+        """Disable parallel projection (use perspective projection).
+
+        Switches the camera from parallel projection to perspective projection.
+
+        If no camera is set, creates a default camera with perspective projection.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.enable_parallel_projection()
+        >>> plotter.disable_parallel_projection()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        if self._camera is None:
+            from .camera import Camera
+
+            self._camera = Camera()
+            self._renderer.camera = self._camera
+
+        self._camera.disable_parallel_projection()
