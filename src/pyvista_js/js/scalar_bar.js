@@ -3,11 +3,9 @@ const scalarBarActor = vtk.Rendering.Core.vtkScalarBarActor.newInstance();
 
 // Configure scalar bar appearance
 scalarBarActor.setAxisLabel('{{TITLE}}');
-scalarBarActor.setAutomated(false);
-scalarBarActor.setGenerateTicks(true);
-scalarBarActor.setNumberOfLabels({{N_LABELS}});
+scalarBarActor.setAutomated(true);
 
-// Set orientation (vertical or horizontal)
+// Set orientation and position
 {{ORIENTATION_CODE}}
 
 // Create a simple lookup table (placeholder for future scalar support)
@@ -20,4 +18,4 @@ lookupTable.addRGBPoint(1.0, 0.993, 0.906, 0.144);  // viridis yellow
 scalarBarActor.setScalarsToColors(lookupTable);
 
 // Add to renderer
-renderer.addActor(scalarBarActor);
+renderer.addActor2D(scalarBarActor);
