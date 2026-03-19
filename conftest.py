@@ -1,10 +1,10 @@
 """Pytest configuration for pyvista-js."""
 
-import os
+from pathlib import Path
 
 collect_ignore_glob = []
 
 try:
     import mcp  # noqa: F401
 except ImportError:
-    collect_ignore_glob.append(os.path.join("src", "pyvista_js", "mcp_server.py"))
+    collect_ignore_glob.append(str(Path("src") / "pyvista_js" / "mcp_server.py"))
