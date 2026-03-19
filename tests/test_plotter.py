@@ -836,3 +836,114 @@ def test_plotter_perspective_projection_generates_code() -> None:
 
     # Verify perspective projection is set in the generated code
     assert "cam.setParallelProjection(false)" in html
+
+
+def test_plotter_pickle() -> None:
+    """Test that a plotter can be pickled and unpickled."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), color="red", opacity=0.8)
+    plotter.background_color = "white"
+
+    # Pickle the plotter
+    pickled = pickle.dumps(plotter)
+
+    # Unpickle the plotter
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded plotter
+    assert len(loaded_plotter.actors) == 1
+    assert loaded_plotter.actors[0]["color"] == "red"
+    assert loaded_plotter.actors[0]["opacity"] == 0.8
+    assert loaded_plotter.background_color == (1.0, 1.0, 1.0)
+
+
+def test_plotter_pickle_multiple_meshes() -> None:
+    """Test pickling a plotter with multiple meshes."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(radius=1.0), color="red")
+    plotter.add_mesh(Cube(center=(2, 0, 0)), color="blue", opacity=0.5)
+    plotter.background_color = "black"
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(plotter)
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded plotter
+    assert len(loaded_plotter.actors) == 2
+    assert loaded_plotter.actors[0]["color"] == "red"
+    assert loaded_plotter.actors[1]["color"] == "blue"
+    assert loaded_plotter.actors[1]["opacity"] == 0.5
+    assert loaded_plotter.background_color == (0.0, 0.0, 0.0)
+
+
+def test_plotter_pickle_with_camera() -> None:
+    """Test pickling a plotter with camera settings."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    camera = Camera(
+        position=(2.0, 5.0, 13.0),
+        focal_point=(0.0, 0.0, 0.0),
+        view_up=(0.0, 1.0, 0.0),
+    )
+    plotter.camera = camera
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(plotter)
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify camera was preserved
+    assert loaded_plotter.camera is not None
+    assert loaded_plotter.camera.position == (2.0, 5.0, 13.0)
+    assert loaded_plotter.camera.focal_point == (0.0, 0.0, 0.0)
+    assert loaded_plotter.camera.view_up == (0.0, 1.0, 0.0)
+
+
+def test_mesh_pickle() -> None:
+    """Test that a mesh can be pickled and unpickled."""
+    import pickle  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    mesh = Sphere()
+    mesh["elevation"] = mesh.points[:, 2]
+
+    # Pickle the mesh
+    pickled = pickle.dumps(mesh)
+
+    # Unpickle the mesh
+    loaded_mesh = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded mesh
+    assert loaded_mesh.n_points == mesh.n_points
+    assert np.array_equal(loaded_mesh.points, mesh.points)
+    assert "elevation" in loaded_mesh.point_data
+    assert np.array_equal(loaded_mesh["elevation"], mesh["elevation"])
+
+
+def test_mesh_pickle_preserves_point_data() -> None:
+    """Test that point data is preserved when pickling a mesh."""
+    import pickle  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+    mesh = PolyData(points)
+    mesh["temperature"] = np.array([100.0, 200.0, 300.0])
+    mesh["pressure"] = np.array([1.0, 2.0, 3.0])
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(mesh)
+    loaded_mesh = pickle.loads(pickled)  # noqa: S301
+
+    # Verify point data was preserved
+    assert len(loaded_mesh.point_data) == 2
+    assert "temperature" in loaded_mesh.point_data
+    assert "pressure" in loaded_mesh.point_data
+    assert np.array_equal(loaded_mesh["temperature"], mesh["temperature"])
+    assert np.array_equal(loaded_mesh["pressure"], mesh["pressure"])
