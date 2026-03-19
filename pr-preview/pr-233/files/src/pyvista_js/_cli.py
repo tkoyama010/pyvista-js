@@ -164,7 +164,7 @@ def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noq
 
 
 @app.command()
-def plot(
+def plot(  # noqa: PLR0913
     files: Annotated[
         list[Path] | None,
         typer.Argument(
