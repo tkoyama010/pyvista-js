@@ -104,7 +104,7 @@ def test_plot_with_pickle_and_options(tmp_path) -> None:
                 "0.5",
                 "--pickle",
                 str(pickle_file),
-            ]
+            ],
         )
 
     # Load and verify the plotter
@@ -128,7 +128,7 @@ def test_plot_with_pickle_multiple_meshes(tmp_path) -> None:
                 str(PLY_FILE),
                 "--pickle",
                 str(pickle_file),
-            ]
+            ],
         )
 
     # Load and verify the plotter
