@@ -104,4 +104,3 @@ def test_rotate_canvas_with_mouse_handles_missing_bounding_box() -> None:
     page.query_selector.assert_called_once_with("canvas")
     canvas.bounding_box.assert_called_once()
     page.mouse.move.assert_not_called()
-
