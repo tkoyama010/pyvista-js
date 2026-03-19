@@ -924,3 +924,56 @@ class Plotter:
             self._renderer.camera = self._camera
 
         self._camera.disable_parallel_projection()
+
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling.
+
+        Excludes the renderer (browser-specific) and actor references,
+        keeping only the serializable mesh data and rendering parameters.
+
+        Returns
+        -------
+        dict
+            State dictionary containing actors list, background color,
+            container ID, and camera.
+
+        """
+        # Create a picklable copy of actors without the actor objects
+        picklable_actors = []
+        for actor_info in self._actors:
+            # Copy actor info but exclude the unpicklable 'actor' object
+            actor_copy = {
+                key: value
+                for key, value in actor_info.items()
+                if key != "actor"
+            }
+            picklable_actors.append(actor_copy)
+
+        return {
+            "_actors": picklable_actors,
+            "_background_color": self._background_color,
+            "_container_id": self._container_id,
+            "_camera": self._camera,
+        }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle.
+
+        Reconstructs the plotter from pickled state by recreating the
+        renderer and restoring all actors.
+
+        Parameters
+        ----------
+        state : dict
+            State dictionary from __getstate__.
+
+        """
+        # Restore basic attributes
+        self._actors = state["_actors"]  # type: ignore[assignment]
+        self._background_color = state["_background_color"]  # type: ignore[assignment]
+        self._container_id = state["_container_id"]  # type: ignore[assignment]
+        self._camera = state["_camera"]  # type: ignore[assignment]
+
+        # Recreate the renderer
+        self._renderer = get_renderer()
+        self._renderer.set_background(self._background_color)
