@@ -1,0 +1,80 @@
+var clippedPD{{INDEX}};
+(function () {
+  var src = source{{INDEX}};
+  if (typeof src.update === 'function') { src.update(); }
+  var pd = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
+  var inPts = pd.getPoints().getData();
+  var inPolys = pd.getPolys().getData();
+
+  // Clip plane parameters
+  var nx = {{NORMAL_X}};
+  var ny = {{NORMAL_Y}};
+  var nz = {{NORMAL_Z}};
+  var ox = {{ORIGIN_X}};
+  var oy = {{ORIGIN_Y}};
+  var oz = {{ORIGIN_Z}};
+  var invert = {{INVERT}};
+
+  // Compute signed distance from plane for each point
+  var nPts = inPts.length / 3;
+  var distances = new Float32Array(nPts);
+  for (var i = 0; i < nPts; i++) {
+    var px = inPts[i * 3];
+    var py = inPts[i * 3 + 1];
+    var pz = inPts[i * 3 + 2];
+    distances[i] = nx * (px - ox) + ny * (py - oy) + nz * (pz - oz);
+  }
+
+  var newPts = [];
+  var newPolys = [];
+  var ptMap = {}; // Maps old point index to new point index
+  var newPtIdx = 0;
+
+  var offset = 0;
+  var i = 0;
+  while (i < inPolys.length) {
+    var npts = inPolys[i];
+    var ids = [];
+    for (var j = 0; j < npts; j++) {
+      ids.push(inPolys[i + 1 + j]);
+    }
+
+    // Check if all vertices of the cell are on the correct side of the plane
+    var allKept = true;
+    for (var k = 0; k < npts; k++) {
+      var dist = distances[ids[k]];
+      var keep = invert ? (dist >= 0) : (dist <= 0);
+      if (!keep) {
+        allKept = false;
+        break;
+      }
+    }
+
+    // If all vertices are kept, keep the entire cell
+    if (allKept) {
+      newPolys.push(npts);
+      for (var j = 0; j < npts; j++) {
+        var oldId = ids[j];
+        if (!(oldId in ptMap)) {
+          // Add new point
+          newPts.push(inPts[oldId * 3]);
+          newPts.push(inPts[oldId * 3 + 1]);
+          newPts.push(inPts[oldId * 3 + 2]);
+          ptMap[oldId] = newPtIdx++;
+        }
+        newPolys.push(ptMap[oldId]);
+      }
+    }
+
+    i += npts + 1;
+  }
+
+  // Create output polydata
+  var pts = vtk.Common.Core.vtkPoints.newInstance();
+  pts.setData(Float32Array.from(newPts), 3);
+  clippedPD{{INDEX}} = vtk.Common.DataModel.vtkPolyData.newInstance();
+  clippedPD{{INDEX}}.setPoints(pts);
+  var polys = vtk.Common.Core.vtkCellArray.newInstance();
+  polys.setData(Int32Array.from(newPolys));
+  clippedPD{{INDEX}}.setPolys(polys);
+})();
