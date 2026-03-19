@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.6.0"
+version = "0.8.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -40,10 +40,12 @@ optional-dependencies.docs = [
   "atsphinx-stlite==0.2.1; python_version>='3.12'",
   "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12'",
   "jupyterlite-sphinx==0.22.1; python_version>='3.12'",
+  "jupytext>=1.19",
   "myst-parser==5; python_version>='3.12'",
   "sphinx==9.1; python_version>='3.12'",
   "sphinx-book-theme==1.1.4; python_version>='3.12'",
   "sphinx-design==0.7; python_version>='3.12'",
+  "sphinxcontrib-typer>=0.5; python_version>='3.12'",
 ]
 optional-dependencies.io = [
   "meshio",
@@ -79,6 +81,11 @@ lint.select = [ "ALL" ]
 lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
+]
+lint.per-file-ignores."jupyterlite/content/*" = [
+  "D100",   # missing docstring - jupytext files
+  "ERA001", # commented-out code - jupytext metadata
+  "INP001", # implicit namespace package
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
@@ -131,3 +138,6 @@ check_untyped_defs = false
 # Ignore missing imports for optional dependencies
 ignore_missing_imports = true
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
+
+[tool.jupytext]
+formats = "ipynb,py:percent"

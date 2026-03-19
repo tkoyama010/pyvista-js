@@ -769,3 +769,240 @@ def test_multiple_axes_calls() -> None:
 
     # Should still be enabled
     assert plotter._renderer._axes_enabled is True
+
+
+def test_plotter_enable_parallel_projection() -> None:
+    """Test Plotter.enable_parallel_projection() method."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Enable parallel projection
+    plotter.enable_parallel_projection()
+
+    # Camera should be created automatically if not set
+    assert plotter.camera is not None
+    assert plotter.camera.parallel_projection is True
+
+
+def test_plotter_disable_parallel_projection() -> None:
+    """Test Plotter.disable_parallel_projection() method."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Enable then disable
+    plotter.enable_parallel_projection()
+    plotter.disable_parallel_projection()
+
+    assert plotter.camera is not None
+    assert plotter.camera.parallel_projection is False
+
+
+def test_plotter_enable_parallel_projection_with_existing_camera() -> None:
+    """Test enable_parallel_projection works with an existing camera."""
+    plotter = Plotter()
+    camera = Camera(position=(10, 10, 10))
+    plotter.camera = camera
+
+    # Enable parallel projection
+    plotter.enable_parallel_projection()
+
+    # Should use the same camera
+    assert plotter.camera is camera
+    assert plotter.camera.parallel_projection is True
+
+
+def test_plotter_parallel_projection_generates_code() -> None:
+    """Test that plotter generates vtk.js code for parallel projection."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.enable_parallel_projection()
+
+    # Generate HTML
+    html = plotter._renderer._generate_html()
+
+    # Verify parallel projection is set in the generated code
+    assert "cam.setParallelProjection(true)" in html
+
+
+def test_plotter_perspective_projection_generates_code() -> None:
+    """Test that plotter generates vtk.js code for perspective projection."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.enable_parallel_projection()
+    plotter.disable_parallel_projection()
+
+    # Generate HTML
+    html = plotter._renderer._generate_html()
+
+    # Verify perspective projection is set in the generated code
+    assert "cam.setParallelProjection(false)" in html
+
+
+def test_plotter_pickle() -> None:
+    """Test that a plotter can be pickled and unpickled."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), color="red", opacity=0.8)
+    plotter.background_color = "white"
+
+    # Pickle the plotter
+    pickled = pickle.dumps(plotter)
+
+    # Unpickle the plotter
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded plotter
+    assert len(loaded_plotter.actors) == 1
+    assert loaded_plotter.actors[0]["color"] == "red"
+    assert loaded_plotter.actors[0]["opacity"] == 0.8
+    assert loaded_plotter.background_color == (1.0, 1.0, 1.0)
+
+
+def test_plotter_pickle_multiple_meshes() -> None:
+    """Test pickling a plotter with multiple meshes."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(radius=1.0), color="red")
+    plotter.add_mesh(Cube(center=(2, 0, 0)), color="blue", opacity=0.5)
+    plotter.background_color = "black"
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(plotter)
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded plotter
+    assert len(loaded_plotter.actors) == 2
+    assert loaded_plotter.actors[0]["color"] == "red"
+    assert loaded_plotter.actors[1]["color"] == "blue"
+    assert loaded_plotter.actors[1]["opacity"] == 0.5
+    assert loaded_plotter.background_color == (0.0, 0.0, 0.0)
+
+
+def test_plotter_pickle_with_camera() -> None:
+    """Test pickling a plotter with camera settings."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    camera = Camera(
+        position=(2.0, 5.0, 13.0),
+        focal_point=(0.0, 0.0, 0.0),
+        view_up=(0.0, 1.0, 0.0),
+    )
+    plotter.camera = camera
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(plotter)
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify camera was preserved
+    assert loaded_plotter.camera is not None
+    assert loaded_plotter.camera.position == (2.0, 5.0, 13.0)
+    assert loaded_plotter.camera.focal_point == (0.0, 0.0, 0.0)
+    assert loaded_plotter.camera.view_up == (0.0, 1.0, 0.0)
+
+
+def test_mesh_pickle() -> None:
+    """Test that a mesh can be pickled and unpickled."""
+    import pickle  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    mesh = Sphere()
+    mesh["elevation"] = mesh.points[:, 2]
+
+    # Pickle the mesh
+    pickled = pickle.dumps(mesh)
+
+    # Unpickle the mesh
+    loaded_mesh = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded mesh
+    assert loaded_mesh.n_points == mesh.n_points
+    assert np.array_equal(loaded_mesh.points, mesh.points)
+    assert "elevation" in loaded_mesh.point_data
+    assert np.array_equal(loaded_mesh["elevation"], mesh["elevation"])
+
+
+def test_mesh_pickle_preserves_point_data() -> None:
+    """Test that point data is preserved when pickling a mesh."""
+    import pickle  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+    mesh = PolyData(points)
+    mesh["temperature"] = np.array([100.0, 200.0, 300.0])
+    mesh["pressure"] = np.array([1.0, 2.0, 3.0])
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(mesh)
+    loaded_mesh = pickle.loads(pickled)  # noqa: S301
+
+    # Verify point data was preserved
+    assert len(loaded_mesh.point_data) == 2
+    assert "temperature" in loaded_mesh.point_data
+    assert "pressure" in loaded_mesh.point_data
+    assert np.array_equal(loaded_mesh["temperature"], mesh["temperature"])
+    assert np.array_equal(loaded_mesh["pressure"], mesh["pressure"])
+
+
+def test_add_scalar_bar() -> None:
+    """Test adding a scalar bar to the plotter."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Test", vertical=True, n_labels=5)
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == "Test"
+    assert plotter._scalar_bar["vertical"] is True
+    assert plotter._scalar_bar["n_labels"] == 5
+
+
+def test_add_scalar_bar_default_params() -> None:
+    """Test adding a scalar bar with default parameters."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar()
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == ""
+    assert plotter._scalar_bar["vertical"] is True
+    assert plotter._scalar_bar["n_labels"] == 5
+
+
+def test_add_scalar_bar_horizontal() -> None:
+    """Test adding a horizontal scalar bar."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Horizontal", vertical=False, n_labels=7)
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == "Horizontal"
+    assert plotter._scalar_bar["vertical"] is False
+    assert plotter._scalar_bar["n_labels"] == 7
+
+
+def test_scalar_bar_cleared_with_plotter() -> None:
+    """Test that scalar bar is cleared when plotter is cleared."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Test")
+
+    assert plotter._scalar_bar is not None
+
+    plotter.clear()
+    assert plotter._scalar_bar is None
+
+
+def test_scalar_bar_updates_renderer() -> None:
+    """Test that scalar bar is added to the renderer."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Height", vertical=True, n_labels=5)
+
+    # Check that renderer has scalar bar
+    assert plotter._renderer._scalar_bar is not None
+    assert plotter._renderer._scalar_bar["title"] == "Height"

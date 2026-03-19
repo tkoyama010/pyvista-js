@@ -107,6 +107,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.examples.CubeMap
+   pyvista_js.examples.download_bunny
    pyvista_js.examples.download_cad_model
    pyvista_js.examples.download_damaged_helmet
    pyvista_js.examples.download_masonry_texture
@@ -116,10 +117,4 @@ This section provides detailed documentation for the pyvista-js public API.
 
 ## CLI
 
-```{eval-rst}
-.. autosummary::
-   :toctree: _autosummary
-   :nosignatures:
-
-   pyvista_js._cli.main
-```
+See the {doc}`CLI reference </cli/index>` for command-line usage documentation.
