@@ -54,9 +54,9 @@ class _OBJMesh(PolyData):
         """Generate vtk.js source code using vtkOBJReader."""
         escaped = json.dumps(self._obj_base64)
         return _OBJ_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
+            "{{ INDEX }}",
             str(idx),
-        ).replace("{{OBJ_BASE64}}", escaped)
+        ).replace("{{ OBJ_BASE64 }}", escaped)
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -84,9 +84,9 @@ class _PolyDataMesh(PolyData):
         """Generate vtk.js source code using vtkPolyDataReader."""
         escaped = json.dumps(self._vtk_text)
         return _VTK_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
+            "{{ INDEX }}",
             str(idx),
-        ).replace("{{VTK_TEXT}}", escaped)
+        ).replace("{{ VTK_TEXT }}", escaped)
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -114,9 +114,9 @@ class _PLYMesh(PolyData):
         """Generate vtk.js source code using vtkPLYReader."""
         escaped = json.dumps(self._ply_base64)
         return _PLY_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
+            "{{ INDEX }}",
             str(idx),
-        ).replace("{{PLY_BASE64}}", escaped)
+        ).replace("{{ PLY_BASE64 }}", escaped)
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -144,9 +144,9 @@ class _STLMesh(PolyData):
         """Generate vtk.js source code using vtkSTLReader."""
         escaped = json.dumps(self._stl_base64)
         return _STL_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
+            "{{ INDEX }}",
             str(idx),
-        ).replace("{{STL_BASE64}}", escaped)
+        ).replace("{{ STL_BASE64 }}", escaped)
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""

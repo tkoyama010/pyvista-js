@@ -475,8 +475,8 @@ class PolyData:
 
         def _vtk_js_source_with_shrink(idx: int) -> str:
             base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
-            shrink_code = _SHRINK_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{SHRINK_FACTOR}}",
+            shrink_code = _SHRINK_FILTER_TEMPLATE.replace("{{ INDEX }}", str(idx)).replace(
+                "{{ SHRINK_FACTOR }}",
                 str(shrink_factor),
             )
             return base + "\n" + shrink_code
@@ -600,14 +600,14 @@ class PolyData:
         def _vtk_js_source_with_clip(idx: int) -> str:
             base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
             clip_code = (
-                _CLIP_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
-                .replace("{{NORMAL_X}}", str(normal_vec[0]))
-                .replace("{{NORMAL_Y}}", str(normal_vec[1]))
-                .replace("{{NORMAL_Z}}", str(normal_vec[2]))
-                .replace("{{ORIGIN_X}}", str(origin[0]))
-                .replace("{{ORIGIN_Y}}", str(origin[1]))
-                .replace("{{ORIGIN_Z}}", str(origin[2]))
-                .replace("{{INVERT}}", "true" if invert else "false")
+                _CLIP_FILTER_TEMPLATE.replace("{{ INDEX }}", str(idx))
+                .replace("{{ NORMAL_X }}", str(normal_vec[0]))
+                .replace("{{ NORMAL_Y }}", str(normal_vec[1]))
+                .replace("{{ NORMAL_Z }}", str(normal_vec[2]))
+                .replace("{{ ORIGIN_X }}", str(origin[0]))
+                .replace("{{ ORIGIN_Y }}", str(origin[1]))
+                .replace("{{ ORIGIN_Z }}", str(origin[2]))
+                .replace("{{ INVERT }}", "true" if invert else "false")
             )
             return base + "\n" + clip_code
 
@@ -682,10 +682,10 @@ class PolyData:
         def _vtk_js_source_with_tube(idx: int) -> str:
             base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
             tube_code = (
-                _TUBE_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx))
-                .replace("{{RADIUS}}", str(radius))
-                .replace("{{N_SIDES}}", str(n_sides))
-                .replace("{{CAPPING}}", "true" if capping else "false")
+                _TUBE_FILTER_TEMPLATE.replace("{{ INDEX }}", str(idx))
+                .replace("{{ RADIUS }}", str(radius))
+                .replace("{{ N_SIDES }}", str(n_sides))
+                .replace("{{ CAPPING }}", "true" if capping else "false")
             )
             return base + "\n" + tube_code
 
@@ -759,8 +759,8 @@ class PolyData:
             # Default implementation for generic meshes using polydata
             points_flat = self.points.flatten().tolist()
             points_str = ",".join(map(str, points_flat))
-            source_code = _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{POINTS_DATA}}",
+            source_code = _MESH_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx)).replace(
+                "{{ POINTS_DATA }}",
                 points_str,
             )
 
@@ -945,13 +945,13 @@ def Sphere(  # noqa: N802
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _SPHERE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{THETA_RESOLUTION}}", str(theta_resolution))
-            .replace("{{PHI_RESOLUTION}}", str(phi_resolution))
+            _SPHERE_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ CENTER_X }}", str(center[0]))
+            .replace("{{ CENTER_Y }}", str(center[1]))
+            .replace("{{ CENTER_Z }}", str(center[2]))
+            .replace("{{ RADIUS }}", str(radius))
+            .replace("{{ THETA_RESOLUTION }}", str(theta_resolution))
+            .replace("{{ PHI_RESOLUTION }}", str(phi_resolution))
         )
 
     def _mapper_setup_sphere(idx: int) -> str:
@@ -1052,13 +1052,13 @@ def Cube(  # noqa: N802
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _CUBE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{X_LENGTH}}", str(x_length))
-            .replace("{{Y_LENGTH}}", str(y_length))
-            .replace("{{Z_LENGTH}}", str(z_length))
+            _CUBE_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ CENTER_X }}", str(center[0]))
+            .replace("{{ CENTER_Y }}", str(center[1]))
+            .replace("{{ CENTER_Z }}", str(center[2]))
+            .replace("{{ X_LENGTH }}", str(x_length))
+            .replace("{{ Y_LENGTH }}", str(y_length))
+            .replace("{{ Z_LENGTH }}", str(z_length))
         )
 
     def _mapper_setup_cube(idx: int) -> str:
@@ -1138,13 +1138,13 @@ def Cylinder(  # noqa: N802
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _CYLINDER_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{HEIGHT}}", str(height))
-            .replace("{{RESOLUTION}}", str(resolution))
+            _CYLINDER_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ CENTER_X }}", str(center[0]))
+            .replace("{{ CENTER_Y }}", str(center[1]))
+            .replace("{{ CENTER_Z }}", str(center[2]))
+            .replace("{{ RADIUS }}", str(radius))
+            .replace("{{ HEIGHT }}", str(height))
+            .replace("{{ RESOLUTION }}", str(resolution))
         )
 
     def _mapper_setup_cylinder(idx: int) -> str:
@@ -1256,11 +1256,11 @@ def Disc(  # noqa: N802, PLR0913
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _DISK_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{INNER}}", str(inner))
-            .replace("{{OUTER}}", str(outer))
-            .replace("{{R_RES}}", str(r_res))
-            .replace("{{C_RES}}", str(c_res))
+            _DISK_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ INNER }}", str(inner))
+            .replace("{{ OUTER }}", str(outer))
+            .replace("{{ R_RES }}", str(r_res))
+            .replace("{{ C_RES }}", str(c_res))
         )
 
     def _mapper_setup_disc(idx: int) -> str:
@@ -1319,12 +1319,12 @@ def Circle(  # noqa: N802
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _CIRCLE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{RESOLUTION}}", str(resolution))
+            _CIRCLE_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ CENTER_X }}", str(center[0]))
+            .replace("{{ CENTER_Y }}", str(center[1]))
+            .replace("{{ CENTER_Z }}", str(center[2]))
+            .replace("{{ RADIUS }}", str(radius))
+            .replace("{{ RESOLUTION }}", str(resolution))
         )
 
     def _mapper_setup_circle(idx: int) -> str:
@@ -1413,15 +1413,15 @@ def Arrow(  # noqa: N802, PLR0913
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _ARROW_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{TIP_LENGTH}}", str(tip_length))
-            .replace("{{TIP_RADIUS}}", str(tip_radius))
-            .replace("{{TIP_RESOLUTION}}", str(tip_resolution))
-            .replace("{{SHAFT_RADIUS}}", str(shaft_radius))
-            .replace("{{SHAFT_RESOLUTION}}", str(shaft_resolution))
-            .replace("{{DIR_X}}", str(float(unit_dir[0])))
-            .replace("{{DIR_Y}}", str(float(unit_dir[1])))
-            .replace("{{DIR_Z}}", str(float(unit_dir[2])))
+            _ARROW_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ TIP_LENGTH }}", str(tip_length))
+            .replace("{{ TIP_RADIUS }}", str(tip_radius))
+            .replace("{{ TIP_RESOLUTION }}", str(tip_resolution))
+            .replace("{{ SHAFT_RADIUS }}", str(shaft_radius))
+            .replace("{{ SHAFT_RESOLUTION }}", str(shaft_resolution))
+            .replace("{{ DIR_X }}", str(float(unit_dir[0])))
+            .replace("{{ DIR_Y }}", str(float(unit_dir[1])))
+            .replace("{{ DIR_Z }}", str(float(unit_dir[2])))
         )
 
     def _mapper_setup_arrow(idx: int) -> str:
@@ -1495,17 +1495,17 @@ def Cone(  # noqa: N802 PLR0913
     def _vtk_js_source(idx: int) -> str:
         capping_str = "true" if capping else "false"
         return (
-            _CONE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{DIRECTION_X}}", str(d[0]))
-            .replace("{{DIRECTION_Y}}", str(d[1]))
-            .replace("{{DIRECTION_Z}}", str(d[2]))
-            .replace("{{HEIGHT}}", str(height))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{RESOLUTION}}", str(resolution))
-            .replace("{{CAPPING}}", capping_str)
+            _CONE_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ CENTER_X }}", str(center[0]))
+            .replace("{{ CENTER_Y }}", str(center[1]))
+            .replace("{{ CENTER_Z }}", str(center[2]))
+            .replace("{{ DIRECTION_X }}", str(d[0]))
+            .replace("{{ DIRECTION_Y }}", str(d[1]))
+            .replace("{{ DIRECTION_Z }}", str(d[2]))
+            .replace("{{ HEIGHT }}", str(height))
+            .replace("{{ RADIUS }}", str(radius))
+            .replace("{{ RESOLUTION }}", str(resolution))
+            .replace("{{ CAPPING }}", capping_str)
         )
 
     def _mapper_setup_cone(idx: int) -> str:
@@ -1565,14 +1565,14 @@ def Line(  # noqa: N802
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _LINE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{POINT_A_X}}", str(float(pointa[0])))
-            .replace("{{POINT_A_Y}}", str(float(pointa[1])))
-            .replace("{{POINT_A_Z}}", str(float(pointa[2])))
-            .replace("{{POINT_B_X}}", str(float(pointb[0])))
-            .replace("{{POINT_B_Y}}", str(float(pointb[1])))
-            .replace("{{POINT_B_Z}}", str(float(pointb[2])))
-            .replace("{{RESOLUTION}}", str(resolution))
+            _LINE_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ POINT_A_X }}", str(float(pointa[0])))
+            .replace("{{ POINT_A_Y }}", str(float(pointa[1])))
+            .replace("{{ POINT_A_Z }}", str(float(pointa[2])))
+            .replace("{{ POINT_B_X }}", str(float(pointb[0])))
+            .replace("{{ POINT_B_Y }}", str(float(pointb[1])))
+            .replace("{{ POINT_B_Z }}", str(float(pointb[2])))
+            .replace("{{ RESOLUTION }}", str(resolution))
         )
 
     def _mapper_setup_line(idx: int) -> str:
@@ -1665,18 +1665,18 @@ def Plane(  # noqa: N802 PLR0913
 
     def _vtk_js_source(idx: int) -> str:
         return (
-            _PLANE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{ORIGIN_X}}", str(float(origin[0])))
-            .replace("{{ORIGIN_Y}}", str(float(origin[1])))
-            .replace("{{ORIGIN_Z}}", str(float(origin[2])))
-            .replace("{{POINT1_X}}", str(float(point1[0])))
-            .replace("{{POINT1_Y}}", str(float(point1[1])))
-            .replace("{{POINT1_Z}}", str(float(point1[2])))
-            .replace("{{POINT2_X}}", str(float(point2[0])))
-            .replace("{{POINT2_Y}}", str(float(point2[1])))
-            .replace("{{POINT2_Z}}", str(float(point2[2])))
-            .replace("{{I_RESOLUTION}}", str(i_resolution))
-            .replace("{{J_RESOLUTION}}", str(j_resolution))
+            _PLANE_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx))
+            .replace("{{ ORIGIN_X }}", str(float(origin[0])))
+            .replace("{{ ORIGIN_Y }}", str(float(origin[1])))
+            .replace("{{ ORIGIN_Z }}", str(float(origin[2])))
+            .replace("{{ POINT1_X }}", str(float(point1[0])))
+            .replace("{{ POINT1_Y }}", str(float(point1[1])))
+            .replace("{{ POINT1_Z }}", str(float(point1[2])))
+            .replace("{{ POINT2_X }}", str(float(point2[0])))
+            .replace("{{ POINT2_Y }}", str(float(point2[1])))
+            .replace("{{ POINT2_Z }}", str(float(point2[2])))
+            .replace("{{ I_RESOLUTION }}", str(i_resolution))
+            .replace("{{ J_RESOLUTION }}", str(j_resolution))
         )
 
     def _mapper_setup_plane(idx: int) -> str:
