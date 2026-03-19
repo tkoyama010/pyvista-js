@@ -141,12 +141,21 @@ def plot(
             metavar="FLOAT",
         ),
     ] = 1.0,
+    pickle: Annotated[
+        Path | None,
+        typer.Option(
+            help="Save the Plotter object to a pickle file for later reuse.",
+            metavar="PATH",
+        ),
+    ] = None,
 ) -> None:
     """Plot one or more mesh files in the browser.
 
     Open one or more mesh files (.vtk, .ply, .obj) and render them
     in the default web browser using vtk.js.
     """
+    import pickle as pickle_module  # noqa: PLC0415
+
     import pyvista_js as pv  # noqa: PLC0415
 
     plotter = pv.Plotter()
@@ -157,6 +166,12 @@ def plot(
     for file_path in files:
         mesh = _read_mesh(file_path)
         plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    # Save to pickle file if requested
+    if pickle is not None:
+        with pickle.open("wb") as f:
+            pickle_module.dump(plotter, f)
+        logger.info("Plotter saved to: %s", pickle)
 
     plotter.show()
 
