@@ -178,3 +178,83 @@ def test_camera_various_positions(
     camera = Camera(position=position, focal_point=focal_point)
     assert camera.position == tuple(float(v) for v in position)
     assert camera.focal_point == tuple(float(v) for v in focal_point)
+
+
+def test_camera_parallel_projection_default() -> None:
+    """Test Camera has parallel_projection disabled by default."""
+    camera = Camera()
+    assert camera.parallel_projection is False
+
+
+def test_camera_parallel_projection_constructor() -> None:
+    """Test Camera can be constructed with parallel_projection enabled."""
+    camera = Camera(parallel_projection=True)
+    assert camera.parallel_projection is True
+
+
+def test_camera_parallel_projection_setter() -> None:
+    """Test setting parallel_projection property."""
+    camera = Camera()
+    camera.parallel_projection = True
+    assert camera.parallel_projection is True
+    camera.parallel_projection = False
+    assert camera.parallel_projection is False
+
+
+def test_camera_parallel_projection_converts_to_bool() -> None:
+    """Test that parallel_projection is converted to bool."""
+    camera = Camera()
+    camera.parallel_projection = 1  # truthy value
+    assert camera.parallel_projection is True
+    assert isinstance(camera.parallel_projection, bool)
+    camera.parallel_projection = 0  # falsy value
+    assert camera.parallel_projection is False
+
+
+def test_camera_enable_parallel_projection() -> None:
+    """Test enable_parallel_projection method."""
+    camera = Camera()
+    assert camera.parallel_projection is False
+    camera.enable_parallel_projection()
+    assert camera.parallel_projection is True
+
+
+def test_camera_disable_parallel_projection() -> None:
+    """Test disable_parallel_projection method."""
+    camera = Camera(parallel_projection=True)
+    assert camera.parallel_projection is True
+    camera.disable_parallel_projection()
+    assert camera.parallel_projection is False
+
+
+def test_camera_repr_includes_parallel_projection() -> None:
+    """Test Camera __repr__ includes parallel_projection."""
+    camera = Camera(parallel_projection=True)
+    r = repr(camera)
+    assert "parallel_projection=True" in r
+
+
+def test_camera_parallel_projection_in_renderer(monkeypatch) -> None:
+    """Test that parallel projection setting is propagated to renderer."""
+    monkeypatch.setenv("PYVISTA_JS_NO_BROWSER", "1")
+
+    renderer = MockRenderer()
+    camera = Camera(parallel_projection=True)
+    renderer.camera = camera
+
+    assert renderer._camera.parallel_projection is True
+
+
+def test_camera_generates_parallel_projection_code() -> None:
+    """Test that camera generates vtk.js code for parallel projection."""
+    plotter = pv.Plotter()
+    plotter.add_mesh(pv.Sphere())
+    camera = Camera(
+        position=(5.0, 5.0, 5.0),
+        parallel_projection=True,
+    )
+    plotter.camera = camera
+
+    # Generate HTML and verify parallel projection is set in the generated code
+    html = plotter._renderer._generate_html()
+    assert "cam.setParallelProjection(true)" in html
