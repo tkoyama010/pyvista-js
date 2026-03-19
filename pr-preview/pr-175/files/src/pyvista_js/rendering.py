@@ -175,10 +175,19 @@ class _BaseHTMLRenderer:
     respective environments (Jupyter notebook, standalone browser, etc.).
     """
 
-    def __init__(self) -> None:
-        """Initialize shared renderer state."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize shared renderer state.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.lighting: str | None = lighting
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -603,9 +612,13 @@ class _BaseHTMLRenderer:
     def _generate_lights_code(self) -> str:
         """Generate vtk.js JavaScript for all lights.
 
-        Falls back to a default directional light when no lights have been added.
+        Falls back to a default directional light when no lights have been added
+        and lighting="default". Returns empty string when lighting=None.
         """
         if not self.lights:
+            if self.lighting is None:
+                # No default lights when lighting=None
+                return ""
             # Default angled directional light for specular highlights
             return (
                 "      // Default directional light\n"
@@ -643,44 +656,49 @@ class _BaseHTMLRenderer:
         n_labels = int(str(self._scalar_bar["n_labels"]))
 
         # Generate orientation-specific code
+        common_style = (
+            "scalarBarActor.setAxisTextStyle({\n"
+            "  fontColor: 'black',\n"
+            "  fontFamily: 'Arial',\n"
+            "  fontSize: 14,\n"
+            "});\n"
+            "scalarBarActor.setTickTextStyle({\n"
+            "  fontColor: 'black',\n"
+            "  fontFamily: 'Arial',\n"
+            "  fontSize: 12,\n"
+            "});\n"
+            "scalarBarActor.setDrawNanAnnotation(false);\n"
+            "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
+            "scalarBarActor.setDrawAboveRangeSwatch(false);"
+        )
         if vertical:
-            orientation_code = (
-                "scalarBarActor.setAxisTextStyle({\n"
-                "  fontColor: 'black',\n"
-                "  fontFamily: 'Arial',\n"
-                "  fontSize: 14,\n"
-                "});\n"
-                "scalarBarActor.setTickTextStyle({\n"
-                "  fontColor: 'black',\n"
-                "  fontFamily: 'Arial',\n"
-                "  fontSize: 12,\n"
-                "});\n"
-                "// Position on the right side (vertical)\n"
-                "scalarBarActor.setBoxPosition([0.85, 0.15]);\n"
-                "scalarBarActor.setBoxSize([0.1, 0.7]);\n"
-                "scalarBarActor.setDrawNanAnnotation(false);\n"
-                "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
-                "scalarBarActor.setDrawAboveRangeSwatch(false);"
-            )
+            orientation_code = common_style
         else:
             orientation_code = (
-                "scalarBarActor.setAxisTextStyle({\n"
-                "  fontColor: 'black',\n"
-                "  fontFamily: 'Arial',\n"
-                "  fontSize: 14,\n"
-                "});\n"
-                "scalarBarActor.setTickTextStyle({\n"
-                "  fontColor: 'black',\n"
-                "  fontFamily: 'Arial',\n"
-                "  fontSize: 12,\n"
-                "});\n"
-                "// Position at the bottom (horizontal)\n"
-                "scalarBarActor.setBoxPosition([0.15, 0.05]);\n"
-                "scalarBarActor.setBoxSize([0.7, 0.1]);\n"
-                "scalarBarActor.setOrientation([1, 0, 0]);\n"
-                "scalarBarActor.setDrawNanAnnotation(false);\n"
-                "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
-                "scalarBarActor.setDrawAboveRangeSwatch(false);"
+                common_style + "\n"
+                "// Force horizontal layout via custom autoLayout\n"
+                "scalarBarActor.setAutoLayout(function(e) {\n"
+                "  var n = e.getLastSize();\n"
+                "  var r = Math.pow(n[0] / 700, 0.8);\n"
+                "  var a = Math.pow(n[1] / 700, 0.8);\n"
+                "  var o = Math.min(r, a);\n"
+                "  var i = e.getAxisTextStyle();\n"
+                "  var s = e.getTickTextStyle();\n"
+                "  i.fontSize = Math.max(24 * o, 12);\n"
+                "  s.fontSize = Math.max(16 * o, 10);\n"
+                "  e.setAxisTitlePixelOffset(1.2 * s.fontSize);\n"
+                "  e.setTickLabelPixelOffset(0.1 * s.fontSize);\n"
+                "  var l = e.updateTextureAtlas();\n"
+                "  var c = 2 * (0.8 * s.fontSize + l.titleHeight"
+                " + e.getAxisTitlePixelOffset()) / n[1];\n"
+                "  var d = 2 * l.tickWidth / n[0];\n"
+                "  var u = e.getBoxSizeByReference();\n"
+                "  u[0] = Math.min(1.9, Math.max(1.4,"
+                " 1.4 * d * (e.getTicks().length + 3)));\n"
+                "  u[1] = c;\n"
+                "  e.setBoxPosition([-0.5 * u[0], -0.97]);\n"
+                "  e.recomputeBarSegments(l);\n"
+                "});"
             )
 
         code = (
@@ -1056,10 +1074,16 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, lighting: str | None = "default") -> None:
         """Initialize the vtk.js renderer.
 
         Automatically loads vtk.js library if in IPython/Jupyter environment.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
 
         Raises
         ------
@@ -1073,7 +1097,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             msg = "VTKJSRenderer requires either Pyodide environment or IPython"
             raise RuntimeError(msg)
 
-        super().__init__()
+        super().__init__(lighting=lighting)
 
         # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
         if IPYTHON_AVAILABLE or PYODIDE_ENV:
@@ -1245,10 +1269,19 @@ class MockRenderer:
 
     """
 
-    def __init__(self) -> None:
-        """Initialize mock renderer."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize mock renderer.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.lighting: str | None = lighting
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
@@ -1470,11 +1503,19 @@ class MockRenderer:
         logger.info("Set environment texture: %s", texture)
 
 
-def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
+def get_renderer(
+    lighting: str | None = "default",
+) -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """Get appropriate renderer for current environment.
 
     Automatically detects whether running in Pyodide/browser and
     returns the appropriate renderer implementation.
+
+    Parameters
+    ----------
+    lighting : str or None, optional
+        Lighting mode. ``"default"`` creates a default directional light,
+        ``None`` creates no default lights. Default is ``"default"``.
 
     Returns
     -------
@@ -1507,8 +1548,8 @@ def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """
     # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
     if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
-        return VTKJSRenderer()
+        return VTKJSRenderer(lighting=lighting)
     # Respect opt-out env var for CI/testing
     if os.environ.get("PYVISTA_JS_NO_BROWSER"):
-        return MockRenderer()
-    return BrowserRenderer()
+        return MockRenderer(lighting=lighting)
+    return BrowserRenderer(lighting=lighting)
