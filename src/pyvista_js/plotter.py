@@ -25,6 +25,13 @@ class Plotter:
     This class provides a PyVista-like API for creating 3D visualizations
     in the browser using vtk.js as the rendering backend.
 
+    Parameters
+    ----------
+    lighting : str or None, optional
+        Lighting mode for the plotter. Options are:
+        - ``"default"`` (default): Creates a default directional light
+        - ``None``: No default lights are created, giving full control over lighting
+
     Examples
     --------
     >>> import pyvista_js as pv
@@ -33,12 +40,29 @@ class Plotter:
     >>> _ = plotter.add_mesh(mesh, color='red')
     >>> plotter.show()  # doctest: +SKIP
 
+    Create a plotter with no default lights:
+
+    >>> plotter = pv.Plotter(lighting=None)
+    >>> light = pv.Light(position=(1, 1, 1), intensity=2.0)
+    >>> plotter.add_light(light)
+    >>> mesh = pv.Sphere()
+    >>> _ = plotter.add_mesh(mesh, color='white')
+    >>> plotter.show()  # doctest: +SKIP
+
     """
 
-    def __init__(self) -> None:
-        """Initialize a new Plotter instance."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize a new Plotter instance.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self._actors: list[dict[str, object]] = []
-        self._renderer = get_renderer()
+        self._renderer = get_renderer(lighting=lighting)
         self._background_color = (1.0, 1.0, 1.0)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
         self._camera: Camera | None = None
