@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-03-19T13:34:06.656119Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-03-19T13:34:04.926996Z",
+      "mimetype": "text/x-python",
+      "name": "simple_demo.py",
+      "path": "simple_demo.py",
+      "size": 614,
+      "type": "file",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-03-19T13:34:06.656119Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-03-19T13:34:06.656119Z",
+      "mimetype": null,
+      "name": "src",
+      "path": "src",
+      "size": null,
+      "type": "directory",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-03-19T13:34:06.655800Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-03-19T13:34:04.926994Z",
+      "mimetype": null,
+      "name": "simple_demo.ipynb",
+      "path": "simple_demo.ipynb",
+      "size": 972,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-03-19T13:34:06.656119Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-03-19T13:34:06.656119Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
