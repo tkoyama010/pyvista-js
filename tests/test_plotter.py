@@ -769,3 +769,70 @@ def test_multiple_axes_calls() -> None:
 
     # Should still be enabled
     assert plotter._renderer._axes_enabled is True
+
+
+def test_plotter_enable_parallel_projection() -> None:
+    """Test Plotter.enable_parallel_projection() method."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Enable parallel projection
+    plotter.enable_parallel_projection()
+
+    # Camera should be created automatically if not set
+    assert plotter.camera is not None
+    assert plotter.camera.parallel_projection is True
+
+
+def test_plotter_disable_parallel_projection() -> None:
+    """Test Plotter.disable_parallel_projection() method."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Enable then disable
+    plotter.enable_parallel_projection()
+    plotter.disable_parallel_projection()
+
+    assert plotter.camera is not None
+    assert plotter.camera.parallel_projection is False
+
+
+def test_plotter_enable_parallel_projection_with_existing_camera() -> None:
+    """Test enable_parallel_projection works with an existing camera."""
+    plotter = Plotter()
+    camera = Camera(position=(10, 10, 10))
+    plotter.camera = camera
+
+    # Enable parallel projection
+    plotter.enable_parallel_projection()
+
+    # Should use the same camera
+    assert plotter.camera is camera
+    assert plotter.camera.parallel_projection is True
+
+
+def test_plotter_parallel_projection_generates_code() -> None:
+    """Test that plotter generates vtk.js code for parallel projection."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.enable_parallel_projection()
+
+    # Generate HTML
+    html = plotter._renderer._generate_html()
+
+    # Verify parallel projection is set in the generated code
+    assert "cam.setParallelProjection(true)" in html
+
+
+def test_plotter_perspective_projection_generates_code() -> None:
+    """Test that plotter generates vtk.js code for perspective projection."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.enable_parallel_projection()
+    plotter.disable_parallel_projection()
+
+    # Generate HTML
+    html = plotter._renderer._generate_html()
+
+    # Verify perspective projection is set in the generated code
+    assert "cam.setParallelProjection(false)" in html
