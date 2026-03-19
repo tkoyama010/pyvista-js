@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+import pyvista_js as pv
 from pyvista_js._cli import (
     _rotate_canvas_with_mouse,
     capture_preview,
@@ -232,3 +233,74 @@ def test_capture_preview_with_no_rotate_no_warning(tmp_path) -> None:
         deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
         assert len(deprecation_warnings) == 0
         assert mock_capture.call_args.kwargs["rotate"] is False
+
+
+def test_plot_load_pickle_with_plotter(tmp_path) -> None:
+    """``pyvista-js plot --load-pickle`` loads and displays a pickled Plotter."""
+    # Create a simple plotter and pickle it
+    plotter = pv.Plotter()
+    plotter._background_color = (0.5, 0.5, 0.5)  # Set background directly
+    pickle_file = tmp_path / "plotter.pkl"
+
+    with pickle_file.open("wb") as f:
+        pickle.dump(plotter, f)
+
+    # Test loading the pickle file
+    with patch("pyvista_js.Plotter.show"):
+        cli_main(["plot", "--load-pickle", str(pickle_file)])
+
+
+def test_plot_load_pickle_missing_file() -> None:
+    """``pyvista-js plot --load-pickle`` exits when pickle file doesn't exist."""
+    with pytest.raises(SystemExit) as exc_info:
+        cli_main(["plot", "--load-pickle", "nonexistent.pkl"])
+    assert exc_info.value.code == 1
+
+
+def test_plot_load_pickle_invalid_content(tmp_path) -> None:
+    """``pyvista-js plot --load-pickle`` exits when pickle contains non-Plotter object."""
+    # Create a pickle file with a non-Plotter object
+    pickle_file = tmp_path / "invalid.pkl"
+    with pickle_file.open("wb") as f:
+        pickle.dump({"not": "a plotter"}, f)
+
+    with pytest.raises(SystemExit) as exc_info:
+        cli_main(["plot", "--load-pickle", str(pickle_file)])
+    assert exc_info.value.code == 1
+
+
+def test_plot_load_pickle_with_additional_files(tmp_path) -> None:
+    """``pyvista-js plot --load-pickle`` can add additional mesh files to loaded plotter."""
+    # Create a simple plotter and pickle it
+    plotter = pv.Plotter()
+    pickle_file = tmp_path / "plotter.pkl"
+
+    with pickle_file.open("wb") as f:
+        pickle.dump(plotter, f)
+
+    # Test loading the pickle file with additional mesh
+    with patch("pyvista_js.Plotter.show"):
+        cli_main(["plot", "--load-pickle", str(pickle_file), str(VTK_FILE)])
+
+
+def test_plot_no_files_and_no_pickle_exits() -> None:
+    """``pyvista-js plot`` exits when neither files nor --load-pickle are provided."""
+    with pytest.raises(SystemExit) as exc_info:
+        cli_main(["plot"])
+    assert exc_info.value.code == 1
+
+
+def test_plot_load_pickle_with_background_override(tmp_path) -> None:
+    """``pyvista-js plot --load-pickle --background`` overrides loaded plotter background."""
+    # Create a plotter with one background color
+    plotter = pv.Plotter()
+    plotter.background_color = "black"
+    pickle_file = tmp_path / "plotter.pkl"
+
+    with pickle_file.open("wb") as f:
+        pickle.dump(plotter, f)
+
+    # Load with different background color
+    with patch("pyvista_js.Plotter.show") as mock_show:
+        cli_main(["plot", "--load-pickle", str(pickle_file), "--background", "white"])
+        mock_show.assert_called_once()
