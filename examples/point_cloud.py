@@ -31,7 +31,7 @@ points = np.column_stack([x, y, z])
 point_cloud = pv.PolyData(points)
 
 # Add scalar values for coloring (e.g., height-based coloring)
-point_cloud.point_data['elevation'] = points[:, 2]
+point_cloud.point_data["elevation"] = points[:, 2]
 
 print(f"Point cloud has {point_cloud.n_points} points")
 
@@ -41,9 +41,9 @@ plotter = pv.Plotter()
 # Add the point cloud with scalar coloring
 plotter.add_mesh(
     point_cloud,
-    scalars='elevation',
-    cmap='viridis',
-    style='points',
+    scalars="elevation",
+    cmap="viridis",
+    style="points",
     opacity=1.0,
 )
 

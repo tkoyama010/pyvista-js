@@ -80,6 +80,8 @@ lint.select = [ "ALL" ]
 lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
+  "NPY002", # legacy numpy random OK in examples
+  "ERA001", # commented code OK in examples
 ]
 lint.per-file-ignores."jupyterlite/content/*" = [
   "D100",   # missing docstring - jupytext files
