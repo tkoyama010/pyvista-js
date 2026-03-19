@@ -250,7 +250,45 @@ def _run_notebook_cells(page) -> None:  # noqa: ANN001
         page.keyboard.press("Shift+Enter")
 
 
-def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
+def _rotate_canvas_with_mouse(page, canvas_selector: str = "canvas") -> None:  # noqa: ANN001
+    """Rotate the 3D model by dragging the mouse across the canvas.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    canvas_selector : str
+        CSS selector for the canvas element. Default: "canvas".
+
+    """
+    try:
+        canvas = page.query_selector(canvas_selector)
+        if canvas is None:
+            logger.warning("Canvas element not found, skipping rotation")
+            return
+
+        box = canvas.bounding_box()
+        if box is None:
+            logger.warning("Canvas bounding box not available, skipping rotation")
+            return
+
+        # Calculate center and drag path
+        center_x = box["x"] + box["width"] / 2
+        center_y = box["y"] + box["height"] / 2
+        drag_distance = box["width"] / 3  # Drag 1/3 of canvas width
+
+        # Perform mouse drag: click + move to simulate rotation
+        page.mouse.move(center_x - drag_distance / 2, center_y)
+        page.mouse.down()
+        page.mouse.move(center_x + drag_distance / 2, center_y, steps=20)
+        page.mouse.up()
+
+        logger.info("Performed mouse drag rotation on canvas")
+    except Exception:  # noqa: BLE001
+        logger.warning("Failed to perform mouse drag rotation", exc_info=True)
+
+
+def _capture_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = False) -> Path:
     """Capture screenshots from the JupyterLite demo using Playwright.
 
     Parameters
@@ -259,6 +297,9 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
         Directory to save temporary screenshots.
     demo_url : str
         URL of the JupyterLite demo.
+    rotate : bool
+        If ``True``, rotate the 3D model by mouse drag between
+        screenshots. Default: ``False``.
 
     Returns
     -------
@@ -303,10 +344,23 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
             logger.info("Waiting for 3D rendering to appear...")
             page.wait_for_timeout(15000)
 
-            logger.info("Capturing rendering screenshots...")
-            for i in range(2, 15):
-                page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
-                page.wait_for_timeout(500)
+            if rotate:
+                logger.info("Capturing rendering screenshots with rotation...")
+                # Capture first screenshot at initial position
+                page.screenshot(path=str(screenshots_dir / "screenshot_02.png"))
+                page.wait_for_timeout(300)
+
+                # Capture remaining screenshots while rotating
+                for i in range(3, 15):
+                    _rotate_canvas_with_mouse(page)
+                    page.wait_for_timeout(300)
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(300)
+            else:
+                logger.info("Capturing rendering screenshots...")
+                for i in range(2, 15):
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(500)
 
             logger.info("Captured 14 screenshots successfully")
 
@@ -387,6 +441,13 @@ def capture_preview(
             metavar="INT",
         ),
     ] = 2,
+    rotate: Annotated[
+        bool | None,
+        typer.Option(
+            help="Rotate the 3D model by mouse drag while capturing screenshots. "
+            "Will become the default in a future version.",
+        ),
+    ] = None,
 ) -> None:
     """Capture a preview GIF of the JupyterLite demo.
 
@@ -394,12 +455,24 @@ def capture_preview(
     Requires: playwright, imageio[ffmpeg], pillow.
     """
     import tempfile  # noqa: PLC0415
+    import warnings  # noqa: PLC0415
+
+    if rotate is None:
+        warnings.warn(
+            "The default behavior of 'capture-preview' will change in a future "
+            "version to rotate the 3D model during capture. "
+            "Pass '--rotate' to enable the new behavior now, or "
+            "'--no-rotate' to silence this warning and keep the current behavior.",
+            DeprecationWarning,
+            stacklevel=1,
+        )
+        rotate = False
 
     output_path = output
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = Path(tmp)
-        screenshots_dir = _capture_screenshots(tmp_dir, url)
+        screenshots_dir = _capture_screenshots(tmp_dir, url, rotate=rotate)
 
         screenshot_files = list(screenshots_dir.glob("screenshot_*.png"))
         if not screenshot_files:
