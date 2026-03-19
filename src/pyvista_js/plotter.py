@@ -886,7 +886,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.enable_parallel_projection()
         >>> plotter.show()  # doctest: +SKIP
 
