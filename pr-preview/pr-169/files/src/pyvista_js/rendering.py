@@ -91,6 +91,7 @@ from .examples import CubeMap
 _JS_DIR = pathlib.Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
+_SCALAR_BAR_TEMPLATE = (_JS_DIR / "scalar_bar.js").read_text()
 
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
@@ -174,10 +175,19 @@ class _BaseHTMLRenderer:
     respective environments (Jupyter notebook, standalone browser, etc.).
     """
 
-    def __init__(self) -> None:
-        """Initialize shared renderer state."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize shared renderer state.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.lighting: str | None = lighting
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -186,6 +196,7 @@ class _BaseHTMLRenderer:
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
         self._camera: Camera | None = None
         self._axes_enabled: bool = False
+        self._scalar_bar: dict[str, object] | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
         """Store the container ID for later HTML generation.
@@ -312,6 +323,40 @@ class _BaseHTMLRenderer:
         """
         self._axes_enabled = True
 
+    def add_scalar_bar(
+        self,
+        title: str = "",
+        vertical: bool = True,  # noqa: FBT001, FBT002
+        n_labels: int = 5,
+    ) -> None:
+        """Add a scalar bar to the scene.
+
+        The scalar bar displays a color legend mapping scalar values to
+        colors using ``vtkScalarBarActor``.
+
+        Parameters
+        ----------
+        title : str, optional
+            Title text displayed on the scalar bar. Default is ``""``.
+        vertical : bool, optional
+            Whether to orient the scalar bar vertically (``True``) or
+            horizontally (``False``). Default is ``True``.
+        n_labels : int, optional
+            Number of labels to display on the scalar bar. Default is ``5``.
+
+        Examples
+        --------
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> renderer.add_scalar_bar(title="Height", vertical=True, n_labels=5)
+
+        """
+        self._scalar_bar = {
+            "title": title,
+            "vertical": vertical,
+            "n_labels": n_labels,
+        }
+
     def set_environment_texture(self, texture: str | CubeMap) -> None:
         """Set the environment texture for image-based lighting.
 
@@ -385,6 +430,7 @@ class _BaseHTMLRenderer:
         """Remove all actors and lights from the renderer."""
         self.actors = []
         self.lights = []
+        self._scalar_bar = None
 
     def _generate_texture_code(self, actor_info: dict[str, object], idx: int) -> str:
         """Generate vtk.js JavaScript to load and bind a surface texture.
@@ -566,9 +612,13 @@ class _BaseHTMLRenderer:
     def _generate_lights_code(self) -> str:
         """Generate vtk.js JavaScript for all lights.
 
-        Falls back to a default directional light when no lights have been added.
+        Falls back to a default directional light when no lights have been added
+        and lighting="default". Returns empty string when lighting=None.
         """
         if not self.lights:
+            if self.lighting is None:
+                # No default lights when lighting=None
+                return ""
             # Default angled directional light for specular highlights
             return (
                 "      // Default directional light\n"
@@ -587,6 +637,78 @@ class _BaseHTMLRenderer:
             indented = "\n".join("      " + line for line in code.splitlines())
             lines.append(indented)
         return "\n\n".join(lines)
+
+    def _generate_scalar_bar_code(self) -> str:
+        """Generate vtk.js JavaScript for the scalar bar.
+
+        Returns
+        -------
+        str
+            JavaScript code to create and configure a scalar bar actor,
+            or an empty string if no scalar bar has been added.
+
+        """
+        if self._scalar_bar is None:
+            return ""
+
+        title = str(self._scalar_bar["title"])
+        vertical = bool(self._scalar_bar["vertical"])
+        n_labels = int(str(self._scalar_bar["n_labels"]))
+
+        # Generate orientation-specific code
+        common_style = (
+            "scalarBarActor.setAxisTextStyle({\n"
+            "  fontColor: 'black',\n"
+            "  fontFamily: 'Arial',\n"
+            "  fontSize: 14,\n"
+            "});\n"
+            "scalarBarActor.setTickTextStyle({\n"
+            "  fontColor: 'black',\n"
+            "  fontFamily: 'Arial',\n"
+            "  fontSize: 12,\n"
+            "});\n"
+            "scalarBarActor.setDrawNanAnnotation(false);\n"
+            "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
+            "scalarBarActor.setDrawAboveRangeSwatch(false);"
+        )
+        if vertical:
+            orientation_code = common_style
+        else:
+            orientation_code = (
+                common_style + "\n"
+                "// Force horizontal layout via custom autoLayout\n"
+                "scalarBarActor.setAutoLayout(function(e) {\n"
+                "  var n = e.getLastSize();\n"
+                "  var r = Math.pow(n[0] / 700, 0.8);\n"
+                "  var a = Math.pow(n[1] / 700, 0.8);\n"
+                "  var o = Math.min(r, a);\n"
+                "  var i = e.getAxisTextStyle();\n"
+                "  var s = e.getTickTextStyle();\n"
+                "  i.fontSize = Math.max(24 * o, 12);\n"
+                "  s.fontSize = Math.max(16 * o, 10);\n"
+                "  e.setAxisTitlePixelOffset(1.2 * s.fontSize);\n"
+                "  e.setTickLabelPixelOffset(0.1 * s.fontSize);\n"
+                "  var l = e.updateTextureAtlas();\n"
+                "  var c = 2 * (0.8 * s.fontSize + l.titleHeight"
+                " + e.getAxisTitlePixelOffset()) / n[1];\n"
+                "  var d = 2 * l.tickWidth / n[0];\n"
+                "  var u = e.getBoxSizeByReference();\n"
+                "  u[0] = Math.min(1.9, Math.max(1.4,"
+                " 1.4 * d * (e.getTicks().length + 3)));\n"
+                "  u[1] = c;\n"
+                "  e.setBoxPosition([-0.5 * u[0], -0.97]);\n"
+                "  e.recomputeBarSegments(l);\n"
+                "});"
+            )
+
+        code = (
+            _SCALAR_BAR_TEMPLATE.replace("{{TITLE}}", title)
+            .replace("{{N_LABELS}}", str(n_labels))
+            .replace("{{ORIENTATION_CODE}}", orientation_code)
+        )
+
+        # Indent for consistency with other generated code
+        return "\n".join("      " + line for line in code.splitlines())
 
     def _generate_axes_code(self) -> str:
         """Generate vtk.js JavaScript for the orientation marker widget.
@@ -843,13 +965,16 @@ class _BaseHTMLRenderer:
             ux, uy, uz = self._camera.view_up
             angle = self._camera.view_angle
             near, far = self._camera.clipping_range
+            parallel = self._camera.parallel_projection
+            parallel_js = "true" if parallel else "false"
             return (
                 "      const cam = renderer.getActiveCamera();\n"
                 f"      cam.setPosition({px}, {py}, {pz});\n"
                 f"      cam.setFocalPoint({fx}, {fy}, {fz});\n"
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 f"      cam.setViewAngle({angle});\n"
-                f"      cam.setClippingRange({near}, {far});"
+                f"      cam.setClippingRange({near}, {far});\n"
+                f"      cam.setParallelProjection({parallel_js});"
             )
         if self._view_vector is not None:
             vx, vy, vz = self._view_vector
@@ -885,6 +1010,7 @@ class _BaseHTMLRenderer:
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
             .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
             .replace("{{ACTORS_CODE}}", actors_code)
+            .replace("{{SCALAR_BAR_CODE}}", self._generate_scalar_bar_code())
             .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
             .replace("{{AXES_CODE}}", self._generate_axes_code())
             .replace("{{CAMERA_CODE}}", self._generate_camera_code())
@@ -953,10 +1079,16 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, lighting: str | None = "default") -> None:
         """Initialize the vtk.js renderer.
 
         Automatically loads vtk.js library if in IPython/Jupyter environment.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
 
         Raises
         ------
@@ -970,7 +1102,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             msg = "VTKJSRenderer requires either Pyodide environment or IPython"
             raise RuntimeError(msg)
 
-        super().__init__()
+        super().__init__(lighting=lighting)
 
         # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
         if IPYTHON_AVAILABLE or PYODIDE_ENV:
@@ -1142,14 +1274,24 @@ class MockRenderer:
 
     """
 
-    def __init__(self) -> None:
-        """Initialize mock renderer."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize mock renderer.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.lighting: str | None = lighting
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
         self._camera: Camera | None = None
+        self._scalar_bar: dict[str, object] | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> None:
         """Mock container creation.
@@ -1254,6 +1396,31 @@ class MockRenderer:
         self.lights.append(light)
         logger.info("Added light type=%s intensity=%s", light.light_type, light.intensity)
 
+    def add_scalar_bar(
+        self,
+        title: str = "",
+        vertical: bool = True,  # noqa: FBT001, FBT002
+        n_labels: int = 5,
+    ) -> None:
+        """Mock add_scalar_bar.
+
+        Parameters
+        ----------
+        title : str, optional
+            Title text for the scalar bar. Default is ``""``.
+        vertical : bool, optional
+            Whether to orient vertically. Default is ``True``.
+        n_labels : int, optional
+            Number of labels. Default is ``5``.
+
+        """
+        self._scalar_bar = {
+            "title": title,
+            "vertical": vertical,
+            "n_labels": n_labels,
+        }
+        logger.info("Added scalar bar title=%s vertical=%s n_labels=%d", title, vertical, n_labels)
+
     def clear(self) -> None:
         """Mock clear.
 
@@ -1261,6 +1428,7 @@ class MockRenderer:
         """
         self.actors = []
         self.lights = []
+        self._scalar_bar = None
         logger.info("Cleared all actors")
 
     def set_background(self, color: tuple[float, float, float]) -> None:
@@ -1340,11 +1508,19 @@ class MockRenderer:
         logger.info("Set environment texture: %s", texture)
 
 
-def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
+def get_renderer(
+    lighting: str | None = "default",
+) -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """Get appropriate renderer for current environment.
 
     Automatically detects whether running in Pyodide/browser and
     returns the appropriate renderer implementation.
+
+    Parameters
+    ----------
+    lighting : str or None, optional
+        Lighting mode. ``"default"`` creates a default directional light,
+        ``None`` creates no default lights. Default is ``"default"``.
 
     Returns
     -------
@@ -1377,8 +1553,8 @@ def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """
     # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
     if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
-        return VTKJSRenderer()
+        return VTKJSRenderer(lighting=lighting)
     # Respect opt-out env var for CI/testing
     if os.environ.get("PYVISTA_JS_NO_BROWSER"):
-        return MockRenderer()
-    return BrowserRenderer()
+        return MockRenderer(lighting=lighting)
+    return BrowserRenderer(lighting=lighting)
