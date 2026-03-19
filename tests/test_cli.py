@@ -1,12 +1,17 @@
 """Tests for the pyvista-js CLI."""
 
 import logging
+import warnings
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pyvista_js._cli import _rotate_canvas_with_mouse, cli_main
+from pyvista_js._cli import (
+    _rotate_canvas_with_mouse,
+    capture_preview,
+    cli_main,
+)
 
 DATA_DIR = Path(__file__).parent / "data"
 VTK_FILE = DATA_DIR / "triangle.vtk"
@@ -104,3 +109,58 @@ def test_rotate_canvas_with_mouse_handles_missing_bounding_box() -> None:
     page.query_selector.assert_called_once_with("canvas")
     canvas.bounding_box.assert_called_once()
     page.mouse.move.assert_not_called()
+
+
+def test_capture_preview_no_rotate_emits_deprecation_warning(tmp_path) -> None:
+    """``capture-preview`` without ``--rotate`` emits a DeprecationWarning."""
+    with (
+        warnings.catch_warnings(record=True) as w,
+        patch("pyvista_js._cli._capture_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        warnings.simplefilter("always")
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_preview(output=tmp_path / "out.gif", url="http://example.com")
+
+        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
+        assert len(deprecation_warnings) == 1
+        assert "--rotate" in str(deprecation_warnings[0].message)
+        assert mock_capture.call_args.kwargs["rotate"] is False
+
+
+def test_capture_preview_with_rotate_no_warning(tmp_path) -> None:
+    """``capture-preview --rotate`` does not emit a DeprecationWarning."""
+    with (
+        warnings.catch_warnings(record=True) as w,
+        patch("pyvista_js._cli._capture_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        warnings.simplefilter("always")
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
+
+        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
+        assert len(deprecation_warnings) == 0
+        assert mock_capture.call_args.kwargs["rotate"] is True
+
+
+def test_capture_preview_with_no_rotate_no_warning(tmp_path) -> None:
+    """``capture-preview --no-rotate`` does not emit a DeprecationWarning."""
+    with (
+        warnings.catch_warnings(record=True) as w,
+        patch("pyvista_js._cli._capture_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        warnings.simplefilter("always")
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=False)
+
+        deprecation_warnings = [x for x in w if issubclass(x.category, DeprecationWarning)]
+        assert len(deprecation_warnings) == 0
+        assert mock_capture.call_args.kwargs["rotate"] is False
