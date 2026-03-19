@@ -964,10 +964,16 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, lighting: str | None = "default") -> None:
         """Initialize the vtk.js renderer.
 
         Automatically loads vtk.js library if in IPython/Jupyter environment.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
 
         Raises
         ------
@@ -981,7 +987,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             msg = "VTKJSRenderer requires either Pyodide environment or IPython"
             raise RuntimeError(msg)
 
-        super().__init__()
+        super().__init__(lighting=lighting)
 
         # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
         if IPYTHON_AVAILABLE or PYODIDE_ENV:
