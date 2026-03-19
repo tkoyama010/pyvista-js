@@ -26,6 +26,7 @@
 
 - [Install](#install)
 - [Usage](#usage)
+- [MCP Server for Embodied Simulation](#mcp-server-for-embodied-simulation)
 - [Citation](#citation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -53,6 +54,86 @@ plotter = pv.Plotter()
 plotter.add_mesh(pv.Sphere(), color="red")
 plotter.show()
 ```
+
+## MCP Server for Embodied Simulation
+
+pyvista-js includes an optional [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server that enables AI agents to interact with 3D visualizations through embodied simulation. The server exposes two tools:
+
+- **`see`**: Capture the current state of the 3D scene (camera position, objects, metadata)
+- **`move`**: Manipulate the camera position or use preset views
+
+### Installation
+
+Install with MCP support:
+
+```bash
+pip install pyvista-js[mcp]
+```
+
+### Starting the Server
+
+Start the MCP server from the command line:
+
+```bash
+# Start with a default scene
+pyvista-js mcp-server
+
+# Start with a specific mesh file
+pyvista-js mcp-server mesh.obj --color blue
+```
+
+### Python API
+
+Use the MCP server programmatically:
+
+```python
+import asyncio
+import pyvista_js as pv
+
+# Create a scene
+plotter = pv.Plotter()
+plotter.add_mesh(pv.Sphere(), color="red")
+
+# Create and run MCP server
+server = pv.MCPServer(plotter)
+asyncio.run(server.run())
+```
+
+### MCP Tools
+
+The MCP server provides the following tools for LLM-based agents:
+
+**`see` tool** - Capture scene state:
+- Returns camera position, focal point, and view up vector
+- Reports object count and scene metadata
+- Optionally includes HTML rendering
+
+**`move` tool** - Manipulate camera:
+- **Preset views**: `xy`, `xz`, `yz`, `yx`, `zx`, `zy`, `iso` (isometric)
+- **Manual positioning**: Set `position`, `focal_point`, and `view_up`
+
+Example tool usage:
+```json
+{
+  "name": "see",
+  "arguments": {}
+}
+
+{
+  "name": "move",
+  "arguments": {"preset": "iso"}
+}
+
+{
+  "name": "move",
+  "arguments": {
+    "position": [5, 5, 5],
+    "focal_point": [0, 0, 0]
+  }
+}
+```
+
+For more information on MCP, visit [modelcontextprotocol.io](https://modelcontextprotocol.io/).
 
 ## Citation
 
