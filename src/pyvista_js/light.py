@@ -94,7 +94,11 @@ class Light:
         )
         if isinstance(color, str):
             color = _color_name_to_rgb(color)
-        self.color: tuple[float, float, float] = color
+        self.color: tuple[float, float, float] = (
+            float(color[0]),
+            float(color[1]),
+            float(color[2]),
+        )
         self.intensity = float(intensity)
         self.light_type = light_type
         self.positional = bool(positional)
