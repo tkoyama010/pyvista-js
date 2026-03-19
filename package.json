@@ -5,6 +5,7 @@
   "description": "PyVista-like API for vtk.js",
   "devDependencies": {
     "prettier": "^3.1.0",
-    "prettier-plugin-embed": "^0.5.1"
+    "prettier-plugin-embed": "^0.5.1",
+    "prettier-plugin-jinja-template": "^2.1.0"
   }
 }

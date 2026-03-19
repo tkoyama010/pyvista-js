@@ -13,14 +13,15 @@ arrowParens: always
 
 # Plugin configuration
 # Note: For Prettier 3.x, plugins are loaded via additional_dependencies in pre-commit
-plugins: []
+plugins:
+  - prettier-plugin-jinja-template
 
 # File-specific overrides
 overrides:
-  # JavaScript template files
-  - files: "*.js"
+  # JavaScript template files containing Jinja2 template syntax (e.g., {{VARIABLE}})
+  - files: "src/pyvista_js/js/*.js"
     options:
-      parser: babel
+      parser: jinja-template
 
   # HTML files with embedded JavaScript
   - files: "*.html"
