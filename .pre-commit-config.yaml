@@ -49,12 +49,22 @@ repos:
           - prettier-plugin-embed@0.5.1
         types_or: [html]
         files: \.html$
-      - id: prettier
+
+  - repo: local
+    hooks:
+      - id: npm-install
+        name: npm install
+        language: system
+        entry: bash -c 'test -d node_modules || npm install --silent'
+        pass_filenames: false
+        always_run: true
+      - id: prettier-jinja-js
         name: prettier (jinja js templates)
-        additional_dependencies:
-          - prettier@3.1.0
-          - prettier-plugin-jinja-template@2.1.0
-        args: [--plugin=prettier-plugin-jinja-template, --parser=jinja-template]
+        language: system
+        entry: >-
+          ./node_modules/.bin/prettier --write
+          --plugin ./node_modules/prettier-plugin-jinja-template
+          --parser jinja-template
         files: src/pyvista_js/js/.*\.js$
         types_or: [javascript]
 
