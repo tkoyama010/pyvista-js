@@ -1318,6 +1318,7 @@ class MockRenderer:
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
         self.lighting: str | None = lighting
+        self.text_actors: list[Text] = []
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
@@ -1452,14 +1453,27 @@ class MockRenderer:
         }
         logger.info("Added scalar bar title=%s vertical=%s n_labels=%d", title, vertical, n_labels)
 
+    def add_text_actor(self, text: Text) -> None:
+        """Mock add_text_actor.
+
+        Parameters
+        ----------
+        text : Text
+            The text actor to add (stored but not rendered).
+
+        """
+        self.text_actors.append(text)
+        logger.info("Added text actor: %s", text.input)
+
     def clear(self) -> None:
         """Mock clear.
 
-        Removes all actors and lights from the mock renderer.
+        Removes all actors, lights, and text actors from the mock renderer.
         """
         self.actors = []
         self.lights = []
         self._scalar_bar = None
+        self.text_actors = []
         logger.info("Cleared all actors")
 
     def set_background(self, color: tuple[float, float, float]) -> None:
