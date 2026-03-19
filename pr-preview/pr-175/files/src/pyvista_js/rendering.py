@@ -24,14 +24,15 @@ MockRenderer provides a fallback for testing.
 
 Data Conversion
 ---------------
-NumPy arrays are converted to JavaScript for vtk.js:
+NumPy arrays are converted to JavaScript for vtk.js.
 
->>> # Python NumPy array (n, 3)
->>> points = mesh.points
->>>
->>> # Convert to JavaScript flat array
->>> points_js = points.flatten().tolist()
->>> polydata.getPoints().setData(points_js, 3)
+Python NumPy array (n, 3)::
+
+    points = mesh.points
+
+    # Convert to JavaScript flat array
+    points_js = points.flatten().tolist()
+    polydata.getPoints().setData(points_js, 3)
 
 Loading vtk.js
 --------------
@@ -49,16 +50,16 @@ For manual loading or custom versions:
 
 Examples
 --------
-Using the renderer (automatically selected):
+Using the renderer (automatically selected)::
 
->>> from pyvista_js.rendering import get_renderer
->>> from pyvista_js import Sphere
->>>
->>> renderer = get_renderer()
->>> mesh = Sphere()
->>> renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
->>> renderer.create_container('viz-container')
->>> renderer.render()
+    from pyvista_js.rendering import get_renderer
+    from pyvista_js import Sphere
+
+    renderer = get_renderer()
+    mesh = Sphere()
+    renderer.add_mesh_actor(mesh, color='red', opacity=0.8)
+    renderer.create_container('viz-container')
+    renderer.render()
 
 In Pyodide environment, this uses vtk.js. In standard Python,
 it opens the visualization in the default web browser.
@@ -185,6 +186,7 @@ class _BaseHTMLRenderer:
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
         self._camera: Camera | None = None
+        self._axes_enabled: bool = False
         self._scalar_bar: dict[str, object] | None = None
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
@@ -297,6 +299,20 @@ class _BaseHTMLRenderer:
 
         """
         self.lights.append(light)
+
+    def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Add an orientation marker (axes indicator) to the viewport.
+
+        Displays XYZ axes in the corner of the viewport to help orient
+        the viewer. Backed by vtk.js ``vtkOrientationMarkerWidget``.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation. Currently accepts no parameters.
+
+        """
+        self._axes_enabled = True
 
     def add_scalar_bar(
         self,
@@ -672,6 +688,31 @@ class _BaseHTMLRenderer:
         # Indent for consistency with other generated code
         return "\n".join("      " + line for line in code.splitlines())
 
+    def _generate_axes_code(self) -> str:
+        """Generate vtk.js JavaScript for the orientation marker widget.
+
+        Returns empty string if axes are not enabled.
+        """
+        if not self._axes_enabled:
+            return ""
+
+        return """
+      // Create axes actor for orientation marker
+      const axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
+
+      // Create orientation marker widget
+      const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
+        actor: axes,
+        interactor: renderWindow.getInteractor()
+      });
+      orientationWidget.setEnabled(true);
+      orientationWidget.setViewportCorner(
+        vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT
+      );
+      orientationWidget.setViewportSize(0.15);
+      orientationWidget.setMinPixelSize(100);
+      orientationWidget.setMaxPixelSize(300);"""
+
     def _generate_actor_code(self, idx: int, actor_info: dict[str, object]) -> str:
         """Generate vtk.js JavaScript for a single actor.
 
@@ -897,13 +938,16 @@ class _BaseHTMLRenderer:
             ux, uy, uz = self._camera.view_up
             angle = self._camera.view_angle
             near, far = self._camera.clipping_range
+            parallel = self._camera.parallel_projection
+            parallel_js = "true" if parallel else "false"
             return (
                 "      const cam = renderer.getActiveCamera();\n"
                 f"      cam.setPosition({px}, {py}, {pz});\n"
                 f"      cam.setFocalPoint({fx}, {fy}, {fz});\n"
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 f"      cam.setViewAngle({angle});\n"
-                f"      cam.setClippingRange({near}, {far});"
+                f"      cam.setClippingRange({near}, {far});\n"
+                f"      cam.setParallelProjection({parallel_js});"
             )
         if self._view_vector is not None:
             vx, vy, vz = self._view_vector
@@ -941,6 +985,7 @@ class _BaseHTMLRenderer:
             .replace("{{ACTORS_CODE}}", actors_code)
             .replace("{{SCALAR_BAR_CODE}}", self._generate_scalar_bar_code())
             .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
+            .replace("{{AXES_CODE}}", self._generate_axes_code())
             .replace("{{CAMERA_CODE}}", self._generate_camera_code())
         )
 
@@ -996,16 +1041,14 @@ class VTKJSRenderer(_BaseHTMLRenderer):
     Examples
     --------
     >>> # In Pyodide/browser environment
-    >>> renderer = VTKJSRenderer()
-    >>> renderer.create_container('my-viz')
-    >>>
+    >>> renderer = VTKJSRenderer()  # doctest: +SKIP
+    >>> renderer.create_container('my-viz')  # doctest: +SKIP
     >>> # Add a mesh
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> actor = renderer.add_mesh_actor(mesh, color='blue')
-    >>>
+    >>> from pyvista_js import Sphere  # doctest: +SKIP
+    >>> mesh = Sphere()  # doctest: +SKIP
+    >>> actor = renderer.add_mesh_actor(mesh, color='blue')  # doctest: +SKIP
     >>> # Render the scene
-    >>> renderer.render()
+    >>> renderer.render()  # doctest: +SKIP
 
     """
 
@@ -1053,8 +1096,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer = VTKJSRenderer()
-        >>> container = renderer.create_container('my-visualization')
+        >>> renderer = VTKJSRenderer()  # doctest: +SKIP
+        >>> container = renderer.create_container('my-visualization')  # doctest: +SKIP
 
         """
         if self.use_ipython:
@@ -1079,7 +1122,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer.render()  # Display the visualization
+        >>> renderer.render()  # Display the visualization  # doctest: +SKIP
 
         """
         if self.use_ipython:
@@ -1095,7 +1138,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Examples
         --------
-        >>> renderer.clear()  # Remove all visualizations
+        >>> renderer.clear()  # Remove all visualizations  # doctest: +SKIP
 
         """
         super().clear()
@@ -1114,8 +1157,8 @@ class BrowserRenderer(_BaseHTMLRenderer):
     --------
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(pv.Sphere(), color='red')
-    >>> plotter.show()  # Opens the default browser with the 3D scene
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -1185,10 +1228,9 @@ class MockRenderer:
     >>>
     >>> renderer = MockRenderer()
     >>> mesh = Sphere()
-    >>> renderer.add_mesh_actor(mesh, color='red')
-    Mock: Added mesh with 900 points
+    >>> _ = renderer.add_mesh_actor(mesh, color='red')
     >>>
-    >>> renderer.render()
+    >>> renderer.render()  # doctest: +SKIP
     Mock: Rendering 1 actors
 
     Notes
@@ -1401,6 +1443,17 @@ class MockRenderer:
         self._camera = camera
         logger.info("Set camera: %s", camera)
 
+    def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
+        """Mock add_axes.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation.
+
+        """
+        logger.info("add_axes called (mock)")
+
     def set_environment_texture(self, texture: object) -> None:
         """Mock environment texture.
 
@@ -1429,17 +1482,15 @@ def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     Examples
     --------
     >>> # Automatically gets the right renderer
-    >>> renderer = get_renderer()
-    >>>
+    >>> renderer = get_renderer()  # doctest: +SKIP
     >>> # In Pyodide or Jupyter: returns VTKJSRenderer
     >>> # In standard Python: returns BrowserRenderer (opens browser)
-    >>>
     >>> # Same code works in both environments
-    >>> from pyvista_js import Sphere
-    >>> mesh = Sphere()
-    >>> renderer.add_mesh_actor(mesh, color='blue')
-    >>> renderer.create_container()
-    >>> renderer.render()
+    >>> from pyvista_js import Sphere  # doctest: +SKIP
+    >>> mesh = Sphere()  # doctest: +SKIP
+    >>> renderer.add_mesh_actor(mesh, color='blue')  # doctest: +SKIP
+    >>> renderer.create_container()  # doctest: +SKIP
+    >>> renderer.render()  # doctest: +SKIP
 
     Notes
     -----

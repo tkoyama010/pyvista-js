@@ -181,8 +181,8 @@ def download_sky_box_cube_map() -> CubeMap:
     >>> plotter = pv.Plotter()
     >>> plotter.set_environment_texture(cubemap)
     >>> mesh = pv.Sphere()
-    >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
     base = _PYVISTA_DATA_BASE
@@ -214,8 +214,8 @@ def download_masonry_texture() -> Texture:
     >>> texture = examples.download_masonry_texture()
     >>> surf = pv.Cylinder()
     >>> plotter = pv.Plotter()
-    >>> plotter.add_mesh(surf, texture=texture)
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(surf, texture=texture)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
     return Texture(f"{_PYVISTA_DATA_BASE}/masonry.bmp")
@@ -245,3 +245,33 @@ def download_cad_model() -> PolyData:
 
     path = _download_file("42400-IDGH.stl")
     return STLReader(path).read()
+
+
+def download_bunny() -> PolyData:
+    """Download the Stanford Bunny dataset.
+
+    Downloads ``bunny.ply`` from the PyVista vtk-data repository and
+    returns it as a :class:`~pyvista_js.PolyData` mesh, mirroring the
+    ``pyvista.examples.download_bunny`` API.
+
+    The Stanford Bunny is a widely used 3D test model in computer graphics.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The Stanford Bunny mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_bunny()
+    >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(mesh)
+    >>> plotter.show()  # doctest: +SKIP
+
+    """
+    from .readers import PLYReader  # noqa: PLC0415
+
+    path = _download_file("bunny.ply")
+    return PLYReader(path).read()

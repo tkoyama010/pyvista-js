@@ -30,8 +30,8 @@ class Plotter:
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
     >>> mesh = pv.Sphere()
-    >>> plotter.add_mesh(mesh, color='red')
-    >>> plotter.show()
+    >>> _ = plotter.add_mesh(mesh, color='red')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
@@ -109,45 +109,51 @@ class Plotter:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
-        >>> plotter.add_mesh(mesh, color='red', opacity=0.8)
+        >>> _ = plotter.add_mesh(mesh, color='red', opacity=0.8)
 
         PBR example:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
-        >>> plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
+        >>> _ = plotter.add_mesh(mesh, color='white', pbr=True, metallic=0.8, roughness=0.1)
 
         Texture example:
 
+        >>> import pyvista_js as pv
         >>> from pyvista_js import examples
         >>> plotter = pv.Plotter()
         >>> sphere = pv.Sphere()
-        >>> texture = examples.download_masonry_texture()
-        >>> plotter.add_mesh(sphere, texture=texture)
-        >>> plotter.show()
+        >>> texture = examples.download_masonry_texture()  # doctest: +SKIP
+        >>> _ = plotter.add_mesh(sphere, texture=texture)  # doctest: +SKIP
+        >>> plotter.show()  # doctest: +SKIP
 
         Show edges:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Sphere()
-        >>> plotter.add_mesh(mesh, show_edges=True, edge_color='black')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, show_edges=True, edge_color='black')
+        >>> plotter.show()  # doctest: +SKIP
 
         Wireframe rendering:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Cube()
-        >>> plotter.add_mesh(mesh, style='wireframe')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, style='wireframe')
+        >>> plotter.show()  # doctest: +SKIP
 
         Surface with edges:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> mesh = pv.Cube()
-        >>> plotter.add_mesh(mesh, style='surface', show_edges=True)
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, style='surface', show_edges=True)
+        >>> plotter.show()  # doctest: +SKIP
 
         Scalar coloring:
 
@@ -155,8 +161,8 @@ class Plotter:
         >>> mesh = pv.Sphere()
         >>> mesh['elevation'] = mesh.points[:, 2]
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         # Add mesh to vtk.js renderer
@@ -234,26 +240,27 @@ class Plotter:
         --------
         Basic usage:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.show()  # doctest: +SKIP
 
         With camera position string shortcut:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.show(cpos='xy')
 
         With direction vector:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.show(cpos=(1, 0, 0))
 
         With full camera specification:
 
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.show(cpos=[(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)])
 
         """
@@ -285,16 +292,17 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_vector((1, 0, 0))
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         View from an isometric angle:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Cube())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.view_vector((1, 1, 1))
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._renderer.view_vector(vector, viewup=viewup)
@@ -315,16 +323,17 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_xy()
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         View from the negative Z direction:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Cube())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.view_xy(negative=True)
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         vector = (0.0, 0.0, -1.0) if negative else (0.0, 0.0, 1.0)
@@ -346,16 +355,17 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_xz()
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         View from the negative Y direction:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Cube())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.view_xz(negative=True)
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         vector = (0.0, -1.0, 0.0) if negative else (0.0, 1.0, 0.0)
@@ -377,16 +387,17 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_yz()
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         View from the negative X direction:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Cube())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.view_yz(negative=True)
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         vector = (-1.0, 0.0, 0.0) if negative else (1.0, 0.0, 0.0)
@@ -408,7 +419,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_yx()
         >>> plotter.show()
 
@@ -432,7 +443,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_zx()
         >>> plotter.show()
 
@@ -456,7 +467,7 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.view_zy()
         >>> plotter.show()
 
@@ -474,9 +485,9 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Cube())
+        >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.view_isometric()
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self.view_vector((1.0, 1.0, 1.0))
@@ -497,19 +508,22 @@ class Plotter:
         --------
         URL string:
 
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
-        >>> plotter.set_environment_texture('https://example.com/env.jpg')
-        >>> plotter.show()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture('https://example.com/env.jpg')  # doctest: +SKIP
+        >>> plotter.show()  # doctest: +SKIP
 
         CubeMap:
 
+        >>> import pyvista_js as pv
         >>> from pyvista_js import examples
-        >>> cubemap = examples.download_sky_box_cube_map()
-        >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
-        >>> plotter.set_environment_texture(cubemap)
-        >>> plotter.show()
+        >>> cubemap = examples.download_sky_box_cube_map()  # doctest: +SKIP
+        >>> plotter = pv.Plotter()  # doctest: +SKIP
+        >>> _ = plotter.add_mesh(  # doctest: +SKIP
+        ...     pv.Sphere(), color='white', pbr=True, metallic=1.0, roughness=0.1)
+        >>> plotter.set_environment_texture(cubemap)  # doctest: +SKIP
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._renderer.set_environment_texture(texture)
@@ -526,13 +540,46 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere(), color='white')
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
         >>> light = pv.Light(position=(5, 5, 5), color='white', intensity=2.0)
         >>> plotter.add_light(light)
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         self._renderer.add_light(light)
+
+    def add_axes(self, **kwargs: object) -> None:
+        """Add an orientation marker (axes indicator) to the viewport.
+
+        Displays XYZ axes in the corner of the viewport to help orient
+        the viewer. Backed by vtk.js ``vtkOrientationMarkerWidget``.
+
+        Parameters
+        ----------
+        **kwargs
+            Reserved for future implementation. Currently accepts no parameters.
+
+        Examples
+        --------
+        Basic usage:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.add_axes()
+        >>> plotter.show()  # doctest: +SKIP
+
+        With multiple meshes:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+        >>> _ = plotter.add_mesh(pv.Cube(center=(2, 0, 0)), color='blue')
+        >>> plotter.add_axes()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._renderer.add_axes(**kwargs)
 
     def add_scalar_bar(
         self,
@@ -587,8 +634,9 @@ class Plotter:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> plotter.clear()
 
         """
@@ -619,12 +667,12 @@ class Plotter:
         --------
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_mesh(pv.Sphere())
         >>> camera = pv.Camera()
         >>> camera.position = (5, 5, 5)
         >>> camera.focal_point = (0, 0, 0)
         >>> plotter.camera = camera
-        >>> plotter.show()
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         return self._camera
@@ -801,6 +849,7 @@ class Plotter:
 
         Examples
         --------
+        >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
         >>> plotter.background_color = 'white'
         >>> plotter.background_color
@@ -873,3 +922,104 @@ class Plotter:
             return (color[0], color[1], color[2])
         msg = f"Color must be a string or RGB tuple, got {type(color)}"  # type: ignore[unreachable]
         raise TypeError(msg)
+
+    def enable_parallel_projection(self) -> None:
+        """Enable parallel (orthographic) projection.
+
+        Switches the camera from perspective projection to parallel projection.
+        This is useful for viewing 2D datasets, CAD-like orthographic views,
+        and scientific visualization where perspective distortion is undesirable.
+
+        If no camera is set, creates a default camera with parallel projection enabled.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Cube())
+        >>> plotter.enable_parallel_projection()
+        >>> plotter.view_isometric()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        if self._camera is None:
+            from .camera import Camera  # noqa: PLC0415
+
+            self._camera = Camera()
+            self._renderer.camera = self._camera
+
+        self._camera.enable_parallel_projection()
+
+    def disable_parallel_projection(self) -> None:
+        """Disable parallel projection (use perspective projection).
+
+        Switches the camera from parallel projection to perspective projection.
+
+        If no camera is set, creates a default camera with perspective projection.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.enable_parallel_projection()
+        >>> plotter.disable_parallel_projection()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        if self._camera is None:
+            from .camera import Camera  # noqa: PLC0415
+
+            self._camera = Camera()
+            self._renderer.camera = self._camera
+
+        self._camera.disable_parallel_projection()
+
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling.
+
+        Excludes the renderer (browser-specific) and actor references,
+        keeping only the serializable mesh data and rendering parameters.
+
+        Returns
+        -------
+        dict
+            State dictionary containing actors list, background color,
+            container ID, and camera.
+
+        """
+        # Create a picklable copy of actors without the actor objects
+        picklable_actors = []
+        for actor_info in self._actors:
+            # Copy actor info but exclude the unpicklable 'actor' object
+            actor_copy = {key: value for key, value in actor_info.items() if key != "actor"}
+            picklable_actors.append(actor_copy)
+
+        return {
+            "_actors": picklable_actors,
+            "_background_color": self._background_color,
+            "_container_id": self._container_id,
+            "_camera": self._camera,
+        }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle.
+
+        Reconstructs the plotter from pickled state by recreating the
+        renderer and restoring all actors.
+
+        Parameters
+        ----------
+        state : dict
+            State dictionary from __getstate__.
+
+        """
+        # Restore basic attributes
+        self._actors = state["_actors"]  # type: ignore[assignment]
+        self._background_color = state["_background_color"]  # type: ignore[assignment]
+        self._container_id = state["_container_id"]  # type: ignore[assignment]
+        self._camera = state["_camera"]  # type: ignore[assignment]
+
+        # Recreate the renderer
+        self._renderer = get_renderer()
+        self._renderer.set_background(self._background_color)
