@@ -20,5 +20,5 @@ info
 capture-preview
 ```
 
-[^1]: See [entry-points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html)
-      for further information.
+\[^1\]: See [entry-points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html)
+for further information.
