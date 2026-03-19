@@ -892,7 +892,7 @@ class Plotter:
 
         """
         if self._camera is None:
-            from .camera import Camera
+            from .camera import Camera  # noqa: PLC0415
 
             self._camera = Camera()
             self._renderer.camera = self._camera
@@ -917,7 +917,7 @@ class Plotter:
 
         """
         if self._camera is None:
-            from .camera import Camera
+            from .camera import Camera  # noqa: PLC0415
 
             self._camera = Camera()
             self._renderer.camera = self._camera
