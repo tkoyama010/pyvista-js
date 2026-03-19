@@ -50,6 +50,17 @@ def test_light_color_name() -> None:
     assert light.color == (0.0, 0.0, 1.0)
 
 
+def test_light_color_list_to_tuple() -> None:
+    """Test Light converts color lists to tuples."""
+    light = Light(color=[0.886, 0.345, 0.133])
+    assert isinstance(light.color, tuple), "Color should be converted to tuple"
+    assert light.color == (0.886, 0.345, 0.133)
+
+    # Test with integers
+    light = Light(color=[1, 0, 0])
+    assert light.color == (1.0, 0.0, 0.0)
+
+
 def test_light_invalid_color_name() -> None:
     """Test Light raises on unknown color name."""
     with pytest.raises(ValueError, match="Unknown color name"):
