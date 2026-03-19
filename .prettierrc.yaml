@@ -17,11 +17,6 @@ plugins: []
 
 # File-specific overrides
 overrides:
-  # JavaScript template files containing Jinja2 template syntax (e.g., {{VARIABLE}})
-  - files: "src/pyvista_js/js/*.js"
-    options:
-      parser: jinja-template
-
   # HTML files with embedded JavaScript
   - files: "*.html"
     options:
