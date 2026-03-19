@@ -272,6 +272,102 @@ def info() -> None:
     logger.info("Platform   : %s", platform.platform())
 
 
+@app.command(name="generate-typescript")
+def generate_typescript(
+    files: Annotated[
+        list[Path] | None,
+        typer.Argument(
+            help="Mesh file(s) to generate TypeScript for. Supported formats: .vtk (ASCII), .ply (ASCII), .obj. "
+            "Optional when --load-pickle is provided.",
+            metavar="FILE",
+        ),
+    ] = None,
+    output: Annotated[
+        Path,
+        typer.Option(
+            help="Output path for the TypeScript file. Default: visualization.ts.",
+            metavar="PATH",
+        ),
+    ] = Path("visualization.ts"),
+    color: Annotated[
+        str | None,
+        typer.Option(
+            help="Mesh colour applied to all files (e.g. ``red``, ``#ff0000``).",
+            metavar="COLOR",
+        ),
+    ] = None,
+    background: Annotated[
+        str | None,
+        typer.Option(
+            help="Background colour (e.g. ``white``, ``black``). Default: renderer default.",
+            metavar="COLOR",
+        ),
+    ] = None,
+    opacity: Annotated[
+        float,
+        typer.Option(
+            help="Mesh opacity in the range [0, 1]. Default: 1.0.",
+            metavar="FLOAT",
+        ),
+    ] = 1.0,
+    load_pickle: Annotated[
+        Path | None,
+        typer.Option(
+            help="Load a pickled Plotter object from file instead of creating a new one. "
+            "WARNING: Only load pickle files from trusted sources.",
+            metavar="PATH",
+        ),
+    ] = None,
+) -> None:
+    """Generate TypeScript code for vtk.js visualization.
+
+    Generate TypeScript (.ts) code with type annotations for rendering
+    mesh files using vtk.js. The generated code includes full type
+    definitions for better IDE support and type checking.
+    """
+    import pyvista_js as pv  # noqa: PLC0415
+
+    if load_pickle is not None:
+        # Load plotter from pickle file
+        plotter = _load_plotter_from_pickle(load_pickle)
+
+        # If files are also provided with --load-pickle, add them to the loaded plotter
+        if files:
+            for file_path in files:
+                mesh = _read_mesh(file_path)
+                plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+        # If background is specified, override the loaded plotter's background
+        if background is not None:
+            plotter.background_color = background
+    else:
+        # Normal flow: create a new plotter from mesh files
+        if not files:
+            logger.error(
+                "no mesh files provided. Either provide mesh files or use --load-pickle.",
+            )
+            sys.exit(1)
+
+        plotter = pv.Plotter()
+
+        if background is not None:
+            plotter.background_color = background
+
+        for file_path in files:
+            mesh = _read_mesh(file_path)
+            plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    # Generate TypeScript code
+    ts_code = plotter._renderer._generate_typescript()  # noqa: SLF001
+
+    # Write to output file
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(ts_code, encoding="utf-8")
+
+    logger.info("TypeScript code generated: %s", output)
+    logger.info("To use this file, install vtk.js types: npm install --save-dev @kitware/vtk.js")
+
+
 def _open_notebook(page, screenshots_dir: Path) -> bool:  # noqa: ANN001
     """Find and open the demo notebook in the JupyterLite file browser.
 
