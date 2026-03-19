@@ -162,24 +162,34 @@ class MCPServer:
 
         # Get camera state
         camera = self.plotter.camera
-        camera_info = {
-            "position": list(camera.position) if camera else [0, 0, 1],
-            "focal_point": list(camera.focal_point) if camera else [0, 0, 0],
-            "view_up": list(camera.view_up) if camera else [0, 1, 0],
-            "view_angle": float(camera.view_angle) if camera else 30.0,
-            "clipping_range": list(camera.clipping_range) if camera else [0.01, 1000.01],
-            "parallel_projection": camera.parallel_projection if camera else False,
-        }
+        if camera is not None:
+            camera_info: dict[str, Any] = {
+                "position": list(camera.position),
+                "focal_point": list(camera.focal_point),
+                "view_up": list(camera.view_up),
+                "view_angle": float(camera.view_angle),
+                "clipping_range": list(camera.clipping_range),
+                "parallel_projection": camera.parallel_projection,
+            }
+        else:
+            camera_info = {
+                "position": [0, 0, 1],
+                "focal_point": [0, 0, 0],
+                "view_up": [0, 1, 0],
+                "view_angle": 30.0,
+                "clipping_range": [0.01, 1000.01],
+                "parallel_projection": False,
+            }
 
         # Get scene information
-        scene_info = {
+        scene_info: dict[str, Any] = {
             "object_count": len(self.plotter._actors),  # noqa: SLF001
             "background_color": self.plotter._background_color,  # noqa: SLF001
             "container_id": self.plotter._container_id,  # noqa: SLF001
         }
 
         # Combine information
-        result = {
+        result: dict[str, Any] = {
             "camera": camera_info,
             "scene": scene_info,
         }
@@ -187,16 +197,12 @@ class MCPServer:
         # Optionally include HTML rendering
         if include_html:
             try:
-                html_output = self.plotter._renderer._generate_html(  # noqa: SLF001
-                    self.plotter._actors,  # noqa: SLF001
-                    self.plotter._background_color,  # noqa: SLF001
-                    self.plotter._container_id,  # noqa: SLF001
-                    self.plotter.camera,
-                )
+                renderer = self.plotter._renderer  # noqa: SLF001
+                html_output = renderer._generate_html()  # type: ignore[union-attr]  # noqa: SLF001
                 result["html"] = html_output
-            except Exception as e:
+            except Exception:
                 logger.exception("Failed to generate HTML")
-                result["html_error"] = str(e)
+                result["html_error"] = "Failed to generate HTML"
 
         return [
             {
@@ -231,7 +237,7 @@ class MCPServer:
         # Handle preset views
         if "preset" in arguments:
             preset = arguments["preset"]
-            preset_map = {
+            preset_views: dict[str, Any] = {
                 "xy": self.plotter.view_xy,
                 "xz": self.plotter.view_xz,
                 "yz": self.plotter.view_yz,
@@ -240,9 +246,10 @@ class MCPServer:
                 "zy": self.plotter.view_zy,
                 "iso": self.plotter.view_isometric,
             }
-            if preset in preset_map:
-                preset_map[preset]()
+            if preset in preset_views:
+                preset_views[preset]()
                 camera = self.plotter.camera
+                assert camera is not None  # set above if None  # noqa: S101
                 return [
                     {
                         "type": "text",
@@ -265,6 +272,7 @@ class MCPServer:
 
         # Handle manual camera positioning
         camera = self.plotter.camera
+        assert camera is not None  # set above if None  # noqa: S101
         actions = []
 
         if "position" in arguments:
