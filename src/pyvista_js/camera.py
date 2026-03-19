@@ -43,14 +43,14 @@ class Camera:
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         position: tuple[float, float, float] = (0.0, 0.0, 1.0),
         focal_point: tuple[float, float, float] = (0.0, 0.0, 0.0),
         view_up: tuple[float, float, float] = (0.0, 1.0, 0.0),
         view_angle: float = 30.0,
         clipping_range: tuple[float, float] = (0.01, 1000.01),
-        parallel_projection: bool = False,
+        parallel_projection: bool = False,  # noqa: FBT001 FBT002
     ) -> None:
         """Initialize a Camera instance."""
         self.position = position
