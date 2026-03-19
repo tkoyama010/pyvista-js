@@ -263,10 +263,12 @@ def download_bunny() -> PolyData:
 
     Examples
     --------
+    >>> import pyvista_js as pv
     >>> from pyvista_js import examples
-    >>> mesh = examples.download_bunny()  # doctest: +SKIP
-    >>> type(mesh).__name__  # doctest: +SKIP
-    '_PLYMesh'
+    >>> mesh = examples.download_bunny()
+    >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(mesh, color='white')
+    >>> plotter.show()  # doctest: +SKIP
 
     """
     from .readers import PLYReader  # noqa: PLC0415
