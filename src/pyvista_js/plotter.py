@@ -888,6 +888,7 @@ class Plotter:
         >>> plotter = pv.Plotter()
         >>> _ = plotter.add_mesh(pv.Cube())
         >>> plotter.enable_parallel_projection()
+        >>> plotter.view_isometric()
         >>> plotter.show()  # doctest: +SKIP
 
         """
