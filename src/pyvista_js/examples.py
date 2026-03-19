@@ -267,7 +267,7 @@ def download_bunny() -> PolyData:
     >>> from pyvista_js import examples
     >>> mesh = examples.download_bunny()
     >>> plotter = pv.Plotter()
-    >>> _ = plotter.add_mesh(mesh, color='white')
+    >>> _ = plotter.add_mesh(mesh)
     >>> plotter.show()  # doctest: +SKIP
 
     """
