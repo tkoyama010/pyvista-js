@@ -2,11 +2,11 @@
 
 import logging
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from pyvista_js._cli import cli_main
+from pyvista_js._cli import _rotate_canvas_with_mouse, cli_main
 
 DATA_DIR = Path(__file__).parent / "data"
 VTK_FILE = DATA_DIR / "triangle.vtk"
@@ -63,3 +63,45 @@ def test_plot_unsupported_extension_exits(tmp_path) -> None:
     with pytest.raises(SystemExit) as exc_info:
         cli_main(["plot", str(bad_file)])
     assert exc_info.value.code == 1
+
+
+def test_rotate_canvas_with_mouse_performs_drag() -> None:
+    """``_rotate_canvas_with_mouse`` performs mouse drag on canvas."""
+    page = MagicMock()
+    canvas = MagicMock()
+    canvas.bounding_box.return_value = {"x": 100, "y": 100, "width": 600, "height": 400}
+    page.query_selector.return_value = canvas
+
+    _rotate_canvas_with_mouse(page)
+
+    page.query_selector.assert_called_once_with("canvas")
+    canvas.bounding_box.assert_called_once()
+    page.mouse.move.assert_called()
+    page.mouse.down.assert_called_once()
+    page.mouse.up.assert_called_once()
+
+
+def test_rotate_canvas_with_mouse_handles_missing_canvas() -> None:
+    """``_rotate_canvas_with_mouse`` handles gracefully when canvas is not found."""
+    page = MagicMock()
+    page.query_selector.return_value = None
+
+    _rotate_canvas_with_mouse(page)
+
+    page.query_selector.assert_called_once_with("canvas")
+    page.mouse.move.assert_not_called()
+
+
+def test_rotate_canvas_with_mouse_handles_missing_bounding_box() -> None:
+    """``_rotate_canvas_with_mouse`` handles gracefully when bounding box is unavailable."""
+    page = MagicMock()
+    canvas = MagicMock()
+    canvas.bounding_box.return_value = None
+    page.query_selector.return_value = canvas
+
+    _rotate_canvas_with_mouse(page)
+
+    page.query_selector.assert_called_once_with("canvas")
+    canvas.bounding_box.assert_called_once()
+    page.mouse.move.assert_not_called()
+
