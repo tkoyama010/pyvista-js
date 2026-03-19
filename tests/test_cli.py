@@ -92,18 +92,20 @@ def test_plot_with_pickle_and_options(tmp_path) -> None:
     """``--pickle`` option preserves color, background, and opacity settings."""
     pickle_file = tmp_path / "plotter_with_options.pkl"
     with patch("pyvista_js.Plotter.show"):
-        cli_main([
-            "plot",
-            str(VTK_FILE),
-            "--color",
-            "red",
-            "--background",
-            "white",
-            "--opacity",
-            "0.5",
-            "--pickle",
-            str(pickle_file),
-        ])
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                "--color",
+                "red",
+                "--background",
+                "white",
+                "--opacity",
+                "0.5",
+                "--pickle",
+                str(pickle_file),
+            ]
+        )
 
     # Load and verify the plotter
     with pickle_file.open("rb") as f:
@@ -119,13 +121,15 @@ def test_plot_with_pickle_multiple_meshes(tmp_path) -> None:
     """``--pickle`` option works with multiple mesh files."""
     pickle_file = tmp_path / "plotter_multi.pkl"
     with patch("pyvista_js.Plotter.show"):
-        cli_main([
-            "plot",
-            str(VTK_FILE),
-            str(PLY_FILE),
-            "--pickle",
-            str(pickle_file),
-        ])
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                str(PLY_FILE),
+                "--pickle",
+                str(pickle_file),
+            ]
+        )
 
     # Load and verify the plotter
     with pickle_file.open("rb") as f:

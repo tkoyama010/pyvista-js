@@ -942,11 +942,7 @@ class Plotter:
         picklable_actors = []
         for actor_info in self._actors:
             # Copy actor info but exclude the unpicklable 'actor' object
-            actor_copy = {
-                key: value
-                for key, value in actor_info.items()
-                if key != "actor"
-            }
+            actor_copy = {key: value for key, value in actor_info.items() if key != "actor"}
             picklable_actors.append(actor_copy)
 
         return {

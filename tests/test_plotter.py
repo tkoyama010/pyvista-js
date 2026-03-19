@@ -947,4 +947,3 @@ def test_mesh_pickle_preserves_point_data() -> None:
     assert "pressure" in loaded_mesh.point_data
     assert np.array_equal(loaded_mesh["temperature"], mesh["temperature"])
     assert np.array_equal(loaded_mesh["pressure"], mesh["pressure"])
-
