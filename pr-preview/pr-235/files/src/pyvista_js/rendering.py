@@ -83,6 +83,7 @@ if TYPE_CHECKING:
     from .camera import Camera
     from .light import Light
     from .mesh import PolyData
+    from .text import Text
     from .texture import Texture
 
 from .examples import CubeMap
@@ -178,6 +179,7 @@ class _BaseHTMLRenderer:
         """Initialize shared renderer state."""
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.text_actors: list[Text] = []
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -298,6 +300,23 @@ class _BaseHTMLRenderer:
         """
         self.lights.append(light)
 
+    def add_text_actor(self, text: Text) -> None:
+        """Add a text actor to the scene.
+
+        Parameters
+        ----------
+        text : Text
+            The :class:`~pyvista_js.text.Text` instance to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> renderer = get_renderer()
+        >>> renderer.add_text_actor(pv.Text("Hello", position=(0.5, 0.9)))
+
+        """
+        self.text_actors.append(text)
+
     def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
         """Add an orientation marker (axes indicator) to the viewport.
 
@@ -382,9 +401,10 @@ class _BaseHTMLRenderer:
         self._camera = camera
 
     def clear(self) -> None:
-        """Remove all actors and lights from the renderer."""
+        """Remove all actors, lights, and text actors from the renderer."""
         self.actors = []
         self.lights = []
+        self.text_actors = []
 
     def _generate_texture_code(self, actor_info: dict[str, object], idx: int) -> str:
         """Generate vtk.js JavaScript to load and bind a surface texture.
@@ -583,6 +603,21 @@ class _BaseHTMLRenderer:
         lines = []
         for idx, light in enumerate(self.lights):
             code = light.generate_vtk_js_code(idx)
+            # Indent each line
+            indented = "\n".join("      " + line for line in code.splitlines())
+            lines.append(indented)
+        return "\n\n".join(lines)
+
+    def _generate_text_actors_code(self) -> str:
+        """Generate vtk.js JavaScript for all text actors.
+
+        Returns empty string if no text actors have been added.
+        """
+        if not self.text_actors:
+            return ""
+        lines = []
+        for idx, text_actor in enumerate(self.text_actors):
+            code = text_actor.generate_vtk_js_code(idx)
             # Indent each line
             indented = "\n".join("      " + line for line in code.splitlines())
             lines.append(indented)
@@ -883,6 +918,7 @@ class _BaseHTMLRenderer:
             .replace("{{BACKGROUND_B}}", str(self.background[2]))
             .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
             .replace("{{ACTORS_CODE}}", actors_code)
+            .replace("{{TEXT_ACTORS_CODE}}", self._generate_text_actors_code())
             .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
             .replace("{{AXES_CODE}}", self._generate_axes_code())
             .replace("{{CAMERA_CODE}}", self._generate_camera_code())
