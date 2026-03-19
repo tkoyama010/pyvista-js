@@ -398,6 +398,75 @@ def capture_preview(
     logger.info("Preview GIF saved to: %s", output_path)
 
 
+@app.command(name="mcp-server")
+def mcp_server(
+    scene_file: Annotated[
+        Path | None,
+        typer.Argument(
+            help="Optional mesh file to load into the scene. Supported formats: .vtk, .ply, .obj.",
+            metavar="FILE",
+        ),
+    ] = None,
+    color: Annotated[
+        str | None,
+        typer.Option(
+            help="Mesh color (e.g. 'red', '#ff0000'). Only used if scene_file is provided.",
+            metavar="COLOR",
+        ),
+    ] = None,
+) -> None:
+    """Start an MCP server for embodied simulation.
+
+    Launch an MCP (Model Context Protocol) server that exposes 'see' and 'move'
+    tools for interacting with 3D visualizations. This enables LLM-based tools
+    (like Claude Code) to perceive and manipulate 3D scenes.
+
+    The server provides two tools:
+    - see: Capture current scene state (camera, objects, metadata)
+    - move: Manipulate camera position or use preset views
+
+    Requires: mcp (install with `pip install pyvista-js[mcp]`)
+    """
+    import asyncio  # noqa: PLC0415
+
+    try:
+        import pyvista_js as pv  # noqa: PLC0415
+    except ImportError:
+        logger.exception("pyvista_js not found")
+        sys.exit(1)
+
+    if not pv.MCP_AVAILABLE:
+        logger.error(
+            "MCP server not available. Install with: pip install pyvista-js[mcp]",
+        )
+        sys.exit(1)
+
+    # Create a plotter with optional scene
+    plotter = pv.Plotter()
+
+    if scene_file is not None:
+        mesh = _read_mesh(scene_file)
+        plotter.add_mesh(mesh, color=color)
+        logger.info("Loaded mesh from: %s", scene_file)
+    else:
+        # Add a default sphere for testing
+        plotter.add_mesh(pv.Sphere(), color="red")
+        logger.info("Created default scene with a red sphere")
+
+    # Create and run MCP server
+    server = pv.MCPServer(plotter)
+    logger.info("Starting MCP server for embodied simulation...")
+    logger.info("Available tools: see, move")
+
+    try:
+        asyncio.run(server.run())
+    except KeyboardInterrupt:
+        logger.info("MCP server stopped")
+    except Exception:
+        logger.exception("Error running MCP server")
+        sys.exit(1)
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point wrapper for backwards compatibility
 # ---------------------------------------------------------------------------
