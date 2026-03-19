@@ -104,15 +104,18 @@ asyncio.run(server.run())
 The MCP server provides the following tools for LLM-based agents:
 
 **`see` tool** - Capture scene state:
+
 - Returns camera position, focal point, and view up vector
 - Reports object count and scene metadata
 - Optionally includes HTML rendering
 
 **`move` tool** - Manipulate camera:
+
 - **Preset views**: `xy`, `xz`, `yz`, `yx`, `zx`, `zy`, `iso` (isometric)
 - **Manual positioning**: Set `position`, `focal_point`, and `view_up`
 
 Example tool usage:
+
 ```json
 {
   "name": "see",

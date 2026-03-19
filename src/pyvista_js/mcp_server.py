@@ -101,9 +101,7 @@ class MCPServer:
                                 "items": {"type": "number"},
                                 "minItems": 3,
                                 "maxItems": 3,
-                                "description": (
-                                    "Camera position as [x, y, z]. Example: [5, 5, 5]"
-                                ),
+                                "description": ("Camera position as [x, y, z]. Example: [5, 5, 5]"),
                             },
                             "focal_point": {
                                 "type": "array",
@@ -120,8 +118,7 @@ class MCPServer:
                                 "minItems": 3,
                                 "maxItems": 3,
                                 "description": (
-                                    "Camera view up vector as [x, y, z]. "
-                                    "Example: [0, 1, 0]"
+                                    "Camera view up vector as [x, y, z]. Example: [0, 1, 0]"
                                 ),
                             },
                             "preset": {

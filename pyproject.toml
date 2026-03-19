@@ -50,7 +50,7 @@ optional-dependencies.io = [
   "meshio",
 ]
 optional-dependencies.mcp = [
-  "mcp>=1.0.0",
+  "mcp>=1",
 ]
 optional-dependencies.streamlit = [
   "streamlit>=1.30",
