@@ -174,10 +174,19 @@ class _BaseHTMLRenderer:
     respective environments (Jupyter notebook, standalone browser, etc.).
     """
 
-    def __init__(self) -> None:
-        """Initialize shared renderer state."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize shared renderer state.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.lighting: str | None = lighting
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -566,9 +575,13 @@ class _BaseHTMLRenderer:
     def _generate_lights_code(self) -> str:
         """Generate vtk.js JavaScript for all lights.
 
-        Falls back to a default directional light when no lights have been added.
+        Falls back to a default directional light when no lights have been added
+        and lighting="default". Returns empty string when lighting=None.
         """
         if not self.lights:
+            if self.lighting is None:
+                # No default lights when lighting=None
+                return ""
             # Default angled directional light for specular highlights
             return (
                 "      // Default directional light\n"
@@ -951,10 +964,16 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, lighting: str | None = "default") -> None:
         """Initialize the vtk.js renderer.
 
         Automatically loads vtk.js library if in IPython/Jupyter environment.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
 
         Raises
         ------
@@ -968,7 +987,7 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             msg = "VTKJSRenderer requires either Pyodide environment or IPython"
             raise RuntimeError(msg)
 
-        super().__init__()
+        super().__init__(lighting=lighting)
 
         # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
         if IPYTHON_AVAILABLE or PYODIDE_ENV:
@@ -1140,10 +1159,19 @@ class MockRenderer:
 
     """
 
-    def __init__(self) -> None:
-        """Initialize mock renderer."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize mock renderer.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
+        self.lighting: str | None = lighting
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
@@ -1338,11 +1366,19 @@ class MockRenderer:
         logger.info("Set environment texture: %s", texture)
 
 
-def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
+def get_renderer(
+    lighting: str | None = "default",
+) -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """Get appropriate renderer for current environment.
 
     Automatically detects whether running in Pyodide/browser and
     returns the appropriate renderer implementation.
+
+    Parameters
+    ----------
+    lighting : str or None, optional
+        Lighting mode. ``"default"`` creates a default directional light,
+        ``None`` creates no default lights. Default is ``"default"``.
 
     Returns
     -------
@@ -1375,8 +1411,8 @@ def get_renderer() -> VTKJSRenderer | BrowserRenderer | MockRenderer:
     """
     # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
     if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
-        return VTKJSRenderer()
+        return VTKJSRenderer(lighting=lighting)
     # Respect opt-out env var for CI/testing
     if os.environ.get("PYVISTA_JS_NO_BROWSER"):
-        return MockRenderer()
-    return BrowserRenderer()
+        return MockRenderer(lighting=lighting)
+    return BrowserRenderer(lighting=lighting)
