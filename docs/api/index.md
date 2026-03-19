@@ -115,10 +115,4 @@ This section provides detailed documentation for the pyvista-js public API.
 
 ## CLI
 
-```{eval-rst}
-.. autosummary::
-   :toctree: _autosummary
-   :nosignatures:
-
-   pyvista_js._cli.main
-```
+See the {doc}`CLI reference </cli/index>` for command-line usage documentation.
