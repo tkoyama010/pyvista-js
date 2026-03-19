@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from .examples import CubeMap
     from .light import Light
     from .mesh import PolyData
+    from .text import Text
     from .texture import Texture
 
 
@@ -571,6 +572,26 @@ class Plotter:
 
         """
         self._renderer.add_light(light)
+
+    def add_text(self, text: Text) -> None:
+        """Add a text annotation to the scene.
+
+        Parameters
+        ----------
+        text : Text
+            The :class:`~pyvista_js.text.Text` to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
+        >>> text = pv.Text("Hello World", position=(0.5, 0.9))
+        >>> plotter.add_text(text)
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._renderer.add_text_actor(text)
 
     def add_axes(self, **kwargs: object) -> None:
         """Add an orientation marker (axes indicator) to the viewport.
