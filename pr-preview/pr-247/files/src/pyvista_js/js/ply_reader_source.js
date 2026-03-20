@@ -1,4 +1,4 @@
-const {{ PLY_READER }} = vtk.IO.Geometry.vtkPLYReader.newInstance();
-const plyBytes = Uint8Array.from(atob({{ PLY_BASE64 }}), c => c.charCodeAt(0));
-{{ PLY_READER }}.parseAsArrayBuffer(plyBytes.buffer);
-const {{ SOURCE }} = {{ PLY_READER }}.getOutputData(0);
+const {{ PLY_READER }} = vtk.IO.Geometry.vtkPLYReader.newInstance(); const
+plyBytes = Uint8Array.from(atob({{ PLY_BASE64 }}), c => c.charCodeAt(0));
+{{ PLY_READER }}.parseAsArrayBuffer(plyBytes.buffer); const {{ SOURCE }} =
+{{ PLY_READER }}.getOutputData(0);

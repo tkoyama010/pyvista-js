@@ -1,4 +1,4 @@
-const {{ STL_READER }} = vtk.IO.Geometry.vtkSTLReader.newInstance();
-const stlBytes = Uint8Array.from(atob({{ STL_BASE64 }}), c => c.charCodeAt(0));
-{{ STL_READER }}.parseAsArrayBuffer(stlBytes.buffer);
-const {{ SOURCE }} = {{ STL_READER }}.getOutputData(0);
+const {{ STL_READER }} = vtk.IO.Geometry.vtkSTLReader.newInstance(); const
+stlBytes = Uint8Array.from(atob({{ STL_BASE64 }}), c => c.charCodeAt(0));
+{{ STL_READER }}.parseAsArrayBuffer(stlBytes.buffer); const {{ SOURCE }} =
+{{ STL_READER }}.getOutputData(0);

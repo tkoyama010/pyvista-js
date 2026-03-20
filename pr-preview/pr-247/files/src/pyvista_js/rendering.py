@@ -101,6 +101,7 @@ _jinja_env = Environment(undefined=StrictUndefined)
 def _render(template_str: str, **kwargs: object) -> str:
     return _jinja_env.from_string(template_str).render(**kwargs)
 
+
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
 

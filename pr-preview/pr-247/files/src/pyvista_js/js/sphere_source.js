@@ -1,8 +1,6 @@
-const {{ SOURCE }} = vtk.Filters.Sources.vtkSphereSource.newInstance({
-  center: [{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}],
-  radius: {{ RADIUS }},
-  thetaResolution: {{ THETA_RESOLUTION }},
-  phiResolution: {{ PHI_RESOLUTION }}
-});
-const {{ TEX_MAP_SPHERE }} = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
+const {{ SOURCE }} = vtk.Filters.Sources.vtkSphereSource.newInstance({ center:
+[{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}], radius: {{ RADIUS }},
+thetaResolution: {{ THETA_RESOLUTION }}, phiResolution: {{ PHI_RESOLUTION }} });
+const {{ TEX_MAP_SPHERE }} =
+vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
 {{ TEX_MAP_SPHERE }}.setInputConnection({{ SOURCE }}.getOutputPort());
