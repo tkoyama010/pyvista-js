@@ -1,4 +1,3 @@
-const points = new Float32Array([{{ POINTS_DATA }}]);
-const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-polydata.getPoints().setData(points, 3);
-const {{ SOURCE }} = polydata;
+const points = new Float32Array([{{ POINTS_DATA }}]); const polydata =
+vtk.Common.DataModel.vtkPolyData.newInstance();
+polydata.getPoints().setData(points, 3); const {{ SOURCE }} = polydata;

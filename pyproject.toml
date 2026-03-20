@@ -34,7 +34,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "jinja2>=3.0",
+  "jinja2>=3",
   "numpy>=2",
   "typer>=0.9",
 ]
