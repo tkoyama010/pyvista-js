@@ -11,7 +11,7 @@ name = "accessible-pygments"
 version = "0.0.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pygments" },
+    { name = "pygments", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/bc/c1/bbac6a50d02774f91572938964c582fff4270eee73ab822a4aeea4d8b11b/accessible_pygments-0.0.5.tar.gz", hash = "sha256:40918d3e6a2b619ad424cb91e556bd3bd8865443d9f22f1dcdf79e33c8046872", size = 1377899, upload-time = "2024-05-10T11:23:10.216Z" }
 wheels = [
@@ -157,8 +157,8 @@ name = "beautifulsoup4"
 version = "4.14.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "soupsieve" },
-    { name = "typing-extensions" },
+    { name = "soupsieve", marker = "python_full_version < '3.14'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c3/b0/1c6a16426d389813b48d95e26898aff79abbde42ad353958ad95cc8c9b21/beautifulsoup4-4.14.3.tar.gz", hash = "sha256:6292b1c5186d356bba669ef9f7f051757099565ad9ada5dd630bd9de5fa7fb86", size = 627737, upload-time = "2025-11-30T15:08:26.084Z" }
 wheels = [
@@ -970,12 +970,12 @@ name = "myst-parser"
 version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "docutils" },
-    { name = "jinja2" },
-    { name = "markdown-it-py" },
-    { name = "mdit-py-plugins" },
-    { name = "pyyaml" },
-    { name = "sphinx" },
+    { name = "docutils", marker = "python_full_version < '3.14'" },
+    { name = "jinja2", marker = "python_full_version < '3.14'" },
+    { name = "markdown-it-py", marker = "python_full_version < '3.14'" },
+    { name = "mdit-py-plugins", marker = "python_full_version < '3.14'" },
+    { name = "pyyaml", marker = "python_full_version < '3.14'" },
+    { name = "sphinx", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/33/fa/7b45eef11b7971f0beb29d27b7bfe0d747d063aa29e170d9edd004733c8a/myst_parser-5.0.0.tar.gz", hash = "sha256:f6f231452c56e8baa662cc352c548158f6a16fcbd6e3800fc594978002b94f3a", size = 98535, upload-time = "2026-01-15T09:08:18.036Z" }
 wheels = [
@@ -1392,14 +1392,14 @@ name = "pydata-sphinx-theme"
 version = "0.15.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "accessible-pygments" },
-    { name = "babel" },
-    { name = "beautifulsoup4" },
-    { name = "docutils" },
-    { name = "packaging" },
-    { name = "pygments" },
-    { name = "sphinx" },
-    { name = "typing-extensions" },
+    { name = "accessible-pygments", marker = "python_full_version < '3.14'" },
+    { name = "babel", marker = "python_full_version < '3.14'" },
+    { name = "beautifulsoup4", marker = "python_full_version < '3.14'" },
+    { name = "docutils", marker = "python_full_version < '3.14'" },
+    { name = "packaging", marker = "python_full_version < '3.14'" },
+    { name = "pygments", marker = "python_full_version < '3.14'" },
+    { name = "sphinx", marker = "python_full_version < '3.14'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/67/ea/3ab478cccacc2e8ef69892c42c44ae547bae089f356c4b47caf61730958d/pydata_sphinx_theme-0.15.4.tar.gz", hash = "sha256:7762ec0ac59df3acecf49fd2f889e1b4565dbce8b88b2e29ee06fdd90645a06d", size = 2400673, upload-time = "2024-06-25T19:28:45.041Z" }
 wheels = [
@@ -1522,10 +1522,10 @@ docs = [
     { name = "jupyterlite-pyodide-kernel", marker = "python_full_version < '3.14'" },
     { name = "jupyterlite-sphinx", marker = "python_full_version < '3.14'" },
     { name = "jupytext" },
-    { name = "myst-parser" },
-    { name = "sphinx" },
-    { name = "sphinx-book-theme" },
-    { name = "sphinx-design" },
+    { name = "myst-parser", marker = "python_full_version < '3.14'" },
+    { name = "sphinx", marker = "python_full_version < '3.14'" },
+    { name = "sphinx-book-theme", marker = "python_full_version < '3.14'" },
+    { name = "sphinx-design", marker = "python_full_version < '3.14'" },
     { name = "sphinxcontrib-typer" },
 ]
 io = [
@@ -1557,14 +1557,14 @@ requires-dist = [
     { name = "jupytext", marker = "extra == 'docs'", specifier = ">=1.19" },
     { name = "meshio", marker = "extra == 'io'" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1" },
-    { name = "myst-parser", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==5" },
+    { name = "myst-parser", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==5" },
     { name = "numpy", specifier = ">=2" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1" },
-    { name = "sphinx", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==9.1" },
-    { name = "sphinx-book-theme", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==1.1.4" },
-    { name = "sphinx-design", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.7" },
+    { name = "sphinx", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==9.1" },
+    { name = "sphinx-book-theme", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==1.1.4" },
+    { name = "sphinx-design", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.7" },
     { name = "sphinxcontrib-typer", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = ">=0.5" },
     { name = "streamlit", marker = "extra == 'streamlit'", specifier = ">=1.30" },
     { name = "tox", marker = "extra == 'dev'", specifier = ">=4" },
@@ -1967,8 +1967,8 @@ name = "sphinx-book-theme"
 version = "1.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pydata-sphinx-theme" },
-    { name = "sphinx" },
+    { name = "pydata-sphinx-theme", marker = "python_full_version < '3.14'" },
+    { name = "sphinx", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/45/19/d002ed96bdc7738c15847c730e1e88282d738263deac705d5713b4d8fa94/sphinx_book_theme-1.1.4.tar.gz", hash = "sha256:73efe28af871d0a89bd05856d300e61edce0d5b2fbb7984e84454be0fedfe9ed", size = 439188, upload-time = "2025-02-20T16:32:32.581Z" }
 wheels = [
@@ -1980,7 +1980,7 @@ name = "sphinx-design"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "sphinx" },
+    { name = "sphinx", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/13/7b/804f311da4663a4aecc6cf7abd83443f3d4ded970826d0c958edc77d4527/sphinx_design-0.7.0.tar.gz", hash = "sha256:d2a3f5b19c24b916adb52f97c5f00efab4009ca337812001109084a740ec9b7a", size = 2203582, upload-time = "2026-01-19T13:12:53.297Z" }
 wheels = [
