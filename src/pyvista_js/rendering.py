@@ -85,6 +85,8 @@ if TYPE_CHECKING:
     from .mesh import PolyData
     from .texture import Texture
 
+from jinja2 import Environment, StrictUndefined
+
 from .examples import CubeMap
 
 # Load JavaScript templates
@@ -92,6 +94,12 @@ _JS_DIR = pathlib.Path(__file__).parent / "js"
 _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
 _SCALAR_BAR_TEMPLATE = (_JS_DIR / "scalar_bar.js").read_text()
+
+_jinja_env = Environment(undefined=StrictUndefined)
+
+
+def _render(template_str: str, **kwargs: object) -> str:
+    return _jinja_env.from_string(template_str).render(**kwargs)
 
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
@@ -701,10 +709,11 @@ class _BaseHTMLRenderer:
                 "});"
             )
 
-        code = (
-            _SCALAR_BAR_TEMPLATE.replace("{{TITLE}}", title)
-            .replace("{{N_LABELS}}", str(n_labels))
-            .replace("{{ORIENTATION_CODE}}", orientation_code)
+        code = _render(
+            _SCALAR_BAR_TEMPLATE,
+            TITLE=title,
+            N_LABELS=str(n_labels),
+            ORIENTATION_CODE=orientation_code,
         )
 
         # Indent for consistency with other generated code
@@ -774,19 +783,21 @@ class _BaseHTMLRenderer:
         texture_code = self._generate_texture_code(actor_info, idx)
         scalar_code = self._generate_scalar_code(actor_info, idx)
 
-        return (
-            _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
-            .replace("{{INDEX}}", str(idx))
-            .replace("{{MAPPER_SETUP}}", mapper_setup)
-            .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
-            .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
-            .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
-            .replace("{{OPACITY}}", str(opacity))
-            .replace("{{EDGE_CODE}}", edge_code)
-            .replace("{{STYLE_CODE}}", style_code)
-            .replace("{{PBR_CODE}}", pbr_code)
-            .replace("{{TEXTURE_CODE}}", texture_code)
-            .replace("{{SCALAR_CODE}}", scalar_code)
+        return _render(
+            _ACTOR_TEMPLATE,
+            SOURCE_CODE=source_code,
+            MAPPER=f"mapper{idx}",
+            ACTOR=f"actor{idx}",
+            MAPPER_SETUP=mapper_setup,
+            COLOR_R=str(color[0]),  # type: ignore[index]
+            COLOR_G=str(color[1]),  # type: ignore[index]
+            COLOR_B=str(color[2]),  # type: ignore[index]
+            OPACITY=str(opacity),
+            EDGE_CODE=edge_code,
+            STYLE_CODE=style_code,
+            PBR_CODE=pbr_code,
+            TEXTURE_CODE=texture_code,
+            SCALAR_CODE=scalar_code,
         )
 
     @staticmethod

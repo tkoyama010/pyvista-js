@@ -1,6 +1,6 @@
-var shrunkPD{{INDEX}};
+var {{ SHRUNK_PD }};
 (function () {
-  var src = source{{INDEX}};
+  var src = {{ SOURCE }};
   if (typeof src.update === 'function') { src.update(); }
   var pd = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
   var inPts = pd.getPoints().getData();
@@ -23,9 +23,9 @@ var shrunkPD{{INDEX}};
     newPolys.push(npts);
     for (var j = 0; j < npts; j++) {
       var id = ids[j];
-      newPts.push(cx + {{SHRINK_FACTOR}} * (inPts[id * 3] - cx));
-      newPts.push(cy + {{SHRINK_FACTOR}} * (inPts[id * 3 + 1] - cy));
-      newPts.push(cz + {{SHRINK_FACTOR}} * (inPts[id * 3 + 2] - cz));
+      newPts.push(cx + {{ SHRINK_FACTOR }} * (inPts[id * 3] - cx));
+      newPts.push(cy + {{ SHRINK_FACTOR }} * (inPts[id * 3 + 1] - cy));
+      newPts.push(cz + {{ SHRINK_FACTOR }} * (inPts[id * 3 + 2] - cz));
       newPolys.push(offset + j);
     }
     offset += npts;
@@ -33,9 +33,9 @@ var shrunkPD{{INDEX}};
   }
   var pts = vtk.Common.Core.vtkPoints.newInstance();
   pts.setData(Float32Array.from(newPts), 3);
-  shrunkPD{{INDEX}} = vtk.Common.DataModel.vtkPolyData.newInstance();
-  shrunkPD{{INDEX}}.setPoints(pts);
+  {{ SHRUNK_PD }} = vtk.Common.DataModel.vtkPolyData.newInstance();
+  {{ SHRUNK_PD }}.setPoints(pts);
   var polys = vtk.Common.Core.vtkCellArray.newInstance();
   polys.setData(Int32Array.from(newPolys));
-  shrunkPD{{INDEX}}.setPolys(polys);
+  {{ SHRUNK_PD }}.setPolys(polys);
 })();

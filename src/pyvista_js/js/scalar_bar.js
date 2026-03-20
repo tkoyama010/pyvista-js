@@ -2,11 +2,11 @@
 const scalarBarActor = vtk.Rendering.Core.vtkScalarBarActor.newInstance();
 
 // Configure scalar bar appearance
-scalarBarActor.setAxisLabel('{{TITLE}}');
+scalarBarActor.setAxisLabel('{{ TITLE }}');
 scalarBarActor.setAutomated(true);
 
 // Set orientation and position
-{{ORIENTATION_CODE}}
+{{ ORIENTATION_CODE }}
 
 // Create a simple lookup table (placeholder for future scalar support)
 const lookupTable = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();

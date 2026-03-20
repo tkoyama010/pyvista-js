@@ -1,3 +1,3 @@
-const reader{{INDEX}} = vtk.IO.Legacy.vtkPolyDataReader.newInstance();
-reader{{INDEX}}.parseAsText({{VTK_TEXT}});
-const source{{INDEX}} = reader{{INDEX}}.getOutputData(0);
+const {{ VTK_READER }} = vtk.IO.Legacy.vtkPolyDataReader.newInstance();
+{{ VTK_READER }}.parseAsText({{ VTK_TEXT }});
+const {{ SOURCE }} = {{ VTK_READER }}.getOutputData(0);

@@ -1,17 +1,17 @@
-var tubedPD{{INDEX}};
+var {{ TUBED_PD }};
 (function () {
-  var tubeFilter{{INDEX}} = vtk.Filters.General.vtkTubeFilter.newInstance({
-    radius: {{RADIUS}},
-    numberOfSides: {{N_SIDES}},
-    capping: {{CAPPING}}
+  var {{ TUBE_FILTER }} = vtk.Filters.General.vtkTubeFilter.newInstance({
+    radius: {{ RADIUS }},
+    numberOfSides: {{ N_SIDES }},
+    capping: {{ CAPPING }}
   });
-  var src = source{{INDEX}};
+  var src = {{ SOURCE }};
   if (typeof src.update === 'function') { src.update(); }
   if (typeof src.getOutputPort === 'function') {
-    tubeFilter{{INDEX}}.setInputConnection(src.getOutputPort());
+    {{ TUBE_FILTER }}.setInputConnection(src.getOutputPort());
   } else {
-    tubeFilter{{INDEX}}.setInputData(src);
+    {{ TUBE_FILTER }}.setInputData(src);
   }
-  tubeFilter{{INDEX}}.update();
-  tubedPD{{INDEX}} = tubeFilter{{INDEX}}.getOutputData();
+  {{ TUBE_FILTER }}.update();
+  {{ TUBED_PD }} = {{ TUBE_FILTER }}.getOutputData();
 })();

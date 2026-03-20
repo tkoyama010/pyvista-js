@@ -1,19 +1,19 @@
-var clippedPD{{INDEX}};
+var {{ CLIPPED_PD }};
 (function () {
-  var src = source{{INDEX}};
+  var src = {{ SOURCE }};
   if (typeof src.update === 'function') { src.update(); }
   var pd = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
   var inPts = pd.getPoints().getData();
   var inPolys = pd.getPolys().getData();
 
   // Clip plane parameters
-  var nx = {{NORMAL_X}};
-  var ny = {{NORMAL_Y}};
-  var nz = {{NORMAL_Z}};
-  var ox = {{ORIGIN_X}};
-  var oy = {{ORIGIN_Y}};
-  var oz = {{ORIGIN_Z}};
-  var invert = {{INVERT}};
+  var nx = {{ NORMAL_X }};
+  var ny = {{ NORMAL_Y }};
+  var nz = {{ NORMAL_Z }};
+  var ox = {{ ORIGIN_X }};
+  var oy = {{ ORIGIN_Y }};
+  var oz = {{ ORIGIN_Z }};
+  var invert = {{ INVERT }};
 
   // Compute signed distance from plane for each point
   var nPts = inPts.length / 3;
@@ -72,9 +72,9 @@ var clippedPD{{INDEX}};
   // Create output polydata
   var pts = vtk.Common.Core.vtkPoints.newInstance();
   pts.setData(Float32Array.from(newPts), 3);
-  clippedPD{{INDEX}} = vtk.Common.DataModel.vtkPolyData.newInstance();
-  clippedPD{{INDEX}}.setPoints(pts);
+  {{ CLIPPED_PD }} = vtk.Common.DataModel.vtkPolyData.newInstance();
+  {{ CLIPPED_PD }}.setPoints(pts);
   var polys = vtk.Common.Core.vtkCellArray.newInstance();
   polys.setData(Int32Array.from(newPolys));
-  clippedPD{{INDEX}}.setPolys(polys);
+  {{ CLIPPED_PD }}.setPolys(polys);
 })();

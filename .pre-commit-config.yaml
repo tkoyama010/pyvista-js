@@ -45,6 +45,29 @@ repos:
       - id: uv-lock
         args: [--check, --offline]
 
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        name: prettier (html)
+        additional_dependencies:
+          - prettier@3.1.0
+          - prettier-plugin-embed@0.5.1
+        types_or: [html]
+        files: \.html$
+
+  - repo: local
+    hooks:
+      - id: prettier-jinja-js
+        name: prettier (jinja js templates)
+        language: node
+        additional_dependencies:
+          - prettier@3.1.0
+          - prettier-plugin-jinja-template@2.1.0
+        entry: node scripts/prettier-jinja.js
+        files: src/pyvista_js/js/.*\.js$
+        types_or: [javascript]
+
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
     hooks:
