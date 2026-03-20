@@ -1015,17 +1015,17 @@ class _BaseHTMLRenderer:
             indented_actors.append(indented_lines)
         actors_code = "\n\n".join(indented_actors)
 
-        return (
-            _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", self.container_id)
-            .replace("{{BACKGROUND_R}}", str(self.background[0]))
-            .replace("{{BACKGROUND_G}}", str(self.background[1]))
-            .replace("{{BACKGROUND_B}}", str(self.background[2]))
-            .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
-            .replace("{{ACTORS_CODE}}", actors_code)
-            .replace("{{SCALAR_BAR_CODE}}", self._generate_scalar_bar_code())
-            .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
-            .replace("{{AXES_CODE}}", self._generate_axes_code())
-            .replace("{{CAMERA_CODE}}", self._generate_camera_code())
+        return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
+            CONTAINER_ID=self.container_id,
+            BACKGROUND_R=str(self.background[0]),
+            BACKGROUND_G=str(self.background[1]),
+            BACKGROUND_B=str(self.background[2]),
+            LIGHTS_CODE=self._generate_lights_code(),
+            ACTORS_CODE=actors_code,
+            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            ENVIRONMENT_CODE=self._generate_environment_code(),
+            AXES_CODE=self._generate_axes_code(),
+            CAMERA_CODE=self._generate_camera_code(),
         )
 
     def _repr_html_(self) -> str:
