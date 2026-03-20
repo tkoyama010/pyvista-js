@@ -126,8 +126,8 @@ name = "atsphinx-stlite"
 version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "jinja2" },
-    { name = "sphinx" },
+    { name = "jinja2", marker = "python_full_version < '3.14'" },
+    { name = "sphinx", marker = "python_full_version < '3.14'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/bf/1b/7517a828a9866a1b8fe4731f0f085257052ce8f7d14554639fedff0aba4a/atsphinx_stlite-0.2.1.tar.gz", hash = "sha256:6bb97303bd89fd7e99c5691397aa0a81e861ad65444ddd37efba7770d228de54", size = 87419, upload-time = "2025-12-12T15:56:08.398Z" }
 wheels = [
@@ -1518,7 +1518,7 @@ dev = [
     { name = "tox" },
 ]
 docs = [
-    { name = "atsphinx-stlite" },
+    { name = "atsphinx-stlite", marker = "python_full_version < '3.14'" },
     { name = "jupyterlite-pyodide-kernel" },
     { name = "jupyterlite-sphinx" },
     { name = "jupytext" },
@@ -1550,7 +1550,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "atsphinx-stlite", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.2.1" },
+    { name = "atsphinx-stlite", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.2.1" },
     { name = "jinja2", specifier = ">=3" },
     { name = "jupyterlite-pyodide-kernel", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.7.1" },
     { name = "jupyterlite-sphinx", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.22.1" },
