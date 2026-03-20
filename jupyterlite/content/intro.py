@@ -18,6 +18,11 @@
 # This notebook demonstrates the simplified PyVista-js API that works in JupyterLite.
 
 # %%
+import micropip
+
+await micropip.install("jinja2")
+
+# %%
 import sys
 
 sys.path.insert(0, "/drive/src")
