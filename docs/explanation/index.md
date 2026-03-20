@@ -2,6 +2,14 @@
 
 Deeper understanding of pyvista-js concepts and architecture.
 
+## Contents
+
+```{toctree}
+:maxdepth: 1
+
+minimum-dependencies
+```
+
 ## Overview
 
 pyvista-js is a PyVista-like API for vtk.js, bringing the intuitive PyVista interface
