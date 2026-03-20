@@ -62,6 +62,17 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Line
 ```
 
+## Text
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.Text
+   pyvista_js.TextProperty
+```
+
 ## Texture
 
 ```{eval-rst}
