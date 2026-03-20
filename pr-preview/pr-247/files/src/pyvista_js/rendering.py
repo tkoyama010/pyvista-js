@@ -95,7 +95,7 @@ _RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
 _SCALAR_BAR_TEMPLATE = (_JS_DIR / "scalar_bar.js").read_text()
 
-_jinja_env = Environment(undefined=StrictUndefined)
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
