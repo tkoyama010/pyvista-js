@@ -104,7 +104,13 @@ global_enable_try_examples = True
 try_examples_global_warning_text = (
     "pyvista-js's interactive examples are experimental and may not always work as expected."
 )
-try_examples_preamble = "import sys\nsys.path.insert(0, '/drive/src')\nimport pyvista_js as pv\n"
+try_examples_preamble = (
+    "import micropip\n"
+    "await micropip.install('jinja2')\n"
+    "import sys\n"
+    "sys.path.insert(0, '/drive/src')\n"
+    "import pyvista_js as pv\n"
+)
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"
