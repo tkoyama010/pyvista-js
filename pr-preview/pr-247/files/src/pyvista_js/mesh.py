@@ -5,6 +5,7 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -20,7 +21,11 @@ _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
-    return _jinja_env.from_string(template_str).render(**kwargs)
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r'^\s*<script>\s*\n?', '', rendered)
+    rendered = re.sub(r'\n?\s*</script>\s*$', '', rendered)
+    return rendered
 
 
 class PointData:
@@ -134,20 +139,20 @@ class PointData:
 
 
 # Load JavaScript templates relative to this file
-_JS_DIR = Path(__file__).parent / "js"
-_MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
-_SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
-_CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
-_CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
-_SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
-_CLIP_FILTER_TEMPLATE = (_JS_DIR / "clip_filter.js").read_text()
-_TUBE_FILTER_TEMPLATE = (_JS_DIR / "tube_filter.js").read_text()
-_CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
-_DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
-_ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
-_CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
-_LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
-_PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_MESH_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "mesh_source.html").read_text()
+_SPHERE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "sphere_source.html").read_text()
+_CUBE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cube_source.html").read_text()
+_CYLINDER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cylinder_source.html").read_text()
+_SHRINK_FILTER_TEMPLATE = (_TEMPLATES_DIR / "shrink_filter.html").read_text()
+_CLIP_FILTER_TEMPLATE = (_TEMPLATES_DIR / "clip_filter.html").read_text()
+_TUBE_FILTER_TEMPLATE = (_TEMPLATES_DIR / "tube_filter.html").read_text()
+_CIRCLE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "circle_source.html").read_text()
+_DISK_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "disk_source.html").read_text()
+_ARROW_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "arrow_source.html").read_text()
+_CONE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cone_source.html").read_text()
+_LINE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "line_source.html").read_text()
+_PLANE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "plane_source.html").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3

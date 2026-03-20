@@ -85,21 +85,27 @@ if TYPE_CHECKING:
     from .mesh import PolyData
     from .texture import Texture
 
+import re
+
 from jinja2 import Environment, StrictUndefined
 
 from .examples import CubeMap
 
 # Load JavaScript templates
-_JS_DIR = pathlib.Path(__file__).parent / "js"
-_RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
-_ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
-_SCALAR_BAR_TEMPLATE = (_JS_DIR / "scalar_bar.js").read_text()
+_TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
+_RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
+_ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
+_SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 
 _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
-    return _jinja_env.from_string(template_str).render(**kwargs)
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r'^\s*<script>\s*\n?', '', rendered)
+    rendered = re.sub(r'\n?\s*</script>\s*$', '', rendered)
+    return rendered
 
 
 # vtk.js CDN URL used across renderers

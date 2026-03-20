@@ -1,3 +1,4 @@
+<script>
 var {{ CLIPPED_PD }}; (function () { var src = {{ SOURCE }}; if (typeof
 src.update === 'function') { src.update(); } var pd = (typeof src.getOutputData
 === 'function') ? src.getOutputData(0) : src; var inPts =
@@ -26,3 +27,4 @@ vtk.Common.DataModel.vtkPolyData.newInstance(); {{ CLIPPED_PD }}.setPoints(pts);
 var polys = vtk.Common.Core.vtkCellArray.newInstance();
 polys.setData(Int32Array.from(newPolys)); {{ CLIPPED_PD }}.setPolys(polys);
 })();
+</script>
