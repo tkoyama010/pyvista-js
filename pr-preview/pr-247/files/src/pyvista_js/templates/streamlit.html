@@ -1,8 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>
+    <head>
+        <meta charset="UTF-8" />
+        <style>
       body {
           margin: 0;
           padding: 0;
@@ -12,12 +12,12 @@
           width: 100%;
           height: {{HEIGHT}}px;
       }
-    </style>
-    <script src="https://unpkg.com/vtk.js"></script>
-  </head>
-  <body>
-    <div id="container"></div>
-    <script type="module">
+        </style>
+        <script src="https://unpkg.com/vtk.js"></script>
+    </head>
+    <body>
+        <div id="container"></div>
+        <script type="module">
       const { vtk } = window;
 
       // Create renderer and render window
@@ -117,6 +117,6 @@
           openglRenderWindow.setSize(width, height);
           renderWindow.render();
       });
-    </script>
-  </body>
+        </script>
+    </body>
 </html>
