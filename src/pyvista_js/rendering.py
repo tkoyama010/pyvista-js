@@ -741,7 +741,7 @@ class _BaseHTMLRenderer:
       // Create orientation marker widget
       const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
         actor: axes,
-        interactor: renderWindow.getInteractor()
+        interactor: interactor
       });
       orientationWidget.setEnabled(true);
       orientationWidget.setViewportCorner(

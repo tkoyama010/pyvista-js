@@ -12,13 +12,25 @@
 
     function doRender() {
       try {
-        var fullScreenRenderer =
-          vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({
-            container: container,
-            background: [{{ BACKGROUND_R }}, {{ BACKGROUND_G }}, {{ BACKGROUND_B }}],
-          });
-        var renderer = fullScreenRenderer.getRenderer();
-        var renderWindow = fullScreenRenderer.getRenderWindow();
+        var renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+        renderer.setBackground(
+          {{ BACKGROUND_R }},
+          {{ BACKGROUND_G }},
+          {{ BACKGROUND_B }},
+        );
+        var renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+        renderWindow.addRenderer(renderer);
+        var openGLRenderWindow =
+          vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+        renderWindow.addView(openGLRenderWindow);
+        openGLRenderWindow.setContainer(container);
+        var bbox = container.getBoundingClientRect();
+        openGLRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
+        var interactor =
+          vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+        interactor.setView(openGLRenderWindow);
+        interactor.initialize();
+        interactor.bindEvents(container);
 
         {{ LIGHTS_CODE }}
 
