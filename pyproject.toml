@@ -34,7 +34,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "numpy>=2.0",
+  "numpy>=2",
   "typer>=0.9",
 ]
 optional-dependencies.dev = [

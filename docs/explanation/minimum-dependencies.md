@@ -47,9 +47,9 @@ For core dependencies like NumPy, the 24-month window applies:
 Adopting SPEC 0 provides several advantages:
 
 1. **Reduced maintenance burden**: Limits the scope of supported dependency combinations
-2. **Simplified CI/CD**: Reduces the test matrix complexity
-3. **Community alignment**: Aligns with conventions familiar to contributors from other Scientific Python packages
-4. **Access to new features**: Enables use of modern Python and library features
+1. **Simplified CI/CD**: Reduces the test matrix complexity
+1. **Community alignment**: Aligns with conventions familiar to contributors from other Scientific Python packages
+1. **Access to new features**: Enables use of modern Python and library features
 
 ## References
 
