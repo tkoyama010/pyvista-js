@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
 import struct
 from pathlib import Path
 
@@ -21,7 +22,11 @@ _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
-    return _jinja_env.from_string(template_str).render(**kwargs)
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r'^\s*<script>\s*\n?', '', rendered)
+    rendered = re.sub(r'\n?\s*</script>\s*$', '', rendered)
+    return rendered
 
 
 logger = logging.getLogger(__name__)
@@ -34,11 +39,11 @@ _MIN_VTK_LINES = 4
 _N_COORDS = 3
 
 # Load JavaScript templates
-_JS_DIR = Path(__file__).parent / "js"
-_VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
-_PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
-_OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
-_STL_READER_SOURCE_TEMPLATE = (_JS_DIR / "stl_reader_source.js").read_text()
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_VTK_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtk_reader_source.html").read_text()
+_PLY_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "ply_reader_source.html").read_text()
+_OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_text()
+_STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
 
 
 class _OBJMesh(PolyData):

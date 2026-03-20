@@ -55,18 +55,19 @@ repos:
           - prettier-plugin-embed@0.5.1
         types_or: [html]
         files: \.html$
+        exclude: src/pyvista_js/templates/
 
   - repo: local
     hooks:
       - id: prettier-jinja-js
-        name: prettier (jinja js templates)
+        name: prettier (jinja html templates)
         language: node
         additional_dependencies:
           - prettier@3.1.0
           - prettier-plugin-jinja-template@2.1.0
         entry: node scripts/prettier-jinja.js
-        files: src/pyvista_js/js/.*\.js$
-        types_or: [javascript]
+        files: src/pyvista_js/templates/.*\.html$
+        types_or: [html]
 
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02

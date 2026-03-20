@@ -1,3 +1,4 @@
+<script>
 // Create disc geometry matching vtk.js vtkDiskSource ordering: // outer loop
 circumferential (c), inner loop radial (r) // point index = c * nRings + r const
 nRings = {{ R_RES }} + 1; const nCirc = {{ C_RES }}; const innerR = {{ INNER }};
@@ -15,3 +16,4 @@ vtk.Common.Core.vtkPoints.newInstance();
 vtkPts.setData(Float32Array.from(rawPts), 3); {{ SOURCE }}.setPoints(vtkPts);
 const cellArray = vtk.Common.Core.vtkCellArray.newInstance();
 cellArray.setData(Int32Array.from(rawPolys)); {{ SOURCE }}.setPolys(cellArray);
+</script>

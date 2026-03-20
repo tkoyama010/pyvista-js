@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from .plotter import Plotter
 
 # Load JavaScript template
-_JS_DIR = Path(__file__).parent / "js"
-_STREAMLIT_TEMPLATE = (_JS_DIR / "streamlit.html").read_text()
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_STREAMLIT_TEMPLATE = (_TEMPLATES_DIR / "streamlit.html").read_text()
 
 # Check if streamlit is available
 try:
