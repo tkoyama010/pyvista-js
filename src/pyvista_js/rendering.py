@@ -104,8 +104,7 @@ def _render(template_str: str, **kwargs: object) -> str:
     rendered = _jinja_env.from_string(template_str).render(**kwargs)
     # Strip <script> wrapper added for prettier formatting
     rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-    rendered = re.sub(r"\n?\s*</script>\s*$", "", rendered)
-    return rendered
+    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
 
 # vtk.js CDN URL used across renderers
