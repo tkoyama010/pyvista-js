@@ -94,6 +94,7 @@ from .examples import CubeMap
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
 _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
+_RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
 _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 
@@ -1029,6 +1030,41 @@ class _BaseHTMLRenderer:
             CAMERA_CODE=self._generate_camera_code(),
         )
 
+    def _generate_render_js(self) -> str:
+        """Generate JavaScript code for display(Javascript(...)) rendering.
+
+        Creates the container div via JS and loads vtk.js if not already
+        available, then renders the scene. Used instead of _generate_html()
+        in environments where scripts in HTML outputs are sanitized
+        (e.g., JupyterLite/replite).
+        """
+        actor_js_code = [
+            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
+        ]
+
+        indented_actors = []
+        for actor in actor_js_code:
+            lines = actor.split("\n")
+            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
+            indented_actors.append(indented_lines)
+        actors_code = "\n\n".join(indented_actors)
+
+        rendered = _jinja_env.from_string(_RENDERING_JS_TEMPLATE).render(
+            VTKJS_CDN=_VTKJS_CDN,
+            CONTAINER_ID=self.container_id,
+            BACKGROUND_R=str(self.background[0]),
+            BACKGROUND_G=str(self.background[1]),
+            BACKGROUND_B=str(self.background[2]),
+            LIGHTS_CODE=self._generate_lights_code(),
+            ACTORS_CODE=actors_code,
+            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            ENVIRONMENT_CODE=self._generate_environment_code(),
+            AXES_CODE=self._generate_axes_code(),
+            CAMERA_CODE=self._generate_camera_code(),
+        )
+        rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
+        return re.sub(r"\n?\s*</script>\s*$", "", rendered)
+
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
         return self._generate_html()
@@ -1172,8 +1208,10 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         """
         if self.use_ipython:
-            html = self._generate_html()
-            display(HTML(html))
+            from IPython.display import Javascript
+
+            js_code = self._generate_render_js()
+            display(Javascript(js_code))
         else:
             # Direct rendering
             self.renderer.resetCamera()  # type: ignore[attr-defined]
