@@ -155,11 +155,7 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
 
     # Verify parameters are in the generated HTML
     assert "radius: 2.5" in html
-    assert (
-        "center: [1, 2, 3]" in html
-        or "center: [1.0, 2.0, 3.0]" in html
-        or "center:\n" in html
-    )
+    assert "center: [1, 2, 3]" in html or "center: [1.0, 2.0, 3.0]" in html or "center:\n" in html
     assert "thetaResolution: 60" in html
 
 
