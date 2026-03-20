@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.9.0...pyvista-js-v0.9.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* add micropip jinja2 install to JupyterLite intro notebook ([#262](https://github.com/tkoyama010/pyvista-js/issues/262)) ([31ef65e](https://github.com/tkoyama010/pyvista-js/commit/31ef65e7dba04f74667a7f3d12b92dce022a08c3))
+* rename simple_demo.py to intro.py in jupyterlite content ([#255](https://github.com/tkoyama010/pyvista-js/issues/255)) ([347cc54](https://github.com/tkoyama010/pyvista-js/commit/347cc54f577615cc93b7c71168d1920765f1205a))
+
 ## [0.9.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.8.0...pyvista-js-v0.9.0) (2026-03-20)
 
 ### Features
