@@ -4,29 +4,38 @@ requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.7.0"
+version = "0.8.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
 authors = [
   { name = "Tetsuo Koyama", email = "contact@tetsuo-koyama.dev" },
 ]
-requires-python = ">=3.10"
+# SPEC 0 — Minimum Supported Dependencies
+# https://scientific-python.org/specs/spec-0000/
+#
+# This project follows SPEC 0 for determining the minimum supported versions:
+# - Python: Drop support 36 months after initial release
+# - Core dependencies: Drop support 24 months after initial release
+#
+# As of 2026-03-20:
+# - Minimum Python: 3.12 (released 2023-10-02)
+# - Minimum NumPy: 2.0 (released 2024-06-16)
+requires-python = ">=3.12"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "numpy>=1.20",
+  "jinja2>=3",
+  "numpy>=2",
   "typer>=0.9",
 ]
 optional-dependencies.dev = [
@@ -40,10 +49,12 @@ optional-dependencies.docs = [
   "atsphinx-stlite==0.2.1; python_version>='3.12'",
   "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12'",
   "jupyterlite-sphinx==0.22.1; python_version>='3.12'",
+  "jupytext>=1.19",
   "myst-parser==5; python_version>='3.12'",
   "sphinx==9.1; python_version>='3.12'",
   "sphinx-book-theme==1.1.4; python_version>='3.12'",
   "sphinx-design==0.7; python_version>='3.12'",
+  "sphinxcontrib-typer>=0.5; python_version>='3.12'",
 ]
 optional-dependencies.io = [
   "meshio",
@@ -80,6 +91,11 @@ lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
 ]
+lint.per-file-ignores."jupyterlite/content/*" = [
+  "D100",   # missing docstring - jupytext files
+  "ERA001", # commented-out code - jupytext metadata
+  "INP001", # implicit namespace package
+]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
   "INP001",  # implicit namespace package
@@ -109,7 +125,8 @@ ini_options.filterwarnings = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+# SPEC 0: Target minimum supported Python version
+python_version = "3.12"
 strict = false
 warn_unused_configs = true
 warn_redundant_casts = true
@@ -131,3 +148,6 @@ check_untyped_defs = false
 # Ignore missing imports for optional dependencies
 ignore_missing_imports = true
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
+
+[tool.jupytext]
+formats = "ipynb,py:percent"

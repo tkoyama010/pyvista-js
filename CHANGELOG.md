@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.8.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.7.1...pyvista-js-v0.8.0) (2026-03-19)
+
+### Features
+
+- add --load-pickle option to plot command for loading pickled Plotter objects ([#233](https://github.com/tkoyama010/pyvista-js/issues/233)) ([31bdfcb](https://github.com/tkoyama010/pyvista-js/commit/31bdfcb8d04b7a376648a746dfc2fb8784907a93))
+- add --pickle option to plot command for saving Plotter objects ([#231](https://github.com/tkoyama010/pyvista-js/issues/231)) ([a2c3ed5](https://github.com/tkoyama010/pyvista-js/commit/a2c3ed552b108441b99841a9fb278f642c07a5a0))
+- add enable_parallel_projection support ([#222](https://github.com/tkoyama010/pyvista-js/issues/222)) ([c8d6d93](https://github.com/tkoyama010/pyvista-js/commit/c8d6d9396bbd1e075d4c9a6dda6a0ebea57e19bc))
+- add Stanford Bunny example function ([#221](https://github.com/tkoyama010/pyvista-js/issues/221)) ([b800a88](https://github.com/tkoyama010/pyvista-js/commit/b800a88a5dfef6f30f14998675d1777c7d590923))
+- update capture-preview CLI to use Stanford Bunny with Playwright mouse drag rotation ([#227](https://github.com/tkoyama010/pyvista-js/issues/227)) ([632f3e1](https://github.com/tkoyama010/pyvista-js/commit/632f3e1311a6765861e8dc03ad90d53d5ef93c68))
+
+## [0.7.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.7.0...pyvista-js-v0.7.1) (2026-03-18)
+
+### Continuous Integration
+
+- add token parameter to Codecov action for authentication ([#217](https://github.com/tkoyama010/pyvista-js/issues/217)) ([0f33f44](https://github.com/tkoyama010/pyvista-js/commit/0f33f44094fb90da5cf7148f197c61fe08d1245f))
+
 ## [0.7.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.6.0...pyvista-js-v0.7.0) (2026-03-18)
 
 ### Features
