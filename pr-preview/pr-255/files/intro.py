@@ -13,7 +13,7 @@
 # ---
 
 # %% [markdown]
-# # PyVista-js Simple Demo
+# # PyVista-js Introduction
 #
 # This notebook demonstrates the simplified PyVista-js API that works in JupyterLite.
 
