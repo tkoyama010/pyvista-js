@@ -47,8 +47,8 @@ optional-dependencies.dev = [
 ]
 optional-dependencies.docs = [
   "atsphinx-stlite==0.2.1; python_version>='3.12' and python_version<'3.14'",
-  "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12'",
-  "jupyterlite-sphinx==0.22.1; python_version>='3.12'",
+  "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12' and python_version<'3.14'",
+  "jupyterlite-sphinx==0.22.1; python_version>='3.12' and python_version<'3.14'",
   "jupytext>=1.19",
   "myst-parser==5; python_version>='3.12'",
   "sphinx==9.1; python_version>='3.12'",
