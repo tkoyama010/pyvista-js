@@ -128,7 +128,7 @@ else:
 
 # Check if IPython is available
 try:
-    from IPython.display import HTML, display
+    from IPython.display import HTML, Javascript, display
 
     IPYTHON_AVAILABLE = True
 except ImportError:
@@ -1208,8 +1208,6 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         """
         if self.use_ipython:
-            from IPython.display import Javascript
-
             js_code = self._generate_render_js()
             display(Javascript(js_code))
         else:
