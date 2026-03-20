@@ -28,6 +28,9 @@
         openGLRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
         var interactor =
           vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+        var interactorStyle =
+          vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
+        interactor.setInteractorStyle(interactorStyle);
         interactor.setView(openGLRenderWindow);
         interactor.initialize();
         interactor.bindEvents(container);
