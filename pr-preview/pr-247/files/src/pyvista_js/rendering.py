@@ -97,7 +97,7 @@ _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
 _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
 
 
 def _render(template_str: str, **kwargs: object) -> str:

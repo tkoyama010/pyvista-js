@@ -18,7 +18,7 @@ from jinja2 import Environment, StrictUndefined
 
 from .mesh import PolyData
 
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
 
 
 def _render(template_str: str, **kwargs: object) -> str:
