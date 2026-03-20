@@ -18,17 +18,13 @@
 # This notebook demonstrates the simplified PyVista-js API that works in JupyterLite.
 
 # %%
-import micropip
-
-await micropip.install("jinja2")  # noqa: F704, PLE1142
-
-import sys  # noqa: E402
+import sys
 
 sys.path.insert(0, "/drive/src")
 
 # %%
-import pyvista_js as pv  # noqa: E402
-from pyvista_js import examples  # noqa: E402
+import pyvista_js as pv
+from pyvista_js import examples
 
 plotter = pv.Plotter()
 mesh = examples.download_bunny()
