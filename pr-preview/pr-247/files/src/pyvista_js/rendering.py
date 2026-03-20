@@ -1016,6 +1016,7 @@ class _BaseHTMLRenderer:
         actors_code = "\n\n".join(indented_actors)
 
         return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
+            VTKJS_CDN=_VTKJS_CDN,
             CONTAINER_ID=self.container_id,
             BACKGROUND_R=str(self.background[0]),
             BACKGROUND_G=str(self.background[1]),
