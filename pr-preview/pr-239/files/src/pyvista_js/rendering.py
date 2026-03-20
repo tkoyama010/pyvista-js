@@ -78,20 +78,35 @@ import webbrowser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
     from .camera import Camera
     from .light import Light
     from .mesh import PolyData
     from .texture import Texture
 
+import re
+
+from jinja2 import Environment, StrictUndefined
+
 from .examples import CubeMap
 
 # Load JavaScript templates
-_JS_DIR = pathlib.Path(__file__).parent / "js"
-_RENDERING_TEMPLATE = (_JS_DIR / "rendering.html").read_text()
-_ACTOR_TEMPLATE = (_JS_DIR / "actor.js").read_text()
-_SCALAR_BAR_TEMPLATE = (_JS_DIR / "scalar_bar.js").read_text()
+_TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
+_RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
+_RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
+_ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
+_SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
+
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+
+
+def _render(template_str: str, **kwargs: object) -> str:
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
+    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
+
 
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
@@ -113,11 +128,14 @@ else:
 
 # Check if IPython is available
 try:
-    from IPython.display import HTML, display
+    from IPython.display import HTML, Javascript, display
 
     IPYTHON_AVAILABLE = True
 except ImportError:
     IPYTHON_AVAILABLE = False
+    HTML = None  # type: ignore[assignment]
+    Javascript = None  # type: ignore[assignment]
+    display = None  # type: ignore[assignment]
 
 
 class _VTKJSLoader:
@@ -152,7 +170,7 @@ class _VTKJSLoader:
                 # Wait for vtk.js to load from CDN
                 time.sleep(2)
                 self._loaded = True
-            except NameError:
+            except (NameError, TypeError):
                 # display/HTML not available (e.g., in tests)
                 pass
         elif PYODIDE_ENV and document is not None:
@@ -701,10 +719,11 @@ class _BaseHTMLRenderer:
                 "});"
             )
 
-        code = (
-            _SCALAR_BAR_TEMPLATE.replace("{{TITLE}}", title)
-            .replace("{{N_LABELS}}", str(n_labels))
-            .replace("{{ORIENTATION_CODE}}", orientation_code)
+        code = _render(
+            _SCALAR_BAR_TEMPLATE,
+            TITLE=title,
+            N_LABELS=str(n_labels),
+            ORIENTATION_CODE=orientation_code,
         )
 
         # Indent for consistency with other generated code
@@ -725,7 +744,7 @@ class _BaseHTMLRenderer:
       // Create orientation marker widget
       const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
         actor: axes,
-        interactor: renderWindow.getInteractor()
+        interactor: interactor
       });
       orientationWidget.setEnabled(true);
       orientationWidget.setViewportCorner(
@@ -774,19 +793,21 @@ class _BaseHTMLRenderer:
         texture_code = self._generate_texture_code(actor_info, idx)
         scalar_code = self._generate_scalar_code(actor_info, idx)
 
-        return (
-            _ACTOR_TEMPLATE.replace("{{SOURCE_CODE}}", source_code)
-            .replace("{{INDEX}}", str(idx))
-            .replace("{{MAPPER_SETUP}}", mapper_setup)
-            .replace("{{COLOR_R}}", str(color[0]))  # type: ignore[index]
-            .replace("{{COLOR_G}}", str(color[1]))  # type: ignore[index]
-            .replace("{{COLOR_B}}", str(color[2]))  # type: ignore[index]
-            .replace("{{OPACITY}}", str(opacity))
-            .replace("{{EDGE_CODE}}", edge_code)
-            .replace("{{STYLE_CODE}}", style_code)
-            .replace("{{PBR_CODE}}", pbr_code)
-            .replace("{{TEXTURE_CODE}}", texture_code)
-            .replace("{{SCALAR_CODE}}", scalar_code)
+        return _render(
+            _ACTOR_TEMPLATE,
+            SOURCE_CODE=source_code,
+            MAPPER=f"mapper{idx}",
+            ACTOR=f"actor{idx}",
+            MAPPER_SETUP=mapper_setup,
+            COLOR_R=str(color[0]),  # type: ignore[index]
+            COLOR_G=str(color[1]),  # type: ignore[index]
+            COLOR_B=str(color[2]),  # type: ignore[index]
+            OPACITY=str(opacity),
+            EDGE_CODE=edge_code,
+            STYLE_CODE=style_code,
+            PBR_CODE=pbr_code,
+            TEXTURE_CODE=texture_code,
+            SCALAR_CODE=scalar_code,
         )
 
     @staticmethod
@@ -998,18 +1019,54 @@ class _BaseHTMLRenderer:
             indented_actors.append(indented_lines)
         actors_code = "\n\n".join(indented_actors)
 
-        return (
-            _RENDERING_TEMPLATE.replace("{{CONTAINER_ID}}", self.container_id)
-            .replace("{{BACKGROUND_R}}", str(self.background[0]))
-            .replace("{{BACKGROUND_G}}", str(self.background[1]))
-            .replace("{{BACKGROUND_B}}", str(self.background[2]))
-            .replace("{{LIGHTS_CODE}}", self._generate_lights_code())
-            .replace("{{ACTORS_CODE}}", actors_code)
-            .replace("{{SCALAR_BAR_CODE}}", self._generate_scalar_bar_code())
-            .replace("{{ENVIRONMENT_CODE}}", self._generate_environment_code())
-            .replace("{{AXES_CODE}}", self._generate_axes_code())
-            .replace("{{CAMERA_CODE}}", self._generate_camera_code())
+        return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
+            VTKJS_CDN=_VTKJS_CDN,
+            CONTAINER_ID=self.container_id,
+            BACKGROUND_R=str(self.background[0]),
+            BACKGROUND_G=str(self.background[1]),
+            BACKGROUND_B=str(self.background[2]),
+            LIGHTS_CODE=self._generate_lights_code(),
+            ACTORS_CODE=actors_code,
+            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            ENVIRONMENT_CODE=self._generate_environment_code(),
+            AXES_CODE=self._generate_axes_code(),
+            CAMERA_CODE=self._generate_camera_code(),
         )
+
+    def _generate_render_js(self) -> str:
+        """Generate JavaScript code for display(Javascript(...)) rendering.
+
+        Creates the container div via JS and loads vtk.js if not already
+        available, then renders the scene. Used instead of _generate_html()
+        in environments where scripts in HTML outputs are sanitized
+        (e.g., JupyterLite/replite).
+        """
+        actor_js_code = [
+            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
+        ]
+
+        indented_actors = []
+        for actor in actor_js_code:
+            lines = actor.split("\n")
+            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
+            indented_actors.append(indented_lines)
+        actors_code = "\n\n".join(indented_actors)
+
+        rendered = _jinja_env.from_string(_RENDERING_JS_TEMPLATE).render(
+            VTKJS_CDN=_VTKJS_CDN,
+            CONTAINER_ID=self.container_id,
+            BACKGROUND_R=str(self.background[0]),
+            BACKGROUND_G=str(self.background[1]),
+            BACKGROUND_B=str(self.background[2]),
+            LIGHTS_CODE=self._generate_lights_code(),
+            ACTORS_CODE=actors_code,
+            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            ENVIRONMENT_CODE=self._generate_environment_code(),
+            AXES_CODE=self._generate_axes_code(),
+            CAMERA_CODE=self._generate_camera_code(),
+        )
+        rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
+        return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
@@ -1154,8 +1211,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         """
         if self.use_ipython:
-            html = self._generate_html()
-            display(HTML(html))
+            js_code = self._generate_render_js()
+            display(Javascript(js_code))
         else:
             # Direct rendering
             self.renderer.resetCamera()  # type: ignore[attr-defined]
