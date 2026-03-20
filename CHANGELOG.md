@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.9.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.8.0...pyvista-js-v0.9.0) (2026-03-20)
+
+### Features
+
+- Add lighting=None option to Plotter to disable default lights ([#241](https://github.com/tkoyama010/pyvista-js/issues/241)) ([4645d23](https://github.com/tkoyama010/pyvista-js/commit/4645d23164e3fb4c818d330f65dc587f95e9c428))
+- add Plotter.add_scalar_bar() method for color legend display ([#175](https://github.com/tkoyama010/pyvista-js/issues/175)) ([4f8bbd2](https://github.com/tkoyama010/pyvista-js/commit/4f8bbd2d4f04143e85de93bac695b623cee43c6a))
+- adopt SPEC 0 for minimum supported dependencies ([#248](https://github.com/tkoyama010/pyvista-js/issues/248)) ([33ab397](https://github.com/tkoyama010/pyvista-js/commit/33ab3976aa91f2997f62b5af70ab7bc52778c44b))
+
+### Bug Fixes
+
+- convert Light class color parameter lists to tuples consistently ([#238](https://github.com/tkoyama010/pyvista-js/issues/238)) ([dc1f5f3](https://github.com/tkoyama010/pyvista-js/commit/dc1f5f311f4639131e1869cbfd807403a917b7c0))
+- restrict atsphinx-stlite to python < 3.14 in docs extras ([#258](https://github.com/tkoyama010/pyvista-js/issues/258)) ([d8542ab](https://github.com/tkoyama010/pyvista-js/commit/d8542ab7d804ee6e0feb0ac6a792c7ef55be1d92))
+- restrict jupyterlite packages to python < 3.14 in docs extras ([#259](https://github.com/tkoyama010/pyvista-js/issues/259)) ([dbcf1c5](https://github.com/tkoyama010/pyvista-js/commit/dbcf1c5a0e9aa346e654254bfaf9194a97d1f063))
+- restrict remaining pinned docs deps to python < 3.14 ([#260](https://github.com/tkoyama010/pyvista-js/issues/260)) ([34e40be](https://github.com/tkoyama010/pyvista-js/commit/34e40be5917e223169615a7b234fc9b5d5b7a928))
+
+### Documentation
+
+- add CLI reference documentation ([#242](https://github.com/tkoyama010/pyvista-js/issues/242)) ([ef31faf](https://github.com/tkoyama010/pyvista-js/commit/ef31faff2b6a595b776fe6e8291ced6822c51af8))
+
+### Continuous Integration
+
+- add uv-lock-check hook to pre-commit config ([#251](https://github.com/tkoyama010/pyvista-js/issues/251)) ([1e56ed4](https://github.com/tkoyama010/pyvista-js/commit/1e56ed42b43164b7b3df1eabe14bebddacbe3ac5))
+
 ## [0.8.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.7.1...pyvista-js-v0.8.0) (2026-03-19)
 
 ### Features
