@@ -3,6 +3,7 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import json
 import os
 import shutil
 import subprocess
@@ -21,6 +22,27 @@ dest_dir = content_dir / "pyvista_js"
 if dest_dir.exists():
     shutil.rmtree(dest_dir)
 shutil.copytree(src_dir, dest_dir)
+
+# Configure JupyterLite to pre-load jinja2 and set up sys.path
+# so that examples work without explicit micropip or sys.path calls.
+_jupyterlite_config = docs_dir / "content" / "jupyter-lite.json"
+_jupyterlite_config.write_text(
+    json.dumps(
+        {
+            "jupyter-lite-schema-version": 0,
+            "jupyter-config-data": {
+                "litePluginSettings": {
+                    "@jupyterlite/pyodide-kernel-extension:kernel": {
+                        "loadPyodideOptions": {"packages": ["Jinja2"]},
+                        "pipliteUrls": [],
+                    },
+                },
+            },
+        },
+        indent=2,
+    )
+    + "\n",
+)
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -82,7 +104,13 @@ global_enable_try_examples = True
 try_examples_global_warning_text = (
     "pyvista-js's interactive examples are experimental and may not always work as expected."
 )
-try_examples_preamble = "import sys; sys.path.insert(0, '/drive/src'); import pyvista_js as pv"
+try_examples_preamble = (
+    "import micropip\n"
+    "await micropip.install('jinja2')\n"
+    "import sys\n"
+    "sys.path.insert(0, '/drive/src')\n"
+    "import pyvista_js as pv\n"
+)
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"

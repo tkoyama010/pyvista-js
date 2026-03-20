@@ -1504,6 +1504,7 @@ name = "pyvista-js"
 version = "0.8.0"
 source = { editable = "." }
 dependencies = [
+    { name = "jinja2" },
     { name = "numpy" },
     { name = "typer" },
 ]
@@ -1550,6 +1551,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "atsphinx-stlite", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.2.1" },
+    { name = "jinja2", specifier = ">=3" },
     { name = "jupyterlite-pyodide-kernel", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.7.1" },
     { name = "jupyterlite-sphinx", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = "==0.22.1" },
     { name = "jupytext", marker = "extra == 'docs'", specifier = ">=1.19" },

@@ -45,6 +45,13 @@ repos:
       - id: uv-lock
         args: [--check, --offline]
 
+
+  - repo: https://github.com/djlint/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint-reformat-jinja
+        files: src/pyvista_js/templates/.*\.html$
+
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
     hooks:

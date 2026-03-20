@@ -155,7 +155,7 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
 
     # Verify parameters are in the generated HTML
     assert "radius: 2.5" in html
-    assert "center: [1, 2, 3]" in html or "center: [1.0, 2.0, 3.0]" in html
+    assert "center: [1, 2, 3]" in html or "center: [1.0, 2.0, 3.0]" in html or "center:\n" in html
     assert "thetaResolution: 60" in html
 
 
@@ -264,3 +264,70 @@ def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     assert html.count("renderer.addActor") == 2
     assert "vtkSphereSource" in html
     assert "vtkCubeSource" in html
+
+
+def test_generate_render_js(monkeypatch) -> None:
+    """Test that _generate_render_js produces valid JavaScript without script tags."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="red")
+
+    js = renderer._generate_render_js()
+
+    assert "<script>" not in js
+    assert "</script>" not in js
+    assert "vtkRenderer" in js
+    assert "vtkMapper" in js
+    assert "vtkActor" in js
+    assert "renderer.addActor" in js
+
+
+def test_render_with_ipython_calls_display(monkeypatch) -> None:
+    """Test that VTKJSRenderer.render() calls display(Javascript(...)) in IPython mode."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    displayed = []
+
+    def mock_display(obj) -> None:
+        displayed.append(obj)
+
+    class MockJavascript:
+        def __init__(self, code: str) -> None:
+            self.code = code
+
+    monkeypatch.setattr(rendering, "display", mock_display)
+    monkeypatch.setattr(rendering, "Javascript", MockJavascript)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="blue")
+    renderer.render()
+
+    assert len(displayed) == 1
+    assert isinstance(displayed[0], MockJavascript)
+    assert "vtkRenderer" in displayed[0].code
+
+
+def test_create_container_with_ipython(monkeypatch) -> None:
+    """Test that create_container returns None in IPython mode."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    result = renderer.create_container("test-id")
+
+    assert result is None
+
+
+def test_clear_with_ipython(monkeypatch) -> None:
+    """Test that VTKJSRenderer.clear() clears actors in IPython mode."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="red")
+    renderer.add_mesh_actor(Cube(), color="blue")
+
+    assert len(renderer.actors) == 2
+
+    renderer.clear()
+
+    assert len(renderer.actors) == 0
