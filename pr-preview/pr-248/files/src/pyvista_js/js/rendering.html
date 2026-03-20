@@ -1,0 +1,37 @@
+<div id="{{CONTAINER_ID}}" style="width:600px;height:400px;border:2px solid #333;"></div>
+<script>
+(function() {
+  setTimeout(function() {
+    try {
+      const container = document.getElementById('{{CONTAINER_ID}}');
+
+      // Use the simpler FullScreenRenderWindow helper
+      const fullScreenRenderer = vtk.Rendering.Misc.vtkFullScreenRenderWindow.newInstance({
+        container: container,
+        background: [{{BACKGROUND_R}}, {{BACKGROUND_G}}, {{BACKGROUND_B}}]
+      });
+
+      const renderer = fullScreenRenderer.getRenderer();
+      const renderWindow = fullScreenRenderer.getRenderWindow();
+
+{{LIGHTS_CODE}}
+
+{{ACTORS_CODE}}
+
+{{SCALAR_BAR_CODE}}
+
+{{ENVIRONMENT_CODE}}
+
+{{AXES_CODE}}
+
+      // Reset camera and render
+      renderer.resetCamera();
+{{CAMERA_CODE}}
+      renderWindow.render();
+
+    } catch(e) {
+      console.error('Error rendering vtk.js scene:', e);
+    }
+  }, 300);
+})();
+</script>
