@@ -14,8 +14,10 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
    import pyvista_js as pv
 
+   # Create a simple sphere
    sphere = pv.Sphere()
 
+   # Visualize it
    plotter = pv.Plotter()
    plotter.add_mesh(sphere)
    plotter.show()
@@ -36,6 +38,7 @@ Topic driven themed lessons to help you get started with pyvista-js.
    from pyvista_js import examples
    cubemap = examples.download_sky_box_cube_map()
 
+   # Vary metallic and roughness across a grid of spheres
    plotter = pv.Plotter()
    plotter.set_environment_texture(cubemap)
    colors = ['red', 'green', 'blue', 'yellow', 'cyan']

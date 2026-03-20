@@ -133,6 +133,9 @@ try:
     IPYTHON_AVAILABLE = True
 except ImportError:
     IPYTHON_AVAILABLE = False
+    HTML = None  # type: ignore[assignment]
+    Javascript = None  # type: ignore[assignment]
+    display = None  # type: ignore[assignment]
 
 
 class _VTKJSLoader:
@@ -167,7 +170,7 @@ class _VTKJSLoader:
                 # Wait for vtk.js to load from CDN
                 time.sleep(2)
                 self._loaded = True
-            except NameError:
+            except (NameError, TypeError):
                 # display/HTML not available (e.g., in tests)
                 pass
         elif PYODIDE_ENV and document is not None:
