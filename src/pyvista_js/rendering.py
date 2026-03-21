@@ -809,6 +809,11 @@ class _BaseHTMLRenderer:
 
         """
         mesh = actor_info["mesh"]
+
+        # Meshes that handle their own full rendering (e.g. GLTFImporter)
+        if hasattr(mesh, "generate_full_actor_code"):
+            return mesh.generate_full_actor_code(idx, actor_info)  # type: ignore[attr-defined]
+
         color = actor_info.get("color") or (0.5, 0.5, 0.5)
         opacity = actor_info.get("opacity", 1.0)
         pbr = actor_info.get("pbr", False)

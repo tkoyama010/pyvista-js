@@ -11,6 +11,7 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
    import micropip
    await micropip.install("jinja2")
+   await micropip.install("lazy-loader")
 
    import sys
    sys.path.insert(0, '/drive/src')
@@ -26,6 +27,35 @@ Topic driven themed lessons to help you get started with pyvista-js.
    plotter.show()
 ```
 
+## glTF Rendering
+
+(using-download-damaged-helmet)=
+
+### Using download_damaged_helmet
+
+```{eval-rst}
+.. replite::
+   :kernel: pyolite
+   :height: 600px
+
+   import micropip
+   await micropip.install("jinja2")
+   await micropip.install("lazy-loader")
+
+   import sys
+   sys.path.insert(0, '/drive/src')
+
+   import pyvista_js as pv
+   from pyvista_js import examples
+
+   mesh = examples.download_damaged_helmet()
+   print(f"Loaded GLTF mesh with {mesh.n_points} vertices")
+
+   plotter = pv.Plotter()
+   plotter.add_mesh(mesh)
+   plotter.show()
+```
+
 ## Physically Based Rendering
 
 ```{eval-rst}
@@ -35,6 +65,7 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
    import micropip
    await micropip.install("jinja2")
+   await micropip.install("lazy-loader")
 
    import sys
    sys.path.insert(0, '/drive/src')

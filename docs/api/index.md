@@ -104,6 +104,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :toctree: _autosummary
    :nosignatures:
 
+   pyvista_js.GLTFReader
    pyvista_js.OBJReader
    pyvista_js.PLYReader
    pyvista_js.PolyDataReader
@@ -120,6 +121,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.examples.CubeMap
    pyvista_js.examples.download_bunny
    pyvista_js.examples.download_cad_model
+   pyvista_js.examples.download_damaged_helmet
    pyvista_js.examples.download_masonry_texture
    pyvista_js.examples.download_sky_box_cube_map
    pyvista_js.examples.download_trumpet
