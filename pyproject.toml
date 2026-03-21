@@ -21,6 +21,15 @@ authors = [
 # As of 2026-03-20:
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
+#
+# SPEC 8 — Securing the Release Process
+# https://scientific-python.org/specs/spec-0008/
+#
+# This project follows SPEC 8 for securing the release process:
+# - Trusted publishing via OpenID Connect (OIDC) to PyPI
+# - Build provenance attestations using Sigstore
+# - All GitHub Actions pinned to commit SHAs
+# - See .github/workflows/release-please.yml for implementation details
 requires-python = ">=3.12"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
