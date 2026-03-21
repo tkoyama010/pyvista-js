@@ -21,15 +21,6 @@ msgstr ""
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../stlite_demo.md:1
-msgid "stlite demo"
-msgstr "stliteのデモ"
-
-#: ../stlite_demo.md:3
-msgid ""
-"This is an interactive demo using "
-"[stlite](https://github.com/whitphx/stlite), the WASM-powered in-browser "
-"version of Streamlit."
-msgstr ""
-"これは、StreamlitのWASM対応ブラウザ内バージョンである "
-"[stlite](https://github.com/whitphx/stlite) を使用したインタラクティブなデモです。"
+#: ../cli/plot.md:1
+msgid "plot"
+msgstr "plot"
