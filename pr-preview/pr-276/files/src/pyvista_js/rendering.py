@@ -1396,23 +1396,30 @@ class BrowserRenderer(_BaseHTMLRenderer):
                 tmp_html_path = f.name
 
             try:
-                # Use Playwright to capture screenshot
-                with sync_playwright() as p:
-                    browser = p.chromium.launch(headless=True)
-                    page = browser.new_page(
-                        viewport={"width": width, "height": height},
-                    )
-                    page.goto(f"file://{tmp_html_path}")
+                # Use Playwright to capture screenshot.
+                # Run in a separate thread to avoid conflicts when called
+                # inside an existing asyncio event loop (e.g. pytest-playwright).
+                import concurrent.futures  # noqa: PLC0415
 
-                    # Wait for vtk.js to load and render
-                    page.wait_for_timeout(2000)  # Wait 2 seconds for rendering
+                def _capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:  # noqa: FBT001
+                    with sync_playwright() as p:
+                        browser = p.chromium.launch(headless=True)
+                        pg = browser.new_page(viewport={"width": w, "height": h})
+                        pg.goto(f"file://{html_path}")
+                        pg.wait_for_timeout(2000)
+                        data = pg.screenshot(type="png", omit_background=omit_bg)
+                        browser.close()
+                    return data
 
-                    # Capture screenshot to bytes
-                    screenshot_bytes = page.screenshot(
-                        type="png",
-                        omit_background=transparent_background or False,
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(
+                        _capture,
+                        tmp_html_path,
+                        width,
+                        height,
+                        transparent_background or False,
                     )
-                    browser.close()
+                    screenshot_bytes = future.result()
 
                 # Save to file if requested
                 if filename is not None:
@@ -1765,10 +1772,7 @@ class MockRenderer:
             try:
                 from PIL import Image  # noqa: PLC0415
             except ImportError as e:
-                msg = (
-                    "Pillow is required to save screenshot. "
-                    "Install it with: pip install pillow"
-                )
+                msg = "Pillow is required to save screenshot. Install it with: pip install pillow"
                 raise ImportError(msg) from e
 
             channels = 4 if transparent_background else 3
