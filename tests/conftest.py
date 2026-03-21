@@ -51,7 +51,8 @@ def browser_context_args() -> dict[str, dict[str, int]]:
 
 @pytest.fixture(scope="function")
 def playwright_browser(
-    playwright: Playwright, browser_type_launch_args: dict
+    playwright: Playwright,
+    browser_type_launch_args: dict,
 ) -> Generator[Browser, None, None]:
     """Provide a Playwright browser instance for testing.
 
