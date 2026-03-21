@@ -211,7 +211,8 @@ class Text:
             f"  textOverlay{idx}.style.position = 'absolute';",
             f"  textOverlay{idx}.style.left = '{left_pct}%';",
             f"  textOverlay{idx}.style.bottom = '{bottom_pct}%';",
-            f"  textOverlay{idx}.style.color = 'rgba({r_css}, {g_css}, {b_css}, {self.prop.opacity})';",
+            f"  textOverlay{idx}.style.color = "
+            f"'rgba({r_css}, {g_css}, {b_css}, {self.prop.opacity})';",
             f"  textOverlay{idx}.style.fontSize = '{self.prop.font_size}px';",
             f"  textOverlay{idx}.style.fontWeight = '{font_weight}';",
             f"  textOverlay{idx}.style.fontStyle = '{font_style}';",
