@@ -29,6 +29,8 @@ class Camera:
     parallel_projection : bool, optional
         Enable parallel (orthographic) projection instead of perspective
         projection. Default is False.
+    elevation : float, optional
+        Camera elevation angle in degrees. Default is 0.0.
 
     Examples
     --------
@@ -51,6 +53,7 @@ class Camera:
         view_angle: float = 30.0,
         clipping_range: tuple[float, float] = (0.01, 1000.01),
         parallel_projection: bool = False,  # noqa: FBT001 FBT002
+        elevation: float = 0.0,
     ) -> None:
         """Initialize a Camera instance."""
         self.position = position
@@ -59,6 +62,7 @@ class Camera:
         self.view_angle = view_angle
         self.clipping_range = clipping_range
         self.parallel_projection = parallel_projection
+        self.elevation = elevation
 
     @property
     def position(self) -> tuple[float, float, float]:
@@ -280,6 +284,43 @@ class Camera:
         """
         self.parallel_projection = False
 
+    @property
+    def elevation(self) -> float:
+        """Get or set the camera elevation angle in degrees.
+
+        The elevation angle controls the vertical rotation of the camera.
+        It rotates the camera about the cross product of the negative of
+        the direction of projection and the view up vector, using the
+        focal point as the center of rotation.
+
+        Parameters
+        ----------
+        value : float
+            Elevation angle in degrees.
+
+        Returns
+        -------
+        float
+            Elevation angle in degrees.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.elevation
+        0.0
+        >>> camera.elevation = 45.0
+        >>> camera.elevation
+        45.0
+
+        """
+        return self._elevation
+
+    @elevation.setter
+    def elevation(self, value: float) -> None:
+        """Set the camera elevation angle."""
+        self._elevation = float(value)
+
     def __repr__(self) -> str:
         """Return string representation of the camera."""
         return (
@@ -289,5 +330,6 @@ class Camera:
             f"view_up={self._view_up}, "
             f"view_angle={self._view_angle}, "
             f"clipping_range={self._clipping_range}, "
-            f"parallel_projection={self._parallel_projection})"
+            f"parallel_projection={self._parallel_projection}, "
+            f"elevation={self._elevation})"
         )

@@ -809,6 +809,11 @@ class _BaseHTMLRenderer:
 
         """
         mesh = actor_info["mesh"]
+
+        # Meshes that handle their own full rendering (e.g. GLTFImporter)
+        if hasattr(mesh, "generate_full_actor_code"):
+            return mesh.generate_full_actor_code(idx, actor_info)  # type: ignore[attr-defined]
+
         color = actor_info.get("color") or (0.5, 0.5, 0.5)
         opacity = actor_info.get("opacity", 1.0)
         pbr = actor_info.get("pbr", False)
@@ -1021,6 +1026,7 @@ class _BaseHTMLRenderer:
             near, far = self._camera.clipping_range
             parallel = self._camera.parallel_projection
             parallel_js = "true" if parallel else "false"
+            elev = self._camera.elevation
             return (
                 "      const cam = renderer.getActiveCamera();\n"
                 f"      cam.setPosition({px}, {py}, {pz});\n"
@@ -1028,7 +1034,8 @@ class _BaseHTMLRenderer:
                 f"      cam.setViewUp({ux}, {uy}, {uz});\n"
                 f"      cam.setViewAngle({angle});\n"
                 f"      cam.setClippingRange({near}, {far});\n"
-                f"      cam.setParallelProjection({parallel_js});"
+                f"      cam.setParallelProjection({parallel_js});\n"
+                f"      cam.elevation({elev});"
             )
         if self._view_vector is not None:
             vx, vy, vz = self._view_vector
