@@ -22,6 +22,17 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
+# SPEC 7 — Seeding Pseudo-Random Number Generation
+# https://scientific-python.org/specs/spec-0007/
+#
+# This project follows SPEC 7 for random number generation:
+# - Use numpy.random.default_rng() for all random number generation
+# - Use 'rng' parameter for seeding instead of 'random_state' or 'seed'
+# - Avoid global state and legacy bitstream generators
+#
+# Note: Currently this project does not use random number generation,
+# but any future implementation will follow SPEC 7 guidelines.
+#
 # SPEC 8 — Securing the Release Process
 # https://scientific-python.org/specs/spec-0008/
 #
