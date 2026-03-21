@@ -146,7 +146,7 @@ _CYLINDER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cylinder_source.html").read_text(
 _SHRINK_FILTER_TEMPLATE = (_TEMPLATES_DIR / "shrink_filter.html").read_text()
 _CLIP_FILTER_TEMPLATE = (_TEMPLATES_DIR / "clip_filter.html").read_text()
 _TUBE_FILTER_TEMPLATE = (_TEMPLATES_DIR / "tube_filter.html").read_text()
-_CONTOUR_FILTER_TEMPLATE = (_TEMPLATES_DIR / "contour_filter.js").read_text()
+_CONTOUR_FILTER_TEMPLATE = (_TEMPLATES_DIR / "contour_filter.html").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "circle_source.html").read_text()
 _DISK_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "disk_source.html").read_text()
 _ARROW_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "arrow_source.html").read_text()
@@ -898,9 +898,10 @@ class PolyData:
     ) -> str:
         """Build JavaScript code for contour filter."""
         values_str = ",".join(map(str, contour_values))
-        return _CONTOUR_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-            "{{CONTOUR_VALUES}}",
-            values_str,
+        return _render(
+            _CONTOUR_FILTER_TEMPLATE,
+            INDEX=str(idx),
+            CONTOUR_VALUES=values_str,
         )
 
     def texture_map_to_plane(self) -> PolyData:
