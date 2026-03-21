@@ -7,7 +7,8 @@ several convenience commands to assist with browser-based 3-D visualization.
 .. typer:: pyvista_js._cli.app
     :prog: pyvista-js
     :width: 75
-    :preferred: text
+    :preferred: html
+    :theme: monokai
 ```
 
 ## Commands
