@@ -1441,7 +1441,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
                 if return_img:
                     try:
                         from PIL import Image  # noqa: PLC0415
-                    except ImportError as e:
+                    except ImportError as e:  # pragma: no cover
                         msg = (
                             "Pillow is required to return image as numpy array. "
                             "Install it with: pip install pillow"
@@ -1785,7 +1785,7 @@ class MockRenderer:
             # Create a dummy PNG file
             try:
                 from PIL import Image  # noqa: PLC0415
-            except ImportError as e:
+            except ImportError as e:  # pragma: no cover
                 msg = "Pillow is required to save screenshot. Install it with: pip install pillow"
                 raise ImportError(msg) from e
 
