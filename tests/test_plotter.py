@@ -1124,4 +1124,3 @@ def test_screenshot_default_parameters() -> None:
     assert img.shape[0] == 400  # height
     assert img.shape[1] == 600  # width
     assert img.shape[2] == 3  # RGB by default
-
