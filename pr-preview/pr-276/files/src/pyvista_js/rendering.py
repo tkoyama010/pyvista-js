@@ -1274,6 +1274,38 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             self.renderer.removeAllActors()
 
 
+def _playwright_capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:  # noqa: FBT001
+    """Capture a screenshot of an HTML file using Playwright in a thread.
+
+    Parameters
+    ----------
+    html_path : str
+        Path to the HTML file to capture.
+    w : int
+        Viewport width in pixels.
+    h : int
+        Viewport height in pixels.
+    omit_bg : bool
+        Whether to omit the background (transparent PNG).
+
+    Returns
+    -------
+    bytes
+        PNG image data.
+
+    """
+    from playwright.sync_api import sync_playwright  # noqa: PLC0415
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        pg = browser.new_page(viewport={"width": w, "height": h})
+        pg.goto(f"file://{html_path}")
+        pg.wait_for_timeout(2000)
+        data = pg.screenshot(type="png", omit_background=omit_bg)
+        browser.close()
+    return data
+
+
 class BrowserRenderer(_BaseHTMLRenderer):
     """Renderer that opens the visualization in the default web browser.
 
@@ -1361,15 +1393,6 @@ class BrowserRenderer(_BaseHTMLRenderer):
         """
         import numpy as np  # noqa: PLC0415
 
-        try:
-            from playwright.sync_api import sync_playwright  # noqa: PLC0415
-        except ImportError as e:
-            msg = (
-                "Playwright is required for screenshot functionality. "
-                "Install it with: pip install playwright && python -m playwright install"
-            )
-            raise ImportError(msg) from e
-
         # Set default window size
         width, height = (600, 400) if window_size is None else window_size
         if scale is not None:
@@ -1396,24 +1419,13 @@ class BrowserRenderer(_BaseHTMLRenderer):
                 tmp_html_path = f.name
 
             try:
-                # Use Playwright to capture screenshot.
-                # Run in a separate thread to avoid conflicts when called
+                # Run Playwright in a thread to avoid conflicts when called
                 # inside an existing asyncio event loop (e.g. pytest-playwright).
                 import concurrent.futures  # noqa: PLC0415
 
-                def _capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:  # noqa: FBT001
-                    with sync_playwright() as p:
-                        browser = p.chromium.launch(headless=True)
-                        pg = browser.new_page(viewport={"width": w, "height": h})
-                        pg.goto(f"file://{html_path}")
-                        pg.wait_for_timeout(2000)
-                        data = pg.screenshot(type="png", omit_background=omit_bg)
-                        browser.close()
-                    return data
-
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                     future = executor.submit(
-                        _capture,
+                        _playwright_capture,
                         tmp_html_path,
                         width,
                         height,
