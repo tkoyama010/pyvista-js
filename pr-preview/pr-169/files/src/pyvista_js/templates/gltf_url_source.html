@@ -11,4 +11,8 @@
   mv{{INDEX}}.setAttribute('auto-rotate', '');
   mv{{INDEX}}.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;';
   container.appendChild(mv{{INDEX}});
+  // Unbind vtk.js interactor so model-viewer can receive pointer events
+  if (typeof interactor !== 'undefined' && interactor.unbindEvents) {
+    interactor.unbindEvents();
+  }
 })();
