@@ -1629,6 +1629,7 @@ class MockRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "smooth_shading": smooth_shading,
             "texture": texture,
             "show_edges": show_edges,
             "edge_color": edge_color,
