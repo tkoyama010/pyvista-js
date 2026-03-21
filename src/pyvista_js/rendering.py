@@ -1439,6 +1439,8 @@ class BrowserRenderer(_BaseHTMLRenderer):
                     from io import BytesIO  # noqa: PLC0415
 
                     img = Image.open(BytesIO(screenshot_bytes))
+                    if transparent_background:
+                        img = img.convert("RGBA")
                     return np.array(img)
                 return None
 
