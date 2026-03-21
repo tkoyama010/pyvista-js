@@ -1,7 +1,7 @@
 <script>
 {{ SOURCE_CODE }}
 {{ NORMALS_CODE }}
-const {{ MAPPER }} = vtk.Rendering.Core.vtkMapper.newInstance();
+const {{ MAPPER }} = vtk.Rendering.Core.{{ MAPPER_CLASS }}.newInstance();
 {{ MAPPER_SETUP }}
 {{ SCALAR_CODE }}
 const {{ ACTOR }} = vtk.Rendering.Core.vtkActor.newInstance();
