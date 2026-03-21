@@ -272,7 +272,7 @@ def download_damaged_helmet() -> PolyData:
 
     url = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
     path = _download_url(url, "DamagedHelmet.gltf")
-    return GLTFReader(path).read()
+    return GLTFReader(path, gltf_url=url).read()
 
 
 def download_cad_model() -> PolyData:

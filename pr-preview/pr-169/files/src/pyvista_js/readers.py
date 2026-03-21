@@ -44,6 +44,7 @@ _PLY_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "ply_reader_source.html").read_t
 _OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_text()
 _STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
 _GLTF_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_reader_source.html").read_text()
+_GLTF_URL_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_url_source.html").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -81,7 +82,7 @@ class _OBJMesh(PolyData):
 class _GLTFMesh(PolyData):
     """Mesh loaded from a glTF file, rendered via vtk.js GLTF importer."""
 
-    def __init__(self, points: np.ndarray, gltf_base64: str) -> None:
+    def __init__(self, points: np.ndarray, gltf_base64: str, gltf_url: str | None = None) -> None:
         """Initialize with points and base64-encoded glTF file content.
 
         Parameters
@@ -90,13 +91,22 @@ class _GLTFMesh(PolyData):
             Vertex coordinates (N, 3) extracted for bounding sphere computation.
         gltf_base64 : str
             Base64-encoded content of the glTF file passed to vtk.js for rendering.
+        gltf_url : str or None, optional
+            Source URL of the glTF file. When provided, the URL is used directly
+            in the model-viewer element instead of embedding the full base64 data,
+            which avoids large payload issues in JupyterLite.
 
         """
         super().__init__(points)
         self._gltf_base64 = gltf_base64
+        self._gltf_url = gltf_url
 
     def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkGLTFImporter."""
+        """Generate vtk.js source code using model-viewer web component."""
+        if self._gltf_url is not None:
+            return _GLTF_URL_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+                "{{GLTF_URL}}", self._gltf_url
+            )
         escaped = json.dumps(self._gltf_base64)
         return _GLTF_READER_SOURCE_TEMPLATE.replace(
             "{{INDEX}}",
@@ -809,8 +819,18 @@ class GLTFReader:
 
     """
 
-    def __init__(self, path: str | Path) -> None:
-        """Initialize the reader with a file path."""
+    def __init__(self, path: str | Path, gltf_url: str | None = None) -> None:
+        """Initialize the reader with a file path.
+
+        Parameters
+        ----------
+        path : str or Path
+            Path to the ``.gltf`` or ``.glb`` file.
+        gltf_url : str or None, optional
+            Source URL of the glTF file. When provided, the returned mesh will
+            render using the URL directly (avoiding large base64 embedding).
+
+        """
         self._path = Path(path)
         if not self._path.exists():
             msg = f"File not found: {self._path}"
@@ -818,6 +838,7 @@ class GLTFReader:
         if self._path.suffix.lower() not in (".gltf", ".glb"):
             msg = f"Expected a .gltf or .glb file, got: {self._path.suffix}"
             raise ValueError(msg)
+        self._gltf_url = gltf_url
 
     @property
     def path(self) -> Path:
@@ -855,7 +876,7 @@ class GLTFReader:
         points = self._extract_points(raw)
         gltf_base64 = base64.b64encode(raw).decode("ascii")
         logger.info("Read %d points from %s", len(points), self._path)
-        return _GLTFMesh(points=points, gltf_base64=gltf_base64)
+        return _GLTFMesh(points=points, gltf_base64=gltf_base64, gltf_url=self._gltf_url)
 
     @staticmethod
     def _extract_points(raw: bytes) -> np.ndarray:
