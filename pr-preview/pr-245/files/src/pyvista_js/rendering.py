@@ -293,6 +293,22 @@ class _BaseHTMLRenderer:
         dict
             Actor information dictionary.
 
+        Examples
+        --------
+        Smooth shading (default, Gouraud interpolation):
+
+        >>> from pyvista_js import Sphere
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> _ = renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+
+        Flat shading (each polygon face has a uniform color):
+
+        >>> from pyvista_js import Sphere
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> _ = renderer.add_mesh_actor(Sphere(), smooth_shading=False)
+
         """
         if isinstance(color, str):
             color = self._color_name_to_rgb(color)
