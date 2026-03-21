@@ -9,12 +9,24 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
 import struct
 from pathlib import Path
 
 import numpy as np
+from jinja2 import Environment, StrictUndefined
 
 from .mesh import PolyData
+
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+
+
+def _render(template_str: str, **kwargs: object) -> str:
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
+    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
+
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +38,11 @@ _MIN_VTK_LINES = 4
 _N_COORDS = 3
 
 # Load JavaScript templates
-_JS_DIR = Path(__file__).parent / "js"
-_VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
-_PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
-_OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
-_STL_READER_SOURCE_TEMPLATE = (_JS_DIR / "stl_reader_source.js").read_text()
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_VTK_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtk_reader_source.html").read_text()
+_PLY_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "ply_reader_source.html").read_text()
+_OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_text()
+_STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -53,10 +65,12 @@ class _OBJMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkOBJReader."""
         escaped = json.dumps(self._obj_base64)
-        return _OBJ_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{OBJ_BASE64}}", escaped)
+        return _render(
+            _OBJ_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            OBJ_READER=f"objReader{idx}",
+            OBJ_BASE64=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -83,10 +97,12 @@ class _PolyDataMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkPolyDataReader."""
         escaped = json.dumps(self._vtk_text)
-        return _VTK_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{VTK_TEXT}}", escaped)
+        return _render(
+            _VTK_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            VTK_READER=f"reader{idx}",
+            VTK_TEXT=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -113,10 +129,12 @@ class _PLYMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkPLYReader."""
         escaped = json.dumps(self._ply_base64)
-        return _PLY_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{PLY_BASE64}}", escaped)
+        return _render(
+            _PLY_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            PLY_READER=f"plyReader{idx}",
+            PLY_BASE64=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -143,10 +161,12 @@ class _STLMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkSTLReader."""
         escaped = json.dumps(self._stl_base64)
-        return _STL_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{STL_BASE64}}", escaped)
+        return _render(
+            _STL_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            STL_READER=f"stlReader{idx}",
+            STL_BASE64=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""

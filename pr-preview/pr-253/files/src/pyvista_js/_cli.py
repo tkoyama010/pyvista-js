@@ -289,9 +289,9 @@ def _open_notebook(page, screenshots_dir: Path) -> bool:  # noqa: ANN001
 
     """
     notebook_selectors = [
-        "text=simple_demo.ipynb",
-        "[title*='simple_demo']",
-        ".jp-DirListing-itemText:has-text('simple_demo')",
+        "text=intro.ipynb",
+        "[title*='intro']",
+        ".jp-DirListing-itemText:has-text('intro')",
     ]
 
     for selector in notebook_selectors:
@@ -411,7 +411,7 @@ def _capture_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = Fals
             logger.info("Waiting for JupyterLite to load...")
             page.wait_for_timeout(15000)
 
-            logger.info("Looking for simple_demo.ipynb...")
+            logger.info("Looking for intro.ipynb...")
             page.wait_for_selector(".jp-DirListing-content", timeout=20000)
 
             if not _open_notebook(page, screenshots_dir):
