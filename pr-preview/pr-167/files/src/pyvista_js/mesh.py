@@ -728,11 +728,20 @@ class PolyData:
         scalars: ArrayLike | None = None,
         scalar_name: str | None = None,
     ) -> PolyData:
-        """Generate contour lines or surfaces at constant scalar values.
+        """Generate contour lines at constant scalar values.
 
-        This filter extracts isosurfaces/isolines from the mesh at specified
-        scalar values, producing contours using vtk.js ``vtkContourFilter``.
+        This filter extracts isolines from the mesh at specified scalar values
+        using a marching triangles algorithm implemented in JavaScript.
         It mirrors the PyVista ``contour`` filter API.
+
+        .. note::
+
+            The contour is computed in JavaScript at render time by applying
+            the marching triangles algorithm to each triangle of the mesh,
+            interpolating edge crossings at the specified iso-values.
+            ``vtk.js`` does not support ``vtkPolyData`` input for
+            ``vtkContourFilter``, so this filter is implemented as a custom
+            JavaScript pass.
 
         Parameters
         ----------
@@ -750,7 +759,7 @@ class PolyData:
         Returns
         -------
         PolyData
-            A new mesh containing the contour lines or surfaces.
+            A new mesh containing the contour lines.
 
         Raises
         ------
@@ -761,9 +770,7 @@ class PolyData:
         Examples
         --------
         >>> import pyvista_js as pv
-        >>> import numpy as np
         >>> sphere = pv.Sphere()
-        >>> # Add scalar data based on Z coordinate
         >>> sphere_scalars = sphere.points[:, 2]
         >>> contours = sphere.contour(isosurfaces=5, scalars=sphere_scalars)
         >>> isinstance(contours, pv.PolyData)
@@ -771,14 +778,11 @@ class PolyData:
 
         Generate contours at specific values:
 
-        >>> contours = sphere.contour(isosurfaces=[0.0, 0.5], scalars=sphere_scalars)
+        >>> contours = sphere.contour(isosurfaces=[-0.5, 0.0, 0.5], scalars=sphere_scalars)
 
-        Render the contours with scalar coloring:
+        Render the contours:
 
-        >>> contours['scalars'] = sphere_scalars
-        >>> plotter = pv.Plotter()
-        >>> _ = plotter.add_mesh(contours, scalars='scalars', cmap='viridis')
-        >>> plotter.show()  # doctest: +SKIP
+        >>> contours.plot()
 
         """
         # Determine scalar data to use
