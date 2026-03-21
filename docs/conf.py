@@ -107,6 +107,7 @@ try_examples_global_warning_text = (
 try_examples_preamble = (
     "import micropip\n"
     "await micropip.install('jinja2')\n"
+    "await micropip.install('lazy-loader')\n"
     "import sys\n"
     "sys.path.insert(0, '/drive/src')\n"
     "import pyvista_js as pv\n"
