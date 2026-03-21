@@ -189,6 +189,8 @@ warn_unused_ignores = false
 check_untyped_defs = false
 # Ignore missing imports for optional dependencies
 ignore_missing_imports = true
+# Exclude stub files from direct checking; they are used by type checkers as stubs
+exclude = [ "src/pyvista_js/__init__\\.pyi" ]
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
 
 [tool.jupytext]
