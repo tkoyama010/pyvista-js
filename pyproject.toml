@@ -78,7 +78,9 @@ dev = [
   { include-group = "test" },
 ]
 test = [
+  "playwright>=1.40",
   "pytest>=7",
+  "pytest-playwright>=0.4",
 ]
 
 [tool.hatch]
@@ -125,6 +127,9 @@ ini_options.addopts = [
 ]
 ini_options.filterwarnings = [
   "error",
+]
+ini_options.markers = [
+  "playwright: marks tests that use Playwright for browser automation (deselect with '-m \"not playwright\"')",
 ]
 
 [tool.mypy]
