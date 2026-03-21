@@ -86,6 +86,7 @@ if TYPE_CHECKING:
     from .camera import Camera
     from .light import Light
     from .mesh import PolyData
+    from .text import Text
     from .texture import Texture
 
 import re
@@ -209,6 +210,7 @@ class _BaseHTMLRenderer:
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
         self.lighting: str | None = lighting
+        self.text_actors: list[Text] = []
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -330,6 +332,23 @@ class _BaseHTMLRenderer:
         """
         self.lights.append(light)
 
+    def add_text_actor(self, text: Text) -> None:
+        """Add a text actor to the scene.
+
+        Parameters
+        ----------
+        text : Text
+            The :class:`~pyvista_js.text.Text` instance to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> renderer = get_renderer()
+        >>> renderer.add_text_actor(pv.Text("Hello", position=(0.5, 0.9)))
+
+        """
+        self.text_actors.append(text)
+
     def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
         """Add an orientation marker (axes indicator) to the viewport.
 
@@ -448,10 +467,11 @@ class _BaseHTMLRenderer:
         self._camera = camera
 
     def clear(self) -> None:
-        """Remove all actors and lights from the renderer."""
+        """Remove all actors, lights, and text actors from the renderer."""
         self.actors = []
         self.lights = []
         self._scalar_bar = None
+        self.text_actors = []
 
     def _generate_texture_code(self, actor_info: dict[str, object], idx: int) -> str:
         """Generate vtk.js JavaScript to load and bind a surface texture.
@@ -731,6 +751,21 @@ class _BaseHTMLRenderer:
 
         # Indent for consistency with other generated code
         return "\n".join("      " + line for line in code.splitlines())
+
+    def _generate_text_actors_code(self) -> str:
+        """Generate vtk.js JavaScript for all text actors.
+
+        Returns empty string if no text actors have been added.
+        """
+        if not self.text_actors:
+            return ""
+        lines = []
+        for idx, text_actor in enumerate(self.text_actors):
+            code = text_actor.generate_vtk_js_code(idx)
+            # Indent each line
+            indented = "\n".join("      " + line for line in code.splitlines())
+            lines.append(indented)
+        return "\n\n".join(lines)
 
     def _generate_axes_code(self) -> str:
         """Generate vtk.js JavaScript for the orientation marker widget.
@@ -1031,6 +1066,7 @@ class _BaseHTMLRenderer:
             LIGHTS_CODE=self._generate_lights_code(),
             ACTORS_CODE=actors_code,
             SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            TEXT_ACTORS_CODE=self._generate_text_actors_code(),
             ENVIRONMENT_CODE=self._generate_environment_code(),
             AXES_CODE=self._generate_axes_code(),
             CAMERA_CODE=self._generate_camera_code(),
@@ -1064,6 +1100,7 @@ class _BaseHTMLRenderer:
             LIGHTS_CODE=self._generate_lights_code(),
             ACTORS_CODE=actors_code,
             SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            TEXT_ACTORS_CODE=self._generate_text_actors_code(),
             ENVIRONMENT_CODE=self._generate_environment_code(),
             AXES_CODE=self._generate_axes_code(),
             CAMERA_CODE=self._generate_camera_code(),
@@ -1517,6 +1554,7 @@ class MockRenderer:
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
         self.lighting: str | None = lighting
+        self.text_actors: list[Text] = []
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
@@ -1651,14 +1689,27 @@ class MockRenderer:
         }
         logger.info("Added scalar bar title=%s vertical=%s n_labels=%d", title, vertical, n_labels)
 
+    def add_text_actor(self, text: Text) -> None:
+        """Mock add_text_actor.
+
+        Parameters
+        ----------
+        text : Text
+            The text actor to add (stored but not rendered).
+
+        """
+        self.text_actors.append(text)
+        logger.info("Added text actor: %s", text.input)
+
     def clear(self) -> None:
         """Mock clear.
 
-        Removes all actors and lights from the mock renderer.
+        Removes all actors, lights, and text actors from the mock renderer.
         """
         self.actors = []
         self.lights = []
         self._scalar_bar = None
+        self.text_actors = []
         logger.info("Cleared all actors")
 
     def set_background(self, color: tuple[float, float, float]) -> None:
