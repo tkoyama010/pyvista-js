@@ -1,64 +1,62 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"PO-Revision-Date: 2026-03-21 09:30+0000\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../api/_autosummary/pyvista_js.Sphere.rst:2
+#: ../api/_autosummary/pyvista_js.Sphere.rst:2
 msgid "pyvista\\_js.Sphere"
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:1
 msgid "Create a sphere mesh."
 msgstr ""
 
-#: ../../api/_autosummary/pyvista_js.Sphere.rst
+#: ../api/_autosummary/pyvista_js.Sphere.rst:0
 msgid "Parameters"
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:3
 msgid "Sphere radius. Default is 1.0."
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:5
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:5
 msgid "Center of the sphere (x, y, z). Default is (0, 0, 0)."
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:7
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:7
 msgid "Number of points in the azimuthal direction. Default is 30."
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:9
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:9
 msgid "Number of points in the polar direction. Default is 30."
 msgstr ""
 
-#: ../../api/_autosummary/pyvista_js.Sphere.rst
+#: ../api/_autosummary/pyvista_js.Sphere.rst:0
 msgid "Returns"
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:12
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:12
 msgid "A sphere mesh."
 msgstr ""
 
-#: ../../api/_autosummary/pyvista_js.Sphere.rst
+#: ../api/_autosummary/pyvista_js.Sphere.rst:0
 msgid "Return type"
 msgstr ""
 
-#: of pyvista_js.mesh.Sphere:16
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Sphere:16
 msgid "Examples"
 msgstr ""

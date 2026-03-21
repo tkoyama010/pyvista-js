@@ -17,13 +17,6 @@ msgstr ""
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../stlite_demo.md:1
-msgid "stlite demo"
-msgstr ""
-
-#: ../stlite_demo.md:3
-msgid ""
-"This is an interactive demo using "
-"[stlite](https://github.com/whitphx/stlite), the WASM-powered in-browser "
-"version of Streamlit."
+#: ../cli/info.md:1
+msgid "info"
 msgstr ""
