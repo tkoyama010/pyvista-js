@@ -6,7 +6,8 @@ fixtures for browser-based testing.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generator
+from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -49,7 +50,9 @@ def browser_context_args() -> dict[str, dict[str, int]]:
 
 
 @pytest.fixture(scope="function")
-def playwright_browser(playwright: Playwright, browser_type_launch_args: dict) -> Generator[Browser, None, None]:
+def playwright_browser(
+    playwright: Playwright, browser_type_launch_args: dict
+) -> Generator[Browser, None, None]:
     """Provide a Playwright browser instance for testing.
 
     This fixture creates a Chromium browser instance in headless mode

@@ -3,11 +3,12 @@
 These tests verify that PyVista plots render correctly in actual browser
 environments using Playwright for browser automation.
 
-Note
+Note:
 ----
 These tests require internet access to load vtk.js from the unpkg.com CDN.
 If running in an environment without CDN access, these tests will be skipped.
 In production use, vtk.js could be vendored locally to avoid this dependency.
+
 """
 
 from __future__ import annotations
