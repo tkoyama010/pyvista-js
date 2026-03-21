@@ -20,12 +20,7 @@
 # %%
 import micropip
 
-await micropip.install("jinja2")
-
-# %%
-import sys
-
-sys.path.insert(0, "/drive/src")
+await micropip.install("pyvista-js")
 
 # %%
 import pyvista_js as pv
