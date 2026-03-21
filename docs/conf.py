@@ -88,7 +88,7 @@ gettext_compact = False
 # and pre-existing duplicate object description warnings
 suppress_warnings = [
     "myst.xref_missing",
-    "app.add_directive",  # Suppress duplicate object warnings
+    "py.duplicate_object",  # Suppress duplicate object description warnings from autosummary
 ]
 
 # -- Options for HTML output -------------------------------------------------
