@@ -145,7 +145,7 @@ the WASM-powered in-browser version of Streamlit.
 
    geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
-   color = st.selectbox("Color", ["white", "red", "green", "blue", "yellow", "cyan", "magenta"])
+   color = st.selectbox("Color", ["gray", "white", "red", "green", "blue", "yellow", "cyan", "magenta"])
 
    opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
 
