@@ -48,4 +48,3 @@ from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .streamlit_integration import pyvista_chart
 from .texture import Texture
-
