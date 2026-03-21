@@ -1,4 +1,4 @@
-name: Crowdin Sync
+name: Transifex Sync
 
 on:
   push:
@@ -16,9 +16,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  crowdin:
+  transifex:
     runs-on: ubuntu-latest
-    environment: crowdin
+    environment: transifex
 
     steps:
       - name: Checkout
@@ -49,19 +49,25 @@ jobs:
             git push
           fi
 
-      - name: Crowdin sync
-        uses: crowdin/github-action@ce33ce793a5cbc401d9cd748716e03fc90c001f1  # v2
+      - name: Push sources to Transifex
+        uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
         with:
-          upload_sources: true
-          upload_translations: false
-          download_translations: true
-          create_pull_request: true
-          pull_request_title: 'chore: update translations from Crowdin'
-          pull_request_body: 'Automated translation update from Crowdin.'
-          pull_request_base_branch_name: 'main'
-          pull_request_labels: 'translations'
-          localization_branch_name: 'chore/crowdin-translations'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+          token: ${{ secrets.TX_TOKEN }}
+          args: push --source
+
+      - name: Pull translations from Transifex
+        uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
+        with:
+          token: ${{ secrets.TX_TOKEN }}
+          args: pull --all --force
+
+      - name: Create pull request for translations
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676  # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update translations from Transifex'
+          branch: chore/transifex-translations
+          base: main
+          title: 'chore: update translations from Transifex'
+          body: Automated translation update from Transifex.
+          labels: translations
