@@ -49,24 +49,28 @@ jobs:
             git push
           fi
 
-      - name: Register and push sources to Transifex
-        uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
-        with:
-          token: ${{ secrets.TX_TOKEN }}
-          args: >-
-            add bulk
-            --organization tkoyama010
-            --project pyvista-js
-            --file-filter 'docs/locale/<lang>/LC_MESSAGES/<path>.po'
-            --source-file-filter 'docs/pot/<path>.pot'
-            --type PO
-            --source-lang en
+      - name: Install Transifex CLI
+        run: |
+          curl -fsSL https://github.com/transifex/cli/releases/download/v1.6.17/tx-linux-amd64.tar.gz \
+            | tar -xz -C /usr/local/bin tx
+
+      - name: Generate .tx/config and push sources to Transifex
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
+        run: |
+          printf '[main]\nhost = https://www.transifex.com\n' > .tx/config
+          for pot in $(find docs/pot -name '*.pot' | sort); do
+            rel="${pot#docs/pot/}"
+            slug=$(printf '%s' "${rel%.pot}" | tr '/._' '-' | sed 's/-\+/-/g' | tr '[:upper:]' '[:lower:]' | cut -c1-50 | sed 's/-*$//')
+            printf '\n[o:tkoyama010:p:pyvista-js:r:%s]\nfile_filter = docs/locale/<lang>/LC_MESSAGES/%s.po\nsource_file = %s\nsource_lang = en\ntype = PO\n' \
+              "$slug" "${rel%.pot}" "$pot" >> .tx/config
+          done
+          tx push --source
 
       - name: Pull translations from Transifex
-        uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
-        with:
-          token: ${{ secrets.TX_TOKEN }}
-          args: pull --all --force
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
+        run: tx pull --all --force
 
       - name: Create pull request for translations
         uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676  # v7
