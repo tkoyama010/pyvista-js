@@ -11,6 +11,7 @@
 [![SPEC 8 — Securing the Release Process](https://img.shields.io/badge/SPEC-8-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0008/)
 [![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
 [![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest)
+[![Transifex](https://img.shields.io/badge/Translations-Transifex-blue.svg)](https://app.transifex.com/tkoyama010/pyvista-js/)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/)
 ![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)
