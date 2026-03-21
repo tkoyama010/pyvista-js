@@ -814,7 +814,7 @@ class GLTFReader:
 
     See Also
     --------
-    :ref:`tutorials/index:Using download_damaged_helmet`
+    :ref:`using-download-damaged-helmet`
         Interactive browser tutorial for glTF rendering.
 
     Examples
