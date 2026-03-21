@@ -454,6 +454,19 @@ def test_smooth_shading_disabled(monkeypatch) -> None:
 
     html = renderer._repr_html_()
     assert "setInterpolationToFlat" in html
+    assert "vtkPolyDataNormals" in html
+    assert "setComputeCellNormals(true)" in html
+    assert "setComputePointNormals(false)" in html
+
+
+def test_smooth_shading_enabled_no_normals_filter(monkeypatch) -> None:
+    """Test that smooth shading does not insert a normals filter."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+
+    html = renderer._repr_html_()
+    assert "vtkPolyDataNormals" not in html
 
 
 def test_smooth_shading_with_actor_index(monkeypatch) -> None:
@@ -464,7 +477,10 @@ def test_smooth_shading_with_actor_index(monkeypatch) -> None:
     renderer.add_mesh_actor(Cube(), smooth_shading=False)
 
     html = renderer._repr_html_()
-    # First actor should have Gouraud shading
+    # First actor should have Gouraud shading and no normals filter
     assert "actor0.getProperty().setInterpolationToGouraud()" in html
-    # Second actor should have flat shading
+    assert "normals0" not in html
+    # Second actor should have flat shading with cell normals filter
     assert "actor1.getProperty().setInterpolationToFlat()" in html
+    assert "normals1.setComputeCellNormals(true)" in html
+    assert "mapper1.setInputConnection(normals1.getOutputPort())" in html

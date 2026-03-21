@@ -991,6 +991,10 @@ class _BaseHTMLRenderer:
         source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
         mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
+        normals_code = self._generate_normals_code(idx, smooth_shading, mapper_setup)
+        if normals_code:
+            mapper_setup = f"mapper{idx}.setInputConnection(normals{idx}.getOutputPort());"
+
         pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
         shading_code = self._generate_shading_code(idx, smooth_shading)
         edge_code = self._generate_edge_code(
@@ -1005,6 +1009,7 @@ class _BaseHTMLRenderer:
         return _render(
             _ACTOR_TEMPLATE,
             SOURCE_CODE=source_code,
+            NORMALS_CODE=normals_code,
             MAPPER=f"mapper{idx}",
             ACTOR=f"actor{idx}",
             MAPPER_CLASS="vtkMapper",
@@ -1064,6 +1069,50 @@ class _BaseHTMLRenderer:
             f"actor{idx}.getProperty().setSpecular({specular});\n"
             f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
             f"actor{idx}.getProperty().setDiffuse({diffuse});"
+        )
+
+    @staticmethod
+    def _generate_normals_code(idx: int, smooth_shading: object, mapper_setup: str) -> str:
+        """Generate vtk.js vtkPolyDataNormals filter code for flat shading.
+
+        When flat shading is requested, inserts a vtkPolyDataNormals filter
+        that computes per-face (cell) normals instead of per-vertex normals,
+        making the faceted geometry clearly visible.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        smooth_shading : object
+            Whether smooth shading is enabled. When False, cell normals are
+            computed.
+        mapper_setup : str
+            The mapper setup code, used to determine how to connect the filter.
+
+        Returns
+        -------
+        str
+            JavaScript code for the normals filter, or empty string when smooth
+            shading is enabled or the pipeline cannot be intercepted.
+
+        """
+        if smooth_shading:
+            return ""
+        source_ref = f"source{idx}"
+        tex_map_ref = f"texMapSphere{idx}"
+        if f"setInputData({source_ref})" in mapper_setup:
+            input_line = f"normals{idx}.setInputData({source_ref});"
+        elif f"{tex_map_ref}.getOutputPort()" in mapper_setup:
+            input_line = f"normals{idx}.setInputConnection({tex_map_ref}.getOutputPort());"
+        elif f"{source_ref}.getOutputPort()" in mapper_setup:
+            input_line = f"normals{idx}.setInputConnection({source_ref}.getOutputPort());"
+        else:
+            return ""
+        return (
+            f"const normals{idx} = vtk.Filters.General.vtkPolyDataNormals.newInstance();\n"
+            f"normals{idx}.setComputePointNormals(false);\n"
+            f"normals{idx}.setComputeCellNormals(true);\n"
+            f"{input_line}"
         )
 
     @staticmethod
