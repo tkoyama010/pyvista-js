@@ -62,6 +62,17 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Line
 ```
 
+## Text
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.Text
+   pyvista_js.TextProperty
+```
+
 ## Texture
 
 ```{eval-rst}
@@ -80,6 +91,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.PolyData.clip
+   pyvista_js.PolyData.contour
    pyvista_js.PolyData.shrink
    pyvista_js.PolyData.texture_map_to_plane
    pyvista_js.PolyData.tube

@@ -369,6 +369,128 @@ def test_tube_preserves_faces() -> None:
     assert tube.n_faces == line.n_faces
 
 
+def test_contour_returns_polydata() -> None:
+    """Test that contour returns a PolyData instance."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]  # Z coordinate
+    contours = sphere.contour(isosurfaces=5, scalars=scalars)
+    assert isinstance(contours, PolyData)
+
+
+def test_contour_with_int_isosurfaces() -> None:
+    """Test contour with integer number of isosurfaces."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=3, scalars=scalars)
+    js_source = contours.generate_vtk_js_source(0)
+    assert "contourPD0" in js_source
+    assert "Marching triangles" in js_source or "marching" in js_source.lower()
+    # Should have 3 values in the array
+    assert "values.length" in js_source
+
+
+def test_contour_with_list_isosurfaces() -> None:
+    """Test contour with explicit list of isosurface values."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=[0.0, 0.5, 1.0], scalars=scalars)
+    js_source = contours.generate_vtk_js_source(0)
+    assert "contourPD0" in js_source
+    assert "0.0" in js_source or "0" in js_source
+    assert "0.5" in js_source
+    assert "1.0" in js_source or "1" in js_source
+
+
+def test_contour_mapper_setup_uses_contour_pd() -> None:
+    """Test that contour mesh mapper uses setInputData with contourPD."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=5, scalars=scalars)
+    mapper_code = contours.get_mapper_setup(0)
+    assert "contourPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_contour_no_scalars_raises() -> None:
+    """Test that contour without scalars raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="No scalar data provided"):
+        sphere.contour(isosurfaces=5)
+
+
+def test_contour_invalid_scalar_length_raises() -> None:
+    """Test that scalars with wrong length raises ValueError."""
+    sphere = Sphere()
+    scalars = np.array([1, 2, 3])  # Wrong length
+    with pytest.raises(ValueError, match="scalars must have length"):
+        sphere.contour(isosurfaces=5, scalars=scalars)
+
+
+def test_contour_invalid_isosurfaces_int_raises() -> None:
+    """Test that invalid integer isosurfaces raises ValueError."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    with pytest.raises(ValueError, match="isosurfaces must be >= 1"):
+        sphere.contour(isosurfaces=0, scalars=scalars)
+    with pytest.raises(ValueError, match="isosurfaces must be >= 1"):
+        sphere.contour(isosurfaces=-5, scalars=scalars)
+
+
+def test_contour_empty_list_raises() -> None:
+    """Test that empty isosurfaces list raises ValueError."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    with pytest.raises(ValueError, match="isosurfaces list must contain at least one value"):
+        sphere.contour(isosurfaces=[], scalars=scalars)
+
+
+def test_contour_with_mesh_scalars() -> None:
+    """Test contour using scalars stored on the mesh."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    sphere_with_scalars = PolyData(
+        points=sphere.points,
+        faces=sphere.faces,
+        scalars=scalars,
+        scalar_name="elevation",
+    )
+    contours = sphere_with_scalars.contour(isosurfaces=5)
+    assert isinstance(contours, PolyData)
+    js_source = contours.generate_vtk_js_source(0)
+    assert "contourPD0" in js_source
+    assert "elevation" in js_source
+
+
+def test_contour_scalar_injection() -> None:
+    """Test that scalar data is properly injected into vtk.js code."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=5, scalars=scalars, scalar_name="test_scalars")
+    js_source = contours.generate_vtk_js_source(0)
+    assert "test_scalars" in js_source
+    assert "vtkDataArray" in js_source
+    assert "setScalars" in js_source
+    assert "Float32Array" in js_source
+
+
+def test_contour_preserves_scalar_data() -> None:
+    """Test that contour preserves scalar data in returned mesh."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=5, scalars=scalars)
+    assert contours.scalars is not None
+    assert len(contours.scalars) == sphere.n_points
+
+
+def test_contour_custom_scalar_name() -> None:
+    """Test contour with custom scalar name."""
+    cube = Cube()
+    scalars = cube.points[:, 0] + cube.points[:, 1]
+    contours = cube.contour(isosurfaces=3, scalars=scalars, scalar_name="custom_field")
+    js_source = contours.generate_vtk_js_source(0)
+    assert "custom_field" in js_source
+
+
 def test_circle_creation() -> None:
     """Test circle primitive creation."""
     circle = Circle()
