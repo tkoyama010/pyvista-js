@@ -112,6 +112,7 @@ def _render(template_str: str, **kwargs: object) -> str:
     rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
     return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
+
 # vtk.js CDN URL used across renderers
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
 
@@ -1238,7 +1239,6 @@ class _BaseHTMLRenderer:
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
         return self._generate_html()
-
 
     @staticmethod
     def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
