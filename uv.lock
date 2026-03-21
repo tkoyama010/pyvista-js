@@ -789,6 +789,18 @@ wheels = [
 ]
 
 [[package]]
+name = "lazy-loader"
+version = "0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/ac/21a1f8aa3777f5658576777ea76bfb124b702c520bbe90edf4ae9915eafa/lazy_loader-0.5.tar.gz", hash = "sha256:717f9179a0dbed357012ddad50a5ad3d5e4d9a0b8712680d4e687f5e6e6ed9b3", size = 15294, upload-time = "2026-03-06T15:45:09.054Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8a/a1/8d812e53a5da1687abb10445275d41a8b13adb781bbf7196ddbcf8d88505/lazy_loader-0.5-py3-none-any.whl", hash = "sha256:ab0ea149e9c554d4ffeeb21105ac60bed7f3b4fd69b1d2360a4add51b170b005", size = 8044, upload-time = "2026-03-06T15:45:07.668Z" },
+]
+
+[[package]]
 name = "librt"
 version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1619,6 +1631,7 @@ version = "0.9.1"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
+    { name = "lazy-loader" },
     { name = "numpy" },
     { name = "typer" },
 ]
@@ -1673,6 +1686,7 @@ requires-dist = [
     { name = "jupyterlite-pyodide-kernel", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.7.1" },
     { name = "jupyterlite-sphinx", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.22.1" },
     { name = "jupytext", marker = "extra == 'docs'", specifier = ">=1.19" },
+    { name = "lazy-loader", specifier = ">=0.4" },
     { name = "meshio", marker = "extra == 'io'" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "myst-parser", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==5" },

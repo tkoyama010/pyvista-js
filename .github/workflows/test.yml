@@ -48,6 +48,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         # SPEC 0: Only test Python versions within 36-month support window
+        # SPEC 1: Use lazy loading for submodules and functions
         python-version: ['3.12', '3.13', '3.14']
 
     steps:
