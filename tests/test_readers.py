@@ -5,13 +5,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import OBJReader, PLYReader, PolyDataReader, STLReader, examples
+from pyvista_js import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader, examples
 
 DATA_DIR = Path(__file__).parent / "data"
 TRIANGLE_VTK = DATA_DIR / "triangle.vtk"
 TRIANGLE_PLY = DATA_DIR / "triangle.ply"
 TRIANGLE_OBJ = DATA_DIR / "triangle.obj"
 TRIANGLE_STL = DATA_DIR / "triangle.stl"
+TRIANGLE_GLTF = DATA_DIR / "triangle.gltf"
 
 
 # --- PolyDataReader tests ---
@@ -338,6 +339,38 @@ def test_stl_reader_string_path() -> None:
     assert mesh.n_points == 3
 
 
+# --- GLTFReader tests ---
+
+
+def test_gltf_reader_path() -> None:
+    """Test that the reader exposes the path property."""
+    reader = GLTFReader(TRIANGLE_GLTF)
+    assert reader.path == TRIANGLE_GLTF
+
+
+def test_gltf_reader_read_points() -> None:
+    """Test reading points from a glTF file."""
+    reader = GLTFReader(TRIANGLE_GLTF)
+    mesh = reader.read()
+
+    # glTF file extracts bounding box corners (8 points)
+    assert mesh.n_points == 8
+    # Verify bounds are correct
+    assert mesh.points[:, 0].min() == 0.0
+    assert mesh.points[:, 0].max() == 1.0
+    assert mesh.points[:, 1].min() == 0.0
+    assert mesh.points[:, 1].max() == 1.0
+    assert mesh.points[:, 2].min() == 0.0
+    assert mesh.points[:, 2].max() == 0.0
+
+
+def test_gltf_reader_string_path() -> None:
+    """Test that string paths are accepted."""
+    reader = GLTFReader(str(TRIANGLE_GLTF))
+    mesh = reader.read()
+    assert mesh.n_points == 8
+
+
 @pytest.mark.parametrize(
     ("method", "expected"),
     [
@@ -410,6 +443,23 @@ def test_stl_reader_no_vertices(tmp_path: Path) -> None:
     assert mesh.n_points == 0
 
 
+# --- download_damaged_helmet tests ---
+
+
+def test_download_damaged_helmet_returns_gltf_mesh() -> None:
+    """Test that download_damaged_helmet returns a mesh with points."""
+    mesh = examples.download_damaged_helmet()
+    assert mesh.n_points > 0
+
+
+def test_download_damaged_helmet_js_output() -> None:
+    """Test that download_damaged_helmet mesh generates valid vtk.js source."""
+    mesh = examples.download_damaged_helmet()
+    source = mesh.generate_vtk_js_source(0)
+    assert "model-viewer" in source
+    assert "DamagedHelmet.gltf" in source
+
+
 # --- download_cad_model tests ---
 
 
@@ -424,5 +474,77 @@ def test_download_cad_model_js_output() -> None:
     mesh = examples.download_cad_model()
     source = mesh.generate_vtk_js_source(0)
     assert "vtkSTLReader" in source
+    assert "parseAsArrayBuffer" in source
+    assert "source0" in source
+
+
+@pytest.mark.parametrize(
+    ("method", "expected"),
+    [
+        ("generate_vtk_js_source", "model-viewer"),
+        ("generate_vtk_js_source", "createObjectURL"),
+        ("get_mapper_setup", "setInputData"),
+    ],
+)
+def test_gltf_reader_js_output(method: str, expected: str) -> None:
+    """Test that generated JavaScript contains expected strings."""
+    mesh = GLTFReader(TRIANGLE_GLTF).read()
+    result = getattr(mesh, method)(0)
+    assert expected in result
+
+
+@pytest.mark.parametrize(
+    ("fixture_type", "match"),
+    [
+        ("not_found", "File not found"),
+        ("wrong_ext", "Expected a .gltf or .glb file"),
+    ],
+)
+def test_gltf_reader_init_errors(
+    tmp_path: Path,
+    fixture_type: str,
+    match: str,
+) -> None:
+    """Test errors raised during reader initialization."""
+    if fixture_type == "not_found":
+        with pytest.raises(FileNotFoundError, match=match):
+            GLTFReader("nonexistent.gltf")
+    else:
+        bad_file = tmp_path / "data.txt"
+        bad_file.write_text("hello")
+        with pytest.raises(ValueError, match=match):
+            GLTFReader(bad_file)
+
+
+def test_gltf_reader_invalid_json(tmp_path: Path) -> None:
+    """Test reading an invalid JSON file yields empty mesh."""
+    gltf_file = tmp_path / "invalid.gltf"
+    gltf_file.write_text("not valid json")
+    mesh = GLTFReader(gltf_file).read()
+    assert mesh.n_points == 0
+
+
+def test_gltf_reader_no_meshes(tmp_path: Path) -> None:
+    """Test reading a glTF file with no meshes yields empty mesh."""
+    gltf_file = tmp_path / "empty.gltf"
+    gltf_file.write_text('{"asset": {"version": "2.0"}}')
+    mesh = GLTFReader(gltf_file).read()
+    assert mesh.n_points == 0
+
+
+# --- download_bunny tests ---
+
+
+def test_download_bunny_returns_ply_mesh() -> None:
+    """Test that download_bunny returns a _PLYMesh."""
+    mesh = examples.download_bunny()
+    assert mesh.n_points > 0
+
+
+def test_download_bunny_js_output() -> None:
+    """Test that download_bunny mesh generates valid vtk.js source."""
+    mesh = examples.download_bunny()
+    source = mesh.generate_vtk_js_source(0)
+    assert "vtkPLYReader" in source
     assert "parseAsArrayBuffer" in source
     assert "source0" in source
