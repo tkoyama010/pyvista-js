@@ -17,6 +17,8 @@ __all__ = [
     "PolyDataReader",
     "STLReader",
     "Sphere",
+    "Text",
+    "TextProperty",
     "Texture",
     "__version__",
     "examples",
@@ -47,4 +49,5 @@ from .mesh import (
 from .plotter import Plotter
 from .readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from .streamlit_integration import pyvista_chart
+from .text import Text, TextProperty
 from .texture import Texture
