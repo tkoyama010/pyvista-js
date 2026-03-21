@@ -80,6 +80,7 @@ This section provides detailed documentation for the pyvista-js public API.
    :nosignatures:
 
    pyvista_js.PolyData.clip
+   pyvista_js.PolyData.contour
    pyvista_js.PolyData.shrink
    pyvista_js.PolyData.texture_map_to_plane
    pyvista_js.PolyData.tube
