@@ -17,7 +17,8 @@
         "doc",
         "code",
         "review",
-        "bug"
+        "bug",
+        "translation"
       ]
     },
     {
@@ -56,6 +57,16 @@
       "profile": "https://github.com/features/security",
       "contributions": [
         "maintenance"
+      ]
+    },
+    {
+      "login": "transifex",
+      "name": "Transifex",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22542?v=4",
+      "profile": "https://www.transifex.com/",
+      "contributions": [
+        "doc",
+        "translation"
       ]
     }
   ],

@@ -106,20 +106,73 @@ def _read_mesh(path: Path):  # type: ignore[return]  # noqa: ANN202
     return reader_cls(path).read()
 
 
+def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noqa: ANN202
+    """Load a Plotter object from a pickle file.
+
+    Parameters
+    ----------
+    pickle_path : Path
+        Path to the pickle file containing a Plotter object.
+
+    Returns
+    -------
+    pyvista_js.Plotter
+        The loaded Plotter object.
+
+    Raises
+    ------
+    SystemExit
+        When the file does not exist, cannot be loaded, or does not
+        contain a valid Plotter object.
+
+    """
+    import pickle  # noqa: PLC0415
+
+    import pyvista_js as pv  # noqa: PLC0415
+
+    if not pickle_path.exists():
+        logger.error("pickle file not found: %s", pickle_path)
+        sys.exit(1)
+
+    # Security warning
+    logger.warning(
+        "WARNING: Loading pickle files can execute arbitrary code. "
+        "Only load pickle files from trusted sources.",
+    )
+
+    try:
+        with pickle_path.open("rb") as f:
+            plotter = pickle.load(f)  # noqa: S301
+    except Exception:
+        logger.exception("failed to load pickle file")
+        sys.exit(1)
+
+    # Validate that we loaded a Plotter object
+    if not isinstance(plotter, pv.Plotter):
+        logger.error(
+            "pickle file does not contain a Plotter object (got %s)",
+            type(plotter).__name__,
+        )
+        sys.exit(1)
+
+    return plotter
+
+
 # ---------------------------------------------------------------------------
 # Subcommand implementations
 # ---------------------------------------------------------------------------
 
 
 @app.command()
-def plot(
+def plot(  # noqa: PLR0913
     files: Annotated[
-        list[Path],
+        list[Path] | None,
         typer.Argument(
-            help="Mesh file(s) to plot. Supported formats: .vtk (ASCII), .ply (ASCII), .obj.",
+            help="Mesh file(s) to plot. Supported formats: .vtk (ASCII), .ply (ASCII), .obj. "
+            "Optional when --load-pickle is provided.",
             metavar="FILE",
         ),
-    ],
+    ] = None,
     color: Annotated[
         str | None,
         typer.Option(
@@ -141,22 +194,67 @@ def plot(
             metavar="FLOAT",
         ),
     ] = 1.0,
+    pickle: Annotated[
+        Path | None,
+        typer.Option(
+            help="Save the Plotter object to a pickle file for later reuse.",
+            metavar="PATH",
+        ),
+    ] = None,
+    load_pickle: Annotated[
+        Path | None,
+        typer.Option(
+            help="Load a pickled Plotter object from file instead of creating a new one. "
+            "WARNING: Only load pickle files from trusted sources.",
+            metavar="PATH",
+        ),
+    ] = None,
 ) -> None:
     """Plot one or more mesh files in the browser.
 
     Open one or more mesh files (.vtk, .ply, .obj) and render them
-    in the default web browser using vtk.js.
+    in the default web browser using vtk.js. Alternatively, load a
+    previously saved Plotter object from a pickle file.
     """
+    import pickle as pickle_module  # noqa: PLC0415
+
     import pyvista_js as pv  # noqa: PLC0415
 
-    plotter = pv.Plotter()
+    if load_pickle is not None:
+        # Load plotter from pickle file
+        plotter = _load_plotter_from_pickle(load_pickle)
 
-    if background is not None:
-        plotter.background_color = background
+        # If files are also provided with --load-pickle, add them to the loaded plotter
+        if files:
+            for file_path in files:
+                mesh = _read_mesh(file_path)
+                plotter.add_mesh(mesh, color=color, opacity=opacity)
 
-    for file_path in files:
-        mesh = _read_mesh(file_path)
-        plotter.add_mesh(mesh, color=color, opacity=opacity)
+        # If background is specified, override the loaded plotter's background
+        if background is not None:
+            plotter.background_color = background
+    else:
+        # Normal flow: create a new plotter from mesh files
+        if not files:
+            logger.error(
+                "no mesh files provided. Either provide mesh files or use --load-pickle.",
+            )
+            sys.exit(1)
+
+        plotter = pv.Plotter()
+
+        if background is not None:
+            plotter.background_color = background
+
+        for file_path in files:
+            mesh = _read_mesh(file_path)
+            plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    # Save to pickle file if requested
+    if pickle is not None:
+        with pickle.open("wb") as f:
+            pickle_module.dump(plotter, f)
+        logger.info("Plotter saved to: %s", pickle)
 
     plotter.show()
 
@@ -191,9 +289,9 @@ def _open_notebook(page, screenshots_dir: Path) -> bool:  # noqa: ANN001
 
     """
     notebook_selectors = [
-        "text=simple_demo.ipynb",
-        "[title*='simple_demo']",
-        ".jp-DirListing-itemText:has-text('simple_demo')",
+        "text=intro.ipynb",
+        "[title*='intro']",
+        ".jp-DirListing-itemText:has-text('intro')",
     ]
 
     for selector in notebook_selectors:
@@ -235,7 +333,45 @@ def _run_notebook_cells(page) -> None:  # noqa: ANN001
         page.keyboard.press("Shift+Enter")
 
 
-def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
+def _rotate_canvas_with_mouse(page, canvas_selector: str = "canvas") -> None:  # noqa: ANN001
+    """Rotate the 3D model by dragging the mouse across the canvas.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    canvas_selector : str
+        CSS selector for the canvas element. Default: "canvas".
+
+    """
+    try:
+        canvas = page.query_selector(canvas_selector)
+        if canvas is None:
+            logger.warning("Canvas element not found, skipping rotation")
+            return
+
+        box = canvas.bounding_box()
+        if box is None:
+            logger.warning("Canvas bounding box not available, skipping rotation")
+            return
+
+        # Calculate center and drag path
+        center_x = box["x"] + box["width"] / 2
+        center_y = box["y"] + box["height"] / 2
+        drag_distance = box["width"] / 3  # Drag 1/3 of canvas width
+
+        # Perform mouse drag: click + move to simulate rotation
+        page.mouse.move(center_x - drag_distance / 2, center_y)
+        page.mouse.down()
+        page.mouse.move(center_x + drag_distance / 2, center_y, steps=20)
+        page.mouse.up()
+
+        logger.info("Performed mouse drag rotation on canvas")
+    except Exception:  # noqa: BLE001
+        logger.warning("Failed to perform mouse drag rotation", exc_info=True)
+
+
+def _capture_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = False) -> Path:
     """Capture screenshots from the JupyterLite demo using Playwright.
 
     Parameters
@@ -244,6 +380,9 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
         Directory to save temporary screenshots.
     demo_url : str
         URL of the JupyterLite demo.
+    rotate : bool
+        If ``True``, rotate the 3D model by mouse drag between
+        screenshots. Default: ``False``.
 
     Returns
     -------
@@ -272,7 +411,7 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
             logger.info("Waiting for JupyterLite to load...")
             page.wait_for_timeout(15000)
 
-            logger.info("Looking for simple_demo.ipynb...")
+            logger.info("Looking for intro.ipynb...")
             page.wait_for_selector(".jp-DirListing-content", timeout=20000)
 
             if not _open_notebook(page, screenshots_dir):
@@ -288,10 +427,23 @@ def _capture_screenshots(output_dir: Path, demo_url: str) -> Path:
             logger.info("Waiting for 3D rendering to appear...")
             page.wait_for_timeout(15000)
 
-            logger.info("Capturing rendering screenshots...")
-            for i in range(2, 15):
-                page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
-                page.wait_for_timeout(500)
+            if rotate:
+                logger.info("Capturing rendering screenshots with rotation...")
+                # Capture first screenshot at initial position
+                page.screenshot(path=str(screenshots_dir / "screenshot_02.png"))
+                page.wait_for_timeout(300)
+
+                # Capture remaining screenshots while rotating
+                for i in range(3, 15):
+                    _rotate_canvas_with_mouse(page)
+                    page.wait_for_timeout(300)
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(300)
+            else:
+                logger.info("Capturing rendering screenshots...")
+                for i in range(2, 15):
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(500)
 
             logger.info("Captured 14 screenshots successfully")
 
@@ -372,6 +524,13 @@ def capture_preview(
             metavar="INT",
         ),
     ] = 2,
+    rotate: Annotated[
+        bool | None,
+        typer.Option(
+            help="Rotate the 3D model by mouse drag while capturing screenshots. "
+            "Will become the default in a future version.",
+        ),
+    ] = None,
 ) -> None:
     """Capture a preview GIF of the JupyterLite demo.
 
@@ -379,12 +538,24 @@ def capture_preview(
     Requires: playwright, imageio[ffmpeg], pillow.
     """
     import tempfile  # noqa: PLC0415
+    import warnings  # noqa: PLC0415
+
+    if rotate is None:
+        warnings.warn(
+            "The default behavior of 'capture-preview' will change in a future "
+            "version to rotate the 3D model during capture. "
+            "Pass '--rotate' to enable the new behavior now, or "
+            "'--no-rotate' to silence this warning and keep the current behavior.",
+            DeprecationWarning,
+            stacklevel=1,
+        )
+        rotate = False
 
     output_path = output
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = Path(tmp)
-        screenshots_dir = _capture_screenshots(tmp_dir, url)
+        screenshots_dir = _capture_screenshots(tmp_dir, url, rotate=rotate)
 
         screenshot_files = list(screenshots_dir.glob("screenshot_*.png"))
         if not screenshot_files:

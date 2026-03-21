@@ -14,25 +14,9 @@ comment:
   behavior: default
   require_changes: false
 
+# SPEC 0: Only test Python versions within 36-month support window
+# SPEC 1: Use lazy loading for submodules and functions
 flags:
-  py3.10-ubuntu-latest:
-    paths:
-      - src/
-  py3.10-windows-latest:
-    paths:
-      - src/
-  py3.10-macos-latest:
-    paths:
-      - src/
-  py3.11-ubuntu-latest:
-    paths:
-      - src/
-  py3.11-windows-latest:
-    paths:
-      - src/
-  py3.11-macos-latest:
-    paths:
-      - src/
   py3.12-ubuntu-latest:
     paths:
       - src/

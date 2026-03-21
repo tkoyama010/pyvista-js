@@ -1,7 +1,10 @@
 """Test basic plotter functionality."""
 
+import pathlib
+import tempfile
 import webbrowser
 
+import numpy as np
 import pytest
 
 from pyvista_js import Camera, Cube, Cylinder, Plotter, PolyData, Sphere
@@ -769,3 +772,355 @@ def test_multiple_axes_calls() -> None:
 
     # Should still be enabled
     assert plotter._renderer._axes_enabled is True
+
+
+def test_plotter_enable_parallel_projection() -> None:
+    """Test Plotter.enable_parallel_projection() method."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Enable parallel projection
+    plotter.enable_parallel_projection()
+
+    # Camera should be created automatically if not set
+    assert plotter.camera is not None
+    assert plotter.camera.parallel_projection is True
+
+
+def test_plotter_disable_parallel_projection() -> None:
+    """Test Plotter.disable_parallel_projection() method."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Enable then disable
+    plotter.enable_parallel_projection()
+    plotter.disable_parallel_projection()
+
+    assert plotter.camera is not None
+    assert plotter.camera.parallel_projection is False
+
+
+def test_plotter_enable_parallel_projection_with_existing_camera() -> None:
+    """Test enable_parallel_projection works with an existing camera."""
+    plotter = Plotter()
+    camera = Camera(position=(10, 10, 10))
+    plotter.camera = camera
+
+    # Enable parallel projection
+    plotter.enable_parallel_projection()
+
+    # Should use the same camera
+    assert plotter.camera is camera
+    assert plotter.camera.parallel_projection is True
+
+
+def test_plotter_parallel_projection_generates_code() -> None:
+    """Test that plotter generates vtk.js code for parallel projection."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.enable_parallel_projection()
+
+    # Generate HTML
+    html = plotter._renderer._generate_html()
+
+    # Verify parallel projection is set in the generated code
+    assert "cam.setParallelProjection(true)" in html
+
+
+def test_plotter_perspective_projection_generates_code() -> None:
+    """Test that plotter generates vtk.js code for perspective projection."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.enable_parallel_projection()
+    plotter.disable_parallel_projection()
+
+    # Generate HTML
+    html = plotter._renderer._generate_html()
+
+    # Verify perspective projection is set in the generated code
+    assert "cam.setParallelProjection(false)" in html
+
+
+def test_plotter_pickle() -> None:
+    """Test that a plotter can be pickled and unpickled."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), color="red", opacity=0.8)
+    plotter.background_color = "white"
+
+    # Pickle the plotter
+    pickled = pickle.dumps(plotter)
+
+    # Unpickle the plotter
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded plotter
+    assert len(loaded_plotter.actors) == 1
+    assert loaded_plotter.actors[0]["color"] == "red"
+    assert loaded_plotter.actors[0]["opacity"] == 0.8
+    assert loaded_plotter.background_color == (1.0, 1.0, 1.0)
+
+
+def test_plotter_pickle_multiple_meshes() -> None:
+    """Test pickling a plotter with multiple meshes."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(radius=1.0), color="red")
+    plotter.add_mesh(Cube(center=(2, 0, 0)), color="blue", opacity=0.5)
+    plotter.background_color = "black"
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(plotter)
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded plotter
+    assert len(loaded_plotter.actors) == 2
+    assert loaded_plotter.actors[0]["color"] == "red"
+    assert loaded_plotter.actors[1]["color"] == "blue"
+    assert loaded_plotter.actors[1]["opacity"] == 0.5
+    assert loaded_plotter.background_color == (0.0, 0.0, 0.0)
+
+
+def test_plotter_pickle_with_camera() -> None:
+    """Test pickling a plotter with camera settings."""
+    import pickle  # noqa: PLC0415
+
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    camera = Camera(
+        position=(2.0, 5.0, 13.0),
+        focal_point=(0.0, 0.0, 0.0),
+        view_up=(0.0, 1.0, 0.0),
+    )
+    plotter.camera = camera
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(plotter)
+    loaded_plotter = pickle.loads(pickled)  # noqa: S301
+
+    # Verify camera was preserved
+    assert loaded_plotter.camera is not None
+    assert loaded_plotter.camera.position == (2.0, 5.0, 13.0)
+    assert loaded_plotter.camera.focal_point == (0.0, 0.0, 0.0)
+    assert loaded_plotter.camera.view_up == (0.0, 1.0, 0.0)
+
+
+def test_mesh_pickle() -> None:
+    """Test that a mesh can be pickled and unpickled."""
+    import pickle  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    mesh = Sphere()
+    mesh["elevation"] = mesh.points[:, 2]
+
+    # Pickle the mesh
+    pickled = pickle.dumps(mesh)
+
+    # Unpickle the mesh
+    loaded_mesh = pickle.loads(pickled)  # noqa: S301
+
+    # Verify the loaded mesh
+    assert loaded_mesh.n_points == mesh.n_points
+    assert np.array_equal(loaded_mesh.points, mesh.points)
+    assert "elevation" in loaded_mesh.point_data
+    assert np.array_equal(loaded_mesh["elevation"], mesh["elevation"])
+
+
+def test_mesh_pickle_preserves_point_data() -> None:
+    """Test that point data is preserved when pickling a mesh."""
+    import pickle  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+    mesh = PolyData(points)
+    mesh["temperature"] = np.array([100.0, 200.0, 300.0])
+    mesh["pressure"] = np.array([1.0, 2.0, 3.0])
+
+    # Pickle and unpickle
+    pickled = pickle.dumps(mesh)
+    loaded_mesh = pickle.loads(pickled)  # noqa: S301
+
+    # Verify point data was preserved
+    assert len(loaded_mesh.point_data) == 2
+    assert "temperature" in loaded_mesh.point_data
+    assert "pressure" in loaded_mesh.point_data
+    assert np.array_equal(loaded_mesh["temperature"], mesh["temperature"])
+    assert np.array_equal(loaded_mesh["pressure"], mesh["pressure"])
+
+
+def test_add_scalar_bar() -> None:
+    """Test adding a scalar bar to the plotter."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Test", vertical=True, n_labels=5)
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == "Test"
+    assert plotter._scalar_bar["vertical"] is True
+    assert plotter._scalar_bar["n_labels"] == 5
+
+
+def test_add_scalar_bar_default_params() -> None:
+    """Test adding a scalar bar with default parameters."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar()
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == ""
+    assert plotter._scalar_bar["vertical"] is True
+    assert plotter._scalar_bar["n_labels"] == 5
+
+
+def test_add_scalar_bar_horizontal() -> None:
+    """Test adding a horizontal scalar bar."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Horizontal", vertical=False, n_labels=7)
+
+    assert plotter._scalar_bar is not None
+    assert plotter._scalar_bar["title"] == "Horizontal"
+    assert plotter._scalar_bar["vertical"] is False
+    assert plotter._scalar_bar["n_labels"] == 7
+
+
+def test_scalar_bar_cleared_with_plotter() -> None:
+    """Test that scalar bar is cleared when plotter is cleared."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Test")
+
+    assert plotter._scalar_bar is not None
+
+    plotter.clear()
+    assert plotter._scalar_bar is None
+
+
+def test_scalar_bar_updates_renderer() -> None:
+    """Test that scalar bar is added to the renderer."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+    plotter.add_scalar_bar(title="Height", vertical=True, n_labels=5)
+
+    # Check that renderer has scalar bar
+    assert plotter._renderer._scalar_bar is not None
+    assert plotter._renderer._scalar_bar["title"] == "Height"
+
+
+def test_screenshot_returns_array() -> None:
+    """Test that screenshot returns a numpy array."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Get screenshot as array
+    img = plotter.screenshot(return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    assert img.ndim == 3
+    assert img.shape[2] in (3, 4)  # RGB or RGBA
+
+
+def test_screenshot_with_filename(tmp_path) -> None:
+    """Test that screenshot saves to file."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Save screenshot to file
+    filepath = tmp_path / "test_screenshot.png"
+    result = plotter.screenshot(filename=str(filepath), return_img=True)
+
+    # File should exist
+    assert filepath.exists()
+    # Should still return array
+    assert result is not None
+
+
+def test_screenshot_no_return_img(tmp_path) -> None:
+    """Test screenshot with return_img=False."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    filepath = tmp_path / "test_screenshot.png"
+    result = plotter.screenshot(filename=str(filepath), return_img=False)
+
+    # Should return None when return_img=False
+    assert result is None
+    # But file should still be saved
+    assert filepath.exists()
+
+
+def test_screenshot_transparent_background() -> None:
+    """Test screenshot with transparent background."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(transparent_background=True, return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Transparent background should give RGBA (4 channels)
+    assert img.shape[2] == 4
+
+
+def test_screenshot_window_size() -> None:
+    """Test screenshot with custom window size."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(window_size=(800, 600), return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    assert img.shape[0] == 600  # height
+    assert img.shape[1] == 800  # width
+
+
+def test_screenshot_with_scale() -> None:
+    """Test screenshot with scale factor."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(window_size=(300, 200), scale=2, return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Scaled dimensions: 300*2 = 600, 200*2 = 400
+    assert img.shape[0] == 400  # height
+    assert img.shape[1] == 600  # width
+
+
+def test_screenshot_filename_only() -> None:
+    """Test screenshot with only filename, no return."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        tmp_path = tmp.name
+
+    try:
+        result = plotter.screenshot(filename=tmp_path, return_img=False)
+        assert result is None
+        assert pathlib.Path(tmp_path).exists()
+    finally:
+        pathlib.Path(tmp_path).unlink()
+
+
+def test_screenshot_default_parameters() -> None:
+    """Test screenshot with default parameters."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Default: return_img=True, no file, default size
+    img = plotter.screenshot()
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Default size should be 600x400
+    assert img.shape[0] == 400  # height
+    assert img.shape[1] == 600  # width
+    assert img.shape[2] == 3  # RGB by default
