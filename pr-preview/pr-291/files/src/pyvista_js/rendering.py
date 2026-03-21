@@ -101,6 +101,7 @@ _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
 _RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
 _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
+_POINTS_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "points_source.html").read_text()
 
 _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
 
@@ -188,6 +189,33 @@ class _VTKJSLoader:
 
 
 logger = logging.getLogger(__name__)
+
+
+def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
+    """Convert color name to RGB tuple.
+
+    Parameters
+    ----------
+    color_name : str
+        Color name (e.g., 'red', 'blue').
+
+    Returns
+    -------
+    tuple of float
+        RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
+
+    """
+    colors = {
+        "red": (1.0, 0.0, 0.0),
+        "green": (0.0, 1.0, 0.0),
+        "blue": (0.0, 0.0, 1.0),
+        "yellow": (1.0, 1.0, 0.0),
+        "cyan": (0.0, 1.0, 1.0),
+        "magenta": (1.0, 0.0, 1.0),
+        "white": (1.0, 1.0, 1.0),
+        "black": (0.0, 0.0, 0.0),
+    }
+    return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
 
 
 class _BaseHTMLRenderer:
@@ -292,11 +320,11 @@ class _BaseHTMLRenderer:
 
         """
         if isinstance(color, str):
-            color = self._color_name_to_rgb(color)
+            color = _color_name_to_rgb(color)
 
         # Convert edge_color if it's a string
         if isinstance(edge_color, str):
-            edge_color = self._color_name_to_rgb(edge_color)
+            edge_color = _color_name_to_rgb(edge_color)
 
         actor_info: dict[str, object] = {
             "mesh": mesh,
@@ -311,6 +339,61 @@ class _BaseHTMLRenderer:
             "style": style,
             "scalars": scalars,
             "cmap": cmap,
+        }
+        self.actors.append(actor_info)
+        return actor_info
+
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Add a point cloud to the renderer.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates as an (n, 3) array or PolyData object.
+        color : tuple or str, optional
+            RGB color tuple (0-1) or color name ('red', 'blue', etc.).
+        opacity : float, default=1.0
+            Opacity value between 0 and 1.
+        point_size : float, default=5.0
+            Size of points in pixels.
+        render_points_as_spheres : bool, default=False
+            Render points as spheres instead of screen-space squares.
+
+        Returns
+        -------
+        dict
+            Actor information dictionary.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = _color_name_to_rgb(color)
+
+        # Convert to PolyData if needed
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor_info: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
         }
         self.actors.append(actor_info)
         return actor_info
@@ -816,6 +899,68 @@ class _BaseHTMLRenderer:
 
         color = actor_info.get("color") or (0.5, 0.5, 0.5)
         opacity = actor_info.get("opacity", 1.0)
+        actor_type = actor_info.get("type", "mesh")
+
+        # Handle point cloud actors
+        if actor_type == "points":
+            point_size = float(actor_info.get("point_size", 5.0))  # type: ignore[arg-type]
+            render_points_as_spheres = actor_info.get("render_points_as_spheres", False)
+
+            points_flat = mesh.points.flatten().tolist()  # type: ignore[attr-defined]
+            points_str = ",".join(map(str, points_flat))
+            source_code = _render(
+                _POINTS_SOURCE_TEMPLATE,
+                SOURCE=f"source{idx}",
+                POINTS_DATA=points_str,
+            )
+            if render_points_as_spheres:
+                # vtkSphereMapper renders points as 3D spheres in vtk.js.
+                # point_size is converted to world-space radius.
+                radius = point_size * 0.01
+                mapper_setup = (
+                    f"mapper{idx}.setInputData(source{idx});\nmapper{idx}.setRadius({radius});"
+                )
+                return _render(
+                    _ACTOR_TEMPLATE,
+                    SOURCE_CODE=source_code,
+                    MAPPER=f"mapper{idx}",
+                    ACTOR=f"actor{idx}",
+                    MAPPER_CLASS="vtkSphereMapper",
+                    MAPPER_SETUP=mapper_setup,
+                    COLOR_R=str(color[0]),  # type: ignore[index]
+                    COLOR_G=str(color[1]),  # type: ignore[index]
+                    COLOR_B=str(color[2]),  # type: ignore[index]
+                    OPACITY=str(opacity),
+                    EDGE_CODE="",
+                    STYLE_CODE="",
+                    PBR_CODE="",
+                    TEXTURE_CODE="",
+                    SCALAR_CODE="",
+                )
+
+            mapper_setup = f"mapper{idx}.setInputData(source{idx});"
+            point_props_code = (
+                f"actor{idx}.getProperty().setPointSize({point_size});\n"
+                f"actor{idx}.getProperty().setRepresentationToPoints();"
+            )
+            return _render(
+                _ACTOR_TEMPLATE,
+                SOURCE_CODE=source_code,
+                MAPPER=f"mapper{idx}",
+                ACTOR=f"actor{idx}",
+                MAPPER_CLASS="vtkMapper",
+                MAPPER_SETUP=mapper_setup,
+                COLOR_R=str(color[0]),  # type: ignore[index]
+                COLOR_G=str(color[1]),  # type: ignore[index]
+                COLOR_B=str(color[2]),  # type: ignore[index]
+                OPACITY=str(opacity),
+                EDGE_CODE="",
+                STYLE_CODE="",
+                PBR_CODE=point_props_code,
+                TEXTURE_CODE="",
+                SCALAR_CODE="",
+            )
+
         pbr = actor_info.get("pbr", False)
         metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
         roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
@@ -841,6 +986,7 @@ class _BaseHTMLRenderer:
             SOURCE_CODE=source_code,
             MAPPER=f"mapper{idx}",
             ACTOR=f"actor{idx}",
+            MAPPER_CLASS="vtkMapper",
             MAPPER_SETUP=mapper_setup,
             COLOR_R=str(color[0]),  # type: ignore[index]
             COLOR_G=str(color[1]),  # type: ignore[index]
@@ -1650,6 +1796,61 @@ class MockRenderer:
         }
         self.actors.append(actor)
         logger.info("Added mesh with %d points", mesh.n_points)
+        return actor
+
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Mock point cloud addition.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates (stored but not rendered).
+        color : str or tuple, optional
+            Color (stored but not rendered).
+        opacity : float
+            Opacity (stored but not rendered).
+        point_size : float
+            Point size (stored but not rendered).
+        render_points_as_spheres : bool
+            Sphere rendering flag (stored but not rendered).
+
+        Returns
+        -------
+        dict
+            Mock actor dictionary with point data.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = _color_name_to_rgb(color)
+
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
+        }
+        self.actors.append(actor)
+        logger.info("Added point cloud with %d points", points.n_points)
         return actor
 
     def render(self) -> None:
