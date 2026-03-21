@@ -331,3 +331,12 @@ def test_clear_with_ipython(monkeypatch) -> None:
     renderer.clear()
 
     assert len(renderer.actors) == 0
+
+
+def test_base_html_renderer_screenshot_raises() -> None:
+    """Test that _BaseHTMLRenderer.screenshot() raises NotImplementedError."""
+    from pyvista_js.rendering import _BaseHTMLRenderer  # noqa: PLC0415
+
+    renderer = _BaseHTMLRenderer()
+    with pytest.raises(NotImplementedError):
+        renderer.screenshot()
