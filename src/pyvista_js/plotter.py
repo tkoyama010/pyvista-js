@@ -199,20 +199,14 @@ class Plotter:
         >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
         >>> plotter.show()  # doctest: +SKIP
 
-        Smooth shading (default, Gouraud interpolation):
+        Compare smooth shading (left) and flat shading (right) side by side:
 
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> sphere = pv.Sphere(theta_resolution=8, phi_resolution=8)
-        >>> _ = plotter.add_mesh(sphere, smooth_shading=True)
-        >>> plotter.show()  # doctest: +SKIP
-
-        Flat shading (faceted appearance, each polygon has a uniform color):
-
-        >>> import pyvista_js as pv
-        >>> plotter = pv.Plotter()
-        >>> sphere = pv.Sphere(theta_resolution=8, phi_resolution=8)
-        >>> _ = plotter.add_mesh(sphere, smooth_shading=False)
+        >>> smooth = pv.Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = plotter.add_mesh(smooth, smooth_shading=True)
+        >>> flat = pv.Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = plotter.add_mesh(flat, smooth_shading=False)
         >>> plotter.show()  # doctest: +SKIP
 
         """

@@ -325,22 +325,15 @@ class _BaseHTMLRenderer:
 
         Examples
         --------
-        Smooth shading (default, Gouraud interpolation):
+        Compare smooth shading (left) and flat shading (right) side by side:
 
         >>> from pyvista_js import Sphere
         >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
-        >>> sphere = Sphere(theta_resolution=8, phi_resolution=8)
-        >>> _ = renderer.add_mesh_actor(sphere, smooth_shading=True)
-        >>> renderer.render()  # doctest: +SKIP
-
-        Flat shading (faceted appearance, each polygon has a uniform color):
-
-        >>> from pyvista_js import Sphere
-        >>> from pyvista_js.rendering import get_renderer
-        >>> renderer = get_renderer()
-        >>> sphere = Sphere(theta_resolution=8, phi_resolution=8)
-        >>> _ = renderer.add_mesh_actor(sphere, smooth_shading=False)
+        >>> smooth = Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = renderer.add_mesh_actor(smooth, smooth_shading=True)
+        >>> flat = Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = renderer.add_mesh_actor(flat, smooth_shading=False)
         >>> renderer.render()  # doctest: +SKIP
 
         """
