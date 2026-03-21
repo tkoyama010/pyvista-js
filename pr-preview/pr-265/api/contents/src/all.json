@@ -2,11 +2,11 @@
   "content": [
     {
       "content": null,
-      "created": "2026-03-21T09:30:30.002538Z",
+      "created": "2026-03-21T09:44:49.275463Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-03-21T09:30:30.002538Z",
+      "last_modified": "2026-03-21T09:44:49.275463Z",
       "mimetype": null,
       "name": "pyvista_js",
       "path": "src/pyvista_js",
@@ -15,11 +15,11 @@
       "writable": true
     }
   ],
-  "created": "2026-03-21T09:30:29.991538Z",
+  "created": "2026-03-21T09:44:49.264380Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2026-03-21T09:30:29.991538Z",
+  "last_modified": "2026-03-21T09:44:49.264380Z",
   "mimetype": null,
   "name": "src",
   "path": "src",
