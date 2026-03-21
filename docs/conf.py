@@ -139,10 +139,11 @@ the WASM-powered in-browser version of Streamlit.
    import streamlit.components.v1 as components
 
    import pyvista_js as pv
+   from pyvista_js import examples
 
    st.title("pyvista-js Demo")
 
-   geometry = st.selectbox("Geometry", ["Sphere", "Cube", "Cylinder"])
+   geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
    color = st.selectbox("Color", ["red", "green", "blue", "yellow", "cyan", "magenta"])
 
@@ -150,7 +151,9 @@ the WASM-powered in-browser version of Streamlit.
 
    plotter = pv.Plotter()
 
-   if geometry == "Sphere":
+   if geometry == "Bunny":
+       mesh = examples.download_bunny()
+   elif geometry == "Sphere":
        mesh = pv.Sphere(radius=1.0)
    elif geometry == "Cube":
        mesh = pv.Cube()
