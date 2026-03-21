@@ -38,8 +38,8 @@ jobs:
 
       - name: Commit updated .pot files
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "transifex-integration[bot]"
+          git config user.email "transifex-integration[bot]@users.noreply.github.com"
           git add docs/pot/
           if git diff --cached --quiet; then
             echo "No changes to .pot files."
