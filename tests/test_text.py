@@ -109,11 +109,12 @@ def test_text_generate_vtk_js_code() -> None:
     """Test JavaScript code generation for Text."""
     text = Text("Test Text", position=(0.5, 0.9))
     code = text.generate_vtk_js_code(0)
-    assert "vtkTextActor.newInstance()" in code
-    assert 'setInput("Test Text")' in code
-    assert "setPosition(0.5, 0.9)" in code
-    assert "setFontSize(18)" in code
-    assert "renderer.addActor(textActor0)" in code
+    assert 'document.createElement("div")' in code
+    assert 'innerText = "Test Text"' in code
+    assert "left = '50.0%'" in code
+    assert "bottom = '90.0%'" in code
+    assert "fontSize = '18px'" in code
+    assert "container.appendChild(textOverlay0)" in code
 
 
 def test_text_generate_vtk_js_code_bold() -> None:
@@ -121,7 +122,7 @@ def test_text_generate_vtk_js_code_bold() -> None:
     prop = TextProperty(bold=True)
     text = Text("Bold Text", prop=prop)
     code = text.generate_vtk_js_code(0)
-    assert 'setFontWeight("bold")' in code
+    assert "fontWeight = 'bold'" in code
 
 
 def test_text_generate_vtk_js_code_italic() -> None:
@@ -129,7 +130,7 @@ def test_text_generate_vtk_js_code_italic() -> None:
     prop = TextProperty(italic=True)
     text = Text("Italic Text", prop=prop)
     code = text.generate_vtk_js_code(0)
-    assert 'setFontStyle("italic")' in code
+    assert "fontStyle = 'italic'" in code
 
 
 def test_text_generate_vtk_js_code_custom_color() -> None:
@@ -137,8 +138,8 @@ def test_text_generate_vtk_js_code_custom_color() -> None:
     prop = TextProperty(color="red", font_size=24)
     text = Text("Red Text", prop=prop)
     code = text.generate_vtk_js_code(0)
-    assert "setColor(1.0, 0.0, 0.0)" in code
-    assert "setFontSize(24)" in code
+    assert "rgba(255, 0, 0," in code
+    assert "fontSize = '24px'" in code
 
 
 def test_text_generate_vtk_js_code_escaping() -> None:
