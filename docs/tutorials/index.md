@@ -30,6 +30,7 @@ Topic driven themed lessons to help you get started with pyvista-js.
 ## glTF Rendering
 
 (using-download-damaged-helmet)=
+
 ### Using download_damaged_helmet
 
 ```{eval-rst}
