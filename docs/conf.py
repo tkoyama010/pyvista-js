@@ -125,7 +125,10 @@ stlite_wheel_url = f"{_rtd_url}_static/{_wheel_files[0].name}" if _wheel_files e
 # Generate stlite demo page with the correct wheel URL
 _stlite_demo = docs_dir / "stlite_demo.md"
 _stlite_demo.write_text(f"""\
-# Streamlit Demo
+# stlite Demo
+
+This is an interactive demo using [stlite](https://github.com/whitphx/stlite),
+the WASM-powered in-browser version of Streamlit.
 
 ```{{eval-rst}}
 .. stlite::
