@@ -340,3 +340,87 @@ def test_base_html_renderer_screenshot_raises() -> None:
     renderer = _BaseHTMLRenderer()
     with pytest.raises(NotImplementedError):
         renderer.screenshot()
+
+
+def test_points_actor_html_no_spheres(monkeypatch) -> None:
+    """Test HTML generation for point cloud with render_points_as_spheres=False."""
+    import numpy as np  # noqa: PLC0415
+
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    renderer.add_points_actor(points, color="red", point_size=10.0, render_points_as_spheres=False)
+
+    html = renderer._repr_html_()
+
+    assert "vtkMapper" in html
+    assert "setRepresentationToPoints" in html
+    assert "setPointSize(10.0)" in html
+    assert "vtkSphereMapper" not in html
+
+
+def test_points_actor_html_with_spheres(monkeypatch) -> None:
+    """Test HTML generation for point cloud with render_points_as_spheres=True."""
+    import numpy as np  # noqa: PLC0415
+
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    renderer.add_points_actor(points, color="blue", point_size=20.0, render_points_as_spheres=True)
+
+    html = renderer._repr_html_()
+
+    assert "vtkSphereMapper" in html
+    assert "setRadius(0.2)" in html
+    assert "setRepresentationToPoints" not in html
+
+
+def test_mock_renderer_add_points_actor(caplog) -> None:
+    """Test MockRenderer.add_points_actor with numpy array."""
+    import logging  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        actor = renderer.add_points_actor(points, color="red", point_size=5.0)
+
+    assert len(renderer.actors) == 1
+    assert actor["type"] == "points"
+    assert actor["point_size"] == 5.0
+    assert actor["render_points_as_spheres"] is False
+    assert "Added point cloud" in caplog.text
+
+
+def test_mock_renderer_add_points_actor_with_spheres() -> None:
+    """Test MockRenderer.add_points_actor with render_points_as_spheres=True."""
+    import numpy as np  # noqa: PLC0415
+
+    renderer = MockRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    actor = renderer.add_points_actor(points, color="green", render_points_as_spheres=True)
+
+    assert actor["render_points_as_spheres"] is True
+    assert actor["color"] == (0.0, 1.0, 0.0)
+
+
+def test_mock_renderer_add_points_actor_polydata() -> None:
+    """Test MockRenderer.add_points_actor with PolyData input."""
+    import numpy as np  # noqa: PLC0415
+
+    renderer = MockRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    polydata = PolyData(points)
+    actor = renderer.add_points_actor(polydata, color=(0.5, 0.5, 0.5))
+
+    assert actor["type"] == "points"
+
+
+def test_base_html_renderer_color_name_to_rgb() -> None:
+    """Test _BaseHTMLRenderer._color_name_to_rgb static method."""
+    from pyvista_js.rendering import _BaseHTMLRenderer  # noqa: PLC0415
+
+    assert _BaseHTMLRenderer._color_name_to_rgb("red") == (1.0, 0.0, 0.0)
+    assert _BaseHTMLRenderer._color_name_to_rgb("blue") == (0.0, 0.0, 1.0)
+    assert _BaseHTMLRenderer._color_name_to_rgb("UNKNOWN") == (0.5, 0.5, 0.5)
