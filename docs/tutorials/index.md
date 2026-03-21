@@ -35,6 +35,9 @@ Topic driven themed lessons to help you get started with pyvista-js.
    :kernel: pyolite
    :height: 600px
 
+   import micropip
+   await micropip.install("jinja2")
+
    import sys
    sys.path.insert(0, '/drive/src')
 
@@ -59,6 +62,9 @@ Topic driven themed lessons to help you get started with pyvista-js.
 .. replite::
    :kernel: pyolite
    :height: 600px
+
+   import micropip
+   await micropip.install("jinja2")
 
    import sys
    sys.path.insert(0, '/drive/src')
