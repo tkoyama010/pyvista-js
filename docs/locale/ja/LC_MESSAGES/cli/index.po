@@ -17,13 +17,22 @@ msgstr ""
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../stlite_demo.md:1
-msgid "stlite demo"
+#: ../cli/index.md:1
+msgid "CLI"
 msgstr ""
 
-#: ../stlite_demo.md:3
+#: ../cli/index.md:3
 msgid ""
-"This is an interactive demo using "
-"[stlite](https://github.com/whitphx/stlite), the WASM-powered in-browser "
-"version of Streamlit."
+"Once `pyvista-js` has been installed, a [console "
+"script](https://setuptools.pypa.io/en/latest/userguide/entry_point.html) "
+"will be available with several convenience commands to assist with browser-"
+"based 3-D visualization."
+msgstr ""
+
+#: ../cli/index.md:17
+msgid "Commands"
+msgstr ""
+
+#: ../cli/index.md:19
+msgid "The following `pyvista-js` console script commands are available:"
 msgstr ""

@@ -1,2 +1,254 @@
 [main]
 host = https://www.transifex.com
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-arrow]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Arrow.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Arrow.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-camera]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Camera.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Camera.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-circle]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Circle.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Circle.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-cone]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Cone.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Cone.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-cube]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Cube.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Cube.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-cylinder]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Cylinder.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Cylinder.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-disc]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Disc.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Disc.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-light]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Light.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Light.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-line]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Line.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Line.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-objreader]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.OBJReader.po
+source_file = docs/pot/api/_autosummary/pyvista_js.OBJReader.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-plyreader]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PLYReader.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PLYReader.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-plane]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Plane.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Plane.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-plotter]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Plotter.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Plotter.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-pointdata]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PointData.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PointData.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydata-clip]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyData.clip.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyData.clip.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydata-contour]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyData.contour.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyData.contour.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydata]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyData.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyData.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydata-shrink]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyData.shrink.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyData.shrink.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydata-texture-map-to]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyData.texture_map_to_plane.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyData.texture_map_to_plane.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydata-tube]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyData.tube.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyData.tube.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-polydatareader]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.PolyDataReader.po
+source_file = docs/pot/api/_autosummary/pyvista_js.PolyDataReader.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-stlreader]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.STLReader.po
+source_file = docs/pot/api/_autosummary/pyvista_js.STLReader.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-sphere]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Sphere.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Sphere.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-text]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Text.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Text.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-textproperty]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.TextProperty.po
+source_file = docs/pot/api/_autosummary/pyvista_js.TextProperty.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-texture]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.Texture.po
+source_file = docs/pot/api/_autosummary/pyvista_js.Texture.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-examples-cubemap]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.examples.CubeMap.po
+source_file = docs/pot/api/_autosummary/pyvista_js.examples.CubeMap.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-examples-download-bunny]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.examples.download_bunny.po
+source_file = docs/pot/api/_autosummary/pyvista_js.examples.download_bunny.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-examples-download-cad-m]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.examples.download_cad_model.po
+source_file = docs/pot/api/_autosummary/pyvista_js.examples.download_cad_model.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-examples-download-mason]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.examples.download_masonry_texture.po
+source_file = docs/pot/api/_autosummary/pyvista_js.examples.download_masonry_texture.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-examples-download-sky-b]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.examples.download_sky_box_cube_map.po
+source_file = docs/pot/api/_autosummary/pyvista_js.examples.download_sky_box_cube_map.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-autosummary-pyvista-js-examples-download-trump]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/_autosummary/pyvista_js.examples.download_trumpet.po
+source_file = docs/pot/api/_autosummary/pyvista_js.examples.download_trumpet.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:api-index]
+file_filter = docs/locale/<lang>/LC_MESSAGES/api/index.po
+source_file = docs/pot/api/index.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:cli-capture-preview]
+file_filter = docs/locale/<lang>/LC_MESSAGES/cli/capture-preview.po
+source_file = docs/pot/cli/capture-preview.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:cli-index]
+file_filter = docs/locale/<lang>/LC_MESSAGES/cli/index.po
+source_file = docs/pot/cli/index.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:cli-info]
+file_filter = docs/locale/<lang>/LC_MESSAGES/cli/info.po
+source_file = docs/pot/cli/info.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:cli-plot]
+file_filter = docs/locale/<lang>/LC_MESSAGES/cli/plot.po
+source_file = docs/pot/cli/plot.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:explanation-index]
+file_filter = docs/locale/<lang>/LC_MESSAGES/explanation/index.po
+source_file = docs/pot/explanation/index.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:howtos-index]
+file_filter = docs/locale/<lang>/LC_MESSAGES/howtos/index.po
+source_file = docs/pot/howtos/index.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:index]
+file_filter = docs/locale/<lang>/LC_MESSAGES/index.po
+source_file = docs/pot/index.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:stlite-demo]
+file_filter = docs/locale/<lang>/LC_MESSAGES/stlite_demo.po
+source_file = docs/pot/stlite_demo.pot
+source_lang = en
+type = PO
+
+[o:tkoyama010:p:pyvista-js:r:tutorials-index]
+file_filter = docs/locale/<lang>/LC_MESSAGES/tutorials/index.po
+source_file = docs/pot/tutorials/index.pot
+source_lang = en
+type = PO

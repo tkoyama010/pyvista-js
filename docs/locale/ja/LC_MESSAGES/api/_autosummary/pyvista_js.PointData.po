@@ -1,98 +1,100 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"PO-Revision-Date: 2026-03-21 09:30+0000\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../api/_autosummary/pyvista_js.PointData.rst:2
+#: ../api/_autosummary/pyvista_js.PointData.rst:2
 msgid "pyvista\\_js.PointData"
 msgstr ""
 
-#: of pyvista_js.mesh.PointData:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData:1
 msgid "Dict-like container for point data arrays."
 msgstr ""
 
-#: of pyvista_js.mesh.PointData:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData:3
 msgid ""
-"This class provides a dictionary interface for storing named scalar "
-"arrays associated with mesh points, mimicking PyVista's point_data API."
+"This class provides a dictionary interface for storing named scalar arrays "
+"associated with mesh points, mimicking PyVista's point_data API."
 msgstr ""
 
-#: of pyvista_js.mesh.PointData:7
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData:7
 msgid "Examples"
 msgstr ""
 
-#: of pyvista_js.mesh.PointData:18
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData:18
 msgid "Render with scalar coloring:"
 msgstr ""
 
-#: ../../:1:<autosummary>:1 of pyvista_js.mesh.PointData.__init__:1
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PointData.__init__:1 ../:1:<autosummary>:1
 msgid "Initialize an empty PointData container."
 msgstr ""
 
-#: ../../api/_autosummary/pyvista_js.PointData.rst:13
+#: ../api/_autosummary/pyvista_js.PointData.rst:13
 msgid "Methods"
 msgstr ""
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`__init__ <pyvista_js.PointData.__init__>`\\ \\(\\)"
 msgstr ""
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`items <pyvista_js.PointData.items>`\\ \\(\\)"
 msgstr ""
 
-#: ../../:1:<autosummary>:1 of pyvista_js.mesh.PointData.items:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData.items:1
+#: ../:1:<autosummary>:1
 msgid "Return (name, array) pairs."
 msgstr ""
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`keys <pyvista_js.PointData.keys>`\\ \\(\\)"
 msgstr ""
 
-#: ../../:1:<autosummary>:1 of pyvista_js.mesh.PointData.keys:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData.keys:1
+#: ../:1:<autosummary>:1
 msgid "Return the names of all arrays."
 msgstr ""
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`values <pyvista_js.PointData.values>`\\ \\(\\)"
 msgstr ""
 
-#: ../../:1:<autosummary>:1 of pyvista_js.mesh.PointData.values:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData.values:1
+#: ../:1:<autosummary>:1
 msgid "Return all arrays."
 msgstr ""
 
-#: ../../api/_autosummary/pyvista_js.PointData.rst
+#: ../api/_autosummary/pyvista_js.PointData.rst:0
 msgid "Returns"
 msgstr ""
 
-#: of pyvista_js.mesh.PointData.items:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData.items:3
 msgid "List of (name, array) tuples."
 msgstr ""
 
-#: ../../api/_autosummary/pyvista_js.PointData.rst
+#: ../api/_autosummary/pyvista_js.PointData.rst:0
 msgid "Return type"
 msgstr ""
 
-#: of pyvista_js.mesh.PointData.keys:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData.keys:3
 msgid "List of array names."
 msgstr ""
 
-#: of pyvista_js.mesh.PointData.values:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PointData.values:3
 msgid "List of arrays."
 msgstr ""
