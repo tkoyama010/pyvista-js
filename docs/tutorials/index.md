@@ -29,39 +29,6 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
 ## glTF Rendering
 
-### Using GLTFReader
-
-```{eval-rst}
-.. replite::
-   :kernel: pyolite
-   :height: 600px
-
-   import micropip
-   await micropip.install("jinja2")
-   await micropip.install("lazy-loader")
-
-   import sys
-   sys.path.insert(0, '/drive/src')
-
-   import pyvista_js as pv
-   from pyvista_js.examples import _GLTF_SAMPLE_BASE, _download_url
-   from IPython.display import HTML, display
-
-   _URL = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
-   gltf_path = _download_url(_URL, "DamagedHelmet.gltf")
-
-   reader = pv.GLTFReader(gltf_path)
-   mesh = reader.read()
-   print(f"Loaded GLTF mesh with {mesh.n_points} vertices")
-
-   display(HTML(f"""
-   <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
-   <model-viewer src="{_URL}" camera-controls auto-rotate
-     style="width:600px;height:400px;border:2px solid #333;display:block;">
-   </model-viewer>
-   """))
-```
-
 ### Using download_damaged_helmet
 
 ```{eval-rst}
