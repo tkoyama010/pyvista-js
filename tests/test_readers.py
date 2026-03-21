@@ -456,8 +456,8 @@ def test_download_damaged_helmet_js_output() -> None:
     """Test that download_damaged_helmet mesh generates valid vtk.js source."""
     mesh = examples.download_damaged_helmet()
     source = mesh.generate_vtk_js_source(0)
-    assert "vtkGLTFImporter" in source
-    assert "loadData" in source
+    assert "model-viewer" in source
+    assert "createObjectURL" in source
 
 
 # --- download_cad_model tests ---
@@ -481,8 +481,8 @@ def test_download_cad_model_js_output() -> None:
 @pytest.mark.parametrize(
     ("method", "expected"),
     [
-        ("generate_vtk_js_source", "vtkGLTFImporter"),
-        ("generate_vtk_js_source", "loadData"),
+        ("generate_vtk_js_source", "model-viewer"),
+        ("generate_vtk_js_source", "createObjectURL"),
         ("get_mapper_setup", "setInputData"),
     ],
 )
