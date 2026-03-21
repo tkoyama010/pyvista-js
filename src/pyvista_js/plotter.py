@@ -203,13 +203,15 @@ class Plotter:
 
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> _ = plotter.add_mesh(pv.Sphere(), smooth_shading=True)
+        >>> _ = plotter.add_mesh(pv.Sphere(theta_resolution=8, phi_resolution=8), smooth_shading=True)
+        >>> plotter.show()  # doctest: +SKIP
 
-        Flat shading (each polygon face has a uniform color):
+        Flat shading (faceted appearance, each polygon has a uniform color):
 
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
-        >>> _ = plotter.add_mesh(pv.Sphere(), smooth_shading=False)
+        >>> _ = plotter.add_mesh(pv.Sphere(theta_resolution=8, phi_resolution=8), smooth_shading=False)
+        >>> plotter.show()  # doctest: +SKIP
 
         """
         # Add mesh to vtk.js renderer
