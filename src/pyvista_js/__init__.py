@@ -2,6 +2,8 @@
 
 This package provides a familiar PyVista interface for 3D visualization
 in browser environments using vtk.js as the rendering backend.
+
+This package uses lazy loading (SPEC 0001) to improve import performance.
 """
 
 import sys
@@ -20,78 +22,11 @@ if sys.platform == "emscripten":
 
         asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
 
-from . import examples
-from .camera import Camera
-from .light import Light
-from .mesh import (
-    Arrow,
-    Circle,
-    Cone,
-    Cube,
-    Cylinder,
-    Disc,
-    Line,
-    Plane,
-    PointData,
-    PolyData,
-    Sphere,
-)
-from .plotter import Plotter
-from .readers import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader
-from .texture import Texture
+# SPEC 0001 — Lazy Loading of Submodules and Functions
+# https://scientific-python.org/specs/spec-0001/
+import lazy_loader as _lazy
 
-# Streamlit integration (optional)
-try:
-    from .streamlit_integration import pyvista_chart
+__getattr__, __dir__, _all = _lazy.attach_stub(__name__, __file__)
 
-    __all__ = [
-        "Arrow",
-        "Camera",
-        "Circle",
-        "Cone",
-        "Cube",
-        "Cylinder",
-        "Disc",
-        "GLTFReader",
-        "Light",
-        "Line",
-        "OBJReader",
-        "PLYReader",
-        "Plane",
-        "Plotter",
-        "PointData",
-        "PolyData",
-        "PolyDataReader",
-        "STLReader",
-        "Sphere",
-        "Texture",
-        "__version__",
-        "examples",
-        "pyvista_chart",
-    ]
-except ImportError:
-    # Streamlit not available
-    __all__ = [
-        "Arrow",
-        "Camera",
-        "Circle",
-        "Cone",
-        "Cube",
-        "Cylinder",
-        "Disc",
-        "GLTFReader",
-        "Light",
-        "Line",
-        "OBJReader",
-        "PLYReader",
-        "Plane",
-        "Plotter",
-        "PointData",
-        "PolyData",
-        "PolyDataReader",
-        "STLReader",
-        "Sphere",
-        "Texture",
-        "__version__",
-        "examples",
-    ]
+# Ensure module-level attributes are included in __all__
+__all__ = [*_all, "__version__"]  # noqa: PLE0604

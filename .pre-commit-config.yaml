@@ -61,8 +61,9 @@ repos:
     rev: v1.19.1
     hooks:
       - id: mypy
-        files: ^src/
+        files: ^src/.*\.py$
         # SPEC 0: Use minimum supported numpy version
+        # SPEC 1: Use lazy loading for submodules and functions
         additional_dependencies: [numpy>=2.0]
 
   - repo: https://github.com/adamchainz/blacken-docs

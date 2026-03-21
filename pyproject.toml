@@ -22,6 +22,18 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
+# SPEC 1 — Lazy Loading of Submodules and Functions
+# https://scientific-python.org/specs/spec-0001/
+#
+# This project follows SPEC 1 for lazy loading of submodules and functions
+#
+# SPEC 6 — Upper Bound Constraints on Dependencies
+# https://scientific-python.org/specs/spec-0006/
+#
+# This project follows SPEC 6 by avoiding upper bound version constraints on
+# dependencies unless there is a specific technical reason. All core dependencies
+# use lower bounds only (e.g., package>=1.0) to prevent dependency conflicts.
+#
 # SPEC 7 — Seeding Pseudo-Random Number Generation
 # https://scientific-python.org/specs/spec-0007/
 #
@@ -32,6 +44,15 @@ authors = [
 #
 # Note: Currently this project does not use random number generation,
 # but any future implementation will follow SPEC 7 guidelines.
+#
+# SPEC 8 — Securing the Release Process
+# https://scientific-python.org/specs/spec-0008/
+#
+# This project follows SPEC 8 for securing the release process:
+# - Trusted publishing via OpenID Connect (OIDC) to PyPI
+# - Build provenance attestations using Sigstore
+# - All GitHub Actions pinned to commit SHAs
+# - See .github/workflows/release-please.yml for implementation details
 requires-python = ">=3.12"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -46,6 +67,7 @@ classifiers = [
 ]
 dependencies = [
   "jinja2>=3",
+  "lazy-loader>=0.4",
   "numpy>=2",
   "typer>=0.9",
 ]
@@ -145,6 +167,7 @@ ini_options.markers = [
 
 [tool.mypy]
 # SPEC 0: Target minimum supported Python version
+# SPEC 1: Use lazy loading for submodules and functions
 python_version = "3.12"
 strict = false
 warn_unused_configs = true
@@ -166,6 +189,8 @@ warn_unused_ignores = false
 check_untyped_defs = false
 # Ignore missing imports for optional dependencies
 ignore_missing_imports = true
+# Exclude stub files from direct checking; they are used by type checkers as stubs
+exclude = [ "src/pyvista_js/__init__\\.pyi" ]
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
 
 [tool.jupytext]
