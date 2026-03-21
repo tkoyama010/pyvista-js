@@ -1100,6 +1100,7 @@ class _BaseHTMLRenderer:
             LIGHTS_CODE=self._generate_lights_code(),
             ACTORS_CODE=actors_code,
             SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            TEXT_ACTORS_CODE=self._generate_text_actors_code(),
             ENVIRONMENT_CODE=self._generate_environment_code(),
             AXES_CODE=self._generate_axes_code(),
             CAMERA_CODE=self._generate_camera_code(),
