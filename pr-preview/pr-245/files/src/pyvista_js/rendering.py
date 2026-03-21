@@ -942,6 +942,7 @@ class _BaseHTMLRenderer:
                 return _render(
                     _ACTOR_TEMPLATE,
                     SOURCE_CODE=source_code,
+                    NORMALS_CODE="",
                     MAPPER=f"mapper{idx}",
                     ACTOR=f"actor{idx}",
                     MAPPER_CLASS="vtkSphereMapper",
@@ -952,6 +953,7 @@ class _BaseHTMLRenderer:
                     OPACITY=str(opacity),
                     EDGE_CODE="",
                     STYLE_CODE="",
+                    SHADING_CODE="",
                     PBR_CODE="",
                     TEXTURE_CODE="",
                     SCALAR_CODE="",
@@ -965,6 +967,7 @@ class _BaseHTMLRenderer:
             return _render(
                 _ACTOR_TEMPLATE,
                 SOURCE_CODE=source_code,
+                NORMALS_CODE="",
                 MAPPER=f"mapper{idx}",
                 ACTOR=f"actor{idx}",
                 MAPPER_CLASS="vtkMapper",
@@ -975,6 +978,7 @@ class _BaseHTMLRenderer:
                 OPACITY=str(opacity),
                 EDGE_CODE="",
                 STYLE_CODE="",
+                SHADING_CODE="",
                 PBR_CODE=point_props_code,
                 TEXTURE_CODE="",
                 SCALAR_CODE="",
