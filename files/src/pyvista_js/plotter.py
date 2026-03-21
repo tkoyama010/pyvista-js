@@ -232,6 +232,82 @@ class Plotter:
 
         return actor
 
+    def add_points(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+        **kwargs: object,
+    ) -> dict[str, object]:
+        """Add a point cloud to the plotter.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates as an (n, 3) numpy array or PolyData object.
+        color : str or tuple, optional
+            Color of the points. Can be a color name or RGB tuple.
+        opacity : float, optional
+            Opacity of the points, between 0 (transparent) and 1 (opaque).
+        point_size : float, optional
+            Size of the points in pixels. Default is 5.0.
+        render_points_as_spheres : bool, optional
+            Render points as spheres instead of screen-space squares.
+            Default is False.
+        **kwargs
+            Additional rendering options.
+
+        Returns
+        -------
+        actor
+            The vtk.js actor representing the point cloud.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> points = np.random.rand(100, 3)
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_points(points, color='red', point_size=10)
+        >>> plotter.show()  # doctest: +SKIP
+
+        With spheres:
+
+        >>> plotter = pv.Plotter()
+        >>> points = np.random.rand(50, 3)
+        >>> _ = plotter.add_points(
+        ...     points, color='blue', point_size=8, render_points_as_spheres=True
+        ... )
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        # Add points to vtk.js renderer
+        actor = self._renderer.add_points_actor(
+            points,
+            color=color,
+            opacity=opacity,
+            point_size=point_size,
+            render_points_as_spheres=render_points_as_spheres,
+        )
+
+        # Store reference
+        self._actors.append(
+            {
+                "type": "points",
+                "points": points,
+                "color": color,
+                "opacity": opacity,
+                "point_size": point_size,
+                "render_points_as_spheres": render_points_as_spheres,
+                "actor": actor,
+                "kwargs": kwargs,
+            },
+        )
+
+        return actor
+
     def show(
         self,
         container_id: str | None = None,
