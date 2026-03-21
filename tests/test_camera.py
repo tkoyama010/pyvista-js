@@ -321,4 +321,3 @@ def test_camera_generates_elevation_code() -> None:
     # Generate HTML and verify elevation is set in the generated code
     html = plotter._renderer._generate_html()
     assert "cam.elevation(45.0)" in html
-
