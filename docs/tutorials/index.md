@@ -43,17 +43,21 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
    import pyvista_js as pv
    from pyvista_js.examples import _GLTF_SAMPLE_BASE, _download_url
+   from IPython.display import HTML, display
 
    _URL = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
    gltf_path = _download_url(_URL, "DamagedHelmet.gltf")
 
    reader = pv.GLTFReader(gltf_path)
    mesh = reader.read()
+   print(f"Loaded GLTF mesh with {mesh.n_points} vertices")
 
-   plotter = pv.Plotter()
-   plotter.add_mesh(mesh, pbr=True, metallic=0.5, roughness=0.3)
-   plotter.view_isometric()
-   plotter.show()
+   display(HTML(f"""
+   <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
+   <model-viewer src="{_URL}" camera-controls auto-rotate
+     style="width:600px;height:400px;border:2px solid #333;display:block;">
+   </model-viewer>
+   """))
 ```
 
 ### Using download_damaged_helmet
@@ -71,15 +75,19 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
    import pyvista_js as pv
    from pyvista_js import examples
+   from pyvista_js.examples import _GLTF_SAMPLE_BASE
+   from IPython.display import HTML, display
 
    mesh = examples.download_damaged_helmet()
-   cubemap = examples.download_sky_box_cube_map()
+   print(f"Loaded GLTF mesh with {mesh.n_points} vertices")
 
-   plotter = pv.Plotter()
-   plotter.set_environment_texture(cubemap)
-   plotter.add_mesh(mesh, pbr=True, metallic=0.5, roughness=0.3)
-   plotter.view_isometric()
-   plotter.show()
+   _URL = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
+   display(HTML(f"""
+   <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
+   <model-viewer src="{_URL}" camera-controls auto-rotate
+     style="width:600px;height:400px;border:2px solid #333;display:block;">
+   </model-viewer>
+   """))
 ```
 
 ## Physically Based Rendering
