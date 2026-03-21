@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"POT-Creation-Date: 2026-03-21 13:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,13 +56,18 @@ msgstr ""
 msgid "Enable parallel (orthographic) projection instead of perspective projection. Default is False."
 msgstr ""
 
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera:20
+msgid "Camera elevation angle in degrees. Default is 0.0."
+msgstr ""
+
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.clipping_range:10
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.elevation:15
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.focal_point:10
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.parallel_projection:15
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.position:10
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.view_angle:10
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.view_up:10
-#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera:22
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera:24
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera.disable_parallel_projection:7
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera.enable_parallel_projection:7
 msgid "Examples"
@@ -110,6 +115,15 @@ msgstr ""
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.clipping_range:1
 #: ../:1:<autosummary>:1
 msgid "Get or set the clipping range (near, far)."
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`elevation <pyvista_js.Camera.elevation>`"
+msgstr ""
+
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.elevation:1
+#: ../:1:<autosummary>:1
+msgid "Get or set the camera elevation angle in degrees."
 msgstr ""
 
 #: ../:1:<autosummary>:1
@@ -175,6 +189,15 @@ msgstr ""
 
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera.disable_parallel_projection:3
 msgid "Switches the camera from parallel projection to perspective projection. This is equivalent to setting ``parallel_projection = False``."
+msgstr ""
+
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.elevation:3
+msgid "The elevation angle controls the vertical rotation of the camera. It rotates the camera about the cross product of the negative of the direction of projection and the view up vector, using the focal point as the center of rotation."
+msgstr ""
+
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.elevation:8
+#: ../../src/pyvista_js/camera.py:docstring of pyvista_js.Camera.elevation:11
+msgid "Elevation angle in degrees."
 msgstr ""
 
 #: ../../src/pyvista_js/camera.py:docstring of pyvista_js.camera.Camera.enable_parallel_projection:3
