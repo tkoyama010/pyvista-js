@@ -12,10 +12,15 @@ from typing import TYPE_CHECKING, Any
 from .rendering import get_renderer
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    import numpy as np
+
     from .camera import Camera
     from .examples import CubeMap
     from .light import Light
     from .mesh import PolyData
+    from .text import Text
     from .texture import Texture
 
 
@@ -25,6 +30,13 @@ class Plotter:
     This class provides a PyVista-like API for creating 3D visualizations
     in the browser using vtk.js as the rendering backend.
 
+    Parameters
+    ----------
+    lighting : str or None, optional
+        Lighting mode for the plotter. Options are:
+        - ``"default"`` (default): Creates a default directional light
+        - ``None``: No default lights are created, giving full control over lighting
+
     Examples
     --------
     >>> import pyvista_js as pv
@@ -33,15 +45,33 @@ class Plotter:
     >>> _ = plotter.add_mesh(mesh, color='red')
     >>> plotter.show()  # doctest: +SKIP
 
+    Create a plotter with no default lights:
+
+    >>> plotter = pv.Plotter(lighting=None)
+    >>> light = pv.Light(position=(1, 1, 1), intensity=2.0)
+    >>> plotter.add_light(light)
+    >>> mesh = pv.Sphere()
+    >>> _ = plotter.add_mesh(mesh, color='white')
+    >>> plotter.show()  # doctest: +SKIP
+
     """
 
-    def __init__(self) -> None:
-        """Initialize a new Plotter instance."""
+    def __init__(self, lighting: str | None = "default") -> None:
+        """Initialize a new Plotter instance.
+
+        Parameters
+        ----------
+        lighting : str or None, optional
+            Lighting mode. ``"default"`` creates a default directional light,
+            ``None`` creates no default lights. Default is ``"default"``.
+
+        """
         self._actors: list[dict[str, object]] = []
-        self._renderer = get_renderer()
+        self._renderer = get_renderer(lighting=lighting)
         self._background_color = (1.0, 1.0, 1.0)  # Default background color
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
         self._camera: Camera | None = None
+        self._scalar_bar: dict[str, Any] | None = None
 
     def add_mesh(  # noqa: PLR0913
         self,
@@ -621,6 +651,26 @@ class Plotter:
         """
         self._renderer.add_light(light)
 
+    def add_text(self, text: Text) -> None:
+        """Add a text annotation to the scene.
+
+        Parameters
+        ----------
+        text : Text
+            The :class:`~pyvista_js.text.Text` to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
+        >>> text = pv.Text("Hello World", position=(0.5, 0.9))
+        >>> plotter.add_text(text)
+        >>> plotter.show()
+
+        """
+        self._renderer.add_text_actor(text)
+
     def add_axes(self, **kwargs: object) -> None:
         """Add an orientation marker (axes indicator) to the viewport.
 
@@ -654,6 +704,54 @@ class Plotter:
         """
         self._renderer.add_axes(**kwargs)
 
+    def add_scalar_bar(
+        self,
+        title: str = "",
+        vertical: bool = True,  # noqa: FBT001, FBT002
+        n_labels: int = 5,
+    ) -> None:
+        """Add a scalar bar to display the color legend.
+
+        This method adds a scalar bar (color legend) that shows the mapping
+        between scalar values and colors. The scalar bar is linked to the
+        active scalar colormap from the most recently added mesh.
+
+        Parameters
+        ----------
+        title : str, optional
+            Title text to display on the scalar bar. Default is an empty string.
+        vertical : bool, optional
+            Whether to orient the scalar bar vertically (True) or horizontally
+            (False). Default is True.
+        n_labels : int, optional
+            Number of labels to display on the scalar bar. Default is 5.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh['height'] = mesh.points[:, 2]  # doctest: +SKIP
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='height', cmap='viridis')  # doctest: +SKIP
+        >>> plotter.add_scalar_bar(title='Height', vertical=True)
+        >>> plotter.show()  # doctest: +SKIP
+
+        Horizontal scalar bar:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.add_mesh(mesh, scalars='height', cmap='viridis')  # doctest: +SKIP
+        >>> plotter.add_scalar_bar(title='Height', vertical=False, n_labels=7)
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._scalar_bar = {
+            "title": title,
+            "vertical": vertical,
+            "n_labels": n_labels,
+        }
+        self._renderer.add_scalar_bar(title=title, vertical=vertical, n_labels=n_labels)
+
     def clear(self) -> None:
         """Clear all actors from the plotter.
 
@@ -666,6 +764,7 @@ class Plotter:
 
         """
         self._actors = []
+        self._scalar_bar = None
         self._renderer.clear()
 
     @property
@@ -946,3 +1045,183 @@ class Plotter:
             return (color[0], color[1], color[2])
         msg = f"Color must be a string or RGB tuple, got {type(color)}"  # type: ignore[unreachable]
         raise TypeError(msg)
+
+    def enable_parallel_projection(self) -> None:
+        """Enable parallel (orthographic) projection.
+
+        Switches the camera from perspective projection to parallel projection.
+        This is useful for viewing 2D datasets, CAD-like orthographic views,
+        and scientific visualization where perspective distortion is undesirable.
+
+        If no camera is set, creates a default camera with parallel projection enabled.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Cube())
+        >>> plotter.enable_parallel_projection()
+        >>> plotter.view_isometric()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        if self._camera is None:
+            from .camera import Camera  # noqa: PLC0415
+
+            self._camera = Camera()
+            self._renderer.camera = self._camera
+
+        self._camera.enable_parallel_projection()
+
+    def disable_parallel_projection(self) -> None:
+        """Disable parallel projection (use perspective projection).
+
+        Switches the camera from parallel projection to perspective projection.
+
+        If no camera is set, creates a default camera with perspective projection.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.enable_parallel_projection()
+        >>> plotter.disable_parallel_projection()
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        if self._camera is None:
+            from .camera import Camera  # noqa: PLC0415
+
+            self._camera = Camera()
+            self._renderer.camera = self._camera
+
+        self._camera.disable_parallel_projection()
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot of the current scene.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If ``None``, no file is written.
+            Supported formats: PNG, JPEG. Default is ``None``.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent. If ``None``, uses the
+            current background setting. Default is ``None``.
+        return_img : bool, optional
+            If ``True``, return a numpy array of the image. Default is ``True``.
+        window_size : tuple or list of int, optional
+            Temporarily resize the window to ``(width, height)`` before capturing.
+            If ``None``, uses the current window size. Default is ``None``.
+        scale : int or None, optional
+            Scale factor for the window size to produce a higher-resolution image.
+            For example, ``scale=2`` will double the resolution. Default is ``None``.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            If ``return_img`` is ``True``, returns a numpy array with shape
+            ``(height, width, 3)`` for RGB or ``(height, width, 4)`` for RGBA
+            (when ``transparent_background=True``). Otherwise returns ``None``.
+
+        Examples
+        --------
+        Save a screenshot to a file:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("screenshot.png")  # doctest: +SKIP
+
+        Get image data as numpy array:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> img = pl.screenshot(return_img=True)  # doctest: +SKIP
+        >>> img.shape  # doctest: +SKIP
+        (400, 600, 3)
+
+        High-resolution screenshot with scaling:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("high_res.png", scale=2)  # doctest: +SKIP
+
+        Screenshot with transparent background:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("transparent.png", transparent_background=True)  # doctest: +SKIP
+
+        """
+        return self._renderer.screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            return_img=return_img,
+            window_size=window_size,
+            scale=scale,
+        )
+
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling.
+
+        Excludes the renderer (browser-specific) and actor references,
+        keeping only the serializable mesh data and rendering parameters.
+
+        Returns
+        -------
+        dict
+            State dictionary containing actors list, background color,
+            container ID, and camera.
+
+        """
+        # Create a picklable copy of actors without the actor objects
+        picklable_actors = []
+        for actor_info in self._actors:
+            # Copy actor info but exclude the unpicklable 'actor' object
+            actor_copy = {key: value for key, value in actor_info.items() if key != "actor"}
+            picklable_actors.append(actor_copy)
+
+        return {
+            "_actors": picklable_actors,
+            "_background_color": self._background_color,
+            "_container_id": self._container_id,
+            "_camera": self._camera,
+        }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle.
+
+        Reconstructs the plotter from pickled state by recreating the
+        renderer and restoring all actors.
+
+        Parameters
+        ----------
+        state : dict
+            State dictionary from __getstate__.
+
+        """
+        # Restore basic attributes
+        self._actors = state["_actors"]  # type: ignore[assignment]
+        self._background_color = state["_background_color"]  # type: ignore[assignment]
+        self._container_id = state["_container_id"]  # type: ignore[assignment]
+        self._camera = state["_camera"]  # type: ignore[assignment]
+
+        # Recreate the renderer
+        self._renderer = get_renderer()
+        self._renderer.set_background(self._background_color)
