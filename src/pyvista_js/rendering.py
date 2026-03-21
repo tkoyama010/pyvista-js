@@ -78,7 +78,10 @@ import webbrowser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Self
+
+    import numpy as np
 
     from .camera import Camera
     from .light import Light
@@ -1099,6 +1102,46 @@ class _BaseHTMLRenderer:
         }
         return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
 
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot of the rendered scene.
+
+        This is a base implementation that raises NotImplementedError.
+        Subclasses should override this method to provide actual screenshot functionality.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent.
+        return_img : bool, optional
+            If True, return a numpy array of the image.
+        window_size : tuple or list of int, optional
+            Temporarily resize the window to (width, height).
+        scale : int or None, optional
+            Scale factor for higher resolution.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            Image data as numpy array if return_img is True, otherwise None.
+
+        Raises
+        ------
+        NotImplementedError
+            This base implementation always raises NotImplementedError.
+
+        """
+        msg = "screenshot() must be implemented by renderer subclass"
+        raise NotImplementedError(msg)
+
 
 class VTKJSRenderer(_BaseHTMLRenderer):
     """Renderer using vtk.js for browser visualization.
@@ -1286,6 +1329,120 @@ class BrowserRenderer(_BaseHTMLRenderer):
             "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot using Playwright browser automation.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If None, no file is written.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent. If None, uses current setting.
+        return_img : bool, optional
+            If True, return a numpy array of the image.
+        window_size : tuple or list of int, optional
+            Window size as (width, height). Default is (600, 400).
+        scale : int or None, optional
+            Scale factor for higher resolution.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            Image data as numpy array if return_img is True, otherwise None.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        try:
+            from playwright.sync_api import sync_playwright  # noqa: PLC0415
+        except ImportError as e:
+            msg = (
+                "Playwright is required for screenshot functionality. "
+                "Install it with: pip install playwright && python -m playwright install"
+            )
+            raise ImportError(msg) from e
+
+        # Set default window size
+        width, height = (600, 400) if window_size is None else window_size
+        if scale is not None:
+            width *= scale
+            height *= scale
+
+        # Temporarily change background if transparent requested
+        original_background = self.background
+        if transparent_background:
+            self.background = (0.0, 0.0, 0.0)  # Will be made transparent
+
+        try:
+            # Generate HTML
+            html = self._generate_standalone_html()
+
+            # Create temp HTML file
+            with tempfile.NamedTemporaryFile(
+                suffix=".html",
+                delete=False,
+                mode="w",
+                encoding="utf-8",
+            ) as f:
+                f.write(html)
+                tmp_html_path = f.name
+
+            try:
+                # Use Playwright to capture screenshot
+                with sync_playwright() as p:
+                    browser = p.chromium.launch(headless=True)
+                    page = browser.new_page(
+                        viewport={"width": width, "height": height},
+                    )
+                    page.goto(f"file://{tmp_html_path}")
+
+                    # Wait for vtk.js to load and render
+                    page.wait_for_timeout(2000)  # Wait 2 seconds for rendering
+
+                    # Capture screenshot to bytes
+                    screenshot_bytes = page.screenshot(
+                        type="png",
+                        omit_background=transparent_background or False,
+                    )
+                    browser.close()
+
+                # Save to file if requested
+                if filename is not None:
+                    pathlib.Path(filename).write_bytes(screenshot_bytes)
+
+                # Convert to numpy array if requested
+                if return_img:
+                    try:
+                        from PIL import Image  # noqa: PLC0415
+                    except ImportError as e:
+                        msg = (
+                            "Pillow is required to return image as numpy array. "
+                            "Install it with: pip install pillow"
+                        )
+                        raise ImportError(msg) from e
+
+                    from io import BytesIO  # noqa: PLC0415
+
+                    img = Image.open(BytesIO(screenshot_bytes))
+                    return np.array(img)
+                return None
+
+            finally:
+                # Clean up temp file
+                pathlib.Path(tmp_html_path).unlink()
+
+        finally:
+            # Restore original background
+            if transparent_background:
+                self.background = original_background
 
 
 class MockRenderer:
@@ -1558,6 +1715,71 @@ class MockRenderer:
 
         """
         logger.info("Set environment texture: %s", texture)
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Mock screenshot that returns a dummy numpy array.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If None, no file is written.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent.
+        return_img : bool, optional
+            If True, return a numpy array of the image.
+        window_size : tuple or list of int, optional
+            Window size as (width, height). Default is (600, 400).
+        scale : int or None, optional
+            Scale factor for higher resolution.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            Dummy image data as numpy array if return_img is True, otherwise None.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        width, height = (600, 400) if window_size is None else window_size
+        if scale is not None:
+            width *= scale
+            height *= scale
+
+        logger.info(
+            "Mock screenshot: filename=%s size=(%d, %d) transparent=%s",
+            filename,
+            width,
+            height,
+            transparent_background,
+        )
+
+        if filename is not None:
+            # Create a dummy PNG file
+            try:
+                from PIL import Image  # noqa: PLC0415
+            except ImportError as e:
+                msg = (
+                    "Pillow is required to save screenshot. "
+                    "Install it with: pip install pillow"
+                )
+                raise ImportError(msg) from e
+
+            channels = 4 if transparent_background else 3
+            img = Image.new("RGBA" if transparent_background else "RGB", (width, height))
+            img.save(filename)
+
+        if return_img:
+            # Return a dummy numpy array
+            channels = 4 if transparent_background else 3
+            return np.zeros((height, width, channels), dtype=np.uint8)
+        return None
 
 
 def get_renderer(

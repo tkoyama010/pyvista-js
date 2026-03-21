@@ -1,7 +1,10 @@
 """Test basic plotter functionality."""
 
+import pathlib
+import tempfile
 import webbrowser
 
+import numpy as np
 import pytest
 
 from pyvista_js import Camera, Cube, Cylinder, Plotter, PolyData, Sphere
@@ -1006,3 +1009,119 @@ def test_scalar_bar_updates_renderer() -> None:
     # Check that renderer has scalar bar
     assert plotter._renderer._scalar_bar is not None
     assert plotter._renderer._scalar_bar["title"] == "Height"
+
+
+def test_screenshot_returns_array() -> None:
+    """Test that screenshot returns a numpy array."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Get screenshot as array
+    img = plotter.screenshot(return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    assert img.ndim == 3
+    assert img.shape[2] in (3, 4)  # RGB or RGBA
+
+
+def test_screenshot_with_filename(tmp_path) -> None:
+    """Test that screenshot saves to file."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Save screenshot to file
+    filepath = tmp_path / "test_screenshot.png"
+    result = plotter.screenshot(filename=str(filepath), return_img=True)
+
+    # File should exist
+    assert filepath.exists()
+    # Should still return array
+    assert result is not None
+
+
+def test_screenshot_no_return_img(tmp_path) -> None:
+    """Test screenshot with return_img=False."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    filepath = tmp_path / "test_screenshot.png"
+    result = plotter.screenshot(filename=str(filepath), return_img=False)
+
+    # Should return None when return_img=False
+    assert result is None
+    # But file should still be saved
+    assert filepath.exists()
+
+
+def test_screenshot_transparent_background() -> None:
+    """Test screenshot with transparent background."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(transparent_background=True, return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Transparent background should give RGBA (4 channels)
+    assert img.shape[2] == 4
+
+
+def test_screenshot_window_size() -> None:
+    """Test screenshot with custom window size."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(window_size=(800, 600), return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    assert img.shape[0] == 600  # height
+    assert img.shape[1] == 800  # width
+
+
+def test_screenshot_with_scale() -> None:
+    """Test screenshot with scale factor."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(window_size=(300, 200), scale=2, return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Scaled dimensions: 300*2 = 600, 200*2 = 400
+    assert img.shape[0] == 400  # height
+    assert img.shape[1] == 600  # width
+
+
+def test_screenshot_filename_only() -> None:
+    """Test screenshot with only filename, no return."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        tmp_path = tmp.name
+
+    try:
+        result = plotter.screenshot(filename=tmp_path, return_img=False)
+        assert result is None
+        assert pathlib.Path(tmp_path).exists()
+    finally:
+        pathlib.Path(tmp_path).unlink()
+
+
+def test_screenshot_default_parameters() -> None:
+    """Test screenshot with default parameters."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Default: return_img=True, no file, default size
+    img = plotter.screenshot()
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Default size should be 600x400
+    assert img.shape[0] == 400  # height
+    assert img.shape[1] == 600  # width
+    assert img.shape[2] == 3  # RGB by default
+
