@@ -4,29 +4,71 @@ requires = [ "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.6.0"
+version = "0.9.1"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
 authors = [
   { name = "Tetsuo Koyama", email = "contact@tetsuo-koyama.dev" },
 ]
-requires-python = ">=3.10"
+# SPEC 0 — Minimum Supported Dependencies
+# https://scientific-python.org/specs/spec-0000/
+#
+# This project follows SPEC 0 for determining the minimum supported versions:
+# - Python: Drop support 36 months after initial release
+# - Core dependencies: Drop support 24 months after initial release
+#
+# As of 2026-03-20:
+# - Minimum Python: 3.12 (released 2023-10-02)
+# - Minimum NumPy: 2.0 (released 2024-06-16)
+#
+# SPEC 1 — Lazy Loading of Submodules and Functions
+# https://scientific-python.org/specs/spec-0001/
+#
+# This project follows SPEC 1 for lazy loading of submodules and functions
+#
+# SPEC 6 — Upper Bound Constraints on Dependencies
+# https://scientific-python.org/specs/spec-0006/
+#
+# This project follows SPEC 6 by avoiding upper bound version constraints on
+# dependencies unless there is a specific technical reason. All core dependencies
+# use lower bounds only (e.g., package>=1.0) to prevent dependency conflicts.
+#
+# SPEC 7 — Seeding Pseudo-Random Number Generation
+# https://scientific-python.org/specs/spec-0007/
+#
+# This project follows SPEC 7 for random number generation:
+# - Use numpy.random.default_rng() for all random number generation
+# - Use 'rng' parameter for seeding instead of 'random_state' or 'seed'
+# - Avoid global state and legacy bitstream generators
+#
+# Note: Currently this project does not use random number generation,
+# but any future implementation will follow SPEC 7 guidelines.
+#
+# SPEC 8 — Securing the Release Process
+# https://scientific-python.org/specs/spec-0008/
+#
+# This project follows SPEC 8 for securing the release process:
+# - Trusted publishing via OpenID Connect (OIDC) to PyPI
+# - Build provenance attestations using Sigstore
+# - All GitHub Actions pinned to commit SHAs
+# - See .github/workflows/release-please.yml for implementation details
+requires-python = ">=3.12"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "numpy>=1.20",
+  "jinja2>=3",
+  "lazy-loader>=0.4",
+  "numpy>=2",
   "typer>=0.9",
 ]
 optional-dependencies.dev = [
@@ -37,14 +79,16 @@ optional-dependencies.dev = [
   "tox>=4",
 ]
 optional-dependencies.docs = [
-  "atsphinx-stlite==0.2.1; python_version>='3.12'",
-  "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12'",
-  "jupyterlite-sphinx==0.22.1; python_version>='3.12'",
-  "myst-parser==5; python_version>='3.12'",
-  "sphinx==9.1; python_version>='3.12'",
-  "sphinx-book-theme==1.1.4; python_version>='3.12'",
-  "sphinx-design==0.7; python_version>='3.12'",
+  "atsphinx-stlite==0.2.1; python_version>='3.12' and python_version<'3.14'",
+  "jupyterlite-pyodide-kernel==0.7.1; python_version>='3.12' and python_version<'3.14'",
+  "jupyterlite-sphinx==0.22.1; python_version>='3.12' and python_version<'3.14'",
+  "jupytext>=1.19",
+  "myst-parser==5; python_version>='3.12' and python_version<'3.14'",
+  "sphinx==9.1; python_version>='3.12' and python_version<'3.14'",
+  "sphinx-book-theme==1.1.4; python_version>='3.12' and python_version<'3.14'",
+  "sphinx-design==0.7; python_version>='3.12' and python_version<'3.14'",
   "sphinx-intl>=2.2; python_version>='3.12'",
+  "sphinxcontrib-typer>=0.5; python_version>='3.12'",
 ]
 optional-dependencies.io = [
   "meshio",
@@ -68,7 +112,9 @@ dev = [
   { include-group = "test" },
 ]
 test = [
+  "playwright>=1.40",
   "pytest>=7",
+  "pytest-playwright>=0.4",
 ]
 
 [tool.hatch]
@@ -80,6 +126,14 @@ lint.select = [ "ALL" ]
 lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
+]
+lint.per-file-ignores."jupyterlite/content/*" = [
+  "D100",    # missing docstring - jupytext files
+  "E402",    # module import not at top - cell-based structure
+  "ERA001",  # commented-out code - jupytext metadata
+  "F704",    # await outside async - top-level await valid in Pyodide
+  "INP001",  # implicit namespace package
+  "PLE1142", # await outside async - top-level await valid in Pyodide
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
@@ -108,9 +162,14 @@ ini_options.addopts = [
 ini_options.filterwarnings = [
   "error",
 ]
+ini_options.markers = [
+  "playwright: marks tests that use Playwright for browser automation (deselect with '-m \"not playwright\"')",
+]
 
 [tool.mypy]
-python_version = "3.10"
+# SPEC 0: Target minimum supported Python version
+# SPEC 1: Use lazy loading for submodules and functions
+python_version = "3.12"
 strict = false
 warn_unused_configs = true
 warn_redundant_casts = true
@@ -131,4 +190,9 @@ warn_unused_ignores = false
 check_untyped_defs = false
 # Ignore missing imports for optional dependencies
 ignore_missing_imports = true
+# Exclude stub files from direct checking; they are used by type checkers as stubs
+exclude = [ "src/pyvista_js/__init__\\.pyi" ]
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
+
+[tool.jupytext]
+formats = "ipynb,py:percent"

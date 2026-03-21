@@ -426,3 +426,21 @@ def test_download_cad_model_js_output() -> None:
     assert "vtkSTLReader" in source
     assert "parseAsArrayBuffer" in source
     assert "source0" in source
+
+
+# --- download_bunny tests ---
+
+
+def test_download_bunny_returns_ply_mesh() -> None:
+    """Test that download_bunny returns a _PLYMesh."""
+    mesh = examples.download_bunny()
+    assert mesh.n_points > 0
+
+
+def test_download_bunny_js_output() -> None:
+    """Test that download_bunny mesh generates valid vtk.js source."""
+    mesh = examples.download_bunny()
+    source = mesh.generate_vtk_js_source(0)
+    assert "vtkPLYReader" in source
+    assert "parseAsArrayBuffer" in source
+    assert "source0" in source

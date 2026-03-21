@@ -26,6 +26,9 @@ class Camera:
     clipping_range : tuple of float, optional
         Near and far clipping plane distances as (near, far).
         Default is (0.01, 1000.01).
+    parallel_projection : bool, optional
+        Enable parallel (orthographic) projection instead of perspective
+        projection. Default is False.
 
     Examples
     --------
@@ -40,13 +43,14 @@ class Camera:
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         position: tuple[float, float, float] = (0.0, 0.0, 1.0),
         focal_point: tuple[float, float, float] = (0.0, 0.0, 0.0),
         view_up: tuple[float, float, float] = (0.0, 1.0, 0.0),
         view_angle: float = 30.0,
         clipping_range: tuple[float, float] = (0.01, 1000.01),
+        parallel_projection: bool = False,  # noqa: FBT001 FBT002
     ) -> None:
         """Initialize a Camera instance."""
         self.position = position
@@ -54,6 +58,7 @@ class Camera:
         self.view_up = view_up
         self.view_angle = view_angle
         self.clipping_range = clipping_range
+        self.parallel_projection = parallel_projection
 
     @property
     def position(self) -> tuple[float, float, float]:
@@ -205,6 +210,76 @@ class Camera:
         """Set the clipping range."""
         self._clipping_range = (float(value[0]), float(value[1]))
 
+    @property
+    def parallel_projection(self) -> bool:
+        """Get or set parallel projection mode.
+
+        When True, uses parallel (orthographic) projection instead of
+        perspective projection. Parallel projection is useful for viewing
+        2D datasets, CAD-like orthographic views, and scientific visualization
+        where perspective distortion is undesirable.
+
+        Parameters
+        ----------
+        value : bool
+            Enable (True) or disable (False) parallel projection.
+
+        Returns
+        -------
+        bool
+            Whether parallel projection is enabled.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.parallel_projection = True
+        >>> camera.parallel_projection
+        True
+
+        """
+        return self._parallel_projection
+
+    @parallel_projection.setter
+    def parallel_projection(self, value: bool) -> None:
+        """Set parallel projection mode."""
+        self._parallel_projection = bool(value)
+
+    def enable_parallel_projection(self) -> None:
+        """Enable parallel (orthographic) projection.
+
+        Switches the camera from perspective projection to parallel projection.
+        This is equivalent to setting ``parallel_projection = True``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.enable_parallel_projection()
+        >>> camera.parallel_projection
+        True
+
+        """
+        self.parallel_projection = True
+
+    def disable_parallel_projection(self) -> None:
+        """Disable parallel projection (use perspective projection).
+
+        Switches the camera from parallel projection to perspective projection.
+        This is equivalent to setting ``parallel_projection = False``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.enable_parallel_projection()
+        >>> camera.disable_parallel_projection()
+        >>> camera.parallel_projection
+        False
+
+        """
+        self.parallel_projection = False
+
     def __repr__(self) -> str:
         """Return string representation of the camera."""
         return (
@@ -213,5 +288,6 @@ class Camera:
             f"focal_point={self._focal_point}, "
             f"view_up={self._view_up}, "
             f"view_angle={self._view_angle}, "
-            f"clipping_range={self._clipping_range})"
+            f"clipping_range={self._clipping_range}, "
+            f"parallel_projection={self._parallel_projection})"
         )

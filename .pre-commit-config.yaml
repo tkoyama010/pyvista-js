@@ -39,6 +39,19 @@ repos:
       # Run the formatter
       - id: ruff-format
 
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.10.12
+    hooks:
+      - id: uv-lock
+        args: [--check, --offline]
+
+
+  - repo: https://github.com/djlint/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint-reformat-jinja
+        files: src/pyvista_js/templates/.*\.html$
+
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
     hooks:
@@ -48,8 +61,10 @@ repos:
     rev: v1.19.1
     hooks:
       - id: mypy
-        files: ^src/
-        additional_dependencies: [numpy>=1.20]
+        files: ^src/.*\.py$
+        # SPEC 0: Use minimum supported numpy version
+        # SPEC 1: Use lazy loading for submodules and functions
+        additional_dependencies: [numpy>=2.0]
 
   - repo: https://github.com/adamchainz/blacken-docs
     rev: 1.20.0

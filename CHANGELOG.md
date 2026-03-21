@@ -1,5 +1,60 @@
 # Changelog
 
+## [0.9.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.9.0...pyvista-js-v0.9.1) (2026-03-20)
+
+### Bug Fixes
+
+- add micropip jinja2 install to JupyterLite intro notebook ([#262](https://github.com/tkoyama010/pyvista-js/issues/262)) ([31ef65e](https://github.com/tkoyama010/pyvista-js/commit/31ef65e7dba04f74667a7f3d12b92dce022a08c3))
+- rename simple_demo.py to intro.py in jupyterlite content ([#255](https://github.com/tkoyama010/pyvista-js/issues/255)) ([347cc54](https://github.com/tkoyama010/pyvista-js/commit/347cc54f577615cc93b7c71168d1920765f1205a))
+
+## [0.9.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.8.0...pyvista-js-v0.9.0) (2026-03-20)
+
+### Features
+
+- Add lighting=None option to Plotter to disable default lights ([#241](https://github.com/tkoyama010/pyvista-js/issues/241)) ([4645d23](https://github.com/tkoyama010/pyvista-js/commit/4645d23164e3fb4c818d330f65dc587f95e9c428))
+- add Plotter.add_scalar_bar() method for color legend display ([#175](https://github.com/tkoyama010/pyvista-js/issues/175)) ([4f8bbd2](https://github.com/tkoyama010/pyvista-js/commit/4f8bbd2d4f04143e85de93bac695b623cee43c6a))
+- adopt SPEC 0 for minimum supported dependencies ([#248](https://github.com/tkoyama010/pyvista-js/issues/248)) ([33ab397](https://github.com/tkoyama010/pyvista-js/commit/33ab3976aa91f2997f62b5af70ab7bc52778c44b))
+
+### Bug Fixes
+
+- convert Light class color parameter lists to tuples consistently ([#238](https://github.com/tkoyama010/pyvista-js/issues/238)) ([dc1f5f3](https://github.com/tkoyama010/pyvista-js/commit/dc1f5f311f4639131e1869cbfd807403a917b7c0))
+- restrict atsphinx-stlite to python < 3.14 in docs extras ([#258](https://github.com/tkoyama010/pyvista-js/issues/258)) ([d8542ab](https://github.com/tkoyama010/pyvista-js/commit/d8542ab7d804ee6e0feb0ac6a792c7ef55be1d92))
+- restrict jupyterlite packages to python < 3.14 in docs extras ([#259](https://github.com/tkoyama010/pyvista-js/issues/259)) ([dbcf1c5](https://github.com/tkoyama010/pyvista-js/commit/dbcf1c5a0e9aa346e654254bfaf9194a97d1f063))
+- restrict remaining pinned docs deps to python < 3.14 ([#260](https://github.com/tkoyama010/pyvista-js/issues/260)) ([34e40be](https://github.com/tkoyama010/pyvista-js/commit/34e40be5917e223169615a7b234fc9b5d5b7a928))
+
+### Documentation
+
+- add CLI reference documentation ([#242](https://github.com/tkoyama010/pyvista-js/issues/242)) ([ef31faf](https://github.com/tkoyama010/pyvista-js/commit/ef31faff2b6a595b776fe6e8291ced6822c51af8))
+
+### Continuous Integration
+
+- add uv-lock-check hook to pre-commit config ([#251](https://github.com/tkoyama010/pyvista-js/issues/251)) ([1e56ed4](https://github.com/tkoyama010/pyvista-js/commit/1e56ed42b43164b7b3df1eabe14bebddacbe3ac5))
+
+## [0.8.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.7.1...pyvista-js-v0.8.0) (2026-03-19)
+
+### Features
+
+- add --load-pickle option to plot command for loading pickled Plotter objects ([#233](https://github.com/tkoyama010/pyvista-js/issues/233)) ([31bdfcb](https://github.com/tkoyama010/pyvista-js/commit/31bdfcb8d04b7a376648a746dfc2fb8784907a93))
+- add --pickle option to plot command for saving Plotter objects ([#231](https://github.com/tkoyama010/pyvista-js/issues/231)) ([a2c3ed5](https://github.com/tkoyama010/pyvista-js/commit/a2c3ed552b108441b99841a9fb278f642c07a5a0))
+- add enable_parallel_projection support ([#222](https://github.com/tkoyama010/pyvista-js/issues/222)) ([c8d6d93](https://github.com/tkoyama010/pyvista-js/commit/c8d6d9396bbd1e075d4c9a6dda6a0ebea57e19bc))
+- add Stanford Bunny example function ([#221](https://github.com/tkoyama010/pyvista-js/issues/221)) ([b800a88](https://github.com/tkoyama010/pyvista-js/commit/b800a88a5dfef6f30f14998675d1777c7d590923))
+- update capture-preview CLI to use Stanford Bunny with Playwright mouse drag rotation ([#227](https://github.com/tkoyama010/pyvista-js/issues/227)) ([632f3e1](https://github.com/tkoyama010/pyvista-js/commit/632f3e1311a6765861e8dc03ad90d53d5ef93c68))
+
+## [0.7.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.7.0...pyvista-js-v0.7.1) (2026-03-18)
+
+### Continuous Integration
+
+- add token parameter to Codecov action for authentication ([#217](https://github.com/tkoyama010/pyvista-js/issues/217)) ([0f33f44](https://github.com/tkoyama010/pyvista-js/commit/0f33f44094fb90da5cf7148f197c61fe08d1245f))
+
+## [0.7.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.6.0...pyvista-js-v0.7.0) (2026-03-18)
+
+### Features
+
+- add clip filter to PolyData ([#165](https://github.com/tkoyama010/pyvista-js/issues/165)) ([887b78b](https://github.com/tkoyama010/pyvista-js/commit/887b78bed1b972a7a2b37d9765565301c12eddcb))
+- Add Codecov integration for code coverage reporting ([#208](https://github.com/tkoyama010/pyvista-js/issues/208)) ([da0ba52](https://github.com/tkoyama010/pyvista-js/commit/da0ba522188d1adac0b220fd3f9a7b6daf717bbd))
+- Add Plotter.add_axes() orientation marker widget ([#214](https://github.com/tkoyama010/pyvista-js/issues/214)) ([dd75c89](https://github.com/tkoyama010/pyvista-js/commit/dd75c8998c98836059c0f3c522a3d20a93d3fdea))
+- add Zenodo integration for DOI citation ([#209](https://github.com/tkoyama010/pyvista-js/issues/209)) ([2edb753](https://github.com/tkoyama010/pyvista-js/commit/2edb753e2f99d9631e7b0913055dda8b8fbba626))
+
 ## [0.6.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.5.1...pyvista-js-v0.6.0) (2026-03-18)
 
 ### Features

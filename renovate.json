@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^src/pyvista_js/rendering\\.py$"],
+      "matchStrings": [
+        "https://unpkg\\.com/vtk\\.js@(?<currentValue>[^\"]+)"
+      ],
+      "depNameTemplate": "vtk.js",
+      "datasourceTemplate": "npm"
+    }
+  ]
+}

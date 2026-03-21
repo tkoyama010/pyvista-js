@@ -41,7 +41,11 @@ jobs:
       - name: Install JupyterLite
         run: |
           python -m pip install --upgrade pip
-          pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server
+          pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server jupytext
+
+      - name: Sync Jupytext files
+        run: |
+          jupytext --sync jupyterlite/content/*.py
 
       - name: Copy source code to JupyterLite
         run: |
