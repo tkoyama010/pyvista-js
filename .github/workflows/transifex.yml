@@ -49,11 +49,18 @@ jobs:
             git push
           fi
 
-      - name: Push sources to Transifex
+      - name: Register and push sources to Transifex
         uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
         with:
           token: ${{ secrets.TX_TOKEN }}
-          args: push --source
+          args: >-
+            add bulk
+            --organization tkoyama010
+            --project pyvista-js
+            --file-filter 'docs/locale/<lang>/LC_MESSAGES/<path>.po'
+            --source-file-filter 'docs/pot/<path>.pot'
+            --type PO
+            --source-lang en
 
       - name: Pull translations from Transifex
         uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
