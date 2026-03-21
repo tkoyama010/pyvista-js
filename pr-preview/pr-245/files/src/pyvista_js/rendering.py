@@ -963,7 +963,7 @@ class _BaseHTMLRenderer:
         else:
             return ""
         return (
-            f"const normals{idx} = vtk.Filters.General.vtkPolyDataNormals.newInstance();\n"
+            f"const normals{idx} = vtk.Filters.Core.vtkPolyDataNormals.newInstance();\n"
             f"normals{idx}.setComputePointNormals(false);\n"
             f"normals{idx}.setComputeCellNormals(true);\n"
             f"{input_line}"
