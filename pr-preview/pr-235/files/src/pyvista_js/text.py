@@ -219,6 +219,8 @@ class Text:
             f"  textOverlay{idx}.style.pointerEvents = 'none';",
             f"  textOverlay{idx}.style.zIndex = '10';",
             f"  textOverlay{idx}.style.whiteSpace = 'pre';",
+            f"  textOverlay{idx}.style.textShadow = "
+            f"'1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8)';",
             f"  container.appendChild(textOverlay{idx});",
             "})();",
         ]

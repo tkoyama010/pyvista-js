@@ -146,6 +146,7 @@ _CYLINDER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cylinder_source.html").read_text(
 _SHRINK_FILTER_TEMPLATE = (_TEMPLATES_DIR / "shrink_filter.html").read_text()
 _CLIP_FILTER_TEMPLATE = (_TEMPLATES_DIR / "clip_filter.html").read_text()
 _TUBE_FILTER_TEMPLATE = (_TEMPLATES_DIR / "tube_filter.html").read_text()
+_CONTOUR_FILTER_TEMPLATE = (_TEMPLATES_DIR / "contour_filter.html").read_text()
 _CIRCLE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "circle_source.html").read_text()
 _DISK_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "disk_source.html").read_text()
 _ARROW_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "arrow_source.html").read_text()
@@ -175,6 +176,8 @@ class PolyData:
         faces: ArrayLike | None = None,
         *,
         t_coords: ArrayLike | None = None,
+        scalars: ArrayLike | None = None,
+        scalar_name: str = "scalars",
         _vtk_js_source_fn: Callable[[int], str] | None = None,
         _mapper_setup_fn: Callable[[int], str] | None = None,
         _vtk_js_source_is_filter: bool = True,
@@ -183,6 +186,8 @@ class PolyData:
         self.points = np.asarray(points)
         self.faces = np.asarray(faces) if faces is not None else None
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
+        self.scalars = np.asarray(scalars) if scalars is not None else None
+        self.scalar_name = scalar_name
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
         self._vtk_js_source_is_filter = _vtk_js_source_is_filter
@@ -717,6 +722,188 @@ class PolyData:
             _mapper_setup_fn=_mapper_setup_tube,
         )
 
+    def contour(
+        self,
+        isosurfaces: int | list[float] = 10,
+        scalars: ArrayLike | None = None,
+        scalar_name: str | None = None,
+    ) -> PolyData:
+        """Generate contour lines at constant scalar values.
+
+        This filter extracts isolines from the mesh at specified scalar values
+        using a marching triangles algorithm implemented in JavaScript.
+        It mirrors the PyVista ``contour`` filter API.
+
+        .. note::
+
+            The contour is computed in JavaScript at render time by applying
+            the marching triangles algorithm to each triangle of the mesh,
+            interpolating edge crossings at the specified iso-values.
+            ``vtk.js`` does not support ``vtkPolyData`` input for
+            ``vtkContourFilter``, so this filter is implemented as a custom
+            JavaScript pass.
+
+        Parameters
+        ----------
+        isosurfaces : int or list of float, optional
+            Number of evenly spaced contours to generate, or a list of explicit
+            scalar values at which to generate contours. Default is 10.
+        scalars : array-like, optional
+            Scalar values per point to use for contouring. If not provided,
+            uses the mesh's existing ``scalars`` attribute. Must have length
+            equal to ``n_points``.
+        scalar_name : str, optional
+            Name for the scalar array in vtk.js. If not provided, uses the
+            mesh's existing ``scalar_name`` attribute or defaults to "scalars".
+
+        Returns
+        -------
+        PolyData
+            A new mesh containing the contour lines.
+
+        Raises
+        ------
+        ValueError
+            If no scalars are provided and the mesh has no scalar data, or if
+            isosurfaces parameter is invalid.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere_scalars = sphere.points[:, 2]
+        >>> contours = sphere.contour(isosurfaces=5, scalars=sphere_scalars)
+        >>> isinstance(contours, pv.PolyData)
+        True
+
+        Generate contours at specific values:
+
+        >>> contours = sphere.contour(isosurfaces=[-0.5, 0.0, 0.5], scalars=sphere_scalars)
+
+        Render the contours:
+
+        >>> contours.plot()
+
+        """
+        # Determine scalar data to use
+        scalar_data = self._get_contour_scalars(scalars)
+
+        # Determine scalar name
+        scalar_name_final = scalar_name or self.scalar_name
+
+        # Generate contour values
+        contour_values = self._get_contour_values(isosurfaces, scalar_data)
+
+        # Build the vtk.js source function
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_contour(idx: int) -> str:
+            base = self._get_base_source(idx, orig_vtk_js_source_fn)
+            scalar_injection = self._build_scalar_injection(idx, scalar_data, scalar_name_final)
+            contour_code = self._build_contour_code(idx, contour_values)
+            return base + "\n" + scalar_injection + "\n" + contour_code
+
+        def _mapper_setup_contour(idx: int) -> str:
+            return f"mapper{idx}.setInputData(contourPD{idx});"
+
+        # Return new PolyData with contour filter applied
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=scalar_data,
+            scalar_name=scalar_name_final,
+            _vtk_js_source_fn=_vtk_js_source_with_contour,
+            _mapper_setup_fn=_mapper_setup_contour,
+        )
+
+    def _get_contour_scalars(self, scalars: ArrayLike | None) -> np.ndarray:
+        """Get scalar data for contouring, validating length."""
+        if scalars is not None:
+            scalar_data = np.asarray(scalars)
+        elif self.scalars is not None:
+            scalar_data = self.scalars
+        else:
+            msg = "No scalar data provided. Pass scalars parameter or set mesh.scalars"
+            raise ValueError(msg)
+
+        if len(scalar_data) != self.n_points:
+            msg = f"scalars must have length {self.n_points}, got {len(scalar_data)}"
+            raise ValueError(msg)
+
+        return scalar_data
+
+    def _get_contour_values(
+        self,
+        isosurfaces: int | list[float],
+        scalar_data: np.ndarray,
+    ) -> list[float]:
+        """Generate contour values from isosurfaces parameter."""
+        if isinstance(isosurfaces, int):
+            if isosurfaces < 1:
+                msg = f"isosurfaces must be >= 1 when int, got {isosurfaces}"
+                raise ValueError(msg)
+            scalar_min, scalar_max = float(scalar_data.min()), float(scalar_data.max())
+            return np.linspace(scalar_min, scalar_max, isosurfaces).tolist()
+
+        contour_values = [float(v) for v in isosurfaces]
+        if len(contour_values) < 1:
+            msg = "isosurfaces list must contain at least one value"
+            raise ValueError(msg)
+        return contour_values
+
+    def _get_base_source(
+        self,
+        idx: int,
+        orig_vtk_js_source_fn: Callable[[int], str] | None,
+    ) -> str:
+        """Generate base vtk.js source code."""
+        if orig_vtk_js_source_fn is not None:
+            return orig_vtk_js_source_fn(idx)
+
+        # Default implementation for generic meshes
+        points_flat = self.points.flatten().tolist()
+        points_str = ",".join(map(str, points_flat))
+        return _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+            "{{POINTS_DATA}}",
+            points_str,
+        )
+
+    def _build_scalar_injection(
+        self,
+        idx: int,
+        scalar_data: np.ndarray,
+        scalar_name: str,
+    ) -> str:
+        """Build JavaScript code to inject scalar data."""
+        scalars_flat = scalar_data.flatten().tolist()
+        scalars_str = ",".join(map(str, scalars_flat))
+        return (
+            f"\n// Inject scalar data for contouring\n"
+            f"(function() {{\n"
+            f"  var pd = (typeof source{idx}.getOutputData === 'function') ? "
+            f"source{idx}.getOutputData(0) : source{idx};\n"
+            f"  var scalars{idx} = vtk.Common.Core.vtkDataArray.newInstance({{\n"
+            f"    numberOfComponents: 1,\n"
+            f"    values: Float32Array.from([{scalars_str}]),\n"
+            f"    name: '{scalar_name}'\n"
+            f"  }});\n"
+            f"  pd.getPointData().setScalars(scalars{idx});\n"
+            f"}})();\n"
+        )
+
+    def _build_contour_code(
+        self,
+        idx: int,
+        contour_values: list[float],
+    ) -> str:
+        """Build JavaScript code for contour filter."""
+        values_str = ",".join(map(str, contour_values))
+        return _render(
+            _CONTOUR_FILTER_TEMPLATE,
+            INDEX=str(idx),
+            CONTOUR_VALUES=values_str,
+        )
+
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.
 
@@ -753,6 +940,8 @@ class PolyData:
             points=self.points,
             faces=self.faces,
             t_coords=t_coords,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
             _vtk_js_source_fn=self._vtk_js_source_fn,
             _mapper_setup_fn=self._mapper_setup_fn,
         )
