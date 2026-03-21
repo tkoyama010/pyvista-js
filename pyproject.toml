@@ -22,6 +22,11 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
+# SPEC 1 — Lazy Loading of Submodules and Functions
+# https://scientific-python.org/specs/spec-0001/
+#
+# This project follows SPEC 1 for lazy loading of submodules and functions
+#
 # SPEC 6 — Upper Bound Constraints on Dependencies
 # https://scientific-python.org/specs/spec-0006/
 #
@@ -62,6 +67,7 @@ classifiers = [
 ]
 dependencies = [
   "jinja2>=3",
+  "lazy-loader>=0.4",
   "numpy>=2",
   "typer>=0.9",
 ]
@@ -161,6 +167,7 @@ ini_options.markers = [
 
 [tool.mypy]
 # SPEC 0: Target minimum supported Python version
+# SPEC 1: Use lazy loading for submodules and functions
 python_version = "3.12"
 strict = false
 warn_unused_configs = true
