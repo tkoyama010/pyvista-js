@@ -1,0 +1,73 @@
+name: Transifex Sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '!docs/pot/**'
+      - '!docs/locale/**'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  transifex:
+    runs-on: ubuntu-latest
+    environment: transifex
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: true  # zizmor: ignore[persist-credentials]
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -e ".[docs]"
+
+      - name: Generate .pot files
+        run: cd docs && make gettext
+
+      - name: Commit updated .pot files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/pot/
+          if git diff --cached --quiet; then
+            echo "No changes to .pot files."
+          else
+            git commit -m "chore: update pot files"
+            git push
+          fi
+
+      - name: Push sources to Transifex
+        uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
+        with:
+          token: ${{ secrets.TX_TOKEN }}
+          args: push --source
+
+      - name: Pull translations from Transifex
+        uses: transifex/cli-action@584fd205cbe598773b5a81ce711fa44842678189  # v2
+        with:
+          token: ${{ secrets.TX_TOKEN }}
+          args: pull --all --force
+
+      - name: Create pull request for translations
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676  # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update translations from Transifex'
+          branch: chore/transifex-translations
+          base: main
+          title: 'chore: update translations from Transifex'
+          body: Automated translation update from Transifex.
+          labels: translations

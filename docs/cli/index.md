@@ -1,7 +1,9 @@
 # CLI
 
-Once `pyvista-js` has been installed, a console script [^1] will be available with
-several convenience commands to assist with browser-based 3-D visualization.
+Once `pyvista-js` has been installed, a
+[console script](https://setuptools.pypa.io/en/latest/userguide/entry_point.html)
+will be available with several convenience commands to assist with browser-based
+3-D visualization.
 
 ```{eval-rst}
 .. typer:: pyvista_js._cli.app
@@ -21,6 +23,3 @@ plot
 info
 capture-preview
 ```
-
-\[^1\]: See [entry-points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html)
-for further information.
