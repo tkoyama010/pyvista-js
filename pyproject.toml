@@ -14,20 +14,24 @@ authors = [
 # SPEC 0 — Minimum Supported Dependencies
 # https://scientific-python.org/specs/spec-0000/
 #
-# This project follows SPEC 0 for determining the minimum supported versions:
-# - Python: Drop support 36 months after initial release
-# - Core dependencies: Drop support 24 months after initial release
+# SPEC 4 — Minimum Python Version
+# https://scientific-python.org/specs/spec-0004/
 #
-# As of 2026-03-20:
-# - Minimum Python: 3.12 (released 2023-10-02)
+# This project follows SPEC 0 for core dependencies and SPEC 4 for Python versions:
+# - Python: Drop support 42 months after initial release (SPEC 4)
+# - Core dependencies: Drop support 24 months after initial release (SPEC 0)
+#
+# As of 2026-03-21:
+# - Minimum Python: 3.11 (released 2022-10-24, support until 2026-04-24)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
@@ -133,8 +137,8 @@ ini_options.markers = [
 ]
 
 [tool.mypy]
-# SPEC 0: Target minimum supported Python version
-python_version = "3.12"
+# SPEC 4: Target minimum supported Python version
+python_version = "3.11"
 strict = false
 warn_unused_configs = true
 warn_redundant_casts = true

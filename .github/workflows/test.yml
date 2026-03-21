@@ -47,8 +47,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        # SPEC 0: Only test Python versions within 36-month support window
-        python-version: ['3.12', '3.13', '3.14']
+        # SPEC 4: Only test Python versions within 42-month support window
+        python-version: ['3.11', '3.12', '3.13', '3.14']
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
