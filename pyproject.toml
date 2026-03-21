@@ -22,6 +22,13 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
+# SPEC 6 — Upper Bound Constraints on Dependencies
+# https://scientific-python.org/specs/spec-0006/
+#
+# This project follows SPEC 6 by avoiding upper bound version constraints on
+# dependencies unless there is a specific technical reason. All core dependencies
+# use lower bounds only (e.g., package>=1.0) to prevent dependency conflicts.
+#
 # SPEC 7 — Seeding Pseudo-Random Number Generation
 # https://scientific-python.org/specs/spec-0007/
 #
