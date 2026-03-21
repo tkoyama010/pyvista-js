@@ -913,20 +913,42 @@ class _BaseHTMLRenderer:
                 SOURCE=f"source{idx}",
                 POINTS_DATA=points_str,
             )
-            mapper_setup = f"mapper{idx}.setInputData(source{idx});"
+            if render_points_as_spheres:
+                # vtkSphereMapper renders points as 3D spheres in vtk.js.
+                # point_size is converted to world-space radius.
+                radius = point_size * 0.01
+                mapper_setup = (
+                    f"mapper{idx}.setInputData(source{idx});\nmapper{idx}.setRadius({radius});"
+                )
+                return _render(
+                    _ACTOR_TEMPLATE,
+                    SOURCE_CODE=source_code,
+                    MAPPER=f"mapper{idx}",
+                    ACTOR=f"actor{idx}",
+                    MAPPER_CLASS="vtkSphereMapper",
+                    MAPPER_SETUP=mapper_setup,
+                    COLOR_R=str(color[0]),  # type: ignore[index]
+                    COLOR_G=str(color[1]),  # type: ignore[index]
+                    COLOR_B=str(color[2]),  # type: ignore[index]
+                    OPACITY=str(opacity),
+                    EDGE_CODE="",
+                    STYLE_CODE="",
+                    PBR_CODE="",
+                    TEXTURE_CODE="",
+                    SCALAR_CODE="",
+                )
 
+            mapper_setup = f"mapper{idx}.setInputData(source{idx});"
             point_props_code = (
                 f"actor{idx}.getProperty().setPointSize({point_size});\n"
                 f"actor{idx}.getProperty().setRepresentationToPoints();"
             )
-            if render_points_as_spheres:
-                point_props_code += f"\nactor{idx}.getProperty().setRenderPointsAsSpheres(true);"
-
             return _render(
                 _ACTOR_TEMPLATE,
                 SOURCE_CODE=source_code,
                 MAPPER=f"mapper{idx}",
                 ACTOR=f"actor{idx}",
+                MAPPER_CLASS="vtkMapper",
                 MAPPER_SETUP=mapper_setup,
                 COLOR_R=str(color[0]),  # type: ignore[index]
                 COLOR_G=str(color[1]),  # type: ignore[index]
@@ -964,6 +986,7 @@ class _BaseHTMLRenderer:
             SOURCE_CODE=source_code,
             MAPPER=f"mapper{idx}",
             ACTOR=f"actor{idx}",
+            MAPPER_CLASS="vtkMapper",
             MAPPER_SETUP=mapper_setup,
             COLOR_R=str(color[0]),  # type: ignore[index]
             COLOR_G=str(color[1]),  # type: ignore[index]
