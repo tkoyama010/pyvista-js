@@ -7,28 +7,34 @@ This directory contains examples demonstrating various features of pyvista-js fo
 ### Basic Examples
 
 #### `basic_sphere.py`
+
 A simple example showing how to create and display a sphere using pyvista-js.
 
 **Features:**
+
 - Creating a basic 3D geometry
 - Adding mesh to plotter
 - Displaying visualization
 
 **Run:**
+
 ```bash
 python examples/basic_sphere.py
 ```
 
 #### `point_cloud.py`
+
 Demonstrates 3D point cloud visualization with interactive controls.
 
 **Features:**
+
 - Creating point clouds from NumPy arrays
 - Scalar coloring based on elevation
 - Interactive camera controls (orbit, zoom, pan)
 - Dense point cloud rendering
 
 **Run:**
+
 ```bash
 python examples/point_cloud.py
 ```
@@ -38,22 +44,27 @@ python examples/point_cloud.py
 ### Streamlit Examples
 
 #### `streamlit_app.py`
+
 Interactive Streamlit application with geometry selection and styling controls.
 
 **Features:**
+
 - Multiple geometry types (Sphere, Cube, Cylinder)
 - Color and opacity controls
 - Live updates based on user input
 
 **Run:**
+
 ```bash
 streamlit run examples/streamlit_app.py
 ```
 
 #### `point_cloud_streamlit.py`
+
 Advanced 3D point cloud visualization with Streamlit, featuring multiple models and interactive controls.
 
 **Features:**
+
 - Multiple 3D point cloud models:
   - Sphere: Spherical point cloud with noise
   - Torus: Donut-shaped point cloud
@@ -70,6 +81,7 @@ Advanced 3D point cloud visualization with Streamlit, featuring multiple models 
 - Interactive camera controls (orbit, zoom, pan)
 
 **Run:**
+
 ```bash
 # Install streamlit dependency first
 pip install pyvista-js[streamlit]
@@ -83,14 +95,17 @@ streamlit run examples/point_cloud_streamlit.py
 ## Requirements
 
 All examples require:
+
 - Python 3.10+
 - pyvista-js
 - numpy
 
 Streamlit examples additionally require:
+
 - streamlit >= 1.30
 
 Install with:
+
 ```bash
 # Basic examples
 pip install pyvista-js
@@ -102,23 +117,27 @@ pip install pyvista-js[streamlit]
 ## Features Demonstrated
 
 ### Point Cloud Visualization
+
 - Creating point clouds from NumPy arrays
 - Rendering thousands of points efficiently
 - Scalar coloring with multiple colormaps
 - Interactive camera controls
 
 ### Interactive Controls
+
 - Orbit: Rotate around the scene
 - Zoom: Adjust viewing distance
 - Pan: Move the camera position
 - All controls work with mouse/touch
 
 ### Scalar Coloring
+
 - Assign per-point attributes
 - Apply colormaps (viridis, plasma, etc.)
 - Visualize data distributions
 
 ### Multiple Rendering Styles
+
 - Surface rendering (default)
 - Wireframe rendering
 - Point cloud rendering
@@ -126,6 +145,7 @@ pip install pyvista-js[streamlit]
 ## Browser Compatibility
 
 All examples generate HTML that works in modern browsers:
+
 - Chrome/Edge (recommended)
 - Firefox
 - Safari
