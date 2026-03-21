@@ -175,7 +175,7 @@ class Text:
     # ------------------------------------------------------------------
 
     def generate_vtk_js_code(self, idx: int) -> str:
-        """Generate vtk.js JavaScript code for this text actor.
+        """Generate JavaScript code for this text actor as an HTML overlay div.
 
         Parameters
         ----------
@@ -185,28 +185,41 @@ class Text:
         Returns
         -------
         str
-            JavaScript code that creates and configures the text actor.
+            JavaScript code that creates and configures the text overlay div.
+            Uses an absolutely positioned div over the rendering container
+            because ``vtkTextActor`` is not available in the vtk.js bundle.
 
         """
         pos_x, pos_y = self.position
         r, g, b = self.prop.color
+        r_css = int(r * 255)
+        g_css = int(g * 255)
+        b_css = int(b * 255)
         font_weight = "bold" if self.prop.bold else "normal"
         font_style = "italic" if self.prop.italic else "normal"
 
         # Escape text for JavaScript string
         text_escaped = self._input.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
+        left_pct = pos_x * 100
+        bottom_pct = pos_y * 100
+
         lines = [
-            f"const textActor{idx} = vtk.Rendering.Core.vtkTextActor.newInstance();",
-            f'textActor{idx}.setInput("{text_escaped}");',
-            f"const textProperty{idx} = textActor{idx}.getProperty();",
-            f"textProperty{idx}.setFontSize({self.prop.font_size});",
-            f"textProperty{idx}.setColor({r}, {g}, {b});",
-            f"textProperty{idx}.setOpacity({self.prop.opacity});",
-            f'textProperty{idx}.setFontWeight("{font_weight}");',
-            f'textProperty{idx}.setFontStyle("{font_style}");',
-            f"textActor{idx}.setPosition({pos_x}, {pos_y});",
-            f"renderer.addActor(textActor{idx});",
+            "(function() {",
+            f'  var textOverlay{idx} = document.createElement("div");',
+            f'  textOverlay{idx}.innerText = "{text_escaped}";',
+            f"  textOverlay{idx}.style.position = 'absolute';",
+            f"  textOverlay{idx}.style.left = '{left_pct}%';",
+            f"  textOverlay{idx}.style.bottom = '{bottom_pct}%';",
+            f"  textOverlay{idx}.style.color = 'rgba({r_css}, {g_css}, {b_css}, {self.prop.opacity})';",
+            f"  textOverlay{idx}.style.fontSize = '{self.prop.font_size}px';",
+            f"  textOverlay{idx}.style.fontWeight = '{font_weight}';",
+            f"  textOverlay{idx}.style.fontStyle = '{font_style}';",
+            f"  textOverlay{idx}.style.pointerEvents = 'none';",
+            f"  textOverlay{idx}.style.zIndex = '10';",
+            f"  textOverlay{idx}.style.whiteSpace = 'pre';",
+            f"  container.appendChild(textOverlay{idx});",
+            "})();",
         ]
         return "\n".join(lines)
 
