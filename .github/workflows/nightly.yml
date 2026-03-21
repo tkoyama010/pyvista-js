@@ -1,0 +1,85 @@
+name: Nightly Tests (SPEC-0004)
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Every Monday at midnight UTC
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      with:
+        persist-credentials: false
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82  # v7
+      with:
+        enable-cache: false
+
+    - name: Install package and nightly dependencies
+      run: |
+        uv pip install --system -e .
+        uv pip install --system \
+          --pre \
+          --upgrade \
+          --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple \
+          numpy
+
+    - name: Install test dependencies
+      run: |
+        uv pip install --system pytest pytest-cov
+
+    - name: Run tests
+      id: tests
+      run: |
+        pytest tests/ src/ --cov=pyvista_js --cov-report=xml --cov-report=term
+
+    - name: Open issue on failure
+      if: failure() && github.event_name == 'schedule'
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7
+      with:
+        script: |
+          const title = `Nightly test failure (Python ${{ matrix.python-version }}) - ${new Date().toISOString().slice(0, 10)}`;
+          const body = [
+            'Nightly tests failed against the latest nightly wheels of upstream dependencies.',
+            '',
+            `- **Python version**: ${{ matrix.python-version }}`,
+            `- **Workflow run**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            '',
+            'This issue was automatically opened by the nightly test workflow per [SPEC-0004](https://scientific-python.org/specs/spec-0004/).',
+          ].join('\n');
+
+          const { data: issues } = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            labels: ['nightly'],
+          });
+
+          const duplicate = issues.find(issue => issue.title === title);
+          if (!duplicate) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['nightly'],
+            });
+          }
