@@ -65,4 +65,3 @@ jobs:
               "$slug" "${rel%.pot}" "$pot" >> .tx/config
           done
           tx push --source
-
