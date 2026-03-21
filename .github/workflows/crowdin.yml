@@ -5,6 +5,8 @@ on:
     branches: [ main ]
     paths:
       - 'docs/**'
+      - '!docs/pot/**'
+      - '!docs/locale/**'
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday
   workflow_dispatch:
@@ -22,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
-          persist-credentials: false
+          persist-credentials: true  # zizmor: ignore[persist-credentials]
 
       - name: Setup Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
@@ -34,6 +36,18 @@ jobs:
 
       - name: Generate .pot files
         run: cd docs && make gettext
+
+      - name: Commit updated .pot files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/pot/
+          if git diff --cached --quiet; then
+            echo "No changes to .pot files."
+          else
+            git commit -m "chore: update pot files"
+            git push
+          fi
 
       - name: Crowdin sync
         uses: crowdin/github-action@ce33ce793a5cbc401d9cd748716e03fc90c001f1  # v2

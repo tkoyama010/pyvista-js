@@ -1,6 +1,6 @@
 "files": [
   {
-    "source": "/docs/_build/gettext/**/*.pot",
+    "source": "/docs/pot/**/*.pot",
     "translation": "/docs/locale/%two_letters_code%/LC_MESSAGES/**/%file_name%.po"
   }
 ]
