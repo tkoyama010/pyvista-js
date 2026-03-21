@@ -47,21 +47,3 @@ jobs:
             git commit -m "chore: update pot files"
             git push
           fi
-
-      - name: Install Transifex CLI
-        run: |
-          curl -fsSL https://github.com/transifex/cli/releases/download/v1.6.17/tx-linux-amd64.tar.gz \
-            | tar -xz -C /usr/local/bin tx
-
-      - name: Generate .tx/config and push sources to Transifex
-        env:
-          TX_TOKEN: ${{ secrets.TX_TOKEN }}
-        run: |
-          printf '[main]\nhost = https://www.transifex.com\n' > .tx/config
-          for pot in $(find docs/pot -name '*.pot' | sort); do
-            rel="${pot#docs/pot/}"
-            slug=$(printf '%s' "${rel%.pot}" | tr '/._' '-' | sed 's/-\+/-/g' | tr '[:upper:]' '[:lower:]' | cut -c1-50 | sed 's/-*$//')
-            printf '\n[o:tkoyama010:p:pyvista-js:r:%s]\nfile_filter = docs/locale/<lang>/LC_MESSAGES/%s.po\nsource_file = %s\nsource_lang = en\ntype = PO\n' \
-              "$slug" "${rel%.pot}" "$pot" >> .tx/config
-          done
-          tx push --source
