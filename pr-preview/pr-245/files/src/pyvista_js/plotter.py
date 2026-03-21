@@ -12,6 +12,10 @@ from typing import TYPE_CHECKING, Any
 from .rendering import get_renderer
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    import numpy as np
+
     from .camera import Camera
     from .examples import CubeMap
     from .light import Light
@@ -1006,6 +1010,85 @@ class Plotter:
             self._renderer.camera = self._camera
 
         self._camera.disable_parallel_projection()
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot of the current scene.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If ``None``, no file is written.
+            Supported formats: PNG, JPEG. Default is ``None``.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent. If ``None``, uses the
+            current background setting. Default is ``None``.
+        return_img : bool, optional
+            If ``True``, return a numpy array of the image. Default is ``True``.
+        window_size : tuple or list of int, optional
+            Temporarily resize the window to ``(width, height)`` before capturing.
+            If ``None``, uses the current window size. Default is ``None``.
+        scale : int or None, optional
+            Scale factor for the window size to produce a higher-resolution image.
+            For example, ``scale=2`` will double the resolution. Default is ``None``.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            If ``return_img`` is ``True``, returns a numpy array with shape
+            ``(height, width, 3)`` for RGB or ``(height, width, 4)`` for RGBA
+            (when ``transparent_background=True``). Otherwise returns ``None``.
+
+        Examples
+        --------
+        Save a screenshot to a file:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("screenshot.png")  # doctest: +SKIP
+
+        Get image data as numpy array:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> img = pl.screenshot(return_img=True)  # doctest: +SKIP
+        >>> img.shape  # doctest: +SKIP
+        (400, 600, 3)
+
+        High-resolution screenshot with scaling:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("high_res.png", scale=2)  # doctest: +SKIP
+
+        Screenshot with transparent background:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("transparent.png", transparent_background=True)  # doctest: +SKIP
+
+        """
+        return self._renderer.screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            return_img=return_img,
+            window_size=window_size,
+            scale=scale,
+        )
 
     def __getstate__(self) -> dict[str, object]:
         """Return state for pickling.
