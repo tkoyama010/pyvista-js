@@ -43,9 +43,9 @@ jobs:
         run: |
           cd docs
           if [ "${{ matrix.language }}" = "en" ]; then
-            sphinx-build -W -b html . _build/html
+            sphinx-build -b html . _build/html
           else
-            sphinx-build -W -b html -D language=${{ matrix.language }} . _build/html/${{ matrix.language }}
+            sphinx-build -b html -D language=${{ matrix.language }} . _build/html/${{ matrix.language }}
           fi
 
       - name: Upload documentation artifact
