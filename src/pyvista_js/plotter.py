@@ -592,7 +592,7 @@ class Plotter:
         >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
         >>> text = pv.Text("Hello World", position=(0.5, 0.9))
         >>> plotter.add_text(text)
-        >>> plotter.show()  # doctest: +SKIP
+        >>> plotter.show()
 
         """
         self._renderer.add_text_actor(text)
