@@ -105,7 +105,8 @@ class _GLTFMesh(PolyData):
         """Generate vtk.js source code using model-viewer web component."""
         if self._gltf_url is not None:
             return _GLTF_URL_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{GLTF_URL}}", self._gltf_url
+                "{{GLTF_URL}}",
+                self._gltf_url,
             )
         escaped = json.dumps(self._gltf_base64)
         return _GLTF_READER_SOURCE_TEMPLATE.replace(
