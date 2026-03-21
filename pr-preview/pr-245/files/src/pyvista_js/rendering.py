@@ -302,14 +302,16 @@ class _BaseHTMLRenderer:
         >>> from pyvista_js import Sphere
         >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
-        >>> _ = renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+        >>> _ = renderer.add_mesh_actor(Sphere(theta_resolution=8, phi_resolution=8), smooth_shading=True)
+        >>> renderer.render()  # doctest: +SKIP
 
-        Flat shading (each polygon face has a uniform color):
+        Flat shading (faceted appearance, each polygon has a uniform color):
 
         >>> from pyvista_js import Sphere
         >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
-        >>> _ = renderer.add_mesh_actor(Sphere(), smooth_shading=False)
+        >>> _ = renderer.add_mesh_actor(Sphere(theta_resolution=8, phi_resolution=8), smooth_shading=False)
+        >>> renderer.render()  # doctest: +SKIP
 
         """
         if isinstance(color, str):
