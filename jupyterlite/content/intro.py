@@ -13,14 +13,14 @@
 # ---
 
 # %% [markdown]
-# # PyVista-js Simple Demo
+# # PyVista-js Introduction
 #
 # This notebook demonstrates the simplified PyVista-js API that works in JupyterLite.
 
 # %%
-import sys
+import micropip
 
-sys.path.insert(0, "/drive/src")
+await micropip.install("pyvista-js")
 
 # %%
 import pyvista_js as pv

@@ -2,6 +2,6 @@
 
 Focused guides for common tasks with pyvista-js.
 
-## Streamlit Demo
+## stlite Demo
 
-See the {doc}`Streamlit Demo <../stlite_demo>` page for an interactive demo using stlite.
+See the {doc}`stlite Demo <../stlite_demo>` page for an interactive demo using [stlite](https://github.com/whitphx/stlite), the WASM-powered in-browser version of Streamlit.
