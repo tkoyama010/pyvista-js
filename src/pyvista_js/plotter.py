@@ -199,6 +199,18 @@ class Plotter:
         >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
         >>> plotter.show()  # doctest: +SKIP
 
+        Smooth shading (default, Gouraud interpolation):
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), smooth_shading=True)
+
+        Flat shading (each polygon face has a uniform color):
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), smooth_shading=False)
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
