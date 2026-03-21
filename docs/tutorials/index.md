@@ -75,19 +75,13 @@ Topic driven themed lessons to help you get started with pyvista-js.
 
    import pyvista_js as pv
    from pyvista_js import examples
-   from pyvista_js.examples import _GLTF_SAMPLE_BASE
-   from IPython.display import HTML, display
 
    mesh = examples.download_damaged_helmet()
    print(f"Loaded GLTF mesh with {mesh.n_points} vertices")
 
-   _URL = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
-   display(HTML(f"""
-   <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
-   <model-viewer src="{_URL}" camera-controls auto-rotate
-     style="width:600px;height:400px;border:2px solid #333;display:block;">
-   </model-viewer>
-   """))
+   plotter = pv.Plotter()
+   plotter.add_mesh(mesh)
+   plotter.show()
 ```
 
 ## Physically Based Rendering

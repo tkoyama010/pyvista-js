@@ -457,7 +457,7 @@ def test_download_damaged_helmet_js_output() -> None:
     mesh = examples.download_damaged_helmet()
     source = mesh.generate_vtk_js_source(0)
     assert "model-viewer" in source
-    assert "createObjectURL" in source
+    assert "DamagedHelmet.gltf" in source
 
 
 # --- download_cad_model tests ---
