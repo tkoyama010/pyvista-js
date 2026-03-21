@@ -1601,6 +1601,8 @@ class MockRenderer:
             Metallic factor (stored but not rendered).
         roughness : float
             Roughness factor (stored but not rendered).
+        smooth_shading : bool
+            Smooth shading flag (stored but not rendered).
         texture : Texture, optional
             Surface texture (stored but not rendered).
         show_edges : bool
