@@ -6,12 +6,13 @@ fixtures for browser-based testing.
 
 from __future__ import annotations
 
-from collections.abc import Generator
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
+    from collections.abc import Generator
+
     from playwright.sync_api import Browser, BrowserContext, Page, Playwright
 
 
@@ -49,7 +50,7 @@ def browser_context_args() -> dict[str, dict[str, int]]:
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def playwright_browser(
     playwright: Playwright,
     browser_type_launch_args: dict,
@@ -77,7 +78,7 @@ def playwright_browser(
     browser.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def browser_context(
     playwright_browser: Browser,
     browser_context_args: dict,
@@ -102,7 +103,7 @@ def browser_context(
     context.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def page(browser_context: BrowserContext) -> Generator[Page, None, None]:
     """Provide a Playwright page for testing.
 

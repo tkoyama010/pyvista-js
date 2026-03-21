@@ -42,13 +42,14 @@ def _check_cdn_access(page: Page) -> bool:
     try:
         # Try to load a simple script from unpkg
         response = page.goto("https://unpkg.com/", timeout=5000, wait_until="domcontentloaded")
-        return response is not None and response.ok
     except Exception:  # noqa: BLE001
         return False
+    else:
+        return response is not None and response.ok
 
 
 def _load_plotter_html(page: Page, plotter: Plotter) -> None:
-    """Helper function to load plotter HTML in browser via temporary file.
+    """Load plotter HTML in browser via temporary file.
 
     This approach is necessary because page.set_content() doesn't properly
     load external scripts from CDNs. By writing to a temporary file and
