@@ -39,6 +39,15 @@ authors = [
 #
 # Note: Currently this project does not use random number generation,
 # but any future implementation will follow SPEC 7 guidelines.
+#
+# SPEC 8 — Securing the Release Process
+# https://scientific-python.org/specs/spec-0008/
+#
+# This project follows SPEC 8 for securing the release process:
+# - Trusted publishing via OpenID Connect (OIDC) to PyPI
+# - Build provenance attestations using Sigstore
+# - All GitHub Actions pinned to commit SHAs
+# - See .github/workflows/release-please.yml for implementation details
 requires-python = ">=3.12"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
