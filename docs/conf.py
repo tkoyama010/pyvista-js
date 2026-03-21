@@ -77,11 +77,18 @@ autosummary_generate = True
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# -- Options for internationalization ----------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-internationalization
+
+language = "en"
+locale_dirs = ["locale/"]
+gettext_compact = False
+
 # Suppress warnings for missing cross-references in included README
 # and pre-existing duplicate object description warnings
 suppress_warnings = [
     "myst.xref_missing",
-    "app.add_directive",  # Suppress duplicate object warnings
+    "py.duplicate_object",  # Suppress duplicate object description warnings from autosummary
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -126,7 +133,7 @@ stlite_wheel_url = f"{_rtd_url}_static/{_wheel_files[0].name}" if _wheel_files e
 # Generate stlite demo page with the correct wheel URL
 _stlite_demo = docs_dir / "stlite_demo.md"
 _stlite_demo.write_text(f"""\
-# stlite Demo
+# stlite demo
 
 This is an interactive demo using [stlite](https://github.com/whitphx/stlite),
 the WASM-powered in-browser version of Streamlit.
@@ -139,18 +146,23 @@ the WASM-powered in-browser version of Streamlit.
    import streamlit.components.v1 as components
 
    import pyvista_js as pv
+   from pyvista_js import examples
 
    st.title("pyvista-js Demo")
 
-   geometry = st.selectbox("Geometry", ["Sphere", "Cube", "Cylinder"])
+   geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
-   color = st.selectbox("Color", ["red", "green", "blue", "yellow", "cyan", "magenta"])
+   color = st.selectbox(
+       "Color", ["gray", "white", "red", "green", "blue", "yellow", "cyan", "magenta"]
+   )
 
    opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
 
    plotter = pv.Plotter()
 
-   if geometry == "Sphere":
+   if geometry == "Bunny":
+       mesh = examples.download_bunny()
+   elif geometry == "Sphere":
        mesh = pv.Sphere(radius=1.0)
    elif geometry == "Cube":
        mesh = pv.Cube()

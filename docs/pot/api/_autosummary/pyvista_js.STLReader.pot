@@ -1,0 +1,104 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:2
+msgid "pyvista\\_js.STLReader"
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader:1
+msgid "Reader for STL (STereoLithography) files (``.stl``)."
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader:3
+msgid "Reads an STL file (ASCII or binary) and produces a :class:`Mesh` that delegates parsing to vtk.js's ``vtkSTLReader`` at render time. Python extracts only the vertex coordinates so that camera framing and bounding-sphere queries work before rendering."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:0
+msgid "Parameters"
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader:8
+msgid "Path to the ``.stl`` file."
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader:12
+msgid "Examples"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:22:<autosummary>:1
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader.__init__:1
+msgid "Initialize the reader with a file path."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:13
+msgid "Methods"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:22:<autosummary>:1
+msgid ":py:obj:`__init__ <pyvista_js.STLReader.__init__>`\\ \\(path\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:22:<autosummary>:1
+msgid ":py:obj:`read <pyvista_js.STLReader.read>`\\ \\(\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:22:<autosummary>:1
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader.read:1
+msgid "Read the STL file and return a Mesh."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:24
+msgid "Attributes"
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`path <pyvista_js.STLReader.path>`"
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.STLReader.path:1
+#: ../:1:<autosummary>:1
+msgid "Return the file path."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:0
+msgid "Returns"
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.STLReader.path:3
+msgid "The path to the STL file."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:0
+msgid "Return type"
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader.read:3
+msgid "The full file content is base64-encoded and stored so that vtk.js can parse it at render time.  Vertex coordinates are extracted on the Python side for bounding-sphere and camera-framing calculations."
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader.read:7
+msgid "A mesh backed by the STL file content."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.STLReader.rst:0
+msgid "Raises"
+msgstr ""
+
+#: ../../src/pyvista_js/readers.py:docstring of pyvista_js.readers.STLReader.read:10
+msgid "If the file format is invalid or unsupported."
+msgstr ""
