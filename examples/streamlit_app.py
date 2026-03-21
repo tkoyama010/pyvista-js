@@ -20,7 +20,7 @@ st.sidebar.header("⚙️ Controls")
 
 geometry = st.sidebar.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
-color = st.sidebar.selectbox("Color", ["red", "green", "blue", "yellow", "cyan", "magenta"])
+color = st.sidebar.selectbox("Color", ["white", "red", "green", "blue", "yellow", "cyan", "magenta"])
 
 opacity = st.sidebar.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
 

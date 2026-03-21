@@ -126,7 +126,7 @@ stlite_wheel_url = f"{_rtd_url}_static/{_wheel_files[0].name}" if _wheel_files e
 # Generate stlite demo page with the correct wheel URL
 _stlite_demo = docs_dir / "stlite_demo.md"
 _stlite_demo.write_text(f"""\
-# stlite Demo
+# stlite demo
 
 This is an interactive demo using [stlite](https://github.com/whitphx/stlite),
 the WASM-powered in-browser version of Streamlit.
@@ -145,7 +145,7 @@ the WASM-powered in-browser version of Streamlit.
 
    geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
-   color = st.selectbox("Color", ["red", "green", "blue", "yellow", "cyan", "magenta"])
+   color = st.selectbox("Color", ["white", "red", "green", "blue", "yellow", "cyan", "magenta"])
 
    opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
 
