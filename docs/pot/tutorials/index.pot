@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"POT-Creation-Date: 2026-03-21 12:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,6 +28,14 @@ msgstr ""
 msgid "Quick Start"
 msgstr ""
 
-#: ../tutorials/index.md:29
+#: ../tutorials/index.md:30
+msgid "glTF Rendering"
+msgstr ""
+
+#: ../tutorials/index.md:34
+msgid "Using download_damaged_helmet"
+msgstr ""
+
+#: ../tutorials/index.md:59
 msgid "Physically Based Rendering"
 msgstr ""
