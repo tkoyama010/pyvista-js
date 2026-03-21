@@ -8,7 +8,6 @@ SPHINXINTL    ?= sphinx-intl
 SOURCEDIR     = .
 BUILDDIR      = _build
 LOCALEDIR     = locale
-POTDIR        = pot
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -18,14 +17,14 @@ help:
 
 # Generate message catalogs (.pot files) for translation
 gettext:
-	@$(SPHINXBUILD) -b gettext "$(SOURCEDIR)" "$(POTDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -b gettext "$(SOURCEDIR)" "$(BUILDDIR)/gettext" $(SPHINXOPTS) $(O)
 	@echo
-	@echo "Build finished. The message catalogs are in $(POTDIR)."
+	@echo "Build finished. The message catalogs are in $(BUILDDIR)/gettext."
 
 # Update .po files from .pot files for specified language
 # Usage: make update-po LANG=ja
 update-po:
-	@$(SPHINXINTL) update -p "$(POTDIR)" -l $(LANG)
+	@$(SPHINXINTL) update -p "$(BUILDDIR)/gettext" -l $(LANG)
 	@echo
 	@echo "Updated .po files for language: $(LANG)"
 

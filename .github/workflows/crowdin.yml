@@ -1,0 +1,53 @@
+name: Crowdin Sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  crowdin:
+    runs-on: ubuntu-latest
+    environment: crowdin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -e ".[docs]"
+
+      - name: Generate .pot files
+        run: cd docs && make gettext
+
+      - name: Crowdin sync
+        uses: crowdin/github-action@ce33ce793a5cbc401d9cd748716e03fc90c001f1  # v2
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: true
+          create_pull_request: true
+          pull_request_title: 'chore: update translations from Crowdin'
+          pull_request_body: 'Automated translation update from Crowdin.'
+          pull_request_base_branch_name: 'main'
+          pull_request_labels: 'translations'
+          localization_branch_name: 'chore/crowdin-translations'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
