@@ -812,6 +812,11 @@ class GLTFReader:
     path : str or Path
         Path to the ``.gltf`` or ``.glb`` file.
 
+    See Also
+    --------
+    :ref:`tutorials/index:Using download_damaged_helmet`
+        Interactive browser tutorial for glTF rendering.
+
     Examples
     --------
     >>> import pyvista_js as pv

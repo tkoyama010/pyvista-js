@@ -260,6 +260,11 @@ def download_damaged_helmet() -> PolyData:
     pyvista_js.PolyData
         The damaged helmet mesh.
 
+    See Also
+    --------
+    :ref:`tutorials/index:Using download_damaged_helmet`
+        Interactive browser tutorial for glTF rendering.
+
     Examples
     --------
     >>> from pyvista_js import examples
