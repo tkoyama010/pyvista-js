@@ -87,6 +87,7 @@ optional-dependencies.docs = [
   "sphinx==9.1; python_version>='3.12' and python_version<'3.14'",
   "sphinx-book-theme==1.1.4; python_version>='3.12' and python_version<'3.14'",
   "sphinx-design==0.7; python_version>='3.12' and python_version<'3.14'",
+  "sphinx-intl>=2.2; python_version>='3.12' and python_version<'3.14'",
   "sphinxcontrib-typer>=0.5; python_version>='3.12'",
 ]
 optional-dependencies.io = [
