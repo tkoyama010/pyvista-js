@@ -127,7 +127,8 @@ _stlite_demo = docs_dir / "stlite_demo.md"
 _stlite_demo.write_text(f"""\
 # stlite Demo
 
-This is an interactive demo using [stlite](https://github.com/whitphx/stlite), the WASM-powered in-browser version of Streamlit.
+This is an interactive demo using [stlite](https://github.com/whitphx/stlite),
+the WASM-powered in-browser version of Streamlit.
 
 ```{{eval-rst}}
 .. stlite::
