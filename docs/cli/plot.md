@@ -6,4 +6,5 @@
     :width: 75
     :preferred: html
     :theme: monokai
+    :iframe-height: 400
 ```

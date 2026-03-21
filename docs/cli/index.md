@@ -9,6 +9,7 @@ several convenience commands to assist with browser-based 3-D visualization.
     :width: 75
     :preferred: html
     :theme: monokai
+    :iframe-height: 400
 ```
 
 ## Commands
