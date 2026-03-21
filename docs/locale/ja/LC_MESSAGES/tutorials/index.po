@@ -1,36 +1,46 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-03-21 12:16+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../tutorials/index.md:1
+#: ../tutorials/index.md:1
 msgid "Tutorials"
-msgstr ""
+msgstr "チュートリアル"
 
-#: ../../tutorials/index.md:3
+#: ../tutorials/index.md:3
 msgid "Topic driven themed lessons to help you get started with pyvista-js."
-msgstr ""
+msgstr "pyvista-js の使い方を学ぶための、トピック別テーマ別レッスン。"
 
-#: ../../tutorials/index.md:5
+#: ../tutorials/index.md:5
 msgid "Quick Start"
-msgstr ""
+msgstr "クイックスタート"
 
-#: ../../tutorials/index.md:26
+#: ../tutorials/index.md:30
+msgid "glTF Rendering"
+msgstr "glTFのレンダリング"
+
+#: ../tutorials/index.md:34
+msgid "Using download_damaged_helmet"
+msgstr "download_damaged_helmet を使用する"
+
+#: ../tutorials/index.md:59
 msgid "Physically Based Rendering"
-msgstr ""
+msgstr "物理ベースレンダリング"
