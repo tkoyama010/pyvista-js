@@ -15,6 +15,7 @@ def test_camera_default_values() -> None:
     assert camera.view_up == (0.0, 1.0, 0.0)
     assert camera.view_angle == 30.0
     assert camera.clipping_range == (0.01, 1000.01)
+    assert camera.elevation == 0.0
 
 
 def test_camera_constructor_kwargs() -> None:
@@ -258,3 +259,66 @@ def test_camera_generates_parallel_projection_code() -> None:
     # Generate HTML and verify parallel projection is set in the generated code
     html = plotter._renderer._generate_html()
     assert "cam.setParallelProjection(true)" in html
+
+
+def test_camera_elevation_default() -> None:
+    """Test Camera has elevation set to 0.0 by default."""
+    camera = Camera()
+    assert camera.elevation == 0.0
+
+
+def test_camera_elevation_constructor() -> None:
+    """Test Camera can be constructed with elevation."""
+    camera = Camera(elevation=45.0)
+    assert camera.elevation == 45.0
+
+
+def test_camera_elevation_setter() -> None:
+    """Test setting camera elevation property."""
+    camera = Camera()
+    camera.elevation = 45.0
+    assert camera.elevation == 45.0
+    camera.elevation = -30.0
+    assert camera.elevation == -30.0
+
+
+def test_camera_elevation_converts_to_float() -> None:
+    """Test that elevation is converted to float."""
+    camera = Camera()
+    camera.elevation = 45  # integer
+    assert camera.elevation == 45.0
+    assert isinstance(camera.elevation, float)
+
+
+def test_camera_repr_includes_elevation() -> None:
+    """Test Camera __repr__ includes elevation."""
+    camera = Camera(elevation=45.0)
+    r = repr(camera)
+    assert "elevation=45.0" in r
+
+
+def test_camera_elevation_in_renderer(monkeypatch) -> None:
+    """Test that elevation setting is propagated to renderer."""
+    monkeypatch.setenv("PYVISTA_JS_NO_BROWSER", "1")
+
+    renderer = MockRenderer()
+    camera = Camera(elevation=45.0)
+    renderer.camera = camera
+
+    assert renderer._camera.elevation == 45.0
+
+
+def test_camera_generates_elevation_code() -> None:
+    """Test that camera generates vtk.js code for elevation."""
+    plotter = pv.Plotter()
+    plotter.add_mesh(pv.Sphere())
+    camera = Camera(
+        position=(5.0, 5.0, 5.0),
+        elevation=45.0,
+    )
+    plotter.camera = camera
+
+    # Generate HTML and verify elevation is set in the generated code
+    html = plotter._renderer._generate_html()
+    assert "cam.elevation(45.0)" in html
+
