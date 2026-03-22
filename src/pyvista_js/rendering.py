@@ -330,10 +330,11 @@ class _BaseHTMLRenderer:
         >>> from pyvista_js import Sphere
         >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
+        >>> color = (0.8, 0.6, 0.2)
         >>> smooth = Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
-        >>> _ = renderer.add_mesh_actor(smooth, smooth_shading=True)
+        >>> _ = renderer.add_mesh_actor(smooth, color=color, smooth_shading=True)
         >>> flat = Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
-        >>> _ = renderer.add_mesh_actor(flat, smooth_shading=False)
+        >>> _ = renderer.add_mesh_actor(flat, color=color, smooth_shading=False)
         >>> renderer.render()  # doctest: +SKIP
 
         """

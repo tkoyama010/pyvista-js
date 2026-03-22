@@ -203,10 +203,11 @@ class Plotter:
 
         >>> import pyvista_js as pv
         >>> plotter = pv.Plotter()
+        >>> color = (0.8, 0.6, 0.2)
         >>> smooth = pv.Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
-        >>> _ = plotter.add_mesh(smooth, smooth_shading=True)
+        >>> _ = plotter.add_mesh(smooth, color=color, smooth_shading=True)
         >>> flat = pv.Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
-        >>> _ = plotter.add_mesh(flat, smooth_shading=False)
+        >>> _ = plotter.add_mesh(flat, color=color, smooth_shading=False)
         >>> plotter.show()  # doctest: +SKIP
 
         """
