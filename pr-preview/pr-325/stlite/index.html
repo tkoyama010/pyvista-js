@@ -10,17 +10,16 @@
     <title>pyvista-js stlite Demo</title>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.75.0/build/stlite.css"
+      href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.5.0/build/stlite.css"
     />
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.75.0/build/stlite.js"></script>
-    <script>
-      stlite.mount(
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.5.0/build/stlite.js";
+      mount(
         {
-          prebuiltPackageNames: ["numpy"],
-          requirements: ["https://files.pythonhosted.org/packages/4f/e6/1a14114cf0a5559d2789d15f4114e0e4c8023a898b669b97f2d098a3f639/pyvista_js-0.11.0-py3-none-any.whl"],
+          requirements: ["pyvista-js"],
           entrypoint: "app.py",
           files: {
             "app.py": { url: "./app.py" },
