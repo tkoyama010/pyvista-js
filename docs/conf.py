@@ -4,10 +4,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import json
-import os
 import shutil
-import subprocess
-import sys
 from pathlib import Path
 
 # Copy source code to JupyterLite content directory
@@ -119,59 +116,3 @@ try_examples_preamble = (
     "sys.path.insert(0, '/drive/src')\n"
     "import pyvista_js as pv\n"
 )
-
-# -- Build development wheel for stlite demo --------------------------------
-_wheel_dir = docs_dir / "_static"
-subprocess.run(  # noqa: S603
-    [sys.executable, "-m", "pip", "wheel", "--no-deps", "-w", str(_wheel_dir), str(project_root)],
-    check=True,
-)
-_wheel_files = list(_wheel_dir.glob("pyvista_js-*.whl"))
-_rtd_url = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
-stlite_wheel_url = f"{_rtd_url}_static/{_wheel_files[0].name}" if _wheel_files else ""
-
-# Generate stlite demo page with the correct wheel URL
-_stlite_demo = docs_dir / "stlite_demo.md"
-_stlite_demo.write_text(f"""\
-# stlite demo
-
-This is an interactive demo using [stlite](https://github.com/whitphx/stlite),
-the WASM-powered in-browser version of Streamlit.
-
-```{{eval-rst}}
-.. stlite::
-   :requirements: {stlite_wheel_url}
-
-   import streamlit as st
-   import streamlit.components.v1 as components
-
-   import pyvista_js as pv
-   from pyvista_js import examples
-
-   st.title("pyvista-js Demo")
-
-   geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
-
-   color = st.selectbox(
-       "Color", ["gray", "white", "red", "green", "blue", "yellow", "cyan", "magenta"]
-   )
-
-   opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
-
-   plotter = pv.Plotter()
-
-   if geometry == "Bunny":
-       mesh = examples.download_bunny()
-   elif geometry == "Sphere":
-       mesh = pv.Sphere(radius=1.0)
-   elif geometry == "Cube":
-       mesh = pv.Cube()
-   else:
-       mesh = pv.Cylinder(radius=0.5, height=2.0)
-
-   plotter.add_mesh(mesh, color=color, opacity=opacity)
-
-   html = plotter._renderer._generate_standalone_html()
-   components.html(html, height=600)
-```
-""")

@@ -2,11 +2,12 @@
 
 [![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/)
+[![stlite](https://img.shields.io/badge/stlite-lite_now-FF4B4B?logo=streamlit&logoColor=white)](https://tkoyama010.github.io/pyvista-js/stlite)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)
 
 [PyVista](https://github.com/pyvista/pyvista)-like API for [vtk.js](https://github.com/Kitware/vtk-js) — bring intuitive 3D visualization to the browser.
 
-<p align="center"> ⭐ <strong><a href="https://tkoyama010.github.io/pyvista-js/">Try it in your browser</a></strong> ⭐ </p>
+<p align="center"> :star: <strong><a href="https://tkoyama010.github.io/pyvista-js/">Try it in your browser</a></strong> :star: </p>
 
 ![pyvista-js rendering in JupyterLite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif)
 
