@@ -24,6 +24,7 @@ repos:
     rev: 1.0.0
     hooks:
       - id: mdformat
+        exclude: ^(README|CONTRIBUTING)\.md$
 
   - repo: https://github.com/thlorenz/doctoc
     rev: v2.3.0
