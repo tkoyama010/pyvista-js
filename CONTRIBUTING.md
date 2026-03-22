@@ -1,3 +1,9 @@
+# Contributing to pyvista-js
+
+Thank you for your interest in contributing to pyvista-js! This document provides guidelines and instructions for contributing to the project.
+
+## Table of Contents
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -45,24 +51,6 @@
   - [Questions?](#questions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Contributing to pyvista-js
-
-Thank you for your interest in contributing to pyvista-js! This document provides guidelines and instructions for contributing to the project.
-
-## Table of Contents
-
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [Development Setup](#development-setup)
-- [Development Workflow](#development-workflow)
-- [Code Quality Standards](#code-quality-standards)
-- [Testing](#testing)
-- [Documentation](#documentation)
-- [Pull Request Process](#pull-request-process)
-- [Types of Contributions](#types-of-contributions)
-- [Scientific Python Standards](#scientific-python-standards)
-- [Community Resources](#community-resources)
 
 ## Code of Conduct
 
