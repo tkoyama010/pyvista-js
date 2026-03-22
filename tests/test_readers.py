@@ -544,7 +544,6 @@ def test_download_bunny_js_output() -> None:
     assert "source0" in source
 
 
-
 def test_download_lucy_returns_ply_mesh() -> None:
     """Test that download_lucy returns a _PLYMesh."""
     mesh = examples.download_lucy()
