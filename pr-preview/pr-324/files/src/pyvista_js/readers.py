@@ -441,7 +441,9 @@ class PLYReader:
         if fmt == "ascii":
             points = self._extract_points(lines, header_end)
         elif fmt in ("binary_little_endian", "binary_big_endian"):
-            points = self._extract_points_binary(raw, lines[1 : header_end + 1], header_byte_offset, fmt)
+            points = self._extract_points_binary(
+                raw, lines[1 : header_end + 1], header_byte_offset, fmt,
+            )
         else:
             msg = f"Unsupported PLY format: {fmt}"
             raise ValueError(msg)
@@ -522,8 +524,45 @@ class PLYReader:
         return np.array(points)
 
     @staticmethod
+    def _parse_vertex_info(header_lines: list[str]) -> tuple[int, list[str]]:
+        """Extract vertex count and property types from PLY header lines.
+
+        Parameters
+        ----------
+        header_lines : list[str]
+            Header lines between 'ply' and 'end_header'.
+
+        Returns
+        -------
+        tuple[int, list[str]]
+            Vertex count and list of property type strings.
+
+        """
+        n_vertices = 0
+        vertex_properties: list[str] = []
+        in_vertex_element = False
+
+        for line in header_lines:
+            parts = line.strip().split()
+            if not parts:
+                continue
+            if parts[0] == "element":
+                if len(parts) >= _N_COORDS and parts[1] == "vertex":
+                    n_vertices = int(parts[2])
+                    in_vertex_element = True
+                else:
+                    in_vertex_element = False
+            elif parts[0] == "property" and in_vertex_element and len(parts) >= _N_COORDS:
+                vertex_properties.append(parts[1])
+
+        return n_vertices, vertex_properties
+
+    @staticmethod
     def _extract_points_binary(
-        raw: bytes, header_lines: list[str], data_offset: int, fmt: str
+        raw: bytes,
+        header_lines: list[str],
+        data_offset: int,
+        fmt: str,
     ) -> np.ndarray:
         """Extract vertex coordinates from binary PLY data.
 
@@ -544,28 +583,9 @@ class PLYReader:
             Points array with shape (N, 3).
 
         """
-        # Determine endianness
         endian = "<" if fmt == "binary_little_endian" else ">"
 
-        # Find vertex count and properties
-        n_vertices = 0
-        vertex_properties = []
-        in_vertex_element = False
-
-        for line in header_lines:
-            parts = line.strip().split()
-            if not parts:
-                continue
-
-            if parts[0] == "element":
-                if len(parts) >= _N_COORDS and parts[1] == "vertex":
-                    n_vertices = int(parts[2])
-                    in_vertex_element = True
-                else:
-                    in_vertex_element = False
-            elif parts[0] == "property" and in_vertex_element:
-                if len(parts) >= _N_COORDS:
-                    vertex_properties.append(parts[1])  # type (float, double, etc.)
+        n_vertices, vertex_properties = PLYReader._parse_vertex_info(header_lines)
 
         if n_vertices == 0:
             return np.empty((0, 3))
