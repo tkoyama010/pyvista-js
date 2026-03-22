@@ -55,16 +55,7 @@ PyVista-like 3D visualization running entirely in your browser!
 # Initialize pyvista-js
 with st.spinner("Loading pyvista-js..."):
     try:
-        await micropip.install('jinja2')
-        await micropip.install('lazy-loader')
-
-        try:
-            import js
-            base_url = js.location.href.rsplit('/', 1)[0]
-            wheel_url = base_url + '/src/pyvista_js-0.10.0-py3-none-any.whl'
-            await micropip.install(wheel_url)
-        except Exception as e:
-            st.warning(f"Could not load local wheel: {e}")
+        await micropip.install('pyvista-js')
 
         import pyvista_js as pv
         from pyvista_js import examples
