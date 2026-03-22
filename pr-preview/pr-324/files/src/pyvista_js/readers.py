@@ -442,7 +442,10 @@ class PLYReader:
             points = self._extract_points(lines, header_end)
         elif fmt in ("binary_little_endian", "binary_big_endian"):
             points = self._extract_points_binary(
-                raw, lines[1 : header_end + 1], header_byte_offset, fmt,
+                raw,
+                lines[1 : header_end + 1],
+                header_byte_offset,
+                fmt,
             )
         else:
             msg = f"Unsupported PLY format: {fmt}"
