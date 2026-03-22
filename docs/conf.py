@@ -126,12 +126,15 @@ _warning_text_translations = {
     "ja": "pyvista-jsのインタラクティブな例は実験的なものであり、常に期待通りに動作するとは限りません。",
 }
 
+
 # Function to get translated text based on language
 def _get_button_text(lang):
     return _button_text_translations.get(lang, _button_text_translations["en"])
 
+
 def _get_warning_text(lang):
     return _warning_text_translations.get(lang, _warning_text_translations["en"])
+
 
 # Set initial values based on default language
 try_examples_global_button_text = _get_button_text(language)
@@ -149,6 +152,7 @@ try_examples_preamble = (
 
 def setup(app):
     """Sphinx extension setup function to handle language-dependent configuration."""
+
     def update_jupyterlite_config(app, config):
         """Update JupyterLite configuration based on the selected language."""
         lang = config.language or "en"
@@ -159,6 +163,7 @@ def setup(app):
     # Use config-inited event which fires after language is set but before building
     app.connect("config-inited", update_jupyterlite_config)
     return {"version": "0.1", "parallel_read_safe": True}
+
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"
