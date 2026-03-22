@@ -1,4 +1,4 @@
-name: Deploy JupyterLite
+name: Deploy GitHub Pages
 
 on:
   push:
@@ -54,7 +54,13 @@ jobs:
 
       - name: Build JupyterLite
         run: |
-          jupyter lite build --contents jupyterlite/content --output-dir _site
+          jupyter lite build --contents jupyterlite/content --output-dir _site/jupyterlite
+
+      - name: Copy landing page and stlite demo
+        run: |
+          cp gh-pages/index.html _site/index.html
+          mkdir -p _site/stlite
+          cp gh-pages/stlite/index.html _site/stlite/index.html
 
       - name: Deploy to gh-pages (main branch)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -63,7 +69,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_site
           destination_dir: .
-          keep_files: true
+          keep_files: false
 
       - name: Deploy PR Preview
         if: github.event_name == 'pull_request'
