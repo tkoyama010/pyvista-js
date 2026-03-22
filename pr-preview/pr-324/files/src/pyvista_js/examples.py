@@ -353,6 +353,8 @@ def download_lucy() -> PolyData:
 
     Examples
     --------
+    >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
     >>> dataset = examples.download_lucy()
     >>> flame_light = pv.Light(
     ...     color=[0.886, 0.345, 0.133],
