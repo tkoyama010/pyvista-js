@@ -127,6 +127,9 @@ lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
 ]
+lint.per-file-ignores."stlite/*" = [
+  "INP001", # implicit namespace package
+]
 lint.per-file-ignores."jupyterlite/content/*" = [
   "D100",    # missing docstring - jupytext files
   "E402",    # module import not at top - cell-based structure
