@@ -16,6 +16,8 @@
 # # PyVista-js Introduction
 #
 # This notebook demonstrates the simplified PyVista-js API that works in JupyterLite.
+#
+# 🌐 **[Try the Streamlit App](../stlite/index.html)** - Interactive 3D visualization with Streamlit!
 
 # %%
 import micropip
