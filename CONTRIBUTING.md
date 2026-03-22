@@ -125,6 +125,8 @@ pyvista-js is a PyVista-like API for vtk.js that brings intuitive 3D visualizati
 
 ## Development Workflow
 
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+
 ### Creating a Branch
 
 Create a descriptive branch name:
@@ -173,6 +175,9 @@ git commit -m "feat(plotter): add support for physically based rendering"
 
 ## Code Quality Standards
 
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
+
 ### Pre-commit Hooks
 
 The project uses pre-commit hooks to ensure code quality. These run automatically on commit:
@@ -206,6 +211,8 @@ uv run mypy src/
 - **Imports**: Organize imports logically; pre-commit will sort them
 
 ## Testing
+
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 ### Running Tests
 
@@ -241,6 +248,8 @@ uv run pytest --cov=pyvista_js --cov-report=html
 - Tests should pass on Python 3.12, 3.13, and 3.14
 
 ## Documentation
+
+[![Diátaxis](https://img.shields.io/badge/Documentation-Di%C3%A1taxis-blue.svg?style=flat)](https://diataxis.fr/)
 
 ### Documentation Framework
 
@@ -355,26 +364,36 @@ This project follows several [Scientific Python SPECs](https://scientific-python
 
 ### SPEC 0 — Minimum Supported Dependencies
 
+[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
+
 - **Python**: 3.12+ (drop support 36 months after release)
 - **NumPy**: 2.0+ (drop support 24 months after release)
 - Other core dependencies follow similar policies
 
 ### SPEC 1 — Lazy Loading of Submodules
 
+[![SPEC 1 — Lazy Loading of Submodules and Functions](https://img.shields.io/badge/SPEC-1-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0001/)
+
 - Submodules are lazily loaded using `lazy-loader`
 - Improves import time and memory usage
 
 ### SPEC 4 — Nightly Tests
+
+[![SPEC 4 — Nightly Tests](https://img.shields.io/badge/SPEC-4-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0004/)
 
 - Regular testing against development versions of dependencies
 - Ensures forward compatibility
 
 ### SPEC 6 — Upper Bound Constraints
 
+[![SPEC 6 — Upper Bound Constraints on Dependencies](https://img.shields.io/badge/SPEC-6-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0006/)
+
 - No upper bounds on dependency versions unless technically required
 - Prevents dependency conflicts in downstream projects
 
 ### SPEC 7 — Seeding Random Number Generation
+
+[![SPEC 7 — Seeding Pseudo-Random Number Generation](https://img.shields.io/badge/SPEC-7-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0007/)
 
 - Use `numpy.random.default_rng()` for random number generation
 - Use `rng` parameter for seeding
@@ -387,6 +406,9 @@ This project follows several [Scientific Python SPECs](https://scientific-python
 - All GitHub Actions pinned to commit SHAs
 
 ## Community Resources
+
+[![Transifex](https://img.shields.io/badge/Translations-Transifex-blue.svg)](https://app.transifex.com/tkoyama010/pyvista-js/)
+[![Join the community](https://img.shields.io/badge/Join%20the%20community-on%20GitHub%20Discussions-blue)](https://github.com/tkoyama010/pyvista-js/discussions)
 
 - **Issues**: [GitHub Issues](https://github.com/tkoyama010/pyvista-js/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/tkoyama010/pyvista-js/discussions)
