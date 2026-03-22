@@ -9,7 +9,8 @@ st.title("pyvista-js")
 geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
 color = st.selectbox(
-    "Color", ["gray", "white", "red", "green", "blue", "yellow", "cyan", "magenta"]
+    "Color",
+    ["gray", "white", "red", "green", "blue", "yellow", "cyan", "magenta"],
 )
 
 opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
