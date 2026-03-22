@@ -59,7 +59,10 @@ with st.spinner("Loading pyvista-js..."):
         await micropip.install('lazy-loader')
 
         try:
-            await micropip.install('./src/pyvista_js-0.10.0-py3-none-any.whl')
+            import js
+            base_url = js.window.location.href.rsplit('/', 1)[0]
+            wheel_url = base_url + '/src/pyvista_js-0.10.0-py3-none-any.whl'
+            await micropip.install(wheel_url)
         except Exception as e:
             st.warning(f"Could not load local wheel: {e}")
 
