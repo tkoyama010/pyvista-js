@@ -52,16 +52,6 @@ jobs:
           mkdir -p jupyterlite/content/src
           cp -r src/pyvista_js jupyterlite/content/src/
 
-      - name: Build wheel for stlite
-        run: |
-          pip install build
-          python -m build --wheel
-
-      - name: Copy wheel to stlite directory
-        run: |
-          mkdir -p stlite/src
-          cp dist/*.whl stlite/src/
-
       - name: Build JupyterLite
         run: |
           jupyter lite build --contents jupyterlite/content --output-dir _site
