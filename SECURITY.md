@@ -1,5 +1,7 @@
 # Security Policy
 
+[![SPEC 8 — Securing the Release Process](https://img.shields.io/badge/SPEC-8-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0008/)
+
 ## Supported Versions
 
 | Version | Supported |
