@@ -1,3 +1,5 @@
+"""Streamlit app for the pyvista-js stlite demo."""
+
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -28,5 +30,5 @@ else:
 
 plotter.add_mesh(mesh, color=color, opacity=opacity)
 
-html = plotter._renderer._generate_standalone_html()
+html = plotter._renderer._generate_standalone_html()  # noqa: SLF001
 components.html(html, height=600)
