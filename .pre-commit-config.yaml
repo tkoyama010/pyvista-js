@@ -24,6 +24,14 @@ repos:
     rev: 1.0.0
     hooks:
       - id: mdformat
+        exclude: ^(README|CONTRIBUTING)\.md$
+
+  - repo: https://github.com/thlorenz/doctoc
+    rev: v2.3.0
+    hooks:
+      - id: doctoc
+        args: [--notitle]
+        files: ^(README|CONTRIBUTING)\.md$
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.16.2"
