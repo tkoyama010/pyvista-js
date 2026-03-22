@@ -1,5 +1,7 @@
 # Contributor Covenant 3.0 Code of Conduct
 
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
 ## Our Pledge
 
 We pledge to make our community welcoming, safe, and equitable for all.
