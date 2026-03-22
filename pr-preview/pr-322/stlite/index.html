@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pyvista-js Streamlit App</title>
-    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.70.1/build/stlite.js"></script>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.5.0/build/stlite.css"
+    />
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
         #app {
             width: 100vw;
@@ -19,33 +21,22 @@
 </head>
 <body>
     <div id="app"></div>
-    <script>
-        // Streamlit app code that will run in stlite
+    <script type="module">
+        import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.5.0/build/stlite.js";
+
         const appCode = `
 import streamlit as st
 import streamlit.components.v1 as components
 import micropip
-import sys
 
 # Sidebar configuration
-st.sidebar.title("🌐 pyvista-js")
+st.sidebar.title("pyvista-js")
 st.sidebar.markdown("Interactive 3D visualization in the browser")
-
-# Return to JupyterLab button
-if st.sidebar.button("⬅️ Return to JupyterLab", type="primary", use_container_width=True):
-    st.markdown(
-        """
-        <script>
-        window.location.href = '../lab/index.html';
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
-
+st.sidebar.markdown("[Return to JupyterLab](../lab/index.html)")
 st.sidebar.markdown("---")
 
 # Sidebar controls
-st.sidebar.header("⚙️ Controls")
+st.sidebar.header("Controls")
 geometry = st.sidebar.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 color = st.sidebar.selectbox(
     "Color",
@@ -54,7 +45,7 @@ color = st.sidebar.selectbox(
 opacity = st.sidebar.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
 
 # Main content
-st.title("🌐 pyvista-js Streamlit Demo")
+st.title("pyvista-js Streamlit Demo")
 
 st.markdown("""
 This is a demonstration of pyvista-js with stlite (Streamlit WASM).
@@ -64,29 +55,23 @@ PyVista-like 3D visualization running entirely in your browser!
 # Initialize pyvista-js
 with st.spinner("Loading pyvista-js..."):
     try:
-        # Install dependencies
         await micropip.install('jinja2')
         await micropip.install('lazy-loader')
 
-        # Try to install pyvista-js from the latest wheel
         try:
-            # The wheel file is placed in ./src/ directory during build
             await micropip.install('./src/pyvista_js-0.10.0-py3-none-any.whl')
         except Exception as e:
             st.warning(f"Could not load local wheel: {e}")
 
-        # Import pyvista-js
         import pyvista_js as pv
         from pyvista_js import examples
 
-        st.success("✅ pyvista-js loaded successfully!")
+        st.success("pyvista-js loaded successfully!")
 
-        # Create visualization
-        st.header("📊 Visualization")
+        st.header("Visualization")
 
         plotter = pv.Plotter()
 
-        # Create geometry based on selection
         if geometry == "Bunny":
             mesh = examples.download_bunny()
             st.sidebar.info(f"Stanford Bunny with {mesh.n_points} points")
@@ -96,41 +81,36 @@ with st.spinner("Loading pyvista-js..."):
         elif geometry == "Cube":
             mesh = pv.Cube()
             st.sidebar.info(f"Cube with {mesh.n_points} points")
-        else:  # Cylinder
+        else:
             mesh = pv.Cylinder(radius=0.5, height=2.0)
             st.sidebar.info(f"Cylinder with {mesh.n_points} points")
 
-        # Add mesh to plotter
         plotter.add_mesh(mesh, color=color, opacity=opacity)
 
-        # Generate and display the visualization
         html = plotter._renderer._generate_standalone_html()
         components.html(html, height=600)
 
-        # Information
         st.markdown("""
         ---
-        ### 🎯 Features
+        ### Features
         - **Interactive 3D**: Rotate, zoom, and pan with mouse/touch
         - **PyVista API**: Familiar interface for PyVista users
         - **Browser-native**: No server required, runs entirely in browser
         - **Powered by vtk.js**: High-performance WebGL rendering
 
-        ### 🔗 Links
+        ### Links
         - [pyvista-js on GitHub](https://github.com/tkoyama010/pyvista-js)
         - [PyVista](https://www.pyvista.org/)
         - [vtk.js](https://kitware.github.io/vtk-js/)
         """)
 
     except Exception as e:
-        st.error(f"❌ Error loading pyvista-js: {e}")
-        st.info("This demo requires pyvista-js to be built and available. Click 'Return to JupyterLab' to try the JupyterLite examples instead.")
+        st.error(f"Error loading pyvista-js: {e}")
+        st.info("This demo requires pyvista-js to be built and available. Use the sidebar link to return to JupyterLab.")
 `;
 
-        // Mount the Streamlit app
-        stlite.mount(
+        mount(
             {
-                requirements: [], // Dependencies installed via micropip in the app code
                 entrypoint: "app.py",
                 files: {
                     "app.py": appCode
