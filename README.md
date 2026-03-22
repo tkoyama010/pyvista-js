@@ -15,13 +15,11 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [pyvista-js](#pyvista-js)
-  - [Table of Contents](#table-of-contents)
-  - [Install](#install)
-  - [Usage](#usage)
-  - [Citation](#citation)
-  - [Contributing](#contributing)
-  - [License](#license)
+- [Install](#install)
+- [Usage](#usage)
+- [Citation](#citation)
+- [Contributing](#contributing)
+- [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
