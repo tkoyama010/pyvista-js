@@ -127,6 +127,7 @@ git commit -m "feat(plotter): add support for physically based rendering"
 
 ## Code Quality Standards
 
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
 
