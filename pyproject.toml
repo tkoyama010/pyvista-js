@@ -127,9 +127,6 @@ lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
 ]
-lint.per-file-ignores."stlite/*" = [
-  "INP001", # implicit namespace package
-]
 lint.per-file-ignores."jupyterlite/content/*" = [
   "D100",    # missing docstring - jupytext files
   "E402",    # module import not at top - cell-based structure
@@ -137,6 +134,9 @@ lint.per-file-ignores."jupyterlite/content/*" = [
   "F704",    # await outside async - top-level await valid in Pyodide
   "INP001",  # implicit namespace package
   "PLE1142", # await outside async - top-level await valid in Pyodide
+]
+lint.per-file-ignores."stlite/*" = [
+  "INP001", # implicit namespace package
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
