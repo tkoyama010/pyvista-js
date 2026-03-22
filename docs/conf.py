@@ -61,6 +61,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinxcontrib.typer",
     "sphinx_design",
+    "sphinxemoji.sphinxemoji",
 ]
 
 # -- Options for autodoc -----------------------------------------------------
@@ -100,6 +101,9 @@ myst_enable_extensions = [
     "colon_fence",
     "deflist",
 ]
+
+# -- Options for sphinxemoji -------------------------------------------------
+sphinxemoji_style = "twemoji"
 
 # -- Options for jupyterlite-sphinx ------------------------------------------
 jupyterlite_dir = ".jupyterlite"

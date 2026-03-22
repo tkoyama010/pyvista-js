@@ -89,6 +89,7 @@ optional-dependencies.docs = [
   "sphinx-design==0.7; python_version>='3.12' and python_version<'3.14'",
   "sphinx-intl>=2.2; python_version>='3.12' and python_version<'3.14'",
   "sphinxcontrib-typer>=0.5; python_version>='3.12'",
+  "sphinxemoji>=0.2.0; python_version>='3.12' and python_version<'3.14'",
 ]
 optional-dependencies.io = [
   "meshio",
