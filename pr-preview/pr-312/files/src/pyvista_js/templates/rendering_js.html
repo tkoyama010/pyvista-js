@@ -2,6 +2,9 @@
   (function () {
     var container = document.createElement("div");
     container.id = "{{ CONTAINER_ID }}";
+    container.setAttribute("data-background-r", "{{ BACKGROUND_R }}");
+    container.setAttribute("data-background-g", "{{ BACKGROUND_G }}");
+    container.setAttribute("data-background-b", "{{ BACKGROUND_B }}");
     container.style.cssText =
       "width:600px;height:400px;border:2px solid #333;position:relative";
     if (typeof element !== "undefined" && element) {
@@ -12,12 +15,12 @@
 
     function doRender() {
       try {
+        var backgroundR = parseFloat(container.dataset.backgroundR);
+        var backgroundG = parseFloat(container.dataset.backgroundG);
+        var backgroundB = parseFloat(container.dataset.backgroundB);
+
         var renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
-        renderer.setBackground(
-          {{ BACKGROUND_R }},
-          {{ BACKGROUND_G }},
-          {{ BACKGROUND_B }},
-        );
+        renderer.setBackground(backgroundR, backgroundG, backgroundB);
         var renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
         renderWindow.addRenderer(renderer);
         var openGLRenderWindow =
