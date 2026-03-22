@@ -70,10 +70,3 @@ api/index
 cli/index
 ```
 
-```{toctree}
-:maxdepth: 1
-:hidden:
-:caption: Demos
-
-stlite_demo
-```

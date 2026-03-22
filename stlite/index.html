@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>pyvista-js stlite Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.css"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.js"></script>
+    <script>
+      stlite.mount(
+        {
+          requirements: ["pyvista-js"],
+          entrypoint: "app.py",
+          files: {
+            "app.py": `import streamlit as st
+import streamlit.components.v1 as components
+
+import pyvista_js as pv
+from pyvista_js import examples
+
+st.title("pyvista-js Demo")
+
+geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
+
+color = st.selectbox(
+    "Color", ["gray", "white", "red", "green", "blue", "yellow", "cyan", "magenta"]
+)
+
+opacity = st.slider("Opacity", min_value=0.0, max_value=1.0, value=0.8, step=0.1)
+
+plotter = pv.Plotter()
+
+if geometry == "Bunny":
+    mesh = examples.download_bunny()
+elif geometry == "Sphere":
+    mesh = pv.Sphere(radius=1.0)
+elif geometry == "Cube":
+    mesh = pv.Cube()
+else:
+    mesh = pv.Cylinder(radius=0.5, height=2.0)
+
+plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+html = plotter._renderer._generate_standalone_html()
+components.html(html, height=600)
+`,
+          },
+        },
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
