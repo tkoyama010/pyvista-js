@@ -1,11 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [How-To Guides](#how-to-guides)
-  - [stlite Demo](#stlite-demo)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # How-To Guides
 
 Focused guides for common tasks with pyvista-js.

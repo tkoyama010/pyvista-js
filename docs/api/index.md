@@ -1,21 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [API Reference](#api-reference)
-  - [Plotting](#plotting)
-  - [Camera](#camera)
-  - [Lighting](#lighting)
-  - [Data](#data)
-  - [Mesh](#mesh)
-  - [Text](#text)
-  - [Texture](#texture)
-  - [Filters](#filters)
-  - [Readers](#readers)
-  - [Examples](#examples)
-  - [CLI](#cli)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # API Reference
 
 This section provides detailed documentation for the pyvista-js public API.

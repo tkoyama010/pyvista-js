@@ -1,13 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Security Policy](#security-policy)
-  - [Supported Versions](#supported-versions)
-  - [SPEC 8 — Securing the Release Process](#spec-8--securing-the-release-process)
-  - [Reporting a Vulnerability](#reporting-a-vulnerability)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # Security Policy
 
 [![SPEC 8 — Securing the Release Process](https://img.shields.io/badge/SPEC-8-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0008/)

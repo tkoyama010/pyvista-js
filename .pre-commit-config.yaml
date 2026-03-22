@@ -30,6 +30,7 @@ repos:
     hooks:
       - id: doctoc
         args: [--notitle]
+        files: ^(README|CONTRIBUTING)\.md$
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.16.2"

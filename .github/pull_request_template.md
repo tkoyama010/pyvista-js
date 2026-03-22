@@ -1,16 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Description](#description)
-- [Related Issue](#related-issue)
-- [Type of Change](#type-of-change)
-- [Checklist](#checklist)
-- [Testing](#testing)
-- [Screenshots/Examples (if applicable)](#screenshotsexamples-if-applicable)
-- [Additional Notes](#additional-notes)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## Description
 
 <!-- Provide a clear and concise description of what this PR does. Include any relevant context, motivation, or background information. -->

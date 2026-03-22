@@ -1,11 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [CLI](#cli)
-  - [Commands](#commands)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # CLI
 
 Once `pyvista-js` has been installed, a
