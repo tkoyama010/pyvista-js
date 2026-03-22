@@ -2,42 +2,38 @@
 
 ## [0.11.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.10.0...pyvista-js-v0.11.0) (2026-03-22)
 
-
 ### Features
 
-* Add Camera.elevation property ([#302](https://github.com/tkoyama010/pyvista-js/issues/302)) ([722f145](https://github.com/tkoyama010/pyvista-js/commit/722f145ef071689bea287baaafa183ddd0bd47b0))
-* add Plotter.add_points() method for point cloud rendering ([#170](https://github.com/tkoyama010/pyvista-js/issues/170)) ([df86e9a](https://github.com/tkoyama010/pyvista-js/commit/df86e9a197a9c6bafbbcf1d9b41a23c9b858077d))
-* add smooth_shading option to add_mesh() ([#245](https://github.com/tkoyama010/pyvista-js/issues/245)) ([e3a312e](https://github.com/tkoyama010/pyvista-js/commit/e3a312e542636a1e2ce4dfe2b0c23653ff2cb181))
-
+- Add Camera.elevation property ([#302](https://github.com/tkoyama010/pyvista-js/issues/302)) ([722f145](https://github.com/tkoyama010/pyvista-js/commit/722f145ef071689bea287baaafa183ddd0bd47b0))
+- add Plotter.add_points() method for point cloud rendering ([#170](https://github.com/tkoyama010/pyvista-js/issues/170)) ([df86e9a](https://github.com/tkoyama010/pyvista-js/commit/df86e9a197a9c6bafbbcf1d9b41a23c9b858077d))
+- add smooth_shading option to add_mesh() ([#245](https://github.com/tkoyama010/pyvista-js/issues/245)) ([e3a312e](https://github.com/tkoyama010/pyvista-js/commit/e3a312e542636a1e2ce4dfe2b0c23653ff2cb181))
 
 ### Bug Fixes
 
-* remove unsupported &lt;path&gt; placeholder from translation_files_expression ([#293](https://github.com/tkoyama010/pyvista-js/issues/293)) ([4571cbb](https://github.com/tkoyama010/pyvista-js/commit/4571cbb601d5c5f153bff3f5ba446878d7a9f4e0))
-* replace source_file with source_file_dir in transifex.yml ([#290](https://github.com/tkoyama010/pyvista-js/issues/290)) ([0a18589](https://github.com/tkoyama010/pyvista-js/commit/0a18589e1ee457f3c0bc53414e0e51a341ee97db))
-
+- remove unsupported \<path> placeholder from translation_files_expression ([#293](https://github.com/tkoyama010/pyvista-js/issues/293)) ([4571cbb](https://github.com/tkoyama010/pyvista-js/commit/4571cbb601d5c5f153bff3f5ba446878d7a9f4e0))
+- replace source_file with source_file_dir in transifex.yml ([#290](https://github.com/tkoyama010/pyvista-js/issues/290)) ([0a18589](https://github.com/tkoyama010/pyvista-js/commit/0a18589e1ee457f3c0bc53414e0e51a341ee97db))
 
 ### Documentation
 
-* add comprehensive CONTRIBUTING.md file ([#315](https://github.com/tkoyama010/pyvista-js/issues/315)) ([8f991e1](https://github.com/tkoyama010/pyvista-js/commit/8f991e1d25c3fa035a2dfd96074693543a45d349))
-* add doctoc to pre-commit hooks ([#319](https://github.com/tkoyama010/pyvista-js/issues/319)) ([7a18a42](https://github.com/tkoyama010/pyvista-js/commit/7a18a42678f97261e3d451eabf0ad18a454ba759))
-* add GitHub issue templates for bug reports, features, and documentation ([#316](https://github.com/tkoyama010/pyvista-js/issues/316)) ([3b74547](https://github.com/tkoyama010/pyvista-js/commit/3b74547c7e94105f72e11a12b13c9d2724b1c214))
-* add GitHub Sponsors link ([#289](https://github.com/tkoyama010/pyvista-js/issues/289)) ([0c146ae](https://github.com/tkoyama010/pyvista-js/commit/0c146ae122fe2d2c097a4676672d477cd6462c1c))
-* add pull request template ([#317](https://github.com/tkoyama010/pyvista-js/issues/317)) ([7ed8180](https://github.com/tkoyama010/pyvista-js/commit/7ed818029ce55a74870175d9bf8d915b880b59b7))
-* add SPEC-0004 (Nightly Tests) badge to README ([#311](https://github.com/tkoyama010/pyvista-js/issues/311)) ([dd6702c](https://github.com/tkoyama010/pyvista-js/commit/dd6702c89c50d951ff8b0edf1788f1fba1a57219))
-* add tkoyama010 as a contributor for platform ([#310](https://github.com/tkoyama010/pyvista-js/issues/310)) ([9bb1ef7](https://github.com/tkoyama010/pyvista-js/commit/9bb1ef77a283ca4902a8324938e4e153e43abc2c))
-* add tkoyama010 as a contributor for translation ([#299](https://github.com/tkoyama010/pyvista-js/issues/299)) ([804028c](https://github.com/tkoyama010/pyvista-js/commit/804028c39da08361c42d9898985fa96026681f82))
-* add transifex as a contributor for doc, and translation ([#300](https://github.com/tkoyama010/pyvista-js/issues/300)) ([05d2e20](https://github.com/tkoyama010/pyvista-js/commit/05d2e202388202fc63c8e2c23bf9bc82c4b735a7))
-* move badges from README.md to corresponding sections ([#320](https://github.com/tkoyama010/pyvista-js/issues/320)) ([65b80a1](https://github.com/tkoyama010/pyvista-js/commit/65b80a175e4c12361804b4ee25966738b3aaafa8))
-* reorganize badges in README.md to related sections ([#314](https://github.com/tkoyama010/pyvista-js/issues/314)) ([1727967](https://github.com/tkoyama010/pyvista-js/commit/1727967dc7d360ca385f8e0fb866a49a07fdbd07))
-* reorganize badges to related documentation files ([#313](https://github.com/tkoyama010/pyvista-js/issues/313)) ([440398a](https://github.com/tkoyama010/pyvista-js/commit/440398a8a5924c6e39b1de9e8c16425fd00c5bf9))
-* Updates for file docs/pot/cli/plot.pot in ja [Manual Sync] ([#294](https://github.com/tkoyama010/pyvista-js/issues/294)) ([4b4b7ed](https://github.com/tkoyama010/pyvista-js/commit/4b4b7ed5891e4d7ae39556ae6502674a5bd26844))
-* Updates for project pyvista-js and language ja ([#298](https://github.com/tkoyama010/pyvista-js/issues/298)) ([93070dc](https://github.com/tkoyama010/pyvista-js/commit/93070dc6a0612b43983e4542a8513b3adbbc70cb))
-* Updates for project pyvista-js-doc and language ja ([#305](https://github.com/tkoyama010/pyvista-js/issues/305)) ([fd05db4](https://github.com/tkoyama010/pyvista-js/commit/fd05db44646adf3402807a526f90d987905d87c0))
-
+- add comprehensive CONTRIBUTING.md file ([#315](https://github.com/tkoyama010/pyvista-js/issues/315)) ([8f991e1](https://github.com/tkoyama010/pyvista-js/commit/8f991e1d25c3fa035a2dfd96074693543a45d349))
+- add doctoc to pre-commit hooks ([#319](https://github.com/tkoyama010/pyvista-js/issues/319)) ([7a18a42](https://github.com/tkoyama010/pyvista-js/commit/7a18a42678f97261e3d451eabf0ad18a454ba759))
+- add GitHub issue templates for bug reports, features, and documentation ([#316](https://github.com/tkoyama010/pyvista-js/issues/316)) ([3b74547](https://github.com/tkoyama010/pyvista-js/commit/3b74547c7e94105f72e11a12b13c9d2724b1c214))
+- add GitHub Sponsors link ([#289](https://github.com/tkoyama010/pyvista-js/issues/289)) ([0c146ae](https://github.com/tkoyama010/pyvista-js/commit/0c146ae122fe2d2c097a4676672d477cd6462c1c))
+- add pull request template ([#317](https://github.com/tkoyama010/pyvista-js/issues/317)) ([7ed8180](https://github.com/tkoyama010/pyvista-js/commit/7ed818029ce55a74870175d9bf8d915b880b59b7))
+- add SPEC-0004 (Nightly Tests) badge to README ([#311](https://github.com/tkoyama010/pyvista-js/issues/311)) ([dd6702c](https://github.com/tkoyama010/pyvista-js/commit/dd6702c89c50d951ff8b0edf1788f1fba1a57219))
+- add tkoyama010 as a contributor for platform ([#310](https://github.com/tkoyama010/pyvista-js/issues/310)) ([9bb1ef7](https://github.com/tkoyama010/pyvista-js/commit/9bb1ef77a283ca4902a8324938e4e153e43abc2c))
+- add tkoyama010 as a contributor for translation ([#299](https://github.com/tkoyama010/pyvista-js/issues/299)) ([804028c](https://github.com/tkoyama010/pyvista-js/commit/804028c39da08361c42d9898985fa96026681f82))
+- add transifex as a contributor for doc, and translation ([#300](https://github.com/tkoyama010/pyvista-js/issues/300)) ([05d2e20](https://github.com/tkoyama010/pyvista-js/commit/05d2e202388202fc63c8e2c23bf9bc82c4b735a7))
+- move badges from README.md to corresponding sections ([#320](https://github.com/tkoyama010/pyvista-js/issues/320)) ([65b80a1](https://github.com/tkoyama010/pyvista-js/commit/65b80a175e4c12361804b4ee25966738b3aaafa8))
+- reorganize badges in README.md to related sections ([#314](https://github.com/tkoyama010/pyvista-js/issues/314)) ([1727967](https://github.com/tkoyama010/pyvista-js/commit/1727967dc7d360ca385f8e0fb866a49a07fdbd07))
+- reorganize badges to related documentation files ([#313](https://github.com/tkoyama010/pyvista-js/issues/313)) ([440398a](https://github.com/tkoyama010/pyvista-js/commit/440398a8a5924c6e39b1de9e8c16425fd00c5bf9))
+- Updates for file docs/pot/cli/plot.pot in ja [Manual Sync] ([#294](https://github.com/tkoyama010/pyvista-js/issues/294)) ([4b4b7ed](https://github.com/tkoyama010/pyvista-js/commit/4b4b7ed5891e4d7ae39556ae6502674a5bd26844))
+- Updates for project pyvista-js and language ja ([#298](https://github.com/tkoyama010/pyvista-js/issues/298)) ([93070dc](https://github.com/tkoyama010/pyvista-js/commit/93070dc6a0612b43983e4542a8513b3adbbc70cb))
+- Updates for project pyvista-js-doc and language ja ([#305](https://github.com/tkoyama010/pyvista-js/issues/305)) ([fd05db4](https://github.com/tkoyama010/pyvista-js/commit/fd05db44646adf3402807a526f90d987905d87c0))
 
 ### Continuous Integration
 
-* use transifex-integration[bot] as commit author in Transifex workflow ([#304](https://github.com/tkoyama010/pyvista-js/issues/304)) ([d6230e8](https://github.com/tkoyama010/pyvista-js/commit/d6230e81a94d4f1638727398c939780be045aec4))
+- use transifex-integration[bot] as commit author in Transifex workflow ([#304](https://github.com/tkoyama010/pyvista-js/issues/304)) ([d6230e8](https://github.com/tkoyama010/pyvista-js/commit/d6230e81a94d4f1638727398c939780be045aec4))
 
 ## [0.10.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.9.1...pyvista-js-v0.10.0) (2026-03-21)
 
