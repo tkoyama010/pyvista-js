@@ -1,0 +1,13 @@
+<script>
+const points = new Float32Array([{{ POINTS_DATA }}]);
+const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+polydata.getPoints().setData(points, 3);
+const numPoints = points.length / 3;
+const verts = new Uint32Array(numPoints + 1);
+verts[0] = numPoints;
+for (let i = 0; i < numPoints; i++) {
+  verts[i + 1] = i;
+}
+polydata.getVerts().setData(verts);
+const {{ SOURCE }} = polydata;
+</script>
