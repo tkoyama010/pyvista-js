@@ -2,11 +2,11 @@
   "content": [
     {
       "content": null,
-      "created": "2026-03-22T14:01:44.000661Z",
+      "created": "2026-03-22T14:03:42.787490Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-03-22T14:01:25.526905Z",
+      "last_modified": "2026-03-22T14:03:31.019235Z",
       "mimetype": "text/html",
       "name": "index.html",
       "path": "stlite/index.html",
@@ -15,11 +15,11 @@
       "writable": true
     }
   ],
-  "created": "2026-03-22T14:01:44.000661Z",
+  "created": "2026-03-22T14:03:42.787490Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2026-03-22T14:01:44.000661Z",
+  "last_modified": "2026-03-22T14:03:42.787490Z",
   "mimetype": null,
   "name": "stlite",
   "path": "stlite",
