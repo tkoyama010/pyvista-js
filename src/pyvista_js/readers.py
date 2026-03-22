@@ -424,9 +424,12 @@ class PLYReader:
             raise ValueError(msg)
 
         header_end = None
+        header_byte_offset = 0
         for i, line in enumerate(lines):
             if line.strip() == "end_header":
                 header_end = i
+                # Calculate byte offset after header
+                header_byte_offset = raw.find(b"end_header") + len(b"end_header") + 1
                 break
 
         if header_end is None:
@@ -434,11 +437,15 @@ class PLYReader:
             raise ValueError(msg)
 
         fmt = self._parse_format(lines[1 : header_end + 1])
-        if fmt != "ascii":
-            msg = f"Only ASCII PLY files are supported, got: {fmt}"
+
+        if fmt == "ascii":
+            points = self._extract_points(lines, header_end)
+        elif fmt in ("binary_little_endian", "binary_big_endian"):
+            points = self._extract_points_binary(raw, lines[1 : header_end + 1], header_byte_offset, fmt)
+        else:
+            msg = f"Unsupported PLY format: {fmt}"
             raise ValueError(msg)
 
-        points = self._extract_points(lines, header_end)
         ply_base64 = base64.b64encode(raw).decode("ascii")
         logger.info("Read %d points from %s", len(points), self._path)
         return _PLYMesh(points=points, ply_base64=ply_base64)
@@ -509,6 +516,96 @@ class PLYReader:
             parts = lines[data_start + i].strip().split()
             if len(parts) >= _N_COORDS:
                 points.append([float(parts[0]), float(parts[1]), float(parts[2])])
+
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+    @staticmethod
+    def _extract_points_binary(
+        raw: bytes, header_lines: list[str], data_offset: int, fmt: str
+    ) -> np.ndarray:
+        """Extract vertex coordinates from binary PLY data.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw binary content of the PLY file.
+        header_lines : list[str]
+            Header lines between 'ply' and 'end_header'.
+        data_offset : int
+            Byte offset where vertex data starts (after 'end_header').
+        fmt : str
+            Format string ('binary_little_endian' or 'binary_big_endian').
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        # Determine endianness
+        endian = "<" if fmt == "binary_little_endian" else ">"
+
+        # Find vertex count and properties
+        n_vertices = 0
+        vertex_properties = []
+        in_vertex_element = False
+
+        for line in header_lines:
+            parts = line.strip().split()
+            if not parts:
+                continue
+
+            if parts[0] == "element":
+                if len(parts) >= _N_COORDS and parts[1] == "vertex":
+                    n_vertices = int(parts[2])
+                    in_vertex_element = True
+                else:
+                    in_vertex_element = False
+            elif parts[0] == "property" and in_vertex_element:
+                if len(parts) >= _N_COORDS:
+                    vertex_properties.append(parts[1])  # type (float, double, etc.)
+
+        if n_vertices == 0:
+            return np.empty((0, 3))
+
+        # Build struct format for one vertex
+        # We need to know the size of each property to skip them
+        type_map = {
+            "char": "b",
+            "uchar": "B",
+            "short": "h",
+            "ushort": "H",
+            "int": "i",
+            "uint": "I",
+            "float": "f",
+            "double": "d",
+        }
+
+        # Calculate bytes per vertex
+        vertex_fmt = endian
+        bytes_per_vertex = 0
+        for prop_type in vertex_properties:
+            if prop_type in type_map:
+                vertex_fmt += type_map[prop_type]
+                bytes_per_vertex += struct.calcsize(endian + type_map[prop_type])
+
+        # Extract points (first 3 properties assumed to be x, y, z)
+        points = []
+        offset = data_offset
+
+        for _ in range(n_vertices):
+            if offset + bytes_per_vertex > len(raw):
+                break
+
+            try:
+                vertex_data = struct.unpack_from(vertex_fmt, raw, offset)
+                # Take only first 3 values (x, y, z)
+                points.append([float(vertex_data[0]), float(vertex_data[1]), float(vertex_data[2])])
+                offset += bytes_per_vertex
+            except struct.error:
+                break
 
         if not points:
             return np.empty((0, 3))
