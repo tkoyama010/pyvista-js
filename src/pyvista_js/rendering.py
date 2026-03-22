@@ -1077,34 +1077,36 @@ class _BaseHTMLRenderer:
 
     @staticmethod
     def _generate_normals_code(idx: int, smooth_shading: object, mapper_setup: str) -> str:
-        """Generate vtk.js vtkPolyDataNormals filter code for flat shading.
+        """Generate vtk.js vtkPolyDataNormals filter code for shading control.
 
-        When flat shading is requested, inserts a vtkPolyDataNormals filter
-        that computes per-face (cell) normals instead of per-vertex normals,
-        making the faceted geometry clearly visible.
+        Inserts a vtkPolyDataNormals filter to ensure correct shading.  When
+        the pipeline includes vtkTextureMapToSphere, normals must be
+        recomputed regardless of the shading mode because the texture-map
+        filter may corrupt the original sphere normals.
 
         Parameters
         ----------
         idx : int
             Actor index.
         smooth_shading : object
-            Whether smooth shading is enabled. When False, cell normals are
-            computed.
+            Whether smooth shading is enabled. When True, point normals are
+            computed (Gouraud interpolation). When False, cell normals are
+            computed (flat shading).
         mapper_setup : str
             The mapper setup code, used to determine how to connect the filter.
 
         Returns
         -------
         str
-            JavaScript code for the normals filter, or empty string when smooth
-            shading is enabled or the pipeline cannot be intercepted.
+            JavaScript code for the normals filter, or empty string when the
+            pipeline cannot be intercepted.
 
         """
-        if smooth_shading:
-            return ""
         source_ref = f"source{idx}"
         tex_map_ref = f"texMapSphere{idx}"
         if f"setInputData({source_ref})" in mapper_setup:
+            if smooth_shading:
+                return ""
             input_line = f"normals{idx}.setInputData({source_ref});"
         elif f"{tex_map_ref}.getOutputPort()" in mapper_setup:
             input_line = f"normals{idx}.setInputConnection({tex_map_ref}.getOutputPort());"
@@ -1112,6 +1114,13 @@ class _BaseHTMLRenderer:
             input_line = f"normals{idx}.setInputConnection({source_ref}.getOutputPort());"
         else:
             return ""
+        if smooth_shading:
+            return (
+                f"const normals{idx} = vtk.Filters.Core.vtkPolyDataNormals.newInstance();\n"
+                f"normals{idx}.setComputePointNormals(true);\n"
+                f"normals{idx}.setComputeCellNormals(false);\n"
+                f"{input_line}"
+            )
         return (
             f"const normals{idx} = vtk.Filters.Core.vtkPolyDataNormals.newInstance();\n"
             f"normals{idx}.setComputePointNormals(false);\n"
