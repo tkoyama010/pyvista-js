@@ -668,11 +668,11 @@ def capture_stlite_preview(
         ),
     ] = 2,
     rotate: Annotated[
-        bool,
+        bool | None,
         typer.Option(
             help="Rotate the 3D model by mouse drag while capturing screenshots. Default: True.",
         ),
-    ] = True,
+    ] = None,
 ) -> None:
     """Capture a preview GIF of the stlite demo.
 
@@ -680,6 +680,9 @@ def capture_stlite_preview(
     Requires: playwright, imageio[ffmpeg], pillow.
     """
     import tempfile  # noqa: PLC0415
+
+    if rotate is None:
+        rotate = True
 
     output_path = output
 
