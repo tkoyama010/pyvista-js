@@ -865,6 +865,59 @@ class Plotter:
             )
         return None
 
+    @camera_position.setter
+    def camera_position(
+        self,
+        cpos: str
+        | tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | list[float]
+        | list[tuple[float, float, float]]
+        | list[list[float]],
+    ) -> None:
+        """Set the camera position.
+
+        Parameters
+        ----------
+        cpos : str, tuple, or list
+            Camera position specification. Can be:
+
+            - String shortcut: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', or 'iso'
+            - Direction vector: 3-element tuple/list (x, y, z)
+            - Full camera spec: 3-tuple/list of 3-tuples/lists:
+              [(position), (focal_point), (view_up)]
+
+        Examples
+        --------
+        Using string shortcuts:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = 'xy'
+        >>> plotter.camera_position = 'iso'
+
+        Using direction vector:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = (1, 0, 0)
+
+        Using full camera specification:
+
+        >>> plotter = pv.Plotter()
+        >>> plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
+
+        """
+        if isinstance(cpos, str):
+            self._set_camera_position_from_str(cpos)
+        elif isinstance(cpos, (tuple, list)):
+            self._set_camera_position_from_sequence(cpos)
+        else:
+            msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
+            raise TypeError(msg)
+
     #: Maps camera position string shortcuts to the corresponding view method name.
     _CAMERA_POSITION_SHORTCUTS: ClassVar[dict[str, str]] = {
         "xy": "view_xy",
@@ -926,59 +979,6 @@ class Plotter:
             "3-element direction vector or 3x3 camera specification"
         )
         raise ValueError(msg)
-
-    @camera_position.setter
-    def camera_position(
-        self,
-        cpos: str
-        | tuple[float, float, float]
-        | tuple[
-            tuple[float, float, float],
-            tuple[float, float, float],
-            tuple[float, float, float],
-        ]
-        | list[float]
-        | list[tuple[float, float, float]]
-        | list[list[float]],
-    ) -> None:
-        """Set the camera position.
-
-        Parameters
-        ----------
-        cpos : str, tuple, or list
-            Camera position specification. Can be:
-
-            - String shortcut: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', or 'iso'
-            - Direction vector: 3-element tuple/list (x, y, z)
-            - Full camera spec: 3-tuple/list of 3-tuples/lists:
-              [(position), (focal_point), (view_up)]
-
-        Examples
-        --------
-        Using string shortcuts:
-
-        >>> plotter = pv.Plotter()
-        >>> plotter.camera_position = 'xy'
-        >>> plotter.camera_position = 'iso'
-
-        Using direction vector:
-
-        >>> plotter = pv.Plotter()
-        >>> plotter.camera_position = (1, 0, 0)
-
-        Using full camera specification:
-
-        >>> plotter = pv.Plotter()
-        >>> plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
-
-        """
-        if isinstance(cpos, str):
-            self._set_camera_position_from_str(cpos)
-        elif isinstance(cpos, (tuple, list)):
-            self._set_camera_position_from_sequence(cpos)
-        else:
-            msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
-            raise TypeError(msg)
 
     @property
     def background_color(self) -> tuple[float, float, float]:
