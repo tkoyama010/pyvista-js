@@ -12,6 +12,7 @@ import pyvista_js as pv
 from pyvista_js._cli import (
     _rotate_canvas_with_mouse,
     capture_preview,
+    capture_stlite_preview,
     cli_main,
 )
 
@@ -304,3 +305,31 @@ def test_plot_load_pickle_with_background_override(tmp_path) -> None:
     with patch("pyvista_js.Plotter.show") as mock_show:
         cli_main(["plot", "--load-pickle", str(pickle_file), "--background", "white"])
         mock_show.assert_called_once()
+
+
+def test_capture_stlite_preview_with_rotate(tmp_path) -> None:
+    """``capture-stlite-preview --rotate`` calls stlite capture with rotation."""
+    with (
+        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
+
+        assert mock_capture.call_args.kwargs["rotate"] is True
+
+
+def test_capture_stlite_preview_with_no_rotate(tmp_path) -> None:
+    """``capture-stlite-preview --no-rotate`` calls stlite capture without rotation."""
+    with (
+        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=False)
+
+        assert mock_capture.call_args.kwargs["rotate"] is False
