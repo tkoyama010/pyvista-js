@@ -39,12 +39,6 @@ Thank you for your interest in contributing to pyvista-js! This document provide
   - [Community](#community)
   - [Recognition](#recognition)
 - [Scientific Python Standards](#scientific-python-standards)
-  - [SPEC 0 — Minimum Supported Dependencies](#spec-0--minimum-supported-dependencies)
-  - [SPEC 1 — Lazy Loading of Submodules](#spec-1--lazy-loading-of-submodules)
-  - [SPEC 4 — Nightly Tests](#spec-4--nightly-tests)
-  - [SPEC 6 — Upper Bound Constraints](#spec-6--upper-bound-constraints)
-  - [SPEC 7 — Seeding Random Number Generation](#spec-7--seeding-random-number-generation)
-  - [SPEC 8 — Securing the Release Process](#spec-8--securing-the-release-process)
 - [Community Resources](#community-resources)
 - [Questions?](#questions)
 
@@ -346,50 +340,13 @@ All contributions are recognized using [all-contributors](https://allcontributor
 
 ## Scientific Python Standards
 
-This project follows several [Scientific Python SPECs](https://scientific-python.org/specs/):
-
-### SPEC 0 — Minimum Supported Dependencies
-
 [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
-
-- **Python**: 3.12+ (drop support 36 months after release)
-- **NumPy**: 2.0+ (drop support 24 months after release)
-- Other core dependencies follow similar policies
-
-### SPEC 1 — Lazy Loading of Submodules
-
 [![SPEC 1 — Lazy Loading of Submodules and Functions](https://img.shields.io/badge/SPEC-1-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0001/)
-
-- Submodules are lazily loaded using `lazy-loader`
-- Improves import time and memory usage
-
-### SPEC 4 — Nightly Tests
-
 [![SPEC 4 — Nightly Tests](https://img.shields.io/badge/SPEC-4-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0004/)
-
-- Regular testing against development versions of dependencies
-- Ensures forward compatibility
-
-### SPEC 6 — Upper Bound Constraints
-
 [![SPEC 6 — Upper Bound Constraints on Dependencies](https://img.shields.io/badge/SPEC-6-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0006/)
-
-- No upper bounds on dependency versions unless technically required
-- Prevents dependency conflicts in downstream projects
-
-### SPEC 7 — Seeding Random Number Generation
-
 [![SPEC 7 — Seeding Pseudo-Random Number Generation](https://img.shields.io/badge/SPEC-7-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0007/)
 
-- Use `numpy.random.default_rng()` for random number generation
-- Use `rng` parameter for seeding
-- Avoid global state and legacy generators
-
-### SPEC 8 — Securing the Release Process
-
-- Trusted publishing via OpenID Connect (OIDC) to PyPI
-- Build provenance attestations using Sigstore
-- All GitHub Actions pinned to commit SHAs
+This project follows several [Scientific Python SPECs](https://scientific-python.org/specs/).
 
 ## Community Resources
 
