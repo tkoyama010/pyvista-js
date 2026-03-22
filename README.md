@@ -11,6 +11,8 @@
 
 ![pyvista-js rendering in JupyterLite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif)
 
+![pyvista-js rendering in stlite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif)
+
 ## Table of Contents
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->

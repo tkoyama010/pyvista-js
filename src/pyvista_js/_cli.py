@@ -569,6 +569,136 @@ def capture_preview(
     logger.info("Preview GIF saved to: %s", output_path)
 
 
+def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = True) -> Path:
+    """Capture screenshots from the stlite demo using Playwright.
+
+    Parameters
+    ----------
+    output_dir : Path
+        Directory to save temporary screenshots.
+    demo_url : str
+        URL of the stlite demo.
+    rotate : bool
+        If ``True``, rotate the 3D model by mouse drag between
+        screenshots. Default: ``True``.
+
+    Returns
+    -------
+    Path
+        Path to the directory containing screenshots.
+
+    """
+    import contextlib  # noqa: PLC0415
+
+    from playwright.sync_api import sync_playwright  # noqa: PLC0415
+
+    screenshots_dir = output_dir / "screenshots"
+    screenshots_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info("Capturing stlite demo from: %s", demo_url)
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 1200, "height": 800})
+        page = context.new_page()
+
+        try:
+            logger.info("Navigating to stlite demo...")
+            page.goto(demo_url, wait_until="domcontentloaded", timeout=60000)
+
+            logger.info("Waiting for stlite to load...")
+            page.wait_for_timeout(20000)
+
+            logger.info("Waiting for 3D rendering to appear...")
+            page.wait_for_selector("canvas", timeout=30000)
+            page.wait_for_timeout(5000)
+
+            if rotate:
+                logger.info("Capturing rendering screenshots with rotation...")
+                # Capture first screenshot at initial position
+                page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
+                page.wait_for_timeout(300)
+
+                # Capture remaining screenshots while rotating
+                for i in range(2, 15):
+                    _rotate_canvas_with_mouse(page)
+                    page.wait_for_timeout(300)
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(300)
+            else:
+                logger.info("Capturing rendering screenshots...")
+                for i in range(1, 15):
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(500)
+
+            logger.info("Captured 14 screenshots successfully")
+
+        except Exception:
+            logger.exception("Error during stlite demo capture")
+            with contextlib.suppress(Exception):
+                page.screenshot(path=str(screenshots_dir / "error_screenshot.png"))
+        finally:
+            context.close()
+            browser.close()
+
+    return screenshots_dir
+
+
+@app.command(name="capture-stlite-preview")
+def capture_stlite_preview(
+    output: Annotated[
+        Path,
+        typer.Option(
+            help="Output path for the GIF. Default: assets/stlite-preview.gif.",
+            metavar="PATH",
+        ),
+    ] = Path("assets/stlite-preview.gif"),
+    url: Annotated[
+        str,
+        typer.Option(
+            help="URL of the stlite demo.",
+            metavar="URL",
+        ),
+    ] = "https://tkoyama010.github.io/pyvista-js/stlite/",
+    fps: Annotated[
+        int,
+        typer.Option(
+            help="Frames per second for the GIF. Default: 2.",
+            metavar="INT",
+        ),
+    ] = 2,
+    rotate: Annotated[
+        bool,
+        typer.Option(
+            help="Rotate the 3D model by mouse drag while capturing screenshots. Default: True.",
+        ),
+    ] = True,
+) -> None:
+    """Capture a preview GIF of the stlite demo.
+
+    Automate capturing a preview GIF showing pyvista-js rendering in stlite.
+    Requires: playwright, imageio[ffmpeg], pillow.
+    """
+    import tempfile  # noqa: PLC0415
+
+    output_path = output
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_dir = Path(tmp)
+        screenshots_dir = _capture_stlite_screenshots(tmp_dir, url, rotate=rotate)
+
+        screenshot_files = list(screenshots_dir.glob("screenshot_*.png"))
+        if not screenshot_files:
+            logger.error("No screenshots were captured")
+            sys.exit(1)
+
+        if not _create_gif(screenshots_dir, output_path, fps=fps):
+            logger.error("Failed to create GIF")
+            sys.exit(1)
+
+    logger.info("stlite preview GIF saved to: %s", output_path)
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point wrapper for backwards compatibility
 # ---------------------------------------------------------------------------
