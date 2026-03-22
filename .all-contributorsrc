@@ -18,7 +18,8 @@
         "code",
         "review",
         "bug",
-        "translation"
+        "translation",
+        "platform"
       ]
     },
     {
