@@ -304,3 +304,163 @@ def test_plot_load_pickle_with_background_override(tmp_path) -> None:
     with patch("pyvista_js.Plotter.show") as mock_show:
         cli_main(["plot", "--load-pickle", str(pickle_file), "--background", "white"])
         mock_show.assert_called_once()
+
+
+def test_plot_with_screenshot(tmp_path) -> None:
+    """``pyvista-js plot --screenshot`` saves screenshot and doesn't open browser."""
+    screenshot_file = tmp_path / "output.png"
+    with patch("pyvista_js.Plotter.screenshot") as mock_screenshot, patch(
+        "pyvista_js.Plotter.show",
+    ) as mock_show:
+        cli_main(["plot", str(VTK_FILE), "--screenshot", str(screenshot_file)])
+
+        # Verify screenshot was called with correct parameters
+        mock_screenshot.assert_called_once_with(
+            filename=screenshot_file,
+            transparent_background=None,
+            return_img=False,
+            window_size=None,
+            scale=None,
+        )
+        # Verify show was NOT called when screenshot is provided
+        mock_show.assert_not_called()
+
+
+def test_plot_with_screenshot_transparent(tmp_path) -> None:
+    """``pyvista-js plot --screenshot --screenshot-transparent`` enables transparency."""
+    screenshot_file = tmp_path / "transparent.png"
+    with patch("pyvista_js.Plotter.screenshot") as mock_screenshot, patch(
+        "pyvista_js.Plotter.show",
+    ):
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                "--screenshot",
+                str(screenshot_file),
+                "--screenshot-transparent",
+            ],
+        )
+
+        # Verify screenshot was called with transparent_background=True
+        mock_screenshot.assert_called_once_with(
+            filename=screenshot_file,
+            transparent_background=True,
+            return_img=False,
+            window_size=None,
+            scale=None,
+        )
+
+
+def test_plot_with_screenshot_scale(tmp_path) -> None:
+    """``pyvista-js plot --screenshot --screenshot-scale`` sets scale factor."""
+    screenshot_file = tmp_path / "scaled.png"
+    with patch("pyvista_js.Plotter.screenshot") as mock_screenshot, patch(
+        "pyvista_js.Plotter.show",
+    ):
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                "--screenshot",
+                str(screenshot_file),
+                "--screenshot-scale",
+                "2",
+            ],
+        )
+
+        # Verify screenshot was called with scale=2
+        mock_screenshot.assert_called_once_with(
+            filename=screenshot_file,
+            transparent_background=None,
+            return_img=False,
+            window_size=None,
+            scale=2,
+        )
+
+
+def test_plot_with_screenshot_window_size(tmp_path) -> None:
+    """``pyvista-js plot --screenshot --screenshot-window-size`` sets window dimensions."""
+    screenshot_file = tmp_path / "custom_size.png"
+    with patch("pyvista_js.Plotter.screenshot") as mock_screenshot, patch(
+        "pyvista_js.Plotter.show",
+    ):
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                "--screenshot",
+                str(screenshot_file),
+                "--screenshot-window-size",
+                "1920,1080",
+            ],
+        )
+
+        # Verify screenshot was called with correct window_size tuple
+        mock_screenshot.assert_called_once_with(
+            filename=screenshot_file,
+            transparent_background=None,
+            return_img=False,
+            window_size=(1920, 1080),
+            scale=None,
+        )
+
+
+def test_plot_with_screenshot_all_options(tmp_path) -> None:
+    """``pyvista-js plot --screenshot`` with all screenshot options combined."""
+    screenshot_file = tmp_path / "full_options.png"
+    with patch("pyvista_js.Plotter.screenshot") as mock_screenshot, patch(
+        "pyvista_js.Plotter.show",
+    ):
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                "--screenshot",
+                str(screenshot_file),
+                "--screenshot-transparent",
+                "--screenshot-scale",
+                "3",
+                "--screenshot-window-size",
+                "2560,1440",
+            ],
+        )
+
+        # Verify all options were passed correctly
+        mock_screenshot.assert_called_once_with(
+            filename=screenshot_file,
+            transparent_background=True,
+            return_img=False,
+            window_size=(2560, 1440),
+            scale=3,
+        )
+
+
+def test_plot_with_screenshot_invalid_window_size(tmp_path) -> None:
+    """``pyvista-js plot --screenshot-window-size`` exits on invalid format."""
+    screenshot_file = tmp_path / "output.png"
+    with pytest.raises(SystemExit) as exc_info:
+        cli_main(
+            [
+                "plot",
+                str(VTK_FILE),
+                "--screenshot",
+                str(screenshot_file),
+                "--screenshot-window-size",
+                "invalid",
+            ],
+        )
+    assert exc_info.value.code == 1
+
+
+def test_plot_without_screenshot_still_shows() -> None:
+    """``pyvista-js plot`` without --screenshot calls show() normally."""
+    with patch("pyvista_js.Plotter.show") as mock_show, patch(
+        "pyvista_js.Plotter.screenshot",
+    ) as mock_screenshot:
+        cli_main(["plot", str(VTK_FILE)])
+
+        # Verify show was called and screenshot was NOT called
+        mock_show.assert_called_once()
+        mock_screenshot.assert_not_called()
+

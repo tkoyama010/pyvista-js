@@ -164,7 +164,7 @@ def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noq
 
 
 @app.command()
-def plot(  # noqa: PLR0913
+def plot(  # noqa: PLR0913, C901, PLR0912
     files: Annotated[
         list[Path] | None,
         typer.Argument(
@@ -209,12 +209,43 @@ def plot(  # noqa: PLR0913
             metavar="PATH",
         ),
     ] = None,
+    screenshot: Annotated[
+        Path | None,
+        typer.Option(
+            help="Save a screenshot to the specified file (PNG/JPEG). "
+            "When provided, the browser window will not open.",
+            metavar="PATH",
+        ),
+    ] = None,
+    screenshot_transparent: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help="Use transparent background for screenshot. Default: False.",
+        ),
+    ] = False,
+    screenshot_scale: Annotated[
+        int | None,
+        typer.Option(
+            help="Scale factor for screenshot resolution (e.g. 2 for double resolution).",
+            metavar="INT",
+        ),
+    ] = None,
+    screenshot_window_size: Annotated[
+        str | None,
+        typer.Option(
+            help="Window size for screenshot as 'width,height' (e.g. '1920,1080').",
+            metavar="SIZE",
+        ),
+    ] = None,
 ) -> None:
     """Plot one or more mesh files in the browser.
 
     Open one or more mesh files (.vtk, .ply, .obj) and render them
     in the default web browser using vtk.js. Alternatively, load a
     previously saved Plotter object from a pickle file.
+
+    If ``--screenshot`` is provided, a screenshot will be saved to the
+    specified file instead of opening the browser window.
     """
     import pickle as pickle_module  # noqa: PLC0415
 
@@ -256,7 +287,33 @@ def plot(  # noqa: PLR0913
             pickle_module.dump(plotter, f)
         logger.info("Plotter saved to: %s", pickle)
 
-    plotter.show()
+    # Handle screenshot if requested
+    if screenshot is not None:
+        # Parse window size if provided
+        window_size = None
+        if screenshot_window_size is not None:
+            try:
+                width_str, height_str = screenshot_window_size.split(",")
+                window_size = (int(width_str.strip()), int(height_str.strip()))
+            except (ValueError, AttributeError):
+                logger.error(  # noqa: TRY400
+                    "Invalid window size format '%s'. Expected 'width,height' (e.g. '1920,1080')",
+                    screenshot_window_size,
+                )
+                sys.exit(1)
+
+        # Take screenshot
+        plotter.screenshot(
+            filename=screenshot,
+            transparent_background=screenshot_transparent or None,
+            return_img=False,
+            window_size=window_size,
+            scale=screenshot_scale,
+        )
+        logger.info("Screenshot saved to: %s", screenshot)
+    else:
+        # Show in browser only if no screenshot was requested
+        plotter.show()
 
 
 @app.command()
