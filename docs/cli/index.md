@@ -22,4 +22,5 @@ The following `pyvista-js` console script commands are available:
 plot
 info
 capture-preview
+capture-stlite-preview
 ```
