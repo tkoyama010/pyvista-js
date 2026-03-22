@@ -376,7 +376,7 @@ def download_lucy() -> PolyData:
     >>> _ = pl.add_mesh(dataset, smooth_shading=True)
     >>> pl.add_light(flame_light)
     >>> pl.add_light(scene_light)
-    >>> pl.background_color = "k"
+    >>> pl.background_color = "black"
     >>> pl.show()  # doctest: +SKIP
 
     """
