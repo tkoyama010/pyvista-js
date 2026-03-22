@@ -4,10 +4,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import json
-import os
 import shutil
-import subprocess
-import sys
 from pathlib import Path
 
 # Copy source code to JupyterLite content directory
@@ -119,4 +116,3 @@ try_examples_preamble = (
     "sys.path.insert(0, '/drive/src')\n"
     "import pyvista_js as pv\n"
 )
-
