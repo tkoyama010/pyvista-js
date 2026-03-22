@@ -1289,3 +1289,30 @@ def test_screenshot_default_parameters() -> None:
     assert img.shape[0] == 400  # height
     assert img.shape[1] == 600  # width
     assert img.shape[2] == 3  # RGB by default
+
+
+def test_add_mesh_with_smooth_shading_default() -> None:
+    """Test adding mesh with default smooth shading (True)."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["smooth_shading"] is True
+
+
+def test_add_mesh_with_smooth_shading_enabled() -> None:
+    """Test adding mesh with smooth shading explicitly enabled."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), smooth_shading=True)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["smooth_shading"] is True
+
+
+def test_add_mesh_with_smooth_shading_disabled() -> None:
+    """Test adding mesh with smooth shading explicitly disabled."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), smooth_shading=False)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["smooth_shading"] is False

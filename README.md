@@ -1,36 +1,19 @@
 # pyvista-js
 
-[![PyPI](https://img.shields.io/pypi/v/pyvista-js.svg)](https://pypi.org/project/pyvista-js/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg)](https://doi.org/10.5281/zenodo.19092335)
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
-[![SPEC 1 — Lazy Loading of Submodules and Functions](https://img.shields.io/badge/SPEC-1-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0001/)
-[![SPEC 4 — Nightly Tests](https://img.shields.io/badge/SPEC-4-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0004/)
-[![SPEC 6 — Upper Bound Constraints on Dependencies](https://img.shields.io/badge/SPEC-6-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0006/)
-[![SPEC 7 — Seeding Pseudo-Random Number Generation](https://img.shields.io/badge/SPEC-7-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0007/)
-[![SPEC 8 — Securing the Release Process](https://img.shields.io/badge/SPEC-8-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0008/)
-[![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
 [![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest)
-[![Transifex](https://img.shields.io/badge/Translations-Transifex-blue.svg)](https://app.transifex.com/tkoyama010/pyvista-js/)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/)
-![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
-[![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
-[![zizmor](https://img.shields.io/badge/%F0%9F%8C%88-zizmor-white?labelColor=white)](https://zizmor.sh/)
-[![Diátaxis](https://img.shields.io/badge/Documentation-Di%C3%A1taxis-blue.svg?style=flat)](https://diataxis.fr/)
-[![Join the community](https://img.shields.io/badge/Join%20the%20community-on%20GitHub%20Discussions-blue)](https://github.com/tkoyama010/pyvista-js/discussions)
 
 [PyVista](https://github.com/pyvista/pyvista)-like API for [vtk.js](https://github.com/Kitware/vtk-js) — bring intuitive 3D visualization to the browser.
 
-<p align="center">✨ <strong><a href="https://tkoyama010.github.io/pyvista-js/">Try it in your browser</a></strong> ✨</p>
+<p align="center"> ⭐ <strong><a href="https://tkoyama010.github.io/pyvista-js/">Try it in your browser</a></strong> ⭐ </p>
 
 ![pyvista-js rendering in JupyterLite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif)
 
 ## Table of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Install](#install)
 - [Usage](#usage)
@@ -38,7 +21,12 @@
 - [Contributing](#contributing)
 - [License](#license)
 
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Install
+
+[![PyPI](https://img.shields.io/pypi/v/pyvista-js.svg)](https://pypi.org/project/pyvista-js/)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 ```bash
 pip install pyvista-js
@@ -64,6 +52,8 @@ plotter.show()
 
 ## Citation
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg)](https://doi.org/10.5281/zenodo.19092335)
+
 If you use pyvista-js in your research or projects, please cite it using the following:
 
 ```bibtex
@@ -80,6 +70,10 @@ If you use pyvista-js in your research or projects, please cite it using the fol
 Alternatively, you can use the [CITATION.cff](CITATION.cff) file in this repository, which follows the [Citation File Format](https://citation-file-format.github.io/) standard.
 
 ## Contributing
+
+![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)
+[![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 
 Enjoying pyvista-js? Show your support with a GitHub star — it's a simple click that means the world to us and helps others discover it, too!
 
@@ -119,5 +113,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
+
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 [BSD 3-Clause](LICENSE) © Tetsuo Koyama

@@ -424,3 +424,67 @@ def test_base_html_renderer_color_name_to_rgb() -> None:
     assert _BaseHTMLRenderer._color_name_to_rgb("red") == (1.0, 0.0, 0.0)
     assert _BaseHTMLRenderer._color_name_to_rgb("blue") == (0.0, 0.0, 1.0)
     assert _BaseHTMLRenderer._color_name_to_rgb("UNKNOWN") == (0.5, 0.5, 0.5)
+
+
+def test_smooth_shading_default(monkeypatch) -> None:
+    """Test smooth shading is enabled by default."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere())
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToGouraud" in html
+
+
+def test_smooth_shading_enabled(monkeypatch) -> None:
+    """Test smooth shading when explicitly enabled."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToGouraud" in html
+
+
+def test_smooth_shading_disabled(monkeypatch) -> None:
+    """Test flat shading when smooth shading is disabled."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=False)
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToFlat" in html
+    assert "vtkPolyDataNormals" in html
+    assert "setComputeCellNormals(true)" in html
+    assert "setComputePointNormals(false)" in html
+
+
+def test_smooth_shading_enabled_with_texmap_recomputes_point_normals(monkeypatch) -> None:
+    """Test that smooth shading with texmap recomputes point normals."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToGouraud" in html
+    assert "vtkPolyDataNormals" in html
+    assert "setComputePointNormals(true)" in html
+    assert "setComputeCellNormals(false)" in html
+
+
+def test_smooth_shading_with_actor_index(monkeypatch) -> None:
+    """Test smooth shading code uses correct actor index."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+    renderer.add_mesh_actor(Cube(), smooth_shading=False)
+
+    html = renderer._repr_html_()
+    # First actor (Sphere with texmap): Gouraud shading + point normals recomputed
+    assert "actor0.getProperty().setInterpolationToGouraud()" in html
+    assert "normals0.setComputePointNormals(true)" in html
+    assert "mapper0.setInputConnection(normals0.getOutputPort())" in html
+    # Second actor (Cube, no texmap): flat shading with cell normals filter
+    assert "actor1.getProperty().setInterpolationToFlat()" in html
+    assert "normals1.setComputeCellNormals(true)" in html
+    assert "mapper1.setInputConnection(normals1.getOutputPort())" in html
