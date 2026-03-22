@@ -1,3 +1,14 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Explanation](#explanation)
+  - [Overview](#overview)
+  - [Architecture](#architecture)
+  - [Features](#features)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Explanation
 
 Deeper understanding of pyvista-js concepts and architecture.

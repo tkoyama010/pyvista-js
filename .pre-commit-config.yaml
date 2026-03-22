@@ -25,6 +25,12 @@ repos:
     hooks:
       - id: mdformat
 
+  - repo: https://github.com/thlorenz/doctoc
+    rev: v2.3.0
+    hooks:
+      - id: doctoc
+        args: [--notitle]
+
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.16.2"
     hooks:

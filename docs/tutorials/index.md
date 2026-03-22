@@ -1,3 +1,15 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Tutorials](#tutorials)
+  - [Quick Start](#quick-start)
+  - [glTF Rendering](#gltf-rendering)
+    - [Using download_damaged_helmet](#using-download_damaged_helmet)
+  - [Physically Based Rendering](#physically-based-rendering)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Tutorials
 
 Topic driven themed lessons to help you get started with pyvista-js.

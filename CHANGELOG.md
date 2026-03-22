@@ -1,3 +1,51 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Changelog](#changelog)
+  - [0.10.0 (2026-03-21)](#0100-2026-03-21)
+    - [Features](#features)
+    - [Bug Fixes](#bug-fixes)
+    - [Documentation](#documentation)
+    - [Continuous Integration](#continuous-integration)
+  - [0.9.1 (2026-03-20)](#091-2026-03-20)
+    - [Bug Fixes](#bug-fixes-1)
+  - [0.9.0 (2026-03-20)](#090-2026-03-20)
+    - [Features](#features-1)
+    - [Bug Fixes](#bug-fixes-2)
+    - [Documentation](#documentation-1)
+    - [Continuous Integration](#continuous-integration-1)
+  - [0.8.0 (2026-03-19)](#080-2026-03-19)
+    - [Features](#features-2)
+  - [0.7.1 (2026-03-18)](#071-2026-03-18)
+    - [Continuous Integration](#continuous-integration-2)
+  - [0.7.0 (2026-03-18)](#070-2026-03-18)
+    - [Features](#features-3)
+  - [0.6.0 (2026-03-18)](#060-2026-03-18)
+    - [Features](#features-4)
+    - [Documentation](#documentation-2)
+  - [0.5.1 (2026-03-18)](#051-2026-03-18)
+    - [Bug Fixes](#bug-fixes-3)
+  - [0.5.0 (2026-03-17)](#050-2026-03-17)
+    - [Features](#features-5)
+    - [Bug Fixes](#bug-fixes-4)
+    - [Documentation](#documentation-3)
+  - [0.4.0 (2026-03-16)](#040-2026-03-16)
+    - [Features](#features-6)
+    - [Continuous Integration](#continuous-integration-3)
+  - [0.3.0 (2026-03-15)](#030-2026-03-15)
+    - [Features](#features-7)
+    - [Documentation](#documentation-4)
+  - [0.2.3 (2026-03-14)](#023-2026-03-14)
+    - [Continuous Integration](#continuous-integration-4)
+  - [0.2.2 (2026-03-14)](#022-2026-03-14)
+    - [Features](#features-8)
+    - [Bug Fixes](#bug-fixes-5)
+    - [Documentation](#documentation-5)
+    - [Continuous Integration](#continuous-integration-5)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Changelog
 
 ## [0.10.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.9.1...pyvista-js-v0.10.0) (2026-03-21)
