@@ -84,6 +84,11 @@ language = "en"
 locale_dirs = ["locale/"]
 gettext_compact = False
 
+# Configure gettext to handle Python docstrings properly
+# By not including 'python' in gettext_additional_targets, docstrings remain untranslated
+# This allows the Try it with JupyterLite buttons to appear in all language builds
+gettext_auto_build = False
+
 # Suppress warnings for missing cross-references in included README
 # and pre-existing duplicate object description warnings
 suppress_warnings = [
@@ -108,9 +113,33 @@ myst_enable_extensions = [
 jupyterlite_dir = ".jupyterlite"
 jupyterlite_contents = ["content"]
 global_enable_try_examples = True
-try_examples_global_warning_text = (
-    "pyvista-js's interactive examples are experimental and may not always work as expected."
-)
+
+# Button text translations for different languages
+_button_text_translations = {
+    "en": "Try it with JupyterLite!",
+    "ja": "JupyterLiteで試す！",
+}
+
+# Warning text translations for different languages
+_warning_text_translations = {
+    "en": "pyvista-js's interactive examples are experimental and may not always work as expected.",
+    "ja": "pyvista-jsのインタラクティブな例は実験的なものであり、常に期待通りに動作するとは限りません。",
+}
+
+
+# Function to get translated text based on language
+def _get_button_text(lang):
+    return _button_text_translations.get(lang, _button_text_translations["en"])
+
+
+def _get_warning_text(lang):
+    return _warning_text_translations.get(lang, _warning_text_translations["en"])
+
+
+# Set initial values based on default language
+try_examples_global_button_text = _get_button_text(language)
+try_examples_global_warning_text = _get_warning_text(language)
+
 try_examples_preamble = (
     "import micropip\n"
     "await micropip.install('jinja2')\n"
@@ -119,6 +148,22 @@ try_examples_preamble = (
     "sys.path.insert(0, '/drive/src')\n"
     "import pyvista_js as pv\n"
 )
+
+
+def setup(app):
+    """Sphinx extension setup function to handle language-dependent configuration."""
+
+    def update_jupyterlite_config(app, config):
+        """Update JupyterLite configuration based on the selected language."""
+        lang = config.language or "en"
+        # Update config with language-specific translations
+        config.try_examples_global_button_text = _get_button_text(lang)
+        config.try_examples_global_warning_text = _get_warning_text(lang)
+
+    # Use config-inited event which fires after language is set but before building
+    app.connect("config-inited", update_jupyterlite_config)
+    return {"version": "0.1", "parallel_read_safe": True}
+
 
 # -- Build development wheel for stlite demo --------------------------------
 _wheel_dir = docs_dir / "_static"
