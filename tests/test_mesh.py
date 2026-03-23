@@ -358,8 +358,8 @@ def test_tube_capping_parameter() -> None:
     js_capped = tube_capped.generate_vtk_js_source(0)
     js_uncapped = tube_uncapped.generate_vtk_js_source(0)
 
-    assert "const _capping = true;" in js_capped
-    assert "const _capping = false;" in js_uncapped
+    assert "capping: true" in js_capped
+    assert "capping: false" in js_uncapped
 
 
 def test_tube_preserves_faces() -> None:

@@ -1,17 +1,7 @@
 <script>
-{
-const originX = {{ ORIGIN_X }};
-const originY = {{ ORIGIN_Y }};
-const originZ = {{ ORIGIN_Z }};
-const point1X = {{ POINT1_X }};
-const point1Y = {{ POINT1_Y }};
-const point1Z = {{ POINT1_Z }};
-const point2X = {{ POINT2_X }};
-const point2Y = {{ POINT2_Y }};
-const point2Z = {{ POINT2_Z }};
-const iResolution = {{ I_RESOLUTION }};
-const jResolution = {{ J_RESOLUTION }};
-{% include "plane_source.ts" %}
-var {{ SOURCE }} = _source;
-}
+const {{ SOURCE }} = vtk.Filters.Sources.vtkPlaneSource.newInstance({ origin:
+[{{ ORIGIN_X }}, {{ ORIGIN_Y }}, {{ ORIGIN_Z }}], point1: [{{ POINT1_X }},
+{{ POINT1_Y }}, {{ POINT1_Z }}], point2: [{{ POINT2_X }}, {{ POINT2_Y }},
+{{ POINT2_Z }}], xResolution: {{ I_RESOLUTION }}, yResolution:
+{{ J_RESOLUTION }}, });
 </script>

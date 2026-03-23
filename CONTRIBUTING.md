@@ -157,14 +157,8 @@ git commit -m "feat(plotter): add support for physically based rendering"
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 The project uses pre-commit hooks to ensure code quality.
-
-```bash
-# Run all pre-commit hooks
-uv run pre-commit run --all-files
-```
 
 ## Testing
 
