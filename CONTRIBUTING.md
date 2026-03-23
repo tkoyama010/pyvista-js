@@ -4,9 +4,9 @@ Thank you for your interest in contributing to pyvista-js! This document provide
 
 ## Table of Contents
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
 
+- [Table of Contents](#table-of-contents)
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
@@ -39,7 +39,7 @@ Thank you for your interest in contributing to pyvista-js! This document provide
 - [Community Resources](#community-resources)
 - [Questions?](#questions)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- mdformat-toc end -->
 
 ## Code of Conduct
 
