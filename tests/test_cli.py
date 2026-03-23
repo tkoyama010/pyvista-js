@@ -10,8 +10,10 @@ import pytest
 
 import pyvista_js as pv
 from pyvista_js._cli import (
+    _capture_stlite_screenshots,
     _rotate_canvas_with_mouse,
     capture_preview,
+    capture_stlite_preview,
     cli_main,
 )
 
@@ -304,3 +306,139 @@ def test_plot_load_pickle_with_background_override(tmp_path) -> None:
     with patch("pyvista_js.Plotter.show") as mock_show:
         cli_main(["plot", "--load-pickle", str(pickle_file), "--background", "white"])
         mock_show.assert_called_once()
+
+
+def test_capture_stlite_preview_with_rotate(tmp_path) -> None:
+    """``capture-stlite-preview --rotate`` calls stlite capture with rotation."""
+    with (
+        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
+
+        assert mock_capture.call_args.kwargs["rotate"] is True
+
+
+def test_capture_stlite_preview_with_no_rotate(tmp_path) -> None:
+    """``capture-stlite-preview --no-rotate`` calls stlite capture without rotation."""
+    with (
+        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=False)
+
+        assert mock_capture.call_args.kwargs["rotate"] is False
+
+
+def _make_mock_playwright():
+    """Create mock Playwright objects for testing screenshot capture."""
+    mock_page = MagicMock()
+    mock_context = MagicMock()
+    mock_context.new_page.return_value = mock_page
+    mock_browser = MagicMock()
+    mock_browser.new_context.return_value = mock_context
+    mock_pw = MagicMock()
+    mock_pw.chromium.launch.return_value = mock_browser
+    mock_pw_cm = MagicMock()
+    mock_pw_cm.__enter__ = MagicMock(return_value=mock_pw)
+    mock_pw_cm.__exit__ = MagicMock(return_value=False)
+    return mock_pw_cm, mock_page, mock_context, mock_browser
+
+
+def test_capture_stlite_screenshots_with_rotate(tmp_path) -> None:
+    """_capture_stlite_screenshots creates screenshots with rotation."""
+    mock_pw_cm, mock_page, mock_context, mock_browser = _make_mock_playwright()
+
+    def fake_screenshot(path: str) -> None:
+        Path(path).write_bytes(b"fake-png")
+
+    mock_page.screenshot.side_effect = fake_screenshot
+
+    with patch("playwright.sync_api.sync_playwright", return_value=mock_pw_cm):
+        result = _capture_stlite_screenshots(tmp_path, "http://example.com", rotate=True)
+
+    assert result == tmp_path / "screenshots"
+    # 1 initial + 13 rotated = 14 screenshots
+    assert mock_page.screenshot.call_count == 14
+    mock_context.close.assert_called_once()
+    mock_browser.close.assert_called_once()
+
+
+def test_capture_stlite_screenshots_without_rotate(tmp_path) -> None:
+    """_capture_stlite_screenshots creates screenshots without rotation."""
+    mock_pw_cm, mock_page, mock_context, mock_browser = _make_mock_playwright()
+
+    def fake_screenshot(path: str) -> None:
+        Path(path).write_bytes(b"fake-png")
+
+    mock_page.screenshot.side_effect = fake_screenshot
+
+    with patch("playwright.sync_api.sync_playwright", return_value=mock_pw_cm):
+        result = _capture_stlite_screenshots(tmp_path, "http://example.com", rotate=False)
+
+    assert result == tmp_path / "screenshots"
+    assert mock_page.screenshot.call_count == 14
+    mock_context.close.assert_called_once()
+    mock_browser.close.assert_called_once()
+
+
+def test_capture_stlite_screenshots_handles_exception(tmp_path) -> None:
+    """_capture_stlite_screenshots handles exceptions gracefully."""
+    mock_pw_cm, mock_page, mock_context, mock_browser = _make_mock_playwright()
+    mock_page.goto.side_effect = Exception("Connection refused")
+
+    with patch("playwright.sync_api.sync_playwright", return_value=mock_pw_cm):
+        result = _capture_stlite_screenshots(tmp_path, "http://example.com", rotate=True)
+
+    assert result == tmp_path / "screenshots"
+    mock_context.close.assert_called_once()
+    mock_browser.close.assert_called_once()
+
+
+def test_capture_stlite_preview_no_screenshots(tmp_path) -> None:
+    """capture_stlite_preview exits when no screenshots are captured."""
+    with patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture:
+        mock_capture.return_value = tmp_path
+        # No screenshot files created in tmp_path
+        with pytest.raises(SystemExit, match="1"):
+            capture_stlite_preview(
+                output=tmp_path / "out.gif",
+                url="http://example.com",
+                rotate=True,
+            )
+
+
+def test_capture_stlite_preview_gif_creation_fails(tmp_path) -> None:
+    """capture_stlite_preview exits when GIF creation fails."""
+    with (
+        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=False),
+    ):
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+        with pytest.raises(SystemExit, match="1"):
+            capture_stlite_preview(
+                output=tmp_path / "out.gif",
+                url="http://example.com",
+                rotate=True,
+            )
+
+
+def test_capture_stlite_preview_rotate_default(tmp_path) -> None:
+    """capture_stlite_preview defaults to rotate=True when None."""
+    with (
+        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
+        patch("pyvista_js._cli._create_gif", return_value=True),
+    ):
+        mock_capture.return_value = tmp_path
+        (tmp_path / "screenshot_01.png").write_bytes(b"fake")
+
+        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com")
+
+        assert mock_capture.call_args.kwargs["rotate"] is True

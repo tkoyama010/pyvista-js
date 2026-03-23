@@ -2,13 +2,19 @@
 
 [![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/)
+[![stlite](https://img.shields.io/badge/stlite-lite_now-FF4B4B?logo=streamlit&logoColor=white)](https://tkoyama010.github.io/pyvista-js/stlite)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)
 
 [PyVista](https://github.com/pyvista/pyvista)-like API for [vtk.js](https://github.com/Kitware/vtk-js) — bring intuitive 3D visualization to the browser.
 
-<p align="center"> ⭐ <strong><a href="https://tkoyama010.github.io/pyvista-js/">Try it in your browser</a></strong> ⭐ </p>
+| [Try it with JupyterLite] | [Try it with Stlite] |
+| :-----------------------: | :------------------: |
+|   ![jupyterlite-preview]  |   ![stlite-preview]  |
 
-![pyvista-js rendering in JupyterLite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif)
+[try it with jupyterlite]: https://tkoyama010.github.io/pyvista-js/
+[jupyterlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif
+[try it with stlite]: https://tkoyama010.github.io/pyvista-js/stlite
+[stlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif
 
 ## Table of Contents
 
@@ -72,8 +78,6 @@ Alternatively, you can use the [CITATION.cff](CITATION.cff) file in this reposit
 ## Contributing
 
 ![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)
-[![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 
 Enjoying pyvista-js? Show your support with a GitHub star — it's a simple click that means the world to us and helps others discover it, too!
 

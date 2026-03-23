@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 13:46+0000\n"
+"POT-Creation-Date: 2026-03-22 16:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,7 +42,7 @@ msgstr ""
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter:12
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_axes:9
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_light:7
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:44
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:49
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_points:20
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_scalar_bar:16
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_text:7
@@ -350,30 +350,34 @@ msgid "Roughness factor for PBR, between 0 (mirror-like) and 1 (fully rough). On
 msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:17
+msgid "Enable smooth shading (Gouraud interpolation). When True, the mesh surface appears smooth by interpolating normals across polygons. When False, flat shading is used where each polygon face has a uniform color. Default is True."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:22
 msgid "Surface texture to apply to the mesh. Create one with :class:`~pyvista_js.Texture`. The mesh should have texture coordinates set (e.g., via :meth:`~pyvista_js.PolyData.texture_map_to_plane`) or use a primitive (Sphere, Cube, Cylinder) that generates them automatically."
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:23
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:28
 msgid "Show the edges of the mesh. Default is False."
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:25
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:30
 msgid "Color of the edges when ``show_edges=True``. Can be a color name or RGB tuple. If not specified, defaults to black."
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:28
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:33
 msgid "Visualization style of the mesh. One of ``'surface'`` (default), ``'wireframe'``, or ``'points'``."
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:31
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:36
 msgid "Name of the scalar array to use for coloring. The array must exist in ``mesh.point_data``."
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:34
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:39
 msgid "Name of the colormap to use when rendering scalars. Default is 'viridis'. Supported colormaps: 'viridis', 'plasma', 'inferno', 'magma', 'jet', 'rainbow', 'turbo', 'coolwarm'."
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:38
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:43
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_points:14
 msgid "Additional rendering options."
 msgstr ""
@@ -382,7 +386,7 @@ msgstr ""
 msgid "Returns"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:40
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:45
 msgid "The vtk.js actor representing the mesh."
 msgstr ""
 
@@ -390,28 +394,32 @@ msgstr ""
 msgid "Return type"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:53
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:58
 msgid "PBR example:"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:60
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:65
 msgid "Texture example:"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:70
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:75
 msgid "Show edges:"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:78
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:83
 msgid "Wireframe rendering:"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:86
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:91
 msgid "Surface with edges:"
 msgstr ""
 
-#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:94
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:99
 msgid "Scalar coloring:"
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:108
+msgid "Compare smooth shading (left) and flat shading (right) side by side:"
 msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_points:3
