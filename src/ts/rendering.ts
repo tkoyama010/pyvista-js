@@ -20,24 +20,24 @@ export function initializeRenderer(
 ): RenderingContext {
   const renderer = vtkRenderer.newInstance();
   renderer.setBackground(...backgroundColor);
-  
+
   const renderWindow = vtkRenderWindow.newInstance();
   renderWindow.addRenderer(renderer);
-  
+
   const openGLRenderWindow = vtkOpenGLRenderWindow.newInstance();
   renderWindow.addView(openGLRenderWindow);
   openGLRenderWindow.setContainer(container);
-  
+
   const bbox = container.getBoundingClientRect();
   openGLRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
-  
+
   const interactor = vtkRenderWindowInteractor.newInstance();
   const interactorStyle = vtkInteractorStyleTrackballCamera.newInstance();
   interactor.setInteractorStyle(interactorStyle);
   interactor.setView(openGLRenderWindow);
   interactor.initialize();
   interactor.bindEvents(container);
-  
+
   return {
     renderer,
     renderWindow,
@@ -50,12 +50,11 @@ export function initializeRenderer(
 export function createActor(source: any): any {
   const mapper = vtkMapper.newInstance();
   mapper.setInputData(source);
-  
+
   const actor = vtkActor.newInstance();
   actor.setMapper(mapper);
-  
+
   return actor;
 }
 
 export { vtkActor, vtkMapper };
-

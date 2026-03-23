@@ -25,5 +25,3 @@ if (result.metafile) {
     console.log(`\nBundle size: ${(output.bytes / 1024).toFixed(1)} KB`);
   }
 }
-
-

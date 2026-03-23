@@ -4,12 +4,12 @@
 export { vtk } from "./vtk_compat";
 
 // Export rendering utilities
-export { 
-  initializeRenderer, 
+export {
+  initializeRenderer,
   createActor,
   vtkActor,
   vtkMapper,
-  type RenderingContext 
+  type RenderingContext
 } from "./rendering";
 
 // Export all sources

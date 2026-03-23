@@ -1669,23 +1669,20 @@ class BrowserRenderer(_BaseHTMLRenderer):
             "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
             " overflow: hidden; }\n" + container_rule + "  </style>\n"
         )
-        
+
         # Use bundled JavaScript if available, otherwise fallback to CDN
         script_tag = (
             f"  <script>{_BUNDLE_JS_CONTENT}</script>\n"
             if _BUNDLE_JS_CONTENT
             else f"  <script src='{_VTKJS_CDN}'></script>\n"
         )
-        
+
         return (
             "<!DOCTYPE html>\n"
             "<html>\n"
             "<head>\n"
             "  <meta charset='utf-8'>\n"
-            "  <title>pyvista-js</title>\n"
-            + script_tag
-            + style
-            + "</head>\n"
+            "  <title>pyvista-js</title>\n" + script_tag + style + "</head>\n"
             "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
