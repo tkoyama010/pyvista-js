@@ -11,6 +11,7 @@ import pytest
 import pyvista_js as pv
 from pyvista_js._cli import (
     _capture_stlite_screenshots,
+    _find_canvas_in_frames,
     _rotate_canvas_with_mouse,
     capture_preview,
     capture_stlite_preview,
@@ -141,16 +142,44 @@ def test_plot_with_pickle_multiple_meshes(tmp_path) -> None:
     assert len(plotter.actors) == 2
 
 
+def test_find_canvas_in_frames_finds_canvas() -> None:
+    """``_find_canvas_in_frames`` returns frame and canvas from nested iframes."""
+    canvas = MagicMock()
+    frame = MagicMock()
+    frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [frame]
+
+    found_frame, found_canvas = _find_canvas_in_frames(page)
+
+    assert found_frame is frame
+    assert found_canvas is canvas
+
+
+def test_find_canvas_in_frames_returns_none_when_no_canvas() -> None:
+    """``_find_canvas_in_frames`` returns (None, None) when no canvas exists."""
+    frame = MagicMock()
+    frame.query_selector.return_value = None
+    page = MagicMock()
+    page.frames = [frame]
+
+    found_frame, found_canvas = _find_canvas_in_frames(page)
+
+    assert found_frame is None
+    assert found_canvas is None
+
+
 def test_rotate_canvas_with_mouse_performs_drag() -> None:
     """``_rotate_canvas_with_mouse`` performs mouse drag on canvas."""
-    page = MagicMock()
     canvas = MagicMock()
     canvas.bounding_box.return_value = {"x": 100, "y": 100, "width": 600, "height": 400}
-    page.query_selector.return_value = canvas
+    frame = MagicMock()
+    frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [frame]
 
     _rotate_canvas_with_mouse(page)
 
-    page.query_selector.assert_called_once_with("canvas")
     canvas.bounding_box.assert_called_once()
     page.mouse.move.assert_called()
     page.mouse.down.assert_called_once()
@@ -159,25 +188,27 @@ def test_rotate_canvas_with_mouse_performs_drag() -> None:
 
 def test_rotate_canvas_with_mouse_handles_missing_canvas() -> None:
     """``_rotate_canvas_with_mouse`` handles gracefully when canvas is not found."""
+    frame = MagicMock()
+    frame.query_selector.return_value = None
     page = MagicMock()
-    page.query_selector.return_value = None
+    page.frames = [frame]
 
     _rotate_canvas_with_mouse(page)
 
-    page.query_selector.assert_called_once_with("canvas")
     page.mouse.move.assert_not_called()
 
 
 def test_rotate_canvas_with_mouse_handles_missing_bounding_box() -> None:
     """``_rotate_canvas_with_mouse`` handles gracefully when bounding box is unavailable."""
-    page = MagicMock()
     canvas = MagicMock()
     canvas.bounding_box.return_value = None
-    page.query_selector.return_value = canvas
+    frame = MagicMock()
+    frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [frame]
 
     _rotate_canvas_with_mouse(page)
 
-    page.query_selector.assert_called_once_with("canvas")
     canvas.bounding_box.assert_called_once()
     page.mouse.move.assert_not_called()
 
@@ -338,7 +369,13 @@ def test_capture_stlite_preview_with_no_rotate(tmp_path) -> None:
 
 def _make_mock_playwright():
     """Create mock Playwright objects for testing screenshot capture."""
+    mock_canvas = MagicMock()
+    mock_canvas.bounding_box.return_value = {"x": 100, "y": 100, "width": 600, "height": 400}
+    mock_frame = MagicMock()
+    mock_frame.query_selector.return_value = mock_canvas
     mock_page = MagicMock()
+    # page.frames returns all frames including nested iframes
+    mock_page.frames = [mock_frame]
     mock_context = MagicMock()
     mock_context.new_page.return_value = mock_page
     mock_browser = MagicMock()
