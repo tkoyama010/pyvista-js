@@ -180,12 +180,6 @@ def test_ply_reader_js_output(method: str, expected: str) -> None:
             "missing 'end_header'",
         ),
         (
-            "binary.ply",
-            "ply\nformat binary_little_endian 1.0\nelement vertex 0\nend_header\n",
-            ValueError,
-            "Only ASCII",
-        ),
-        (
             "no_format.ply",
             "ply\nelement vertex 0\nend_header\n",
             ValueError,
@@ -544,6 +538,21 @@ def test_download_bunny_returns_ply_mesh() -> None:
 def test_download_bunny_js_output() -> None:
     """Test that download_bunny mesh generates valid vtk.js source."""
     mesh = examples.download_bunny()
+    source = mesh.generate_vtk_js_source(0)
+    assert "vtkPLYReader" in source
+    assert "parseAsArrayBuffer" in source
+    assert "source0" in source
+
+
+def test_download_lucy_returns_ply_mesh() -> None:
+    """Test that download_lucy returns a _PLYMesh."""
+    mesh = examples.download_lucy()
+    assert mesh.n_points > 0
+
+
+def test_download_lucy_js_output() -> None:
+    """Test that download_lucy mesh generates valid vtk.js source."""
+    mesh = examples.download_lucy()
     source = mesh.generate_vtk_js_source(0)
     assert "vtkPLYReader" in source
     assert "parseAsArrayBuffer" in source

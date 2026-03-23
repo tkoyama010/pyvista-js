@@ -334,3 +334,47 @@ def download_bunny() -> PolyData:
 
     path = _download_file("bunny.ply")
     return PLYReader(path).read()
+
+
+def download_lucy() -> PolyData:
+    """Download the Lucy Angel dataset.
+
+    Downloads ``lucy.ply`` from the PyVista vtk-data repository and
+    returns it as a :class:`~pyvista_js.PolyData` mesh, mirroring the
+    ``pyvista.examples.download_lucy`` API.
+
+    The Lucy Angel is a statue from The Stanford 3D Scanning Repository,
+    decimated to approximately 100k triangles.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The Lucy Angel mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
+    >>> dataset = examples.download_lucy()
+    >>> flame_light = pv.Light(
+    ...     color=[0.886, 0.345, 0.133],
+    ...     position=[716, -29, 1000],
+    ...     intensity=5.0,
+    ...     positional=True,
+    ...     cone_angle=90,
+    ...     attenuation_values=(0.001, 0.005, 0),
+    ... )
+    >>> scene_light = pv.Light(intensity=0.5)
+    >>> pl = pv.Plotter(lighting=None)
+    >>> _ = pl.add_mesh(dataset, smooth_shading=True)
+    >>> pl.add_light(flame_light)
+    >>> pl.add_light(scene_light)
+    >>> pl.background_color = "black"
+    >>> pl.view_xz()
+    >>> pl.show()  # doctest: +SKIP
+
+    """
+    from .readers import PLYReader  # noqa: PLC0415
+
+    path = _download_file("lucy.ply")
+    return PLYReader(path).read()
