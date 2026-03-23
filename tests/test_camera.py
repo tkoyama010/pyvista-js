@@ -324,11 +324,6 @@ def test_camera_generates_elevation_code() -> None:
     assert "cam.elevation(45.0)" in html
 
 
-# ---------------------------------------------------------------------------
-# Camera movement method tests
-# ---------------------------------------------------------------------------
-
-
 def _cam(
     pos: tuple[float, float, float] = (0.0, 0.0, 5.0),
     fp: tuple[float, float, float] = (0.0, 0.0, 0.0),
