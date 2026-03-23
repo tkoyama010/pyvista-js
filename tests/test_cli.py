@@ -13,6 +13,7 @@ from pyvista_js._cli import (
     _capture_stlite_screenshots,
     _find_canvas_in_frames,
     _rotate_canvas_with_mouse,
+    _wait_for_canvas_in_frames,
     capture_preview,
     capture_stlite_preview,
     cli_main,
@@ -167,6 +168,45 @@ def test_find_canvas_in_frames_returns_none_when_no_canvas() -> None:
 
     assert found_frame is None
     assert found_canvas is None
+
+
+def test_find_canvas_in_frames_skips_frames_that_raise() -> None:
+    """``_find_canvas_in_frames`` skips frames that raise and continues searching."""
+    bad_frame = MagicMock()
+    bad_frame.query_selector.side_effect = Exception("detached")
+    canvas = MagicMock()
+    good_frame = MagicMock()
+    good_frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [bad_frame, good_frame]
+
+    found_frame, found_canvas = _find_canvas_in_frames(page)
+
+    assert found_frame is good_frame
+    assert found_canvas is canvas
+
+
+def test_wait_for_canvas_in_frames_succeeds() -> None:
+    """``_wait_for_canvas_in_frames`` returns when canvas is found."""
+    canvas = MagicMock()
+    frame = MagicMock()
+    frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [frame]
+
+    # Should not raise
+    _wait_for_canvas_in_frames(page, timeout=5)
+
+
+def test_wait_for_canvas_in_frames_raises_on_timeout() -> None:
+    """``_wait_for_canvas_in_frames`` raises TimeoutError when canvas is not found."""
+    frame = MagicMock()
+    frame.query_selector.return_value = None
+    page = MagicMock()
+    page.frames = [frame]
+
+    with pytest.raises(TimeoutError, match="Canvas element not found"):
+        _wait_for_canvas_in_frames(page, timeout=0)
 
 
 def test_rotate_canvas_with_mouse_performs_drag() -> None:
