@@ -8,7 +8,7 @@
             border: 2px solid #333;
             position: relative"></div>
 <script>
-  (function() {
+  (function () {
     function tryRender() {
       if (typeof vtk === "undefined") {
         setTimeout(tryRender, 100);
@@ -39,34 +39,20 @@
         interactor.initialize();
         interactor.bindEvents(container);
 
-{% filter indent(width=8, first=False) %}
-{{ LIGHTS_CODE }}
-{% endfilter %}
+        {{ LIGHTS_CODE }}
 
-{% filter indent(width=8, first=False) %}
-{{ ACTORS_CODE }}
-{% endfilter %}
+        {{ ACTORS_CODE }}
 
-{% filter indent(width=8, first=False) %}
-{{ SCALAR_BAR_CODE }}
-{% endfilter %}
+        {{ SCALAR_BAR_CODE }}
 
-{% filter indent(width=8, first=False) %}
-{{ TEXT_ACTORS_CODE }}
-{% endfilter %}
+        {{ TEXT_ACTORS_CODE }}
 
-{% filter indent(width=8, first=False) %}
-{{ ENVIRONMENT_CODE }}
-{% endfilter %}
+        {{ ENVIRONMENT_CODE }}
 
-{% filter indent(width=8, first=False) %}
-{{ AXES_CODE }}
-{% endfilter %}
+        {{ AXES_CODE }}
 
         renderer.resetCamera();
-{% filter indent(width=8, first=False) %}
-{{ CAMERA_CODE }}
-{% endfilter %}
+        {{ CAMERA_CODE }}
         renderWindow.render();
       } catch (e) {
         console.error("Error rendering vtk.js scene:", e);
