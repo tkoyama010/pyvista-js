@@ -488,21 +488,44 @@ def _run_notebook_cells(page) -> None:  # noqa: ANN001
         page.keyboard.press("Shift+Enter")
 
 
-def _rotate_canvas_with_mouse(page, canvas_selector: str = "canvas") -> None:  # noqa: ANN001
+def _find_canvas_in_frames(page) -> tuple:  # noqa: ANN001
+    """Find a canvas element by searching through all frames (including nested iframes).
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+
+    Returns
+    -------
+    tuple
+        A (frame, element_handle) pair, or (None, None) if not found.
+
+    """
+    for frame in page.frames:
+        try:
+            canvas = frame.query_selector("canvas")
+            if canvas is not None:
+                return frame, canvas
+        except Exception:  # noqa: BLE001
+            logger.debug("Failed to query canvas in frame", exc_info=True)
+            continue
+    return None, None
+
+
+def _rotate_canvas_with_mouse(page) -> None:  # noqa: ANN001
     """Rotate the 3D model by dragging the mouse across the canvas.
 
     Parameters
     ----------
     page : playwright.sync_api.Page
         The Playwright page object.
-    canvas_selector : str
-        CSS selector for the canvas element. Default: "canvas".
 
     """
     try:
-        canvas = page.query_selector(canvas_selector)
+        _frame, canvas = _find_canvas_in_frames(page)
         if canvas is None:
-            logger.warning("Canvas element not found, skipping rotation")
+            logger.warning("Canvas element not found in any frame, skipping rotation")
             return
 
         box = canvas.bounding_box()
@@ -724,6 +747,36 @@ def capture_preview(
     logger.info("Preview GIF saved to: %s", output_path)
 
 
+def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN001
+    """Poll all frames until a canvas element appears or *timeout* seconds elapse.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    timeout : int
+        Maximum seconds to wait.  Default: 120.
+
+    Raises
+    ------
+    TimeoutError
+        If no canvas is found within *timeout* seconds.
+
+    """
+    import time  # noqa: PLC0415
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        _frame, canvas = _find_canvas_in_frames(page)
+        if canvas is not None:
+            logger.info("Found canvas element in iframe")
+            return
+        page.wait_for_timeout(2000)
+
+    msg = f"Canvas element not found in any frame within {timeout} seconds"
+    raise TimeoutError(msg)
+
+
 def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = True) -> Path:
     """Capture screenshots from the stlite demo using Playwright.
 
@@ -762,12 +815,16 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
             page.goto(demo_url, wait_until="networkidle", timeout=120000)
 
             logger.info("Waiting for stlite to load and install dependencies...")
-            # Wait longer for stlite to initialize Python and install pyvista-js
+            # Wait for stlite to initialize Python and install pyvista-js
             page.wait_for_timeout(60000)
 
-            logger.info("Waiting for 3D rendering to appear...")
-            # Increased timeout to 120 seconds for canvas to appear
-            page.wait_for_selector("canvas", timeout=120000)
+            logger.info("Waiting for 3D rendering to appear in iframes...")
+            # stlite renders the Streamlit app in iframes, and
+            # components.html() creates another nested iframe for the
+            # Three.js canvas.  page.wait_for_selector only searches the
+            # top-level document, so we poll all frames instead.
+            _wait_for_canvas_in_frames(page)
+
             page.wait_for_timeout(5000)
 
             if rotate:
