@@ -155,40 +155,11 @@ git commit -m "feat(plotter): add support for physically based rendering"
 
 ## Code Quality Standards
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
 
-### Pre-commit Hooks
-
-The project uses pre-commit hooks to ensure code quality. These run automatically on commit:
-
-- **Formatting**: `ruff-format` for Python code, `mdformat` for Markdown
-- **Linting**: `ruff` for Python linting
-- **Type Checking**: `mypy` for static type analysis
-- **HTML Templates**: `djlint` for Jinja template formatting
-- **Security**: `pygrep-hooks` for common security issues
-- **Documentation**: `codespell` for spell checking
-- **Repository Review**: `sp-repo-review` for Scientific Python standards
-
-### Running Code Quality Checks Manually
-
-```bash
-# Run all pre-commit hooks
-uv run pre-commit run --all-files
-
-# Run specific tools
-uv run ruff check src/
-uv run ruff format src/
-uv run mypy src/
-```
-
-### Code Style Guidelines
-
-- **Line Length**: Maximum 100 characters
-- **Type Hints**: Use type hints where appropriate (gradual typing approach)
-- **Docstrings**: Follow existing patterns in the codebase
-- **Naming**: Use descriptive variable and function names
-- **Imports**: Organize imports logically; pre-commit will sort them
+The project uses pre-commit hooks to ensure code quality.
 
 ## Testing
 
