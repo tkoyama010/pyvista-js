@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
-from .mesh import PolyData
+from .mesh import PolyData, _GaussianSplatMesh
 
 _TEMPLATES_DIR_FOR_LOADER = Path(__file__).parent / "templates"
 _jinja_env = Environment(
@@ -1109,3 +1109,261 @@ class GLTFReader:
             for z in [min_vals[2], max_vals[2]]
         ]
         return np.array(points)
+
+
+class GaussianSplatReader:
+    """Reader for Gaussian splat files (``.ply``, ``.splat``).
+
+    Reads Gaussian splat data typically used in 3D Gaussian Splatting and NeRF
+    workflows. The file format is PLY with specific properties for position, scale,
+    rotation, opacity, and spherical harmonic coefficients. Parsing is delegated to
+    JavaScript at render time, with Python extracting only positions for bounding
+    sphere calculations.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the Gaussian splat file (``.ply`` or ``.splat``).
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.GaussianSplatReader("scene.ply")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+    >>> plotter = pv.Plotter()  # doctest: +SKIP
+    >>> plotter.add_mesh(mesh)  # doctest: +SKIP
+    >>> plotter.show()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() not in (".ply", ".splat"):
+            msg = f"Expected a .ply or .splat file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the Gaussian splat file.
+
+        """
+        return self._path
+
+    def read(self) -> _GaussianSplatMesh:
+        """Read the Gaussian splat file and return a mesh.
+
+        The full file content is base64-encoded for JavaScript parsing.
+        Only position data is extracted in Python for bounding calculations.
+
+        Returns
+        -------
+        _GaussianSplatMesh
+            A mesh containing Gaussian splat data.
+
+        Raises
+        ------
+        ValueError
+            If the file format is invalid or unsupported.
+
+        """
+        raw = self._path.read_bytes()
+        splat_base64 = base64.b64encode(raw).decode("ascii")
+
+        # Extract positions for bounding sphere computation
+        points = self._extract_positions(raw)
+
+        return _GaussianSplatMesh(points, splat_base64)
+
+    def _extract_positions(self, raw_data: bytes) -> np.ndarray:
+        """Extract Gaussian center positions from the file.
+
+        Parameters
+        ----------
+        raw_data : bytes
+            Raw file content.
+
+        Returns
+        -------
+        np.ndarray
+            Array of positions (N, 3) for bounding calculations.
+
+        """
+        try:
+            text = raw_data.decode("ascii", errors="replace")
+        except UnicodeDecodeError:
+            text = raw_data.decode("utf-8", errors="replace")
+
+        lines = text.splitlines()
+
+        if not lines or lines[0].strip() != "ply":
+            msg = "Invalid Gaussian splat file: missing 'ply' magic number"
+            raise ValueError(msg)
+
+        # Find header end
+        header_end = None
+        header_byte_offset = 0
+        for i, line in enumerate(lines):
+            if line.strip() == "end_header":
+                header_end = i
+                header_byte_offset = raw_data.find(b"end_header") + len(b"end_header") + 1
+                break
+
+        if header_end is None:
+            msg = "Invalid Gaussian splat file: missing 'end_header'"
+            raise ValueError(msg)
+
+        header_lines = lines[1 : header_end + 1]
+
+        # Parse vertex count
+        n_vertices = 0
+        for line in header_lines:
+            if line.startswith("element vertex"):
+                parts = line.split()
+                if len(parts) >= _N_COORDS:
+                    n_vertices = int(parts[2])
+                break
+
+        if n_vertices == 0:
+            return np.empty((0, _N_COORDS))
+
+        # Parse format
+        fmt = self._parse_format(header_lines)
+
+        # Parse property layout to find x, y, z positions
+        properties = []
+        for line in header_lines:
+            if line.startswith("property"):
+                parts = line.split()
+                if len(parts) >= _N_COORDS:
+                    prop_type = parts[1]
+                    prop_name = parts[2]
+                    properties.append((prop_name, prop_type))
+
+        # Find x, y, z indices
+        x_idx = next((i for i, (name, _) in enumerate(properties) if name == "x"), -1)
+        y_idx = next((i for i, (name, _) in enumerate(properties) if name == "y"), -1)
+        z_idx = next((i for i, (name, _) in enumerate(properties) if name == "z"), -1)
+
+        if x_idx < 0 or y_idx < 0 or z_idx < 0:
+            msg = "Invalid Gaussian splat file: missing x, y, or z position properties"
+            raise ValueError(msg)
+
+        # Extract positions based on format
+        if fmt == "ascii":
+            return self._extract_positions_ascii(
+                lines,
+                header_end,
+                n_vertices,
+                x_idx,
+                y_idx,
+                z_idx,
+            )
+        if fmt in ("binary_little_endian", "binary_big_endian"):
+            return self._extract_positions_binary(
+                raw_data,
+                header_byte_offset,
+                n_vertices,
+                properties,
+                x_idx,
+                y_idx,
+                z_idx,
+                fmt,
+            )
+        msg = f"Unsupported format: {fmt}"
+        raise ValueError(msg)
+
+    @staticmethod
+    def _parse_format(header_lines: list[str]) -> str:
+        """Parse the format line from PLY header."""
+        for line in header_lines:
+            if line.startswith("format"):
+                parts = line.split()
+                if len(parts) >= 2:
+                    return parts[1]
+        return "ascii"
+
+    @staticmethod
+    def _extract_positions_ascii(
+        lines: list[str],
+        header_end: int,
+        n_vertices: int,
+        x_idx: int,
+        y_idx: int,
+        z_idx: int,
+    ) -> np.ndarray:
+        """Extract positions from ASCII format."""
+        positions = []
+        data_start = header_end + 1
+
+        for i in range(n_vertices):
+            if data_start + i >= len(lines):
+                break
+            line = lines[data_start + i].strip()
+            if not line:
+                continue
+
+            values = line.split()
+            if len(values) > max(x_idx, y_idx, z_idx):
+                try:
+                    x = float(values[x_idx])
+                    y = float(values[y_idx])
+                    z = float(values[z_idx])
+                    positions.append([x, y, z])
+                except (ValueError, IndexError):
+                    continue
+
+        return np.array(positions) if positions else np.empty((0, _N_COORDS))
+
+    @staticmethod
+    def _extract_positions_binary(
+        raw_data: bytes,
+        header_byte_offset: int,
+        n_vertices: int,
+        properties: list[tuple[str, str]],
+        x_idx: int,
+        y_idx: int,
+        z_idx: int,
+        fmt: str,
+    ) -> np.ndarray:
+        """Extract positions from binary format."""
+        # Calculate stride (bytes per vertex)
+        stride = 0
+        offsets = []
+        for _, prop_type in properties:
+            size = 4  # float
+            if prop_type in ("double",):
+                size = 8
+            elif prop_type in ("uchar", "char", "uint8", "int8"):
+                size = 1
+            elif prop_type in ("ushort", "short", "uint16", "int16"):
+                size = 2
+            offsets.append(stride)
+            stride += size
+
+        little_endian = fmt == "binary_little_endian"
+        endian_char = "<" if little_endian else ">"
+
+        positions = []
+        for i in range(n_vertices):
+            offset = header_byte_offset + i * stride
+            if offset + stride > len(raw_data):
+                break
+
+            try:
+                x = struct.unpack(f"{endian_char}f", raw_data[offset + offsets[x_idx] : offset + offsets[x_idx] + 4])[0]
+                y = struct.unpack(f"{endian_char}f", raw_data[offset + offsets[y_idx] : offset + offsets[y_idx] + 4])[0]
+                z = struct.unpack(f"{endian_char}f", raw_data[offset + offsets[z_idx] : offset + offsets[z_idx] + 4])[0]
+                positions.append([x, y, z])
+            except struct.error:
+                continue
+
+        return np.array(positions) if positions else np.empty((0, _N_COORDS))

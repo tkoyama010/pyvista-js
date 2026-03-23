@@ -158,6 +158,7 @@ _ARROW_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "arrow_source.html").read_text()
 _CONE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cone_source.html").read_text()
 _LINE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "line_source.html").read_text()
 _PLANE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "plane_source.html").read_text()
+_GAUSSIAN_SPLAT_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gaussian_splat_source.html").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3
@@ -1910,3 +1911,56 @@ def Plane(  # noqa: N802 PLR0913
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_plane,
     )
+
+
+class _GaussianSplatMesh(PolyData):
+    """Mesh for Gaussian splat rendering.
+
+    This class handles Gaussian splat data (3D Gaussian distributions) typically
+    used in Neural Radiance Field (NeRF) and 3D Gaussian Splatting workflows.
+    The splat data is parsed on the JavaScript side and rendered using WebGL.
+
+    Parameters
+    ----------
+    points : np.ndarray
+        Gaussian center positions (N, 3) extracted for bounding sphere computation.
+    splat_base64 : str
+        Base64-encoded content of the Gaussian splat file passed to the renderer.
+
+    """
+
+    def __init__(self, points: np.ndarray, splat_base64: str) -> None:
+        """Initialize with points and base64-encoded splat file content."""
+        super().__init__(points)
+        self._splat_base64 = splat_base64
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate JavaScript code for Gaussian splat rendering.
+
+        Returns
+        -------
+        str
+            JavaScript code that parses and prepares the Gaussian splat data.
+
+        """
+        import json
+        escaped = json.dumps(self._splat_base64)
+        return _render(
+            _GAUSSIAN_SPLAT_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            SPLAT_READER=f"splatReader{idx}",
+            SPLAT_BASE64=escaped,
+            INDEX=str(idx),
+            SPLAT_DATA=f"splatData{idx}",
+        )
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code for Gaussian splats.
+
+        Returns
+        -------
+        str
+            JavaScript code to connect the source to the mapper.
+
+        """
+        return f"mapper{idx}.setInputData(source{idx});"
