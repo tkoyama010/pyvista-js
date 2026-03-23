@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-23 01:14+0000\n"
+"POT-Creation-Date: 2026-03-23 06:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -153,43 +153,35 @@ msgid "Contributing"
 msgstr ""
 
 #: ../../README.md:81
-msgid "![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449) [![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)"
+msgid "![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)"
 msgstr ""
 
 #: ../../README.md:81
 msgid "All Contributors"
 msgstr ""
 
-#: ../../README.md:81
-msgid "codecov"
-msgstr ""
-
-#: ../../README.md:81
-msgid "pre-commit.ci status"
-msgstr ""
-
-#: ../../README.md:85
+#: ../../README.md:83
 msgid "Enjoying pyvista-js? Show your support with a GitHub star — it's a simple click that means the world to us and helps others discover it, too!"
 msgstr ""
 
-#: ../../README.md:93
+#: ../../README.md:91
 msgid "Contributions are welcome! Please open an issue or pull request on [GitHub](https://github.com/tkoyama010/pyvista-js/issues)."
 msgstr ""
 
-#: ../../README.md:95
+#: ../../README.md:93
 msgid "This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!"
 msgstr ""
 
+#: ../../README.md:120
 #: ../../README.md:122
-#: ../../README.md:124
 msgid "License"
 msgstr ""
 
-#: ../../README.md:124
+#: ../../README.md:122
 msgid "[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)"
 msgstr ""
 
-#: ../../README.md:126
+#: ../../README.md:124
 msgid "[BSD 3-Clause](LICENSE) © Tetsuo Koyama"
 msgstr ""
 

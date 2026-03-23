@@ -169,9 +169,11 @@ def test_plotter_lighting_none() -> None:
     """Test that Plotter(lighting=None) disables default lighting."""
     plotter = pv.Plotter(lighting=None)
     assert plotter._renderer.lighting is None
-    # With lighting=None, no default light should be generated
+    # With lighting=None, auto light creation should be disabled
     light_code = plotter._renderer._generate_lights_code()
-    assert light_code == ""
+    assert "removeAllLights" in light_code
+    assert "setAutomaticLightCreation(false)" in light_code
+    assert "vtkLight.newInstance" not in light_code
 
 
 def test_plotter_lighting_none_with_custom_lights() -> None:
