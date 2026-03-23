@@ -1,14 +1,12 @@
-<div
-  id="disk-source-config"
-  data-source-name="{{ SOURCE }}"
-  data-r-res="{{ R_RES }}"
-  data-c-res="{{ C_RES }}"
-  data-inner="{{ INNER }}"
-  data-outer="{{ OUTER }}"
-  style="display: none;"
-></div>
+<div id="disk-source-config"
+     data-source-name="{{ SOURCE }}"
+     data-r-res="{{ R_RES }}"
+     data-c-res="{{ C_RES }}"
+     data-inner="{{ INNER }}"
+     data-outer="{{ OUTER }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('disk-source-config').dataset;
     const sourceName = config.sourceName;
     const rRes = parseInt(config.rRes);

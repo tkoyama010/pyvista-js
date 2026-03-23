@@ -1,12 +1,10 @@
-<div
-  id="vtk-reader-config"
-  data-vtk-reader-name="{{ VTK_READER }}"
-  data-source-name="{{ SOURCE }}"
-  data-vtk-text="{{ VTK_TEXT }}"
-  style="display: none;"
-></div>
+<div id="vtk-reader-config"
+     data-vtk-reader-name="{{ VTK_READER }}"
+     data-source-name="{{ SOURCE }}"
+     data-vtk-text="{{ VTK_TEXT }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('vtk-reader-config').dataset;
     const vtkReaderName = config.vtkReaderName;
     const sourceName = config.sourceName;

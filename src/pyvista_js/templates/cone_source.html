@@ -1,20 +1,18 @@
-<div
-  id="cone-config"
-  data-source-name="{{ SOURCE }}"
-  data-center-x="{{ CENTER_X }}"
-  data-center-y="{{ CENTER_Y }}"
-  data-center-z="{{ CENTER_Z }}"
-  data-direction-x="{{ DIRECTION_X }}"
-  data-direction-y="{{ DIRECTION_Y }}"
-  data-direction-z="{{ DIRECTION_Z }}"
-  data-height="{{ HEIGHT }}"
-  data-radius="{{ RADIUS }}"
-  data-resolution="{{ RESOLUTION }}"
-  data-capping="{{ CAPPING | tojson }}"
-  style="display: none;"
-></div>
+<div id="cone-config"
+     data-source-name="{{ SOURCE }}"
+     data-center-x="{{ CENTER_X }}"
+     data-center-y="{{ CENTER_Y }}"
+     data-center-z="{{ CENTER_Z }}"
+     data-direction-x="{{ DIRECTION_X }}"
+     data-direction-y="{{ DIRECTION_Y }}"
+     data-direction-z="{{ DIRECTION_Z }}"
+     data-height="{{ HEIGHT }}"
+     data-radius="{{ RADIUS }}"
+     data-resolution="{{ RESOLUTION }}"
+     data-capping="{{ CAPPING | tojson }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('cone-config').dataset;
     const sourceName = config.sourceName;
 

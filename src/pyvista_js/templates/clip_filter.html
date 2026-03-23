@@ -1,18 +1,16 @@
-<div
-  id="clip-filter-config"
-  data-clipped-pd-name="{{ CLIPPED_PD }}"
-  data-source-name="{{ SOURCE }}"
-  data-normal-x="{{ NORMAL_X }}"
-  data-normal-y="{{ NORMAL_Y }}"
-  data-normal-z="{{ NORMAL_Z }}"
-  data-origin-x="{{ ORIGIN_X }}"
-  data-origin-y="{{ ORIGIN_Y }}"
-  data-origin-z="{{ ORIGIN_Z }}"
-  data-invert="{{ INVERT | tojson }}"
-  style="display: none;"
-></div>
+<div id="clip-filter-config"
+     data-clipped-pd-name="{{ CLIPPED_PD }}"
+     data-source-name="{{ SOURCE }}"
+     data-normal-x="{{ NORMAL_X }}"
+     data-normal-y="{{ NORMAL_Y }}"
+     data-normal-z="{{ NORMAL_Z }}"
+     data-origin-x="{{ ORIGIN_X }}"
+     data-origin-y="{{ ORIGIN_Y }}"
+     data-origin-z="{{ ORIGIN_Z }}"
+     data-invert="{{ INVERT | tojson }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('clip-filter-config').dataset;
     const clippedPdName = config.clippedPdName;
     const sourceName = config.sourceName;

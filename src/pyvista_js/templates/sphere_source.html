@@ -1,17 +1,15 @@
-<div
-  id="sphere-config"
-  data-source-name="{{ SOURCE }}"
-  data-tex-map-sphere-name="{{ TEX_MAP_SPHERE }}"
-  data-center-x="{{ CENTER_X }}"
-  data-center-y="{{ CENTER_Y }}"
-  data-center-z="{{ CENTER_Z }}"
-  data-radius="{{ RADIUS }}"
-  data-theta-resolution="{{ THETA_RESOLUTION }}"
-  data-phi-resolution="{{ PHI_RESOLUTION }}"
-  style="display: none;"
-></div>
+<div id="sphere-config"
+     data-source-name="{{ SOURCE }}"
+     data-tex-map-sphere-name="{{ TEX_MAP_SPHERE }}"
+     data-center-x="{{ CENTER_X }}"
+     data-center-y="{{ CENTER_Y }}"
+     data-center-z="{{ CENTER_Z }}"
+     data-radius="{{ RADIUS }}"
+     data-theta-resolution="{{ THETA_RESOLUTION }}"
+     data-phi-resolution="{{ PHI_RESOLUTION }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('sphere-config').dataset;
     const sourceName = config.sourceName;
     const texMapSphereName = config.texMapSphereName;

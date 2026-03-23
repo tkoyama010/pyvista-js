@@ -1,11 +1,9 @@
-<div
-  id="gltf-url-config"
-  data-index="{{ INDEX }}"
-  data-gltf-url="{{ GLTF_URL }}"
-  style="display: none;"
-></div>
+<div id="gltf-url-config"
+     data-index="{{ INDEX }}"
+     data-gltf-url="{{ GLTF_URL }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('gltf-url-config').dataset;
     const index = config.index;
     const gltfUrl = config.gltfUrl;

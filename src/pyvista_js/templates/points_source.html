@@ -1,11 +1,9 @@
-<div
-  id="points-source-config"
-  data-source-name="{{ SOURCE }}"
-  data-points-data="{{ POINTS_DATA }}"
-  style="display: none;"
-></div>
+<div id="points-source-config"
+     data-source-name="{{ SOURCE }}"
+     data-points-data="{{ POINTS_DATA }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('points-source-config').dataset;
     const sourceName = config.sourceName;
     const pointsData = config.pointsData.split(',').map(parseFloat);

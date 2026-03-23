@@ -1,5 +1,5 @@
 <script>
-  (function () {
+  (function() {
     var container = document.createElement("div");
     container.id = "{{ CONTAINER_ID }}";
     container.setAttribute("data-background-r", "{{ BACKGROUND_R }}");
@@ -38,20 +38,48 @@
         interactor.initialize();
         interactor.bindEvents(container);
 
-        {{ LIGHTS_CODE }}
+        {
+          {
+            LIGHTS_CODE
+          }
+        }
 
-        {{ ACTORS_CODE }}
+        {
+          {
+            ACTORS_CODE
+          }
+        }
 
-        {{ SCALAR_BAR_CODE }}
+        {
+          {
+            SCALAR_BAR_CODE
+          }
+        }
 
-        {{ TEXT_ACTORS_CODE }}
+        {
+          {
+            TEXT_ACTORS_CODE
+          }
+        }
 
-        {{ ENVIRONMENT_CODE }}
+        {
+          {
+            ENVIRONMENT_CODE
+          }
+        }
 
-        {{ AXES_CODE }}
+        {
+          {
+            AXES_CODE
+          }
+        }
 
         renderer.resetCamera();
-        {{ CAMERA_CODE }}
+        {
+          {
+            CAMERA_CODE
+          }
+        }
         renderWindow.render();
       } catch (e) {
         console.error("Error rendering vtk.js scene:", e);

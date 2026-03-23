@@ -1,12 +1,10 @@
-<div
-  id="obj-reader-config"
-  data-obj-reader-name="{{ OBJ_READER }}"
-  data-source-name="{{ SOURCE }}"
-  data-obj-base64="{{ OBJ_BASE64 }}"
-  style="display: none;"
-></div>
+<div id="obj-reader-config"
+     data-obj-reader-name="{{ OBJ_READER }}"
+     data-source-name="{{ SOURCE }}"
+     data-obj-base64="{{ OBJ_BASE64 }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('obj-reader-config').dataset;
     const objReaderName = config.objReaderName;
     const sourceName = config.sourceName;

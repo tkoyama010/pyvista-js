@@ -1,11 +1,9 @@
-<div
-  id="gltf-reader-config"
-  data-index="{{ INDEX }}"
-  data-gltf-base64="{{ GLTF_BASE64 }}"
-  style="display: none;"
-></div>
+<div id="gltf-reader-config"
+     data-index="{{ INDEX }}"
+     data-gltf-base64="{{ GLTF_BASE64 }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('gltf-reader-config').dataset;
     const index = config.index;
     const gltfBase64 = config.gltfBase64;
@@ -17,13 +15,15 @@
       document.head.appendChild(s);
     }
     var gltfBytes = Uint8Array.from(atob(gltfBase64), (c) => c.charCodeAt(0));
-    var gltfBlob = new Blob([gltfBytes], { type: 'model/gltf+json' });
+    var gltfBlob = new Blob([gltfBytes], {
+      type: 'model/gltf+json'
+    });
     var gltfUrl = URL.createObjectURL(gltfBlob);
     var mv = document.createElement('model-viewer');
     mv.setAttribute('src', gltfUrl);
     mv.setAttribute('camera-controls', '');
     mv.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;';
-    mv.addEventListener('load', function () {
+    mv.addEventListener('load', function() {
       URL.revokeObjectURL(gltfUrl);
     });
     container.appendChild(mv);
