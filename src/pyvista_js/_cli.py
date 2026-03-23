@@ -8,7 +8,6 @@ information) can be done without writing any Python code.
 from __future__ import annotations
 
 import logging
-import math
 import platform
 import sys
 from pathlib import Path
@@ -159,39 +158,6 @@ def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noq
     return plotter
 
 
-_NORM_TOL = 1e-12
-
-
-def _rodrigues_rotate(  # noqa: ANN202
-    vec,  # noqa: ANN001
-    axis,  # noqa: ANN001
-    angle_deg: float,
-):
-    """Rotate *vec* around *axis* by *angle_deg* degrees (Rodrigues' formula).
-
-    Parameters
-    ----------
-    vec : numpy.ndarray
-        Vector to rotate.
-    axis : numpy.ndarray
-        Unit axis of rotation.
-    angle_deg : float
-        Rotation angle in degrees.
-
-    Returns
-    -------
-    numpy.ndarray
-        Rotated vector.
-
-    """
-    import numpy as np  # noqa: PLC0415
-
-    angle = math.radians(angle_deg)
-    cos_a = math.cos(angle)
-    sin_a = math.sin(angle)
-    return vec * cos_a + np.cross(axis, vec) * sin_a + axis * np.dot(axis, vec) * (1 - cos_a)
-
-
 def _apply_camera_movement(
     plotter,  # noqa: ANN001
     azimuth: float | None,
@@ -201,10 +167,8 @@ def _apply_camera_movement(
 ) -> None:
     """Apply relative camera movements to an existing plotter camera.
 
-    All movements are relative to the current camera state.  The camera
-    orbits around its focal point for azimuth/elevation, moves along
-    the view direction for zoom, and rotates around the view axis for
-    roll.
+    All movements are relative to the current camera state.  Delegates
+    to :class:`~pyvista_js.Camera` methods.
 
     Parameters
     ----------
@@ -220,65 +184,24 @@ def _apply_camera_movement(
         Roll rotation around the view axis in degrees.
 
     """
-    import numpy as np  # noqa: PLC0415
-
     from .camera import Camera  # noqa: PLC0415
 
     if plotter.camera is None:
         plotter.camera = Camera()
 
     cam = plotter.camera
-    pos = np.array(cam.position, dtype=np.float64)
-    fp = np.array(cam.focal_point, dtype=np.float64)
-    up = np.array(cam.view_up, dtype=np.float64)
 
-    # Build an orthonormal frame from the current camera state
-    direction = fp - pos
-    dist = np.linalg.norm(direction)
-    if dist < _NORM_TOL:
-        return
-
-    forward = direction / dist
-
-    right = np.cross(forward, up)
-    right_norm = np.linalg.norm(right)
-    if right_norm < _NORM_TOL:
-        return
-    right = right / right_norm
-
-    up_ortho = np.cross(right, forward)
-
-    # Azimuth: rotate position around focal point along the up axis
     if azimuth is not None:
-        offset = _rodrigues_rotate(pos - fp, up_ortho, azimuth)
-        pos = fp + offset
-        forward = (fp - pos) / np.linalg.norm(fp - pos)
-        right = np.cross(forward, up_ortho)
-        right_norm = np.linalg.norm(right)
-        if right_norm > _NORM_TOL:
-            right = right / right_norm
-
-    # Elevation: rotate position around focal point along the right axis
+        cam.azimuth(azimuth)
     if elevation is not None:
-        pos = fp + _rodrigues_rotate(pos - fp, right, elevation)
-        up_ortho = _rodrigues_rotate(up_ortho, right, elevation)
-
-    # Zoom: move camera closer to / farther from focal point
+        cam.orbit_elevation(elevation)
     if zoom is not None:
         if zoom <= 0:
             logger.error("zoom must be positive, got %s", zoom)
             sys.exit(1)
-        direction = fp - pos
-        forward = direction / np.linalg.norm(direction)
-        pos = fp - forward * (np.linalg.norm(direction) / zoom)
-
-    # Roll: rotate the up vector around the view axis
+        cam.zoom(zoom)
     if roll is not None:
-        forward = (fp - pos) / np.linalg.norm(fp - pos)
-        up_ortho = _rodrigues_rotate(up_ortho, forward, roll)
-
-    cam.position = tuple(float(x) for x in pos)
-    cam.view_up = tuple(float(x) for x in up_ortho)
+        cam.roll(roll)
 
 
 # ---------------------------------------------------------------------------
