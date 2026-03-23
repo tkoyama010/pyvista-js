@@ -408,7 +408,9 @@ def test_capture_stlite_preview_no_screenshots(tmp_path) -> None:
         # No screenshot files created in tmp_path
         with pytest.raises(SystemExit, match="1"):
             capture_stlite_preview(
-                output=tmp_path / "out.gif", url="http://example.com", rotate=True
+                output=tmp_path / "out.gif",
+                url="http://example.com",
+                rotate=True,
             )
 
 
@@ -422,7 +424,9 @@ def test_capture_stlite_preview_gif_creation_fails(tmp_path) -> None:
         (tmp_path / "screenshot_01.png").write_bytes(b"fake")
         with pytest.raises(SystemExit, match="1"):
             capture_stlite_preview(
-                output=tmp_path / "out.gif", url="http://example.com", rotate=True
+                output=tmp_path / "out.gif",
+                url="http://example.com",
+                rotate=True,
             )
 
 
