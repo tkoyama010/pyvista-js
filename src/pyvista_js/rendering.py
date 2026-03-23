@@ -68,7 +68,6 @@ it opens the visualization in the default web browser.
 
 from __future__ import annotations
 
-import html as _html_module
 import logging
 import os
 import pathlib
@@ -98,11 +97,48 @@ from .examples import CubeMap
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
 _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
+_RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
 _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 _POINTS_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "points_source.html").read_text()
 
 _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+
+
+def _html_to_pure_js(html: str) -> str:
+    """Convert HTML with data-* config divs and script blocks to pure JavaScript.
+
+    Replaces ``<div id="...-config" data-*="...">`` elements with equivalent
+    ``document.createElement`` calls, and strips ``<script>`` wrapper tags.
+    Used by ``_generate_render_js()`` to produce valid JavaScript for
+    ``display(Javascript(...))`` in JupyterLite/replite environments.
+    """
+    import json as _json  # noqa: PLC0415
+
+    def _div_to_js(m: re.Match) -> str:
+        attrs_html = m.group(1)
+        id_match = re.search(r'\bid="([^"]+)"', attrs_html)
+        div_id = id_match.group(1) if id_match else "unknown"
+        data_attrs = re.findall(r'data-([\w-]+)="([^"]*)"', attrs_html)
+        lines = [
+            "(function(){",
+            "  var _el = document.createElement('div');",
+            f"  _el.id = {_json.dumps(div_id)};",
+        ]
+        for attr_name, attr_val in data_attrs:
+            camel = re.sub(r"-(\w)", lambda x: x.group(1).upper(), attr_name)
+            lines.append(f"  _el.dataset.{camel} = {_json.dumps(attr_val)};")
+        lines += [
+            "  _el.style.display = 'none';",
+            "  document.body.appendChild(_el);",
+            "})();",
+        ]
+        return "\n".join(lines)
+
+    result = re.sub(r"<div([^>]*style=\"display:\s*none\"[^>]*)></div>", _div_to_js, html)
+    result = re.sub(r"<script[^>]*>\s*\n?", "", result)
+    result = re.sub(r"\n?\s*</script>", "", result)
+    return result.strip()
 
 
 def _render(template_str: str, **kwargs: object) -> str:
@@ -1337,7 +1373,6 @@ class _BaseHTMLRenderer:
         """Generate a complete standalone HTML page with vtk.js.
 
         Wraps the HTML fragment from _generate_html() in a full HTML document.
-        Used for iframe srcdoc display in Jupyter/JupyterLite environments.
         """
         fragment = self._generate_html()
         return (
@@ -1347,6 +1382,40 @@ class _BaseHTMLRenderer:
             "<body>\n" + fragment + "\n</body>\n"
             "</html>\n"
         )
+
+    def _generate_render_js(self) -> str:
+        """Generate pure JavaScript for display(Javascript(...)) in JupyterLite.
+
+        Renders the scene using rendering_js.html, then converts all HTML
+        data-config ``<div>`` elements to equivalent ``document.createElement``
+        calls so the result contains no HTML markup.
+        """
+        actor_js_code = [
+            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
+        ]
+
+        indented_actors = []
+        for actor in actor_js_code:
+            lines = actor.split("\n")
+            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
+            indented_actors.append(indented_lines)
+        actors_code = "\n\n".join(indented_actors)
+
+        rendered = _jinja_env.from_string(_RENDERING_JS_TEMPLATE).render(
+            VTKJS_CDN=_VTKJS_CDN,
+            CONTAINER_ID=self.container_id,
+            BACKGROUND_R=str(self.background[0]),
+            BACKGROUND_G=str(self.background[1]),
+            BACKGROUND_B=str(self.background[2]),
+            LIGHTS_CODE=self._generate_lights_code(),
+            ACTORS_CODE=actors_code,
+            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
+            TEXT_ACTORS_CODE=self._generate_text_actors_code(),
+            ENVIRONMENT_CODE=self._generate_environment_code(),
+            AXES_CODE=self._generate_axes_code(),
+            CAMERA_CODE=self._generate_camera_code(),
+        )
+        return _html_to_pure_js(rendered)
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
@@ -1531,14 +1600,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         """
         if self.use_ipython:
-            standalone = self._generate_standalone_html()
-            srcdoc = _html_module.escape(standalone, quote=True)
-            iframe = (
-                f'<iframe srcdoc="{srcdoc}" '
-                'width="100%" height="400px" '
-                'style="border:none;overflow:hidden;"></iframe>'
-            )
-            display(HTML(iframe))
+            js_code = self._generate_render_js()
+            display(Javascript(js_code))
         else:
             # Direct rendering
             self.renderer.resetCamera()  # type: ignore[attr-defined]
