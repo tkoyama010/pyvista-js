@@ -6,6 +6,45 @@ in vtk.js scenes.
 
 from __future__ import annotations
 
+import math
+
+import numpy as np
+
+_NORM_TOL = 1e-12
+
+
+def _to_float3(arr: np.ndarray) -> tuple[float, float, float]:
+    """Convert a 3-element array to a typed 3-tuple of floats."""
+    return (float(arr[0]), float(arr[1]), float(arr[2]))
+
+
+def _rodrigues_rotate(
+    vec: np.ndarray,
+    axis: np.ndarray,
+    angle_deg: float,
+) -> np.ndarray:
+    """Rotate *vec* around *axis* by *angle_deg* degrees (Rodrigues' formula).
+
+    Parameters
+    ----------
+    vec : numpy.ndarray
+        Vector to rotate.
+    axis : numpy.ndarray
+        Unit axis of rotation.
+    angle_deg : float
+        Rotation angle in degrees.
+
+    Returns
+    -------
+    numpy.ndarray
+        Rotated vector.
+
+    """
+    angle = math.radians(angle_deg)
+    cos_a = math.cos(angle)
+    sin_a = math.sin(angle)
+    return vec * cos_a + np.cross(axis, vec) * sin_a + axis * np.dot(axis, vec) * (1 - cos_a)
+
 
 class Camera:
     """Represents a virtual camera in a 3D scene.
@@ -320,6 +359,164 @@ class Camera:
     def elevation(self, value: float) -> None:
         """Set the camera elevation angle."""
         self._elevation = float(value)
+
+    def _orthonormal_frame(
+        self,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None:
+        """Build an orthonormal camera frame from current state.
+
+        Returns
+        -------
+        tuple or None
+            ``(pos, fp, forward, right, up_ortho)`` as numpy arrays, or
+            ``None`` when the frame is degenerate (position == focal_point
+            or forward is parallel to view-up).
+
+        """
+        pos = np.array(self._position, dtype=np.float64)
+        fp = np.array(self._focal_point, dtype=np.float64)
+        up = np.array(self._view_up, dtype=np.float64)
+
+        direction = fp - pos
+        dist = np.linalg.norm(direction)
+        if dist < _NORM_TOL:
+            return None
+
+        forward = direction / dist
+
+        right = np.cross(forward, up)
+        right_norm = np.linalg.norm(right)
+        if right_norm < _NORM_TOL:
+            return None
+        right = right / right_norm
+
+        up_ortho = np.cross(right, forward)
+        return pos, fp, forward, right, up_ortho
+
+    def azimuth(self, angle: float) -> None:
+        """Rotate the camera position horizontally around the focal point.
+
+        Parameters
+        ----------
+        angle : float
+            Rotation angle in degrees.  Positive values rotate
+            counter-clockwise when viewed from above the up vector.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(0, 0, 5), focal_point=(0, 0, 0))
+        >>> camera.azimuth(90)
+        >>> import numpy as np
+        >>> np.allclose(camera.position, (5, 0, 0), atol=1e-10)
+        True
+
+        """
+        frame = self._orthonormal_frame()
+        if frame is None:
+            return
+        pos, fp, _forward, _right, up_ortho = frame
+
+        offset = _rodrigues_rotate(pos - fp, up_ortho, angle)
+        self.position = _to_float3(fp + offset)
+
+    def orbit_elevation(self, angle: float) -> None:
+        """Rotate the camera position vertically around the focal point.
+
+        This method is named ``orbit_elevation`` to avoid conflict with
+        the :attr:`elevation` property, which stores a static angle value.
+
+        Parameters
+        ----------
+        angle : float
+            Rotation angle in degrees.  Positive values tilt the camera
+            upward.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(0, 0, 5), focal_point=(0, 0, 0))
+        >>> camera.orbit_elevation(90)
+        >>> import numpy as np
+        >>> np.allclose(camera.position, (0, -5, 0), atol=1e-10)
+        True
+
+        """
+        frame = self._orthonormal_frame()
+        if frame is None:
+            return
+        pos, fp, _forward, right, up_ortho = frame
+
+        offset = _rodrigues_rotate(pos - fp, right, angle)
+        new_up = _rodrigues_rotate(up_ortho, right, angle)
+        self.position = _to_float3(fp + offset)
+        self.view_up = _to_float3(new_up)
+
+    def zoom(self, factor: float) -> None:
+        """Move the camera closer to or farther from the focal point.
+
+        Parameters
+        ----------
+        factor : float
+            Zoom factor.  Values greater than 1 move the camera closer
+            (zoom in); values between 0 and 1 move it farther away
+            (zoom out).
+
+        Raises
+        ------
+        ValueError
+            If *factor* is not positive.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(0, 0, 10), focal_point=(0, 0, 0))
+        >>> camera.zoom(2.0)
+        >>> import numpy as np
+        >>> np.allclose(camera.position, (0, 0, 5), atol=1e-10)
+        True
+
+        """
+        if factor <= 0:
+            msg = f"zoom factor must be positive, got {factor}"
+            raise ValueError(msg)
+
+        pos = np.array(self._position, dtype=np.float64)
+        fp = np.array(self._focal_point, dtype=np.float64)
+        direction = fp - pos
+        dist = np.linalg.norm(direction)
+        if dist < _NORM_TOL:
+            return
+
+        forward = direction / dist
+        new_pos = fp - forward * (dist / factor)
+        self.position = _to_float3(new_pos)
+
+    def roll(self, angle: float) -> None:
+        """Roll the camera around the view direction axis.
+
+        Parameters
+        ----------
+        angle : float
+            Roll angle in degrees.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(0, 0, 5), focal_point=(0, 0, 0))
+        >>> camera.roll(90)
+        >>> import numpy as np
+        >>> np.allclose(camera.view_up, (1, 0, 0), atol=1e-10)
+        True
+
+        """
+        frame = self._orthonormal_frame()
+        if frame is None:
+            return
+        _pos, _fp, forward, _right, up_ortho = frame
+
+        new_up = _rodrigues_rotate(up_ortho, forward, angle)
+        self.view_up = _to_float3(new_up)
 
     def __repr__(self) -> str:
         """Return string representation of the camera."""

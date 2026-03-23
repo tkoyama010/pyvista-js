@@ -158,6 +158,52 @@ def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noq
     return plotter
 
 
+def _apply_camera_movement(
+    plotter,  # noqa: ANN001
+    azimuth: float | None,
+    elevation: float | None,
+    zoom: float | None,
+    roll: float | None,
+) -> None:
+    """Apply relative camera movements to an existing plotter camera.
+
+    All movements are relative to the current camera state.  Delegates
+    to :class:`~pyvista_js.Camera` methods.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter whose camera will be modified.
+    azimuth : float or None
+        Horizontal rotation around the focal point in degrees.
+    elevation : float or None
+        Vertical rotation around the focal point in degrees.
+    zoom : float or None
+        Zoom factor (>1 zooms in, <1 zooms out).
+    roll : float or None
+        Roll rotation around the view axis in degrees.
+
+    """
+    from .camera import Camera  # noqa: PLC0415
+
+    if plotter.camera is None:
+        plotter.camera = Camera()
+
+    cam = plotter.camera
+
+    if azimuth is not None:
+        cam.azimuth(azimuth)
+    if elevation is not None:
+        cam.orbit_elevation(elevation)
+    if zoom is not None:
+        if zoom <= 0:
+            logger.error("zoom must be positive, got %s", zoom)
+            sys.exit(1)
+        cam.zoom(zoom)
+    if roll is not None:
+        cam.roll(roll)
+
+
 # ---------------------------------------------------------------------------
 # Subcommand implementations
 # ---------------------------------------------------------------------------
@@ -209,6 +255,34 @@ def plot(  # noqa: PLR0913
             metavar="PATH",
         ),
     ] = None,
+    azimuth: Annotated[
+        float | None,
+        typer.Option(
+            help="Rotate camera horizontally around the focal point by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
+    elevation: Annotated[
+        float | None,
+        typer.Option(
+            help="Rotate camera vertically around the focal point by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
+    zoom: Annotated[
+        float | None,
+        typer.Option(
+            help="Zoom factor relative to current distance (>1 zooms in, <1 zooms out).",
+            metavar="FLOAT",
+        ),
+    ] = None,
+    roll: Annotated[
+        float | None,
+        typer.Option(
+            help="Roll camera around its view axis by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
 ) -> None:
     """Plot one or more mesh files in the browser.
 
@@ -249,6 +323,10 @@ def plot(  # noqa: PLR0913
         for file_path in files:
             mesh = _read_mesh(file_path)
             plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    # Apply relative camera movements if any are specified
+    if any(opt is not None for opt in (azimuth, elevation, zoom, roll)):
+        _apply_camera_movement(plotter, azimuth, elevation, zoom, roll)
 
     # Save to pickle file if requested
     if pickle is not None:
