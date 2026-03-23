@@ -19,7 +19,9 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from .mesh import PolyData
 
 _TEMPLATES_DIR_FOR_LOADER = Path(__file__).parent / "templates"
-_jinja_env = Environment(loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER), undefined=StrictUndefined, autoescape=False)  # noqa: S701
+_jinja_env = Environment(
+    loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER), undefined=StrictUndefined, autoescape=False
+)  # noqa: S701
 
 
 def _render(template_str: str, **kwargs: object) -> str:
