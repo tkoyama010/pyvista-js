@@ -1,5 +1,7 @@
 <div
-  id="clip-filter-config-{{ CLIPPED_PD }}"
+  id="clip-filter-config"
+  data-clipped-pd-name="{{ CLIPPED_PD }}"
+  data-source-name="{{ SOURCE }}"
   data-normal-x="{{ NORMAL_X }}"
   data-normal-y="{{ NORMAL_Y }}"
   data-normal-z="{{ NORMAL_Z }}"
@@ -10,9 +12,10 @@
   style="display: none;"
 ></div>
 <script>
-  var {{ CLIPPED_PD }};
   (function () {
-    const config = document.getElementById('clip-filter-config-{{ CLIPPED_PD }}').dataset;
+    const config = document.getElementById('clip-filter-config').dataset;
+    const clippedPdName = config.clippedPdName;
+    const sourceName = config.sourceName;
     const normalX = parseFloat(config.normalX);
     const normalY = parseFloat(config.normalY);
     const normalZ = parseFloat(config.normalZ);
@@ -21,7 +24,7 @@
     const originZ = parseFloat(config.originZ);
     const invert = JSON.parse(config.invert);
 
-    var src = {{ SOURCE }};
+    var src = window[sourceName];
     if (typeof src.update === 'function') {
       src.update();
     }
@@ -40,7 +43,6 @@
     var newPolys = [];
     var ptMap = {};
     var newPtIdx = 0;
-    var offset = 0;
     var i = 0;
     while (i < inPolys.length) {
       var npts = inPolys[i];
@@ -74,10 +76,10 @@
     }
     var pts = vtk.Common.Core.vtkPoints.newInstance();
     pts.setData(Float32Array.from(newPts), 3);
-    {{ CLIPPED_PD }} = vtk.Common.DataModel.vtkPolyData.newInstance();
-    {{ CLIPPED_PD }}.setPoints(pts);
+    window[clippedPdName] = vtk.Common.DataModel.vtkPolyData.newInstance();
+    window[clippedPdName].setPoints(pts);
     var polys = vtk.Common.Core.vtkCellArray.newInstance();
     polys.setData(Int32Array.from(newPolys));
-    {{ CLIPPED_PD }}.setPolys(polys);
+    window[clippedPdName].setPolys(polys);
   })();
 </script>

@@ -1,14 +1,24 @@
+<div
+  id="points-source-config"
+  data-source-name="{{ SOURCE }}"
+  data-points-data="{{ POINTS_DATA }}"
+  style="display: none;"
+></div>
 <script>
-  const pointsData = [{{ POINTS_DATA }}];
-  const points = new Float32Array(pointsData);
-  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-  polydata.getPoints().setData(points, 3);
-  const numPoints = points.length / 3;
-  const verts = new Uint32Array(numPoints + 1);
-  verts[0] = numPoints;
-  for (let i = 0; i < numPoints; i++) {
-    verts[i + 1] = i;
-  }
-  polydata.getVerts().setData(verts);
-  const {{ SOURCE }} = polydata;
+  (function () {
+    const config = document.getElementById('points-source-config').dataset;
+    const sourceName = config.sourceName;
+    const pointsData = config.pointsData.split(',').map(parseFloat);
+    const points = new Float32Array(pointsData);
+    const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+    polydata.getPoints().setData(points, 3);
+    const numPoints = points.length / 3;
+    const verts = new Uint32Array(numPoints + 1);
+    verts[0] = numPoints;
+    for (let i = 0; i < numPoints; i++) {
+      verts[i + 1] = i;
+    }
+    polydata.getVerts().setData(verts);
+    window[sourceName] = polydata;
+  })();
 </script>

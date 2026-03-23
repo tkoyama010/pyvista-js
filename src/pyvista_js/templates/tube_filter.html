@@ -1,17 +1,22 @@
 <div
-  id="tube-filter-config-{{ TUBED_PD }}"
+  id="tube-filter-config"
+  data-tubed-pd-name="{{ TUBED_PD }}"
+  data-tube-filter-name="{{ TUBE_FILTER }}"
+  data-source-name="{{ SOURCE }}"
   data-radius="{{ RADIUS }}"
   data-n-sides="{{ N_SIDES }}"
   data-capping="{{ CAPPING | tojson }}"
   style="display: none;"
 ></div>
 <script>
-  var {{ TUBED_PD }};
   (function () {
-    const config = document.getElementById('tube-filter-config-{{ TUBED_PD }}').dataset;
-    const inputSource = {{ SOURCE }};
+    const config = document.getElementById('tube-filter-config').dataset;
+    const tubedPdName = config.tubedPdName;
+    const tubeFilterName = config.tubeFilterName;
+    const sourceName = config.sourceName;
+    const inputSource = window[sourceName];
 
-    const {{ TUBE_FILTER }} = vtk.Filters.General.vtkTubeFilter.newInstance({
+    window[tubeFilterName] = vtk.Filters.General.vtkTubeFilter.newInstance({
       radius: parseFloat(config.radius),
       numberOfSides: parseInt(config.nSides),
       capping: JSON.parse(config.capping)
@@ -21,11 +26,11 @@
       inputSource.update();
     }
     if (typeof inputSource.getOutputPort === 'function') {
-      {{ TUBE_FILTER }}.setInputConnection(inputSource.getOutputPort());
+      window[tubeFilterName].setInputConnection(inputSource.getOutputPort());
     } else {
-      {{ TUBE_FILTER }}.setInputData(inputSource);
+      window[tubeFilterName].setInputData(inputSource);
     }
-    {{ TUBE_FILTER }}.update();
-    {{ TUBED_PD }} = {{ TUBE_FILTER }}.getOutputData();
+    window[tubeFilterName].update();
+    window[tubedPdName] = window[tubeFilterName].getOutputData();
   })();
 </script>

@@ -1,6 +1,18 @@
+<div
+  id="vtk-reader-config"
+  data-vtk-reader-name="{{ VTK_READER }}"
+  data-source-name="{{ SOURCE }}"
+  data-vtk-text="{{ VTK_TEXT }}"
+  style="display: none;"
+></div>
 <script>
-  const vtkText = {{ VTK_TEXT }};
-  const {{ VTK_READER }} = vtk.IO.Legacy.vtkPolyDataReader.newInstance();
-  {{ VTK_READER }}.parseAsText(vtkText);
-  const {{ SOURCE }} = {{ VTK_READER }}.getOutputData(0);
+  (function () {
+    const config = document.getElementById('vtk-reader-config').dataset;
+    const vtkReaderName = config.vtkReaderName;
+    const sourceName = config.sourceName;
+    const vtkText = config.vtkText;
+    window[vtkReaderName] = vtk.IO.Legacy.vtkPolyDataReader.newInstance();
+    window[vtkReaderName].parseAsText(vtkText);
+    window[sourceName] = window[vtkReaderName].getOutputData(0);
+  })();
 </script>

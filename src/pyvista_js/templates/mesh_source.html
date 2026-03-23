@@ -1,7 +1,17 @@
+<div
+  id="mesh-source-config"
+  data-source-name="{{ SOURCE }}"
+  data-points-data="{{ POINTS_DATA }}"
+  style="display: none;"
+></div>
 <script>
-  const pointsData = [{{ POINTS_DATA }}];
-  const points = new Float32Array(pointsData);
-  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-  polydata.getPoints().setData(points, 3);
-  const {{ SOURCE }} = polydata;
+  (function () {
+    const config = document.getElementById('mesh-source-config').dataset;
+    const sourceName = config.sourceName;
+    const pointsData = config.pointsData.split(',').map(parseFloat);
+    const points = new Float32Array(pointsData);
+    const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+    polydata.getPoints().setData(points, 3);
+    window[sourceName] = polydata;
+  })();
 </script>

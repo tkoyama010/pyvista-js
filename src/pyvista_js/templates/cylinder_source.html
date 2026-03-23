@@ -1,5 +1,6 @@
 <div
-  id="cylinder-config-{{ SOURCE }}"
+  id="cylinder-config"
+  data-source-name="{{ SOURCE }}"
   data-center-x="{{ CENTER_X }}"
   data-center-y="{{ CENTER_Y }}"
   data-center-z="{{ CENTER_Z }}"
@@ -9,12 +10,16 @@
   style="display: none;"
 ></div>
 <script>
-  const config = document.getElementById('cylinder-config-{{ SOURCE }}').dataset;
-  const {{ SOURCE }} = vtk.Filters.Sources.vtkCylinderSource.newInstance({
-    center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
-    radius: parseFloat(config.radius),
-    height: parseFloat(config.height),
-    resolution: parseInt(config.resolution),
-    generateTCoords: true
-  });
+  (function () {
+    const config = document.getElementById('cylinder-config').dataset;
+    const sourceName = config.sourceName;
+
+    window[sourceName] = vtk.Filters.Sources.vtkCylinderSource.newInstance({
+      center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
+      radius: parseFloat(config.radius),
+      height: parseFloat(config.height),
+      resolution: parseInt(config.resolution),
+      generateTCoords: true
+    });
+  })();
 </script>

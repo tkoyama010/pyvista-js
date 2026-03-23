@@ -1,5 +1,6 @@
 <div
-  id="cone-config-{{ SOURCE }}"
+  id="cone-config"
+  data-source-name="{{ SOURCE }}"
   data-center-x="{{ CENTER_X }}"
   data-center-y="{{ CENTER_Y }}"
   data-center-z="{{ CENTER_Z }}"
@@ -13,18 +14,22 @@
   style="display: none;"
 ></div>
 <script>
-  const config = document.getElementById('cone-config-{{ SOURCE }}').dataset;
-  const {{ SOURCE }} = vtk.Filters.Sources.vtkConeSource.newInstance({
-    center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
-    direction: [
-      parseFloat(config.directionX),
-      parseFloat(config.directionY),
-      parseFloat(config.directionZ)
-    ],
-    height: parseFloat(config.height),
-    radius: parseFloat(config.radius),
-    resolution: parseInt(config.resolution),
-    capping: JSON.parse(config.capping),
-    generateTCoords: true
-  });
+  (function () {
+    const config = document.getElementById('cone-config').dataset;
+    const sourceName = config.sourceName;
+
+    window[sourceName] = vtk.Filters.Sources.vtkConeSource.newInstance({
+      center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
+      direction: [
+        parseFloat(config.directionX),
+        parseFloat(config.directionY),
+        parseFloat(config.directionZ)
+      ],
+      height: parseFloat(config.height),
+      radius: parseFloat(config.radius),
+      resolution: parseInt(config.resolution),
+      capping: JSON.parse(config.capping),
+      generateTCoords: true
+    });
+  })();
 </script>
