@@ -1,15 +1,20 @@
+<div
+  id="tube-filter-config-{{ TUBED_PD }}"
+  data-radius="{{ RADIUS }}"
+  data-n-sides="{{ N_SIDES }}"
+  data-capping="{{ CAPPING | tojson }}"
+  style="display: none;"
+></div>
 <script>
   var {{ TUBED_PD }};
   (function () {
-    const radius = {{ RADIUS }};
-    const numberOfSides = {{ N_SIDES }};
-    const capping = {{ CAPPING }};
+    const config = document.getElementById('tube-filter-config-{{ TUBED_PD }}').dataset;
     const inputSource = {{ SOURCE }};
 
     const {{ TUBE_FILTER }} = vtk.Filters.General.vtkTubeFilter.newInstance({
-      radius: radius,
-      numberOfSides: numberOfSides,
-      capping: capping
+      radius: parseFloat(config.radius),
+      numberOfSides: parseInt(config.nSides),
+      capping: JSON.parse(config.capping)
     });
 
     if (typeof inputSource.update === 'function') {

@@ -1,12 +1,18 @@
+<div
+  id="contour-filter-config-{{ INDEX }}"
+  data-contour-values="{{ CONTOUR_VALUES }}"
+  style="display: none;"
+></div>
 <script>
   var contourPD{{ INDEX }};
   (function () {
-    const contourValues = [{{ CONTOUR_VALUES }}];
+    const config = document.getElementById('contour-filter-config-{{ INDEX }}').dataset;
+    const contourValues = config.contourValues.split(',').map(parseFloat);
     var src = source{{ INDEX }};
     if (typeof src.update === 'function') {
       src.update();
     }
-    var pd = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
+    var pd = typeof src.getOutputData === 'function' ? src.getOutputData(0) : src;
 
     var pts = pd.getPoints().getData();
     var polys = pd.getPolys().getData();

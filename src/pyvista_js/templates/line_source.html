@@ -1,15 +1,19 @@
+<div
+  id="line-config-{{ SOURCE }}"
+  data-point-ax="{{ POINT_A_X }}"
+  data-point-ay="{{ POINT_A_Y }}"
+  data-point-az="{{ POINT_A_Z }}"
+  data-point-bx="{{ POINT_B_X }}"
+  data-point-by="{{ POINT_B_Y }}"
+  data-point-bz="{{ POINT_B_Z }}"
+  data-resolution="{{ RESOLUTION }}"
+  style="display: none;"
+></div>
 <script>
-  const pointAX = {{ POINT_A_X }};
-  const pointAY = {{ POINT_A_Y }};
-  const pointAZ = {{ POINT_A_Z }};
-  const pointBX = {{ POINT_B_X }};
-  const pointBY = {{ POINT_B_Y }};
-  const pointBZ = {{ POINT_B_Z }};
-  const resolution = {{ RESOLUTION }};
-
+  const config = document.getElementById('line-config-{{ SOURCE }}').dataset;
   const {{ SOURCE }} = vtk.Filters.Sources.vtkLineSource.newInstance({
-    point1: [pointAX, pointAY, pointAZ],
-    point2: [pointBX, pointBY, pointBZ],
-    resolution: resolution
+    point1: [parseFloat(config.pointAx), parseFloat(config.pointAy), parseFloat(config.pointAz)],
+    point2: [parseFloat(config.pointBx), parseFloat(config.pointBy), parseFloat(config.pointBz)],
+    resolution: parseInt(config.resolution)
   });
 </script>
