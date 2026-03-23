@@ -1,0 +1,10 @@
+<script>
+{
+const base64Data = {{ SPLAT_BASE64 }};
+const splatIndex = {{ INDEX }};
+{% include "gaussian_splat_source.ts" %}
+var {{ SPLAT_READER }} = null; // Not using a reader, data is parsed inline
+var {{ SOURCE }} = _source;
+var {{ SPLAT_DATA }} = _splatData;
+}
+</script>
