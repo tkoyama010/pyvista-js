@@ -475,7 +475,11 @@ def plot(  # noqa: PLR0913
 
     if screenshot is not None:
         _take_screenshot(
-            plotter, screenshot, screenshot_transparent, screenshot_scale, screenshot_window_size,
+            plotter,
+            screenshot,
+            screenshot_transparent,
+            screenshot_scale,
+            screenshot_window_size,
         )
     else:
         plotter.show()
