@@ -1,5 +1,15 @@
 <script>
-const {{ SOURCE }} = vtk.Filters.Sources.vtkCubeSource.newInstance({ center:
-[{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}], xLength: {{ X_LENGTH }},
-yLength: {{ Y_LENGTH }}, zLength: {{ Z_LENGTH }} });
+  const centerX = {{ CENTER_X }};
+  const centerY = {{ CENTER_Y }};
+  const centerZ = {{ CENTER_Z }};
+  const xLength = {{ X_LENGTH }};
+  const yLength = {{ Y_LENGTH }};
+  const zLength = {{ Z_LENGTH }};
+
+  const {{ SOURCE }} = vtk.Filters.Sources.vtkCubeSource.newInstance({
+    center: [centerX, centerY, centerZ],
+    xLength: xLength,
+    yLength: yLength,
+    zLength: zLength
+  });
 </script>
