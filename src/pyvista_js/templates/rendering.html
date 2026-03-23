@@ -39,48 +39,34 @@
         interactor.initialize();
         interactor.bindEvents(container);
 
-        {
-          {
-            LIGHTS_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ LIGHTS_CODE }}
+{% endfilter %}
 
-        {
-          {
-            ACTORS_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ ACTORS_CODE }}
+{% endfilter %}
 
-        {
-          {
-            SCALAR_BAR_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ SCALAR_BAR_CODE }}
+{% endfilter %}
 
-        {
-          {
-            TEXT_ACTORS_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ TEXT_ACTORS_CODE }}
+{% endfilter %}
 
-        {
-          {
-            ENVIRONMENT_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ ENVIRONMENT_CODE }}
+{% endfilter %}
 
-        {
-          {
-            AXES_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ AXES_CODE }}
+{% endfilter %}
 
         renderer.resetCamera();
-        {
-          {
-            CAMERA_CODE
-          }
-        }
+{% filter indent(width=8, first=False) %}
+{{ CAMERA_CODE }}
+{% endfilter %}
         renderWindow.render();
       } catch (e) {
         console.error("Error rendering vtk.js scene:", e);
