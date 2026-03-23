@@ -1,4 +1,7 @@
-<script>
+<script type="module">
+// @ts-check
+/// <reference path="vtk.d.ts" />
+
 const {{ SOURCE }} = vtk.Filters.Sources.vtkArrowSource.newInstance({ tipLength:
 {{ TIP_LENGTH }}, tipRadius: {{ TIP_RADIUS }}, tipResolution:
 {{ TIP_RESOLUTION }}, shaftRadius: {{ SHAFT_RADIUS }}, shaftResolution:

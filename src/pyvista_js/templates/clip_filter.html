@@ -1,46 +1,49 @@
-<script>
-var {{ CLIPPED_PD }};
+<script type="module">
+// @ts-check
+/// <reference path="vtk.d.ts" />
+
+let {{ CLIPPED_PD }}: any;
 (function () {
-  var src = {{ SOURCE }};
+  const src: any = {{ SOURCE }};
   if (typeof src.update === 'function') { src.update(); }
-  var pd = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
-  var inPts = pd.getPoints().getData();
-  var inPolys = pd.getPolys().getData();
-  var nx = {{ NORMAL_X }};
-  var ny = {{ NORMAL_Y }};
-  var nz = {{ NORMAL_Z }};
-  var ox = {{ ORIGIN_X }};
-  var oy = {{ ORIGIN_Y }};
-  var oz = {{ ORIGIN_Z }};
-  var invert = {{ INVERT }};
-  var nPts = inPts.length / 3;
-  var distances = new Float32Array(nPts);
-  for (var i = 0; i < nPts; i++) {
-    var px = inPts[i * 3];
-    var py = inPts[i * 3 + 1];
-    var pz = inPts[i * 3 + 2];
+  const pd: any = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
+  const inPts: Float32Array = pd.getPoints().getData();
+  const inPolys: Int32Array = pd.getPolys().getData();
+  const nx: number = {{ NORMAL_X }};
+  const ny: number = {{ NORMAL_Y }};
+  const nz: number = {{ NORMAL_Z }};
+  const ox: number = {{ ORIGIN_X }};
+  const oy: number = {{ ORIGIN_Y }};
+  const oz: number = {{ ORIGIN_Z }};
+  const invert: boolean = {{ INVERT }};
+  const nPts: number = inPts.length / 3;
+  const distances: Float32Array = new Float32Array(nPts);
+  for (let i: number = 0; i < nPts; i++) {
+    const px: number = inPts[i * 3];
+    const py: number = inPts[i * 3 + 1];
+    const pz: number = inPts[i * 3 + 2];
     distances[i] = nx * (px - ox) + ny * (py - oy) + nz * (pz - oz);
   }
-  var newPts = [];
-  var newPolys = [];
-  var ptMap = {};
-  var newPtIdx = 0;
-  var offset = 0;
-  var i = 0;
+  const newPts: number[] = [];
+  const newPolys: number[] = [];
+  const ptMap: Record<number, number> = {};
+  let newPtIdx: number = 0;
+  const offset: number = 0;
+  let i: number = 0;
   while (i < inPolys.length) {
-    var npts = inPolys[i];
-    var ids = [];
-    for (var j = 0; j < npts; j++) { ids.push(inPolys[i + 1 + j]); }
-    var allKept = true;
-    for (var k = 0; k < npts; k++) {
-      var dist = distances[ids[k]];
-      var keep = invert ? (dist >= 0) : (dist <= 0);
+    const npts: number = inPolys[i];
+    const ids: number[] = [];
+    for (let j: number = 0; j < npts; j++) { ids.push(inPolys[i + 1 + j]); }
+    let allKept: boolean = true;
+    for (let k: number = 0; k < npts; k++) {
+      const dist: number = distances[ids[k]];
+      const keep: boolean = invert ? (dist >= 0) : (dist <= 0);
       if (!keep) { allKept = false; break; }
     }
     if (allKept) {
       newPolys.push(npts);
-      for (var j = 0; j < npts; j++) {
-        var oldId = ids[j];
+      for (let j: number = 0; j < npts; j++) {
+        const oldId: number = ids[j];
         if (!(oldId in ptMap)) {
           newPts.push(inPts[oldId * 3]);
           newPts.push(inPts[oldId * 3 + 1]);
@@ -52,11 +55,11 @@ var {{ CLIPPED_PD }};
     }
     i += npts + 1;
   }
-  var pts = vtk.Common.Core.vtkPoints.newInstance();
+  const pts = vtk.Common.Core.vtkPoints.newInstance();
   pts.setData(Float32Array.from(newPts), 3);
   {{ CLIPPED_PD }} = vtk.Common.DataModel.vtkPolyData.newInstance();
   {{ CLIPPED_PD }}.setPoints(pts);
-  var polys = vtk.Common.Core.vtkCellArray.newInstance();
+  const polys = vtk.Common.Core.vtkCellArray.newInstance();
   polys.setData(Int32Array.from(newPolys));
   {{ CLIPPED_PD }}.setPolys(polys);
 })();

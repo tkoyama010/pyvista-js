@@ -1,0 +1,14 @@
+{
+  "name": "pyvista-js-templates",
+  "version": "0.11.0",
+  "description": "TypeScript templates for pyvista-js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build-templates.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.2"
+  }
+}
