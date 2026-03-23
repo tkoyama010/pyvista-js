@@ -8,16 +8,20 @@
      data-opacity="{{ OPACITY }}"
      style="display: none"></div>
 <script>
+{% filter indent(width=2, first=False) %}
 {{ SOURCE_CODE }}
 {{ NORMALS_CODE }}
+{% endfilter %}
   (function() {
     const config = document.getElementById('actor-config').dataset;
     const actorName = config.actorName;
     const mapperName = config.mapperName;
 
     window[mapperName] = vtk.Rendering.Core[config.mapperClass].newInstance();
+{% filter indent(width=2, first=False) %}
 {{ MAPPER_SETUP }}
 {{ SCALAR_CODE }}
+{% endfilter %}
 
     window[actorName] = vtk.Rendering.Core.vtkActor.newInstance();
     window[actorName].setMapper(window[mapperName]);
@@ -28,11 +32,13 @@
     );
     window[actorName].getProperty().setOpacity(parseFloat(config.opacity));
 
+{% filter indent(width=2, first=False) %}
 {{ EDGE_CODE }}
 {{ STYLE_CODE }}
 {{ SHADING_CODE }}
 {{ PBR_CODE }}
 {{ TEXTURE_CODE }}
+{% endfilter %}
 
     renderer.addActor(window[actorName]);
   })();
