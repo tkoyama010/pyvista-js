@@ -353,19 +353,18 @@ def _find_canvas_in_frames(page) -> tuple:  # noqa: ANN001
             if canvas is not None:
                 return frame, canvas
         except Exception:  # noqa: BLE001
+            logger.debug("Failed to query canvas in frame", exc_info=True)
             continue
     return None, None
 
 
-def _rotate_canvas_with_mouse(page, canvas_selector: str = "canvas") -> None:  # noqa: ANN001
+def _rotate_canvas_with_mouse(page) -> None:  # noqa: ANN001
     """Rotate the 3D model by dragging the mouse across the canvas.
 
     Parameters
     ----------
     page : playwright.sync_api.Page
         The Playwright page object.
-    canvas_selector : str
-        CSS selector for the canvas element. Default: "canvas".
 
     """
     try:
@@ -593,6 +592,36 @@ def capture_preview(
     logger.info("Preview GIF saved to: %s", output_path)
 
 
+def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN001
+    """Poll all frames until a canvas element appears or *timeout* seconds elapse.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    timeout : int
+        Maximum seconds to wait.  Default: 120.
+
+    Raises
+    ------
+    TimeoutError
+        If no canvas is found within *timeout* seconds.
+
+    """
+    import time  # noqa: PLC0415
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        _frame, canvas = _find_canvas_in_frames(page)
+        if canvas is not None:
+            logger.info("Found canvas element in iframe")
+            return
+        page.wait_for_timeout(2000)
+
+    msg = f"Canvas element not found in any frame within {timeout} seconds"
+    raise TimeoutError(msg)
+
+
 def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = True) -> Path:
     """Capture screenshots from the stlite demo using Playwright.
 
@@ -639,21 +668,7 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
             # components.html() creates another nested iframe for the
             # Three.js canvas.  page.wait_for_selector only searches the
             # top-level document, so we poll all frames instead.
-            import time  # noqa: PLC0415
-
-            deadline = time.monotonic() + 120
-            canvas_found = False
-            while time.monotonic() < deadline:
-                _frame, canvas = _find_canvas_in_frames(page)
-                if canvas is not None:
-                    canvas_found = True
-                    logger.info("Found canvas element in iframe")
-                    break
-                page.wait_for_timeout(2000)
-
-            if not canvas_found:
-                msg = "Canvas element not found in any frame within 120 seconds"
-                raise TimeoutError(msg)
+            _wait_for_canvas_in_frames(page)
 
             page.wait_for_timeout(5000)
 
