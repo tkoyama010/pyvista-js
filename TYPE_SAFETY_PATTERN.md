@@ -5,6 +5,7 @@ This document describes the "Plotly-like" specification pattern used for data tr
 ## Overview
 
 The pattern separates concerns into:
+
 - **Library** (TypeScript fragments): Clean, type-safe, testable functions
 - **Config** (Jinja2 templates): Dynamic data injection as JSON
 
@@ -87,10 +88,10 @@ def _vtk_js_source(idx: int) -> str:
 ## Benefits
 
 1. **Type Safety**: IDE autocompletion and type checking in TypeScript fragments
-2. **Maintainability**: Clear separation between data (Python) and logic (TypeScript)
-3. **Formatting**: TypeScript files remain valid and can be formatted with Prettier
-4. **Testability**: Functions can be tested independently
-5. **Documentation**: Types serve as API documentation
+1. **Maintainability**: Clear separation between data (Python) and logic (TypeScript)
+1. **Formatting**: TypeScript files remain valid and can be formatted with Prettier
+1. **Testability**: Functions can be tested independently
+1. **Documentation**: Types serve as API documentation
 
 ## Implementation Status
 
@@ -100,6 +101,7 @@ def _vtk_js_source(idx: int) -> str:
 ## Reference Implementation
 
 See:
+
 - `globals.d.ts` - Type definitions
 - `src/pyvista_js/templates/sphere_source.ts` - TypeScript fragment
 - `src/pyvista_js/templates/sphere_source.html` - Jinja2 template
