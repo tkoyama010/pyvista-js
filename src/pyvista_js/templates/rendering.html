@@ -1,4 +1,4 @@
-<script src="{{ VTKJS_CDN }}"></script>
+{% if VTKJS_CDN %}<script src="{{ VTKJS_CDN }}"></script>{% endif %}
 <div id="{{ CONTAINER_ID }}"
      data-background-r="{{ BACKGROUND_R }}"
      data-background-g="{{ BACKGROUND_G }}"

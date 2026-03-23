@@ -1,0 +1,13 @@
+{
+  "name": "pyvista-js-vtk-sources",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@kitware/vtk.js": "^35.4.0",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.9.3"
+  }
+}

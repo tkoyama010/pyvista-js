@@ -62,3 +62,4 @@ docs/pot/**/*.css
 
 # JupyterLite - ignore generated notebooks (source is .py)
 jupyterlite/content/*.ipynb
+node_modules/

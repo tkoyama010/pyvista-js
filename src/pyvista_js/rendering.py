@@ -97,11 +97,15 @@ from .examples import CubeMap
 
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
+_STATIC_DIR = pathlib.Path(__file__).parent / "static"
 _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
 _RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
 _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 _POINTS_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "points_source.html").read_text()
+
+# Bundled JavaScript path
+_BUNDLE_PATH = _STATIC_DIR / "pyvista_js.js"
 
 _jinja_env = Environment(
     loader=FileSystemLoader(_TEMPLATES_DIR),
@@ -117,8 +121,12 @@ def _render(template_str: str, **kwargs: object) -> str:
     return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
 
-# vtk.js CDN URL used across renderers
+# vtk.js CDN URL (fallback for compatibility, but bundle is preferred)
 _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
+
+# Read bundled JavaScript content
+_BUNDLE_JS_CONTENT = _BUNDLE_PATH.read_text() if _BUNDLE_PATH.exists() else None
+
 
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
@@ -160,23 +168,23 @@ class _VTKJSLoader:
         return cls._instance  # type: ignore[return-value]
 
     def load(self) -> None:
-        """Load vtk.js library in IPython/Jupyter/Pyodide environment.
+        """Load PyVista.js bundle (includes vtk.js) in IPython/Jupyter/Pyodide environment.
 
-        This function automatically loads the vtk.js library from unpkg CDN
-        when working in Jupyter notebooks or JupyterLite. It only loads the
-        library once per session and waits for it to be available.
+        This function loads the bundled JavaScript that includes vtk.js and
+        PyVista.js utilities. The bundle is loaded once per session.
         """
         if self._loaded:
             return
 
         if IPYTHON_AVAILABLE:
             try:
-                display(
-                    HTML(f"""
-<script src="{_VTKJS_CDN}"></script>
-"""),
-                )
-                # Wait for vtk.js to load from CDN
+                # Load bundled JavaScript inline
+                if _BUNDLE_JS_CONTENT:
+                    display(HTML(f"<script>{_BUNDLE_JS_CONTENT}</script>"))
+                else:
+                    # Fallback to CDN if bundle not found
+                    display(HTML(f'<script src="{_VTKJS_CDN}"></script>'))
+                # Wait for library to be available
                 time.sleep(2)
                 self._loaded = True
             except (NameError, TypeError):
@@ -185,9 +193,13 @@ class _VTKJSLoader:
         elif PYODIDE_ENV and document is not None:
             # In pure Pyodide environment without IPython
             script = document.createElement("script")
-            script.src = _VTKJS_CDN
+            if _BUNDLE_JS_CONTENT:
+                script.text = _BUNDLE_JS_CONTENT
+            else:
+                # Fallback to CDN if bundle not found
+                script.src = _VTKJS_CDN
             document.head.appendChild(script)
-            # Wait for vtk.js to load from CDN
+            # Wait for library to be available
             time.sleep(2)
             self._loaded = True
 
@@ -1327,7 +1339,7 @@ class _BaseHTMLRenderer:
         actors_code = "\n\n".join(indented_actors)
 
         return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
-            VTKJS_CDN=_VTKJS_CDN,
+            VTKJS_CDN="" if _BUNDLE_JS_CONTENT else _VTKJS_CDN,
             CONTAINER_ID=self.container_id,
             BACKGROUND_R=str(self.background[0]),
             BACKGROUND_G=str(self.background[1]),
@@ -1361,7 +1373,7 @@ class _BaseHTMLRenderer:
         actors_code = "\n\n".join(indented_actors)
 
         rendered = _jinja_env.from_string(_RENDERING_JS_TEMPLATE).render(
-            VTKJS_CDN=_VTKJS_CDN,
+            VTKJS_CDN="" if _BUNDLE_JS_CONTENT else _VTKJS_CDN,
             CONTAINER_ID=self.container_id,
             BACKGROUND_R=str(self.background[0]),
             BACKGROUND_G=str(self.background[1]),
@@ -1657,13 +1669,23 @@ class BrowserRenderer(_BaseHTMLRenderer):
             "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
             " overflow: hidden; }\n" + container_rule + "  </style>\n"
         )
+        
+        # Use bundled JavaScript if available, otherwise fallback to CDN
+        script_tag = (
+            f"  <script>{_BUNDLE_JS_CONTENT}</script>\n"
+            if _BUNDLE_JS_CONTENT
+            else f"  <script src='{_VTKJS_CDN}'></script>\n"
+        )
+        
         return (
             "<!DOCTYPE html>\n"
             "<html>\n"
             "<head>\n"
             "  <meta charset='utf-8'>\n"
             "  <title>pyvista-js</title>\n"
-            f"  <script src='{_VTKJS_CDN}'></script>\n" + style + "</head>\n"
+            + script_tag
+            + style
+            + "</head>\n"
             "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
