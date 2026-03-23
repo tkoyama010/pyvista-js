@@ -604,13 +604,15 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
 
         try:
             logger.info("Navigating to stlite demo...")
-            page.goto(demo_url, wait_until="domcontentloaded", timeout=60000)
+            page.goto(demo_url, wait_until="networkidle", timeout=120000)
 
-            logger.info("Waiting for stlite to load...")
-            page.wait_for_timeout(30000)
+            logger.info("Waiting for stlite to load and install dependencies...")
+            # Wait longer for stlite to initialize Python and install pyvista-js
+            page.wait_for_timeout(60000)
 
             logger.info("Waiting for 3D rendering to appear...")
-            page.wait_for_selector("canvas", timeout=60000)
+            # Increased timeout to 120 seconds for canvas to appear
+            page.wait_for_selector("canvas", timeout=120000)
             page.wait_for_timeout(5000)
 
             if rotate:
