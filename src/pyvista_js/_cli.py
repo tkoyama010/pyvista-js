@@ -209,6 +209,150 @@ def _apply_camera_movement(
 # ---------------------------------------------------------------------------
 
 
+def _build_plotter(  # noqa: ANN202
+    files: list[Path] | None,
+    color: str | None,
+    background: str | None,
+    opacity: float,
+    load_pickle: Path | None,
+):  # type: ignore[return]
+    """Build a Plotter from mesh files or a pickle, returning it ready to display.
+
+    Parameters
+    ----------
+    files : list of Path or None
+        Mesh files to load.
+    color : str or None
+        Mesh colour.
+    background : str or None
+        Background colour override.
+    opacity : float
+        Mesh opacity.
+    load_pickle : Path or None
+        Path to a pickled Plotter to load instead.
+
+    Returns
+    -------
+    pyvista_js.Plotter
+        The configured plotter.
+
+    """
+    import pyvista_js as pv  # noqa: PLC0415
+
+    if load_pickle is not None:
+        plotter = _load_plotter_from_pickle(load_pickle)
+
+        if files:
+            for file_path in files:
+                mesh = _read_mesh(file_path)
+                plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+        if background is not None:
+            plotter.background_color = background
+    else:
+        if not files:
+            logger.error(
+                "no mesh files provided. Either provide mesh files or use --load-pickle.",
+            )
+            sys.exit(1)
+
+        plotter = pv.Plotter()
+
+        if background is not None:
+            plotter.background_color = background
+
+        for file_path in files:
+            mesh = _read_mesh(file_path)
+            plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    return plotter
+
+
+def _save_pickle(plotter, pickle_path: Path) -> None:  # noqa: ANN001
+    """Serialize a Plotter to a pickle file.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter to save.
+    pickle_path : Path
+        Destination file path.
+
+    """
+    import pickle as pickle_module  # noqa: PLC0415
+
+    with pickle_path.open("wb") as f:
+        pickle_module.dump(plotter, f)
+    logger.info("Plotter saved to: %s", pickle_path)
+
+
+def _parse_window_size(size_str: str) -> tuple[int, int]:
+    """Parse a ``'width,height'`` string into an integer pair.
+
+    Parameters
+    ----------
+    size_str : str
+        Window size string, e.g. ``'1920,1080'``.
+
+    Returns
+    -------
+    tuple of int
+        ``(width, height)``.
+
+    Raises
+    ------
+    SystemExit
+        When the format is invalid.
+
+    """
+    try:
+        width_str, height_str = size_str.split(",")
+        return (int(width_str.strip()), int(height_str.strip()))
+    except (ValueError, AttributeError):
+        logger.error(  # noqa: TRY400
+            "Invalid window size format '%s'. Expected 'width,height' (e.g. '1920,1080')",
+            size_str,
+        )
+        sys.exit(1)
+
+
+def _take_screenshot(
+    plotter,  # noqa: ANN001
+    screenshot: Path,
+    screenshot_transparent: bool,  # noqa: FBT001
+    screenshot_scale: int | None,
+    screenshot_window_size: str | None,
+) -> None:
+    """Save a screenshot of the plotter scene.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter to capture.
+    screenshot : Path
+        Output file path.
+    screenshot_transparent : bool
+        Whether to use a transparent background.
+    screenshot_scale : int or None
+        Resolution scale factor.
+    screenshot_window_size : str or None
+        Window size as ``'width,height'``.
+
+    """
+    window_size = None
+    if screenshot_window_size is not None:
+        window_size = _parse_window_size(screenshot_window_size)
+
+    plotter.screenshot(
+        filename=screenshot,
+        transparent_background=screenshot_transparent or None,
+        return_img=False,
+        window_size=window_size,
+        scale=screenshot_scale,
+    )
+    logger.info("Screenshot saved to: %s", screenshot)
+
+
 @app.command()
 def plot(  # noqa: PLR0913
     files: Annotated[
@@ -255,6 +399,34 @@ def plot(  # noqa: PLR0913
             metavar="PATH",
         ),
     ] = None,
+    screenshot: Annotated[
+        Path | None,
+        typer.Option(
+            help="Save a screenshot to the specified file (PNG/JPEG). "
+            "When provided, the browser window will not open.",
+            metavar="PATH",
+        ),
+    ] = None,
+    screenshot_transparent: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help="Use transparent background for screenshot. Default: False.",
+        ),
+    ] = False,
+    screenshot_scale: Annotated[
+        int | None,
+        typer.Option(
+            help="Scale factor for screenshot resolution (e.g. 2 for double resolution).",
+            metavar="INT",
+        ),
+    ] = None,
+    screenshot_window_size: Annotated[
+        str | None,
+        typer.Option(
+            help="Window size for screenshot as 'width,height' (e.g. '1920,1080').",
+            metavar="SIZE",
+        ),
+    ] = None,
     azimuth: Annotated[
         float | None,
         typer.Option(
@@ -289,52 +461,28 @@ def plot(  # noqa: PLR0913
     Open one or more mesh files (.vtk, .ply, .obj) and render them
     in the default web browser using vtk.js. Alternatively, load a
     previously saved Plotter object from a pickle file.
+
+    If ``--screenshot`` is provided, a screenshot will be saved to the
+    specified file instead of opening the browser window.
     """
-    import pickle as pickle_module  # noqa: PLC0415
+    plotter = _build_plotter(files, color, background, opacity, load_pickle)
 
-    import pyvista_js as pv  # noqa: PLC0415
-
-    if load_pickle is not None:
-        # Load plotter from pickle file
-        plotter = _load_plotter_from_pickle(load_pickle)
-
-        # If files are also provided with --load-pickle, add them to the loaded plotter
-        if files:
-            for file_path in files:
-                mesh = _read_mesh(file_path)
-                plotter.add_mesh(mesh, color=color, opacity=opacity)
-
-        # If background is specified, override the loaded plotter's background
-        if background is not None:
-            plotter.background_color = background
-    else:
-        # Normal flow: create a new plotter from mesh files
-        if not files:
-            logger.error(
-                "no mesh files provided. Either provide mesh files or use --load-pickle.",
-            )
-            sys.exit(1)
-
-        plotter = pv.Plotter()
-
-        if background is not None:
-            plotter.background_color = background
-
-        for file_path in files:
-            mesh = _read_mesh(file_path)
-            plotter.add_mesh(mesh, color=color, opacity=opacity)
-
-    # Apply relative camera movements if any are specified
     if any(opt is not None for opt in (azimuth, elevation, zoom, roll)):
         _apply_camera_movement(plotter, azimuth, elevation, zoom, roll)
 
-    # Save to pickle file if requested
     if pickle is not None:
-        with pickle.open("wb") as f:
-            pickle_module.dump(plotter, f)
-        logger.info("Plotter saved to: %s", pickle)
+        _save_pickle(plotter, pickle)
 
-    plotter.show()
+    if screenshot is not None:
+        _take_screenshot(
+            plotter,
+            screenshot,
+            screenshot_transparent,
+            screenshot_scale,
+            screenshot_window_size,
+        )
+    else:
+        plotter.show()
 
 
 @app.command()
