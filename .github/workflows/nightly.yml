@@ -44,7 +44,7 @@ jobs:
 
     - name: Install test dependencies
       run: |
-        uv pip install --system pytest pytest-cov playwright
+        uv pip install --system pytest pytest-cov playwright pytest-playwright pillow
         playwright install --with-deps chromium
 
     - name: Run tests
