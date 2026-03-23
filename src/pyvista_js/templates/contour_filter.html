@@ -1,59 +1,8 @@
 <script>
-var contourPD{{INDEX}};
-(function () {
-  var src = source{{INDEX}};
-  if (typeof src.update === 'function') { src.update(); }
-  var pd = (typeof src.getOutputData === 'function') ? src.getOutputData(0) : src;
-
-  var pts = pd.getPoints().getData();
-  var polys = pd.getPolys().getData();
-  var scalarsArr = pd.getPointData().getScalars();
-  if (!scalarsArr) {
-    contourPD{{INDEX}} = vtk.Common.DataModel.vtkPolyData.newInstance();
-    return;
-  }
-  var scalars = scalarsArr.getData();
-  var values = [{{CONTOUR_VALUES}}];
-
-  // Marching triangles: find contour line segments on the surface
-  var newPts = [];
-  var lines = [];
-
-  for (var v = 0; v < values.length; v++) {
-    var iso = values[v];
-    var i = 0;
-    while (i < polys.length) {
-      var npts = polys[i]; i++;
-      if (npts !== 3) { i += npts; continue; }
-      var i0 = polys[i], i1 = polys[i+1], i2 = polys[i+2]; i += 3;
-      var s0 = scalars[i0], s1 = scalars[i1], s2 = scalars[i2];
-      var crossedPts = [];
-      var edges = [[i0,i1,s0,s1],[i1,i2,s1,s2],[i2,i0,s2,s0]];
-      for (var e = 0; e < 3; e++) {
-        var a = edges[e][0], b = edges[e][1];
-        var sa = edges[e][2], sb = edges[e][3];
-        if ((sa <= iso && iso <= sb) || (sb <= iso && iso <= sa)) {
-          if (sa === sb) continue;
-          var t = (iso - sa) / (sb - sa);
-          var px = pts[a*3]   + t*(pts[b*3]   - pts[a*3]);
-          var py = pts[a*3+1] + t*(pts[b*3+1] - pts[a*3+1]);
-          var pz = pts[a*3+2] + t*(pts[b*3+2] - pts[a*3+2]);
-          crossedPts.push(newPts.length / 3);
-          newPts.push(px, py, pz);
-        }
-      }
-      if (crossedPts.length === 2) {
-        lines.push(2, crossedPts[0], crossedPts[1]);
-      }
-    }
-  }
-
-  var outPts = vtk.Common.Core.vtkPoints.newInstance();
-  outPts.setData(Float32Array.from(newPts), 3);
-  contourPD{{INDEX}} = vtk.Common.DataModel.vtkPolyData.newInstance();
-  contourPD{{INDEX}}.setPoints(outPts);
-  var lineArr = vtk.Common.Core.vtkCellArray.newInstance();
-  lineArr.setData(Int32Array.from(lines));
-  contourPD{{INDEX}}.setLines(lineArr);
-})();
+{
+const _inputSource = source{{ INDEX }};
+const _contourValues = [{{ CONTOUR_VALUES }}];
+{% include "contour_filter.ts" %}
+var contourPD{{ INDEX }} = _result;
+}
 </script>
