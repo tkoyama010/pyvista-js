@@ -1,0 +1,8 @@
+<script>
+{
+const _inputSource = {{ SOURCE }};
+const _shrinkFactor = {{ SHRINK_FACTOR }};
+{% include "shrink_filter.ts" %}
+var {{ SHRUNK_PD }} = _result;
+}
+</script>
