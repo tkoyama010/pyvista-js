@@ -153,10 +153,10 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
 
     html = renderer._repr_html_()
 
-    # Verify parameters are in the generated HTML
-    assert "const radius = 2.5;" in html
-    assert "const centerX = 1" in html
-    assert "const thetaResolution = 60;" in html
+    # Verify parameters are in the generated HTML using the new CONFIG format
+    assert '"radius": 2.5' in html
+    assert '"centerX": 1' in html
+    assert '"thetaResolution": 60' in html
 
 
 def test_view_vector_in_html(monkeypatch) -> None:
