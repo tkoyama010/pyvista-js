@@ -10,19 +10,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2 import Environment, StrictUndefined
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from numpy.typing import ArrayLike
 
-_TEMPLATES_DIR_FOR_LOADER = Path(__file__).parent / "templates"
-_jinja_env = Environment(
-    loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER),
-    undefined=StrictUndefined,
-    autoescape=False,  # noqa: S701
-)
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
 
 
 def _render(template_str: str, **kwargs: object) -> str:
