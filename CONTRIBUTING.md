@@ -55,6 +55,8 @@ pyvista-js is a PyVista-like API for vtk.js that brings intuitive 3D visualizati
 
 ## Development Setup
 
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+
 ### Prerequisites
 
 - Python 3.12 or higher (3.12, 3.13, or 3.14 recommended for testing)
@@ -160,7 +162,7 @@ The project uses pre-commit hooks to ensure code quality.
 
 ## Testing
 
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
 
 ### Running Tests
 
