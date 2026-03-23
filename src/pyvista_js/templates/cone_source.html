@@ -1,7 +1,22 @@
 <script>
-const {{ SOURCE }} = vtk.Filters.Sources.vtkConeSource.newInstance({ center:
-[{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}], direction: [{{ DIRECTION_X }},
-{{ DIRECTION_Y }}, {{ DIRECTION_Z }}], height: {{ HEIGHT }}, radius:
-{{ RADIUS }}, resolution: {{ RESOLUTION }}, capping: {{ CAPPING }},
-generateTCoords: true });
+  const centerX = {{ CENTER_X }};
+  const centerY = {{ CENTER_Y }};
+  const centerZ = {{ CENTER_Z }};
+  const directionX = {{ DIRECTION_X }};
+  const directionY = {{ DIRECTION_Y }};
+  const directionZ = {{ DIRECTION_Z }};
+  const height = {{ HEIGHT }};
+  const radius = {{ RADIUS }};
+  const resolution = {{ RESOLUTION }};
+  const capping = {{ CAPPING }};
+
+  const {{ SOURCE }} = vtk.Filters.Sources.vtkConeSource.newInstance({
+    center: [centerX, centerY, centerZ],
+    direction: [directionX, directionY, directionZ],
+    height: height,
+    radius: radius,
+    resolution: resolution,
+    capping: capping,
+    generateTCoords: true
+  });
 </script>
