@@ -27,12 +27,12 @@ repos:
         additional_dependencies: ['mdformat-toc==0.5.0']
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.16.2"
+    rev: "v2.20.0"
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.5
+    rev: v0.15.7
     hooks:
       # Run the linter
       - id: ruff-check
@@ -79,7 +79,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/tkoyama010/standard-readme-pre-commit
-    rev: 0f0602b6c3b7e891e2c8e23a27ad93e41177fa90
+    rev: 810adb53324d6891fc270081b58e21db67fdafcb
     hooks:
       - id: standard-readme
 
