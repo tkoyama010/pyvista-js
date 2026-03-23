@@ -1,4 +1,7 @@
-<script>
+<script type="module">
+// @ts-check
+/// <reference path="vtk.d.ts" />
+
 const scalarBarActor = vtk.Rendering.Core.vtkScalarBarActor.newInstance();
 scalarBarActor.setAxisLabel('{{ TITLE }}');
 scalarBarActor.setAutomated(true);

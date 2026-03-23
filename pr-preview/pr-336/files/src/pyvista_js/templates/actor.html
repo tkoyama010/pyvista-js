@@ -1,4 +1,7 @@
-<script>
+<script type="module">
+// @ts-check
+/// <reference path="vtk.d.ts" />
+
 {{ SOURCE_CODE }}
 {{ NORMALS_CODE }}
 const {{ MAPPER }} = vtk.Rendering.Core.{{ MAPPER_CLASS }}.newInstance();

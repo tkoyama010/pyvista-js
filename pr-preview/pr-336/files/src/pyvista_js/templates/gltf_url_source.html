@@ -1,11 +1,14 @@
+<script type="module">
+// @ts-check
+
 (function() {
   if (!document.querySelector('script[src*="model-viewer"]')) {
-    var s = document.createElement('script');
+    const s: HTMLScriptElement = document.createElement('script');
     s.type = 'module';
     s.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
     document.head.appendChild(s);
   }
-  var mv{{INDEX}} = document.createElement('model-viewer');
+  const mv{{INDEX}}: any = document.createElement('model-viewer');
   mv{{INDEX}}.setAttribute('src', '{{GLTF_URL}}');
   mv{{INDEX}}.setAttribute('camera-controls', '');
   mv{{INDEX}}.setAttribute('auto-rotate', '');
@@ -16,3 +19,4 @@
     interactor.unbindEvents();
   }
 })();
+</script>

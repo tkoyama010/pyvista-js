@@ -1,14 +1,17 @@
+<script type="module">
+// @ts-check
+
 (function() {
   if (!document.querySelector('script[src*="model-viewer"]')) {
-    var s = document.createElement('script');
+    const s: HTMLScriptElement = document.createElement('script');
     s.type = 'module';
     s.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
     document.head.appendChild(s);
   }
-  var gltfBytes{{INDEX}} = Uint8Array.from(atob({{GLTF_BASE64}}), c => c.charCodeAt(0));
-  var gltfBlob{{INDEX}} = new Blob([gltfBytes{{INDEX}}], {type: 'model/gltf+json'});
-  var gltfUrl{{INDEX}} = URL.createObjectURL(gltfBlob{{INDEX}});
-  var mv{{INDEX}} = document.createElement('model-viewer');
+  const gltfBytes{{INDEX}}: Uint8Array = Uint8Array.from(atob({{GLTF_BASE64}}), c => c.charCodeAt(0));
+  const gltfBlob{{INDEX}}: Blob = new Blob([gltfBytes{{INDEX}}], {type: 'model/gltf+json'});
+  const gltfUrl{{INDEX}}: string = URL.createObjectURL(gltfBlob{{INDEX}});
+  const mv{{INDEX}}: any = document.createElement('model-viewer');
   mv{{INDEX}}.setAttribute('src', gltfUrl{{INDEX}});
   mv{{INDEX}}.setAttribute('camera-controls', '');
   mv{{INDEX}}.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;';
@@ -19,3 +22,4 @@
     interactor.unbindEvents();
   }
 })();
+</script>

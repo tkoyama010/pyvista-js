@@ -1,6 +1,9 @@
-<script>
+<script type="module">
+// @ts-check
+/// <reference path="vtk.d.ts" />
+
   (function () {
-    var container = document.createElement("div");
+    const container: HTMLDivElement = document.createElement("div");
     container.id = "{{ CONTAINER_ID }}";
     container.setAttribute("data-background-r", "{{ BACKGROUND_R }}");
     container.setAttribute("data-background-g", "{{ BACKGROUND_G }}");
@@ -13,25 +16,25 @@
       document.body.appendChild(container);
     }
 
-    function doRender() {
+    function doRender(): void {
       try {
-        var backgroundR = parseFloat(container.dataset.backgroundR);
-        var backgroundG = parseFloat(container.dataset.backgroundG);
-        var backgroundB = parseFloat(container.dataset.backgroundB);
+        const backgroundR: number = parseFloat(container.dataset.backgroundR || "0");
+        const backgroundG: number = parseFloat(container.dataset.backgroundG || "0");
+        const backgroundB: number = parseFloat(container.dataset.backgroundB || "0");
 
-        var renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+        const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
         renderer.setBackground(backgroundR, backgroundG, backgroundB);
-        var renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+        const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
         renderWindow.addRenderer(renderer);
-        var openGLRenderWindow =
+        const openGLRenderWindow =
           vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
         renderWindow.addView(openGLRenderWindow);
         openGLRenderWindow.setContainer(container);
-        var bbox = container.getBoundingClientRect();
+        const bbox: DOMRect = container.getBoundingClientRect();
         openGLRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
-        var interactor =
+        const interactor =
           vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
-        var interactorStyle =
+        const interactorStyle =
           vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
         interactor.setInteractorStyle(interactorStyle);
         interactor.setView(openGLRenderWindow);
@@ -61,7 +64,7 @@
     if (typeof vtk !== "undefined") {
       doRender();
     } else {
-      var script = document.createElement("script");
+      const script: HTMLScriptElement = document.createElement("script");
       script.src = "{{ VTKJS_CDN }}";
       script.onload = doRender;
       document.head.appendChild(script);
