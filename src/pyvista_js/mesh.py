@@ -5,6 +5,7 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -1157,16 +1158,19 @@ def Sphere(  # noqa: N802
             points.append([x, y, z])
 
     def _vtk_js_source(idx: int) -> str:
+        config = {
+            "centerX": center[0],
+            "centerY": center[1],
+            "centerZ": center[2],
+            "radius": radius,
+            "thetaResolution": theta_resolution,
+            "phiResolution": phi_resolution,
+        }
         return _render(
             _SPHERE_SOURCE_TEMPLATE,
             SOURCE=f"source{idx}",
             TEX_MAP_SPHERE=f"texMapSphere{idx}",
-            CENTER_X=str(center[0]),
-            CENTER_Y=str(center[1]),
-            CENTER_Z=str(center[2]),
-            RADIUS=str(radius),
-            THETA_RESOLUTION=str(theta_resolution),
-            PHI_RESOLUTION=str(phi_resolution),
+            CONFIG=json.dumps(config),
         )
 
     def _mapper_setup_sphere(idx: int) -> str:
