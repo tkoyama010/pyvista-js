@@ -1,17 +1,39 @@
-<script>
 {{ SOURCE_CODE }}
 {{ NORMALS_CODE }}
-const {{ MAPPER }} = vtk.Rendering.Core.{{ MAPPER_CLASS }}.newInstance();
+<div id="actor-config"
+     data-actor-name="{{ ACTOR }}"
+     data-mapper-name="{{ MAPPER }}"
+     data-mapper-class="{{ MAPPER_CLASS }}"
+     data-color-r="{{ COLOR_R }}"
+     data-color-g="{{ COLOR_G }}"
+     data-color-b="{{ COLOR_B }}"
+     data-opacity="{{ OPACITY }}"
+     style="display: none"></div>
+<script>
+  (function() {
+    const config = document.getElementById('actor-config').dataset;
+    const actorName = config.actorName;
+    const mapperName = config.mapperName;
+
+    window[mapperName] = vtk.Rendering.Core[config.mapperClass].newInstance();
 {{ MAPPER_SETUP }}
 {{ SCALAR_CODE }}
-const {{ ACTOR }} = vtk.Rendering.Core.vtkActor.newInstance();
-{{ ACTOR }}.setMapper({{ MAPPER }});
-{{ ACTOR }}.getProperty().setColor({{ COLOR_R }}, {{ COLOR_G }}, {{ COLOR_B }});
-{{ ACTOR }}.getProperty().setOpacity({{ OPACITY }});
+
+    window[actorName] = vtk.Rendering.Core.vtkActor.newInstance();
+    window[actorName].setMapper(window[mapperName]);
+    window[actorName].getProperty().setColor(
+      parseFloat(config.colorR),
+      parseFloat(config.colorG),
+      parseFloat(config.colorB)
+    );
+    window[actorName].getProperty().setOpacity(parseFloat(config.opacity));
+
 {{ EDGE_CODE }}
 {{ STYLE_CODE }}
 {{ SHADING_CODE }}
 {{ PBR_CODE }}
 {{ TEXTURE_CODE }}
-renderer.addActor({{ ACTOR }});
+
+    renderer.addActor(window[actorName]);
+  })();
 </script>

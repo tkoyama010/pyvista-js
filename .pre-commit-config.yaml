@@ -52,7 +52,6 @@ repos:
     hooks:
       - id: djlint-reformat-jinja
         files: src/pyvista_js/templates/.*\.html$
-        exclude: src/pyvista_js/templates/(actor|rendering|rendering_js|scalar_bar)\.html$
         args: ["--format-js", "--indent-js", "2"]
 
   - repo: https://github.com/scientific-python/cookie
