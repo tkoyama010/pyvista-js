@@ -370,6 +370,7 @@ def download_lucy() -> PolyData:
     >>> pl.add_light(flame_light)
     >>> pl.add_light(scene_light)
     >>> pl.background_color = "black"
+    >>> pl.view_xz()
     >>> pl.show()  # doctest: +SKIP
 
     """
