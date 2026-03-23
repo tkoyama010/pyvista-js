@@ -24,3 +24,6 @@ jobs:
         with:
           commit_message: "chore: update preview GIF"
           file_pattern: assets/preview.gif
+          commit_user_name: pyvista-bot
+          commit_user_email: pyvista-bot@users.noreply.github.com
+          commit_author: pyvista-bot <pyvista-bot@users.noreply.github.com>
