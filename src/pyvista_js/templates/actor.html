@@ -16,8 +16,15 @@
     const mapperName = config.mapperName;
 
     window[mapperName] = vtk.Rendering.Core[config.mapperClass].newInstance();
+  })();
+</script>
 {{ MAPPER_SETUP }}
 {{ SCALAR_CODE }}
+<script>
+  (function() {
+    const config = document.getElementById('actor-config').dataset;
+    const actorName = config.actorName;
+    const mapperName = config.mapperName;
 
     window[actorName] = vtk.Rendering.Core.vtkActor.newInstance();
     window[actorName].setMapper(window[mapperName]);
@@ -27,13 +34,17 @@
       parseFloat(config.colorB)
     );
     window[actorName].getProperty().setOpacity(parseFloat(config.opacity));
-
+  })();
+</script>
 {{ EDGE_CODE }}
 {{ STYLE_CODE }}
 {{ SHADING_CODE }}
 {{ PBR_CODE }}
 {{ TEXTURE_CODE }}
-
+<script>
+  (function() {
+    const config = document.getElementById('actor-config').dataset;
+    const actorName = config.actorName;
     renderer.addActor(window[actorName]);
   })();
 </script>
