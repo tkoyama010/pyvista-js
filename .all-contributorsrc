@@ -19,7 +19,8 @@
         "review",
         "bug",
         "translation",
-        "platform"
+        "platform",
+        "projectManagement"
       ]
     },
     {
