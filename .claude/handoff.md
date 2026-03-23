@@ -1,36 +1,39 @@
-# Handoff: PR #366 — refactor: enable JavaScript formatting with djlint using data-* attributes
+# Handoff: PR #366 — refactor: enable JavaScript formatting with djlint using data-\* attributes
 
 **Branch:** `add-djlintrc-format-js`
 **PR:** https://github.com/tkoyama010/pyvista-js/pull/366
 **Date:** 2026-03-24
 
----
+______________________________________________________________________
 
 ## What This PR Does
 
 Enables JavaScript formatting inside `<script>` tags via djlint's `--format-js` flag by separating Jinja2 `{{ }}` expressions from inline JavaScript using HTML `data-*` attributes. This prevents djlint from choking on Jinja2 syntax inside JS.
 
----
+______________________________________________________________________
 
 ## Status
 
 ### ✅ Fixed
 
 1. **`test_download_damaged_helmet_js_output`** (in `tests/test_readers.py`)
+
    - Root cause: `_GLTFMesh.generate_vtk_js_source()` used `str.replace("{{INDEX}}", ...)` but templates use `{{ INDEX }}` (with spaces).
    - Fix: Replaced with Jinja2 `_render(_GLTF_URL_SOURCE_TEMPLATE, INDEX=idx, GLTF_URL=self._gltf_url)`.
    - Commit: `fix: use _render() with Jinja2 for GLTF source templates`
 
-2. **`test_generate_render_js`** (in `tests/test_rendering.py`)
+1. **`test_generate_render_js`** (in `tests/test_rendering.py`)
+
    - Root cause: `_generate_render_js()` was producing HTML with `<div data-*>` elements, but `display(Javascript(...))` requires pure JavaScript (no HTML markup).
    - Fix: Added `_html_to_pure_js()` helper that converts `<div data-* style="display:none">` elements to `document.createElement` JS calls, and strips all `<script>` / `</script>` tags.
    - Commit: `fix: convert HTML data-config divs to JS DOM creation in _generate_render_js`
 
-3. **`Javascript Error: Unexpected token '<'` in replite (JupyterLite)**
+1. **`Javascript Error: Unexpected token '<'` in replite (JupyterLite)**
+
    - Root cause: `_generate_render_js()` was passing HTML to `display(Javascript(...))`.
    - Fix: Same as above (`_html_to_pure_js()`).
 
----
+______________________________________________________________________
 
 ### ❌ Still Broken — **Must Fix Next**
 
@@ -178,7 +181,7 @@ Wrap each raw JS code block in a `<script>` block with the necessary variable de
 
 > `ACTORS_CODE` already contains full HTML with `<div data-*>` and `<script>` blocks from `actor.html`. It accesses `renderer` via the global scope (`window.renderer` = `renderer` at global scope). This is fine as-is.
 
----
+______________________________________________________________________
 
 ## Key Design Decisions Already Made
 
@@ -195,10 +198,11 @@ User asked: *"Can we convert templates with Jinja2 and display with `from IPytho
 ### `_html_to_pure_js()` — Key Function
 
 Located in `src/pyvista_js/rendering.py`. Converts the rendered `rendering_js.html` output to pure JavaScript:
-1. Replaces `<div data-* style="display:none"></div>` with `document.createElement('div')` + `dataset` assignments
-2. Strips all `<script>` and `</script>` tags (keeps content)
 
----
+1. Replaces `<div data-* style="display:none"></div>` with `document.createElement('div')` + `dataset` assignments
+1. Strips all `<script>` and `</script>` tags (keeps content)
+
+______________________________________________________________________
 
 ## Files Changed in This PR
 
@@ -211,20 +215,21 @@ Located in `src/pyvista_js/rendering.py`. Converts the rendered `rendering_js.ht
 | `tests/test_rendering.py` | Updated assertions for `test_generate_render_js`, added `test_generate_standalone_html` |
 | `.djlintrc` | djlint config enabling `--format-js` |
 
----
+______________________________________________________________________
 
 ## How to Use `uv`
 
 User explicitly requested using `uv` for all Python operations:
+
 - Run tests: `uv run pytest tests/test_rendering.py -v`
 - Run single test: `uv run pytest tests/test_rendering.py::test_generate_render_js -v`
 - Install: `uv sync`
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 1. **Fix `rendering.html`** using the template snippet above
-2. Run tests locally: `uv run pytest tests/ -v`
-3. Check browser output: `uv run python -c "from pyvista_js import Sphere; p = Sphere().plot(); ..."`
-4. Push and check CI on PR #366
+1. Run tests locally: `uv run pytest tests/ -v`
+1. Check browser output: `uv run python -c "from pyvista_js import Sphere; p = Sphere().plot(); ..."`
+1. Push and check CI on PR #366
