@@ -1,8 +1,6 @@
 <script>
-{
-const base64Data = {{ PLY_BASE64 }};
-{% include "ply_reader_source.ts" %}
-var {{ PLY_READER }} = _reader;
-var {{ SOURCE }} = _source;
-}
+const {{ PLY_READER }} = vtk.IO.Geometry.vtkPLYReader.newInstance(); const
+plyBytes = Uint8Array.from(atob({{ PLY_BASE64 }}), c => c.charCodeAt(0));
+{{ PLY_READER }}.parseAsArrayBuffer(plyBytes.buffer); const {{ SOURCE }} =
+{{ PLY_READER }}.getOutputData(0);
 </script>
