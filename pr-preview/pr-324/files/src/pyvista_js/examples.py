@@ -358,7 +358,7 @@ def download_lucy() -> PolyData:
     >>> dataset = examples.download_lucy()
     >>> flame_light = pv.Light(
     ...     color=[0.886, 0.345, 0.133],
-    ...     position=[550, 140, 950],
+    ...     position=[716, -29, 1000],
     ...     intensity=5.0,
     ...     positional=True,
     ...     cone_angle=90,
