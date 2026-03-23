@@ -10,6 +10,7 @@ import pytest
 
 import pyvista_js as pv
 from pyvista_js._cli import (
+    _apply_camera_movement,
     _capture_stlite_screenshots,
     _rotate_canvas_with_mouse,
     capture_preview,
@@ -442,3 +443,138 @@ def test_capture_stlite_preview_rotate_default(tmp_path) -> None:
         capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com")
 
         assert mock_capture.call_args.kwargs["rotate"] is True
+
+
+# ---------------------------------------------------------------------------
+# Camera movement tests
+# ---------------------------------------------------------------------------
+
+import numpy as np  # noqa: E402
+
+
+def _make_plotter_with_camera():
+    """Create a Plotter with a known camera state for testing."""
+    plotter = pv.Plotter()
+    cam = pv.Camera(
+        position=(0.0, 0.0, 5.0),
+        focal_point=(0.0, 0.0, 0.0),
+        view_up=(0.0, 1.0, 0.0),
+    )
+    plotter.camera = cam
+    return plotter
+
+
+def test_apply_camera_movement_azimuth() -> None:
+    """Azimuth rotates the camera horizontally around the focal point."""
+    plotter = _make_plotter_with_camera()
+    _apply_camera_movement(plotter, azimuth=90.0, elevation=None, zoom=None, roll=None)
+
+    pos = np.array(plotter.camera.position)
+    # After 90-degree azimuth from (0,0,5), camera should move to approximately (5,0,0)
+    # (rotating around up=(0,1,0) axis)
+    np.testing.assert_allclose(pos, [5.0, 0.0, 0.0], atol=1e-10)
+    # Focal point should remain unchanged
+    np.testing.assert_allclose(plotter.camera.focal_point, (0.0, 0.0, 0.0), atol=1e-10)
+
+
+def test_apply_camera_movement_elevation() -> None:
+    """Elevation rotates the camera vertically around the focal point."""
+    plotter = _make_plotter_with_camera()
+    _apply_camera_movement(plotter, azimuth=None, elevation=90.0, zoom=None, roll=None)
+
+    pos = np.array(plotter.camera.position)
+    # After 90-degree elevation from (0,0,5), camera should move to approximately (0,-5,0)
+    np.testing.assert_allclose(pos, [0.0, -5.0, 0.0], atol=1e-10)
+
+
+def test_apply_camera_movement_zoom_in() -> None:
+    """Zoom > 1 moves the camera closer to the focal point."""
+    plotter = _make_plotter_with_camera()
+    _apply_camera_movement(plotter, azimuth=None, elevation=None, zoom=2.0, roll=None)
+
+    pos = np.array(plotter.camera.position)
+    # Distance should be halved: 5/2 = 2.5
+    np.testing.assert_allclose(pos, [0.0, 0.0, 2.5], atol=1e-10)
+
+
+def test_apply_camera_movement_zoom_out() -> None:
+    """Zoom < 1 moves the camera farther from the focal point."""
+    plotter = _make_plotter_with_camera()
+    _apply_camera_movement(plotter, azimuth=None, elevation=None, zoom=0.5, roll=None)
+
+    pos = np.array(plotter.camera.position)
+    # Distance should be doubled: 5/0.5 = 10
+    np.testing.assert_allclose(pos, [0.0, 0.0, 10.0], atol=1e-10)
+
+
+def test_apply_camera_movement_roll() -> None:
+    """Roll rotates the up vector around the view axis."""
+    plotter = _make_plotter_with_camera()
+    _apply_camera_movement(plotter, azimuth=None, elevation=None, zoom=None, roll=90.0)
+
+    up = np.array(plotter.camera.view_up)
+    # After 90-degree roll, up=(0,1,0) rotates around forward=(0,0,-1) to (1,0,0)
+    np.testing.assert_allclose(up, [1.0, 0.0, 0.0], atol=1e-10)
+    # Position should be unchanged
+    np.testing.assert_allclose(plotter.camera.position, (0.0, 0.0, 5.0), atol=1e-10)
+
+
+def test_apply_camera_movement_combined() -> None:
+    """Multiple camera movements are applied together."""
+    plotter = _make_plotter_with_camera()
+    _apply_camera_movement(plotter, azimuth=45.0, elevation=None, zoom=2.0, roll=None)
+
+    pos = np.array(plotter.camera.position)
+    # After 45-degree azimuth, distance=5, then zoom 2x -> distance=2.5
+    dist = np.linalg.norm(pos)
+    np.testing.assert_allclose(dist, 2.5, atol=1e-10)
+
+
+def test_apply_camera_movement_no_camera() -> None:
+    """Camera movement creates a default camera if none exists."""
+    plotter = pv.Plotter()
+    assert plotter.camera is None
+    _apply_camera_movement(plotter, azimuth=45.0, elevation=None, zoom=None, roll=None)
+    assert plotter.camera is not None
+
+
+def test_apply_camera_movement_zero_zoom_exits() -> None:
+    """Zoom of zero or negative exits with error."""
+    plotter = _make_plotter_with_camera()
+    with pytest.raises(SystemExit) as exc_info:
+        _apply_camera_movement(plotter, azimuth=None, elevation=None, zoom=0.0, roll=None)
+    assert exc_info.value.code == 1
+
+
+def test_plot_load_pickle_with_azimuth(tmp_path) -> None:
+    """``--azimuth`` option modifies camera after loading pickle."""
+    plotter = pv.Plotter()
+    cam = pv.Camera(position=(0.0, 0.0, 5.0), focal_point=(0.0, 0.0, 0.0))
+    plotter.camera = cam
+    pickle_file = tmp_path / "plotter.pkl"
+
+    with pickle_file.open("wb") as f:
+        pickle.dump(plotter, f)
+
+    with patch("pyvista_js.Plotter.show"):
+        cli_main(["plot", "--load-pickle", str(pickle_file), "--azimuth", "90"])
+
+
+def test_plot_load_pickle_with_zoom(tmp_path) -> None:
+    """``--zoom`` option modifies camera after loading pickle."""
+    plotter = pv.Plotter()
+    cam = pv.Camera(position=(0.0, 0.0, 5.0), focal_point=(0.0, 0.0, 0.0))
+    plotter.camera = cam
+    pickle_file = tmp_path / "plotter.pkl"
+
+    with pickle_file.open("wb") as f:
+        pickle.dump(plotter, f)
+
+    with patch("pyvista_js.Plotter.show"):
+        cli_main(["plot", "--load-pickle", str(pickle_file), "--zoom", "2.0"])
+
+
+def test_plot_new_plotter_with_camera_movement() -> None:
+    """Camera movement options work with new plotters (not just pickle)."""
+    with patch("pyvista_js.Plotter.show"):
+        cli_main(["plot", str(VTK_FILE), "--azimuth", "45", "--zoom", "1.5"])
