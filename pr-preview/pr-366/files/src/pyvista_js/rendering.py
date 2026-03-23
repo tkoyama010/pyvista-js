@@ -90,7 +90,6 @@ if TYPE_CHECKING:
     from .text import Text
     from .texture import Texture
 
-import re
 
 from jinja2 import Environment, StrictUndefined
 
