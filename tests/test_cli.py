@@ -6,8 +6,7 @@ import warnings
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import numpy as np  # noqa: E402
-
+import numpy as np
 import pytest
 
 import pyvista_js as pv
