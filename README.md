@@ -7,9 +7,14 @@
 
 [PyVista](https://github.com/pyvista/pyvista)-like API for [vtk.js](https://github.com/Kitware/vtk-js) — bring intuitive 3D visualization to the browser.
 
-<p align="center"> :star: <strong><a href="https://tkoyama010.github.io/pyvista-js/">Try it in your browser</a></strong> :star: </p>
+| [Try it with JupyterLite] | [Try it with Stlite] |
+| :-----------------------: | :------------------: |
+|   ![jupyterlite-preview]  |   ![stlite-preview]  |
 
-![pyvista-js rendering in JupyterLite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif)
+[try it with jupyterlite]: https://tkoyama010.github.io/pyvista-js/
+[jupyterlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif
+[try it with stlite]: https://tkoyama010.github.io/pyvista-js/stlite
+[stlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif
 
 ## Table of Contents
 

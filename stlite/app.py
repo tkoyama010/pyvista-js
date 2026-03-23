@@ -6,8 +6,6 @@ import streamlit.components.v1 as components
 import pyvista_js as pv
 from pyvista_js import examples
 
-st.title("pyvista-js")
-
 geometry = st.selectbox("Geometry", ["Bunny", "Sphere", "Cube", "Cylinder"])
 
 color = st.selectbox(
