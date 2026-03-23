@@ -1,5 +1,12 @@
 <script>
-const {{ SOURCE }} = vtk.Filters.Sources.vtkCylinderSource.newInstance({ center:
-[{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}], radius: {{ RADIUS }}, height:
-{{ HEIGHT }}, resolution: {{ RESOLUTION }}, generateTCoords: true });
+{
+const centerX = {{ CENTER_X }};
+const centerY = {{ CENTER_Y }};
+const centerZ = {{ CENTER_Z }};
+const radius = {{ RADIUS }};
+const height = {{ HEIGHT }};
+const resolution = {{ RESOLUTION }};
+{% include "cylinder_source.ts" %}
+var {{ SOURCE }} = _source;
+}
 </script>

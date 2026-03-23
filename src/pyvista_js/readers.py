@@ -14,11 +14,12 @@ import struct
 from pathlib import Path
 
 import numpy as np
-from jinja2 import Environment, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from .mesh import PolyData
 
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+_TEMPLATES_DIR_FOR_LOADER = Path(__file__).parent / "templates"
+_jinja_env = Environment(loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER), undefined=StrictUndefined, autoescape=False)  # noqa: S701
 
 
 def _render(template_str: str, **kwargs: object) -> str:
@@ -104,15 +105,17 @@ class _GLTFMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using model-viewer web component."""
         if self._gltf_url is not None:
-            return _GLTF_URL_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{GLTF_URL}}",
-                self._gltf_url,
+            return _render(
+                _GLTF_URL_SOURCE_TEMPLATE,
+                INDEX=str(idx),
+                GLTF_URL=self._gltf_url,
             )
         escaped = json.dumps(self._gltf_base64)
-        return _GLTF_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{GLTF_BASE64}}", escaped)
+        return _render(
+            _GLTF_READER_SOURCE_TEMPLATE,
+            INDEX=str(idx),
+            GLTF_BASE64=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
