@@ -104,15 +104,9 @@ class _GLTFMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using model-viewer web component."""
         if self._gltf_url is not None:
-            return _GLTF_URL_SOURCE_TEMPLATE.replace("{{ INDEX }}", str(idx)).replace(
-                "{{ GLTF_URL }}",
-                self._gltf_url,
-            )
+            return _render(_GLTF_URL_SOURCE_TEMPLATE, INDEX=idx, GLTF_URL=self._gltf_url)
         escaped = json.dumps(self._gltf_base64)
-        return _GLTF_READER_SOURCE_TEMPLATE.replace(
-            "{{ INDEX }}",
-            str(idx),
-        ).replace("{{ GLTF_BASE64 }}", escaped)
+        return _render(_GLTF_READER_SOURCE_TEMPLATE, INDEX=idx, GLTF_BASE64=escaped)
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
