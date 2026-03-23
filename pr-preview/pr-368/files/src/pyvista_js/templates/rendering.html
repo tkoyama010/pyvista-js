@@ -1,0 +1,63 @@
+<script src="{{ VTKJS_CDN }}"></script>
+<div id="{{ CONTAINER_ID }}"
+     data-background-r="{{ BACKGROUND_R }}"
+     data-background-g="{{ BACKGROUND_G }}"
+     data-background-b="{{ BACKGROUND_B }}"
+     style="width: 600px;
+            height: 400px;
+            border: 2px solid #333;
+            position: relative"></div>
+<script>
+  (function () {
+    function tryRender() {
+      if (typeof vtk === "undefined") {
+        setTimeout(tryRender, 100);
+        return;
+      }
+      try {
+        const container = document.getElementById("{{ CONTAINER_ID }}");
+        const backgroundR = parseFloat(container.dataset.backgroundR);
+        const backgroundG = parseFloat(container.dataset.backgroundG);
+        const backgroundB = parseFloat(container.dataset.backgroundB);
+
+        const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+        renderer.setBackground(backgroundR, backgroundG, backgroundB);
+        const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+        renderWindow.addRenderer(renderer);
+        const openGLRenderWindow =
+          vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+        renderWindow.addView(openGLRenderWindow);
+        openGLRenderWindow.setContainer(container);
+        const bbox = container.getBoundingClientRect();
+        openGLRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
+        const interactor =
+          vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+        const interactorStyle =
+          vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
+        interactor.setInteractorStyle(interactorStyle);
+        interactor.setView(openGLRenderWindow);
+        interactor.initialize();
+        interactor.bindEvents(container);
+
+        {{ LIGHTS_CODE }}
+
+        {{ ACTORS_CODE }}
+
+        {{ SCALAR_BAR_CODE }}
+
+        {{ TEXT_ACTORS_CODE }}
+
+        {{ ENVIRONMENT_CODE }}
+
+        {{ AXES_CODE }}
+
+        renderer.resetCamera();
+        {{ CAMERA_CODE }}
+        renderWindow.render();
+      } catch (e) {
+        console.error("Error rendering vtk.js scene:", e);
+      }
+    }
+    tryRender();
+  })();
+</script>
