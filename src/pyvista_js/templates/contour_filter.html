@@ -1,12 +1,10 @@
-<div
-  id="contour-filter-config"
-  data-contour-pd-name="contourPD{{ INDEX }}"
-  data-source-name="source{{ INDEX }}"
-  data-contour-values="{{ CONTOUR_VALUES }}"
-  style="display: none;"
-></div>
+<div id="contour-filter-config"
+     data-contour-pd-name="contourPD{{ INDEX }}"
+     data-source-name="source{{ INDEX }}"
+     data-contour-values="{{ CONTOUR_VALUES }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('contour-filter-config').dataset;
     const contourPdName = config.contourPdName;
     const sourceName = config.sourceName;

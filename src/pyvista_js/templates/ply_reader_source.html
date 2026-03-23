@@ -1,12 +1,10 @@
-<div
-  id="ply-reader-config"
-  data-ply-reader-name="{{ PLY_READER }}"
-  data-source-name="{{ SOURCE }}"
-  data-ply-base64="{{ PLY_BASE64 }}"
-  style="display: none;"
-></div>
+<div id="ply-reader-config"
+     data-ply-reader-name="{{ PLY_READER }}"
+     data-source-name="{{ SOURCE }}"
+     data-ply-base64="{{ PLY_BASE64 }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('ply-reader-config').dataset;
     const plyReaderName = config.plyReaderName;
     const sourceName = config.sourceName;

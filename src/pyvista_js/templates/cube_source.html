@@ -1,16 +1,14 @@
-<div
-  id="cube-config"
-  data-source-name="{{ SOURCE }}"
-  data-center-x="{{ CENTER_X }}"
-  data-center-y="{{ CENTER_Y }}"
-  data-center-z="{{ CENTER_Z }}"
-  data-x-length="{{ X_LENGTH }}"
-  data-y-length="{{ Y_LENGTH }}"
-  data-z-length="{{ Z_LENGTH }}"
-  style="display: none;"
-></div>
+<div id="cube-config"
+     data-source-name="{{ SOURCE }}"
+     data-center-x="{{ CENTER_X }}"
+     data-center-y="{{ CENTER_Y }}"
+     data-center-z="{{ CENTER_Z }}"
+     data-x-length="{{ X_LENGTH }}"
+     data-y-length="{{ Y_LENGTH }}"
+     data-z-length="{{ Z_LENGTH }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('cube-config').dataset;
     const sourceName = config.sourceName;
 

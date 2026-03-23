@@ -1,17 +1,15 @@
-<div
-  id="line-config"
-  data-source-name="{{ SOURCE }}"
-  data-point-ax="{{ POINT_A_X }}"
-  data-point-ay="{{ POINT_A_Y }}"
-  data-point-az="{{ POINT_A_Z }}"
-  data-point-bx="{{ POINT_B_X }}"
-  data-point-by="{{ POINT_B_Y }}"
-  data-point-bz="{{ POINT_B_Z }}"
-  data-resolution="{{ RESOLUTION }}"
-  style="display: none;"
-></div>
+<div id="line-config"
+     data-source-name="{{ SOURCE }}"
+     data-point-ax="{{ POINT_A_X }}"
+     data-point-ay="{{ POINT_A_Y }}"
+     data-point-az="{{ POINT_A_Z }}"
+     data-point-bx="{{ POINT_B_X }}"
+     data-point-by="{{ POINT_B_Y }}"
+     data-point-bz="{{ POINT_B_Z }}"
+     data-resolution="{{ RESOLUTION }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('line-config').dataset;
     const sourceName = config.sourceName;
 

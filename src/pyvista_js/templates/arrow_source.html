@@ -1,18 +1,16 @@
-<div
-  id="arrow-config"
-  data-source-name="{{ SOURCE }}"
-  data-tip-length="{{ TIP_LENGTH }}"
-  data-tip-radius="{{ TIP_RADIUS }}"
-  data-tip-resolution="{{ TIP_RESOLUTION }}"
-  data-shaft-radius="{{ SHAFT_RADIUS }}"
-  data-shaft-resolution="{{ SHAFT_RESOLUTION }}"
-  data-dir-x="{{ DIR_X }}"
-  data-dir-y="{{ DIR_Y }}"
-  data-dir-z="{{ DIR_Z }}"
-  style="display: none;"
-></div>
+<div id="arrow-config"
+     data-source-name="{{ SOURCE }}"
+     data-tip-length="{{ TIP_LENGTH }}"
+     data-tip-radius="{{ TIP_RADIUS }}"
+     data-tip-resolution="{{ TIP_RESOLUTION }}"
+     data-shaft-radius="{{ SHAFT_RADIUS }}"
+     data-shaft-resolution="{{ SHAFT_RESOLUTION }}"
+     data-dir-x="{{ DIR_X }}"
+     data-dir-y="{{ DIR_Y }}"
+     data-dir-z="{{ DIR_Z }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('arrow-config').dataset;
     const sourceName = config.sourceName;
     window[sourceName] = vtk.Filters.Sources.vtkArrowSource.newInstance({

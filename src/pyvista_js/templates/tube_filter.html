@@ -1,15 +1,13 @@
-<div
-  id="tube-filter-config"
-  data-tubed-pd-name="{{ TUBED_PD }}"
-  data-tube-filter-name="{{ TUBE_FILTER }}"
-  data-source-name="{{ SOURCE }}"
-  data-radius="{{ RADIUS }}"
-  data-n-sides="{{ N_SIDES }}"
-  data-capping="{{ CAPPING | tojson }}"
-  style="display: none;"
-></div>
+<div id="tube-filter-config"
+     data-tubed-pd-name="{{ TUBED_PD }}"
+     data-tube-filter-name="{{ TUBE_FILTER }}"
+     data-source-name="{{ SOURCE }}"
+     data-radius="{{ RADIUS }}"
+     data-n-sides="{{ N_SIDES }}"
+     data-capping="{{ CAPPING | tojson }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('tube-filter-config').dataset;
     const tubedPdName = config.tubedPdName;
     const tubeFilterName = config.tubeFilterName;

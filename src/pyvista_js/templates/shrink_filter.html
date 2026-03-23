@@ -1,12 +1,10 @@
-<div
-  id="shrink-filter-config"
-  data-shrunk-pd-name="{{ SHRUNK_PD }}"
-  data-source-name="{{ SOURCE }}"
-  data-shrink-factor="{{ SHRINK_FACTOR }}"
-  style="display: none;"
-></div>
+<div id="shrink-filter-config"
+     data-shrunk-pd-name="{{ SHRUNK_PD }}"
+     data-source-name="{{ SOURCE }}"
+     data-shrink-factor="{{ SHRINK_FACTOR }}"
+     style="display: none"></div>
 <script>
-  (function () {
+  (function() {
     const config = document.getElementById('shrink-filter-config').dataset;
     const shrunkPdName = config.shrunkPdName;
     const sourceName = config.sourceName;
