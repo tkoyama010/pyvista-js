@@ -1,5 +1,6 @@
 <div
-  id="arrow-config-{{ SOURCE }}"
+  id="arrow-config"
+  data-source-name="{{ SOURCE }}"
   data-tip-length="{{ TIP_LENGTH }}"
   data-tip-radius="{{ TIP_RADIUS }}"
   data-tip-resolution="{{ TIP_RESOLUTION }}"
@@ -11,14 +12,17 @@
   style="display: none;"
 ></div>
 <script>
-  const config = document.getElementById('arrow-config-{{ SOURCE }}').dataset;
-  const {{ SOURCE }} = vtk.Filters.Sources.vtkArrowSource.newInstance({
-    tipLength: parseFloat(config.tipLength),
-    tipRadius: parseFloat(config.tipRadius),
-    tipResolution: parseInt(config.tipResolution),
-    shaftRadius: parseFloat(config.shaftRadius),
-    shaftResolution: parseInt(config.shaftResolution),
-    direction: [parseFloat(config.dirX), parseFloat(config.dirY), parseFloat(config.dirZ)],
-    startAt: 'origin'
-  });
+  (function () {
+    const config = document.getElementById('arrow-config').dataset;
+    const sourceName = config.sourceName;
+    window[sourceName] = vtk.Filters.Sources.vtkArrowSource.newInstance({
+      tipLength: parseFloat(config.tipLength),
+      tipRadius: parseFloat(config.tipRadius),
+      tipResolution: parseInt(config.tipResolution),
+      shaftRadius: parseFloat(config.shaftRadius),
+      shaftResolution: parseInt(config.shaftResolution),
+      direction: [parseFloat(config.dirX), parseFloat(config.dirY), parseFloat(config.dirZ)],
+      startAt: 'origin'
+    });
+  })();
 </script>

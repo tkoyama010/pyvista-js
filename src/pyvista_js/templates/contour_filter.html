@@ -1,14 +1,17 @@
 <div
-  id="contour-filter-config-{{ INDEX }}"
+  id="contour-filter-config"
+  data-contour-pd-name="contourPD{{ INDEX }}"
+  data-source-name="source{{ INDEX }}"
   data-contour-values="{{ CONTOUR_VALUES }}"
   style="display: none;"
 ></div>
 <script>
-  var contourPD{{ INDEX }};
   (function () {
-    const config = document.getElementById('contour-filter-config-{{ INDEX }}').dataset;
+    const config = document.getElementById('contour-filter-config').dataset;
+    const contourPdName = config.contourPdName;
+    const sourceName = config.sourceName;
     const contourValues = config.contourValues.split(',').map(parseFloat);
-    var src = source{{ INDEX }};
+    var src = window[sourceName];
     if (typeof src.update === 'function') {
       src.update();
     }
@@ -18,7 +21,7 @@
     var polys = pd.getPolys().getData();
     var scalarsArr = pd.getPointData().getScalars();
     if (!scalarsArr) {
-      contourPD{{ INDEX }} = vtk.Common.DataModel.vtkPolyData.newInstance();
+      window[contourPdName] = vtk.Common.DataModel.vtkPolyData.newInstance();
       return;
     }
     var scalars = scalarsArr.getData();
@@ -74,10 +77,10 @@
 
     var outPts = vtk.Common.Core.vtkPoints.newInstance();
     outPts.setData(Float32Array.from(newPts), 3);
-    contourPD{{ INDEX }} = vtk.Common.DataModel.vtkPolyData.newInstance();
-    contourPD{{ INDEX }}.setPoints(outPts);
+    window[contourPdName] = vtk.Common.DataModel.vtkPolyData.newInstance();
+    window[contourPdName].setPoints(outPts);
     var lineArr = vtk.Common.Core.vtkCellArray.newInstance();
     lineArr.setData(Int32Array.from(lines));
-    contourPD{{ INDEX }}.setLines(lineArr);
+    window[contourPdName].setLines(lineArr);
   })();
 </script>
