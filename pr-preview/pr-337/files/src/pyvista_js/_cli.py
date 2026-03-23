@@ -607,10 +607,10 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
             page.goto(demo_url, wait_until="domcontentloaded", timeout=60000)
 
             logger.info("Waiting for stlite to load...")
-            page.wait_for_timeout(20000)
+            page.wait_for_timeout(30000)
 
             logger.info("Waiting for 3D rendering to appear...")
-            page.wait_for_selector("canvas", timeout=30000)
+            page.wait_for_selector("canvas", timeout=60000)
             page.wait_for_timeout(5000)
 
             if rotate:
