@@ -1,0 +1,8 @@
+<script>
+{
+const _inputSource = source{{ INDEX }};
+const _contourValues = [{{ CONTOUR_VALUES }}];
+{% include "contour_filter.ts" %}
+var contourPD{{ INDEX }} = _result;
+}
+</script>
