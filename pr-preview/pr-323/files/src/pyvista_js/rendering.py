@@ -91,7 +91,7 @@ if TYPE_CHECKING:
 
 import re
 
-from jinja2 import Environment, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from .examples import CubeMap
 
@@ -103,7 +103,11 @@ _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 _POINTS_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "points_source.html").read_text()
 
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+_jinja_env = Environment(
+    loader=FileSystemLoader(_TEMPLATES_DIR),
+    undefined=StrictUndefined,
+    autoescape=False,  # noqa: S701
+)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
@@ -274,6 +278,7 @@ class _BaseHTMLRenderer:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -297,6 +302,10 @@ class _BaseHTMLRenderer:
             Metallic factor for PBR.
         roughness : float, default=0.5
             Roughness factor for PBR.
+        smooth_shading : bool, default=True
+            Enable smooth shading (Gouraud interpolation). When True, normals
+            are interpolated across polygons for a smooth appearance. When
+            False, flat shading is used.
         texture : Texture, optional
             Surface texture to apply. The texture image is loaded from the
             URL stored in the :class:`~pyvista_js.Texture` object.
@@ -318,6 +327,20 @@ class _BaseHTMLRenderer:
         dict
             Actor information dictionary.
 
+        Examples
+        --------
+        Compare smooth shading (left) and flat shading (right) side by side:
+
+        >>> from pyvista_js import Sphere
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> color = (0.8, 0.6, 0.2)
+        >>> smooth = Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = renderer.add_mesh_actor(smooth, color=color, smooth_shading=True)
+        >>> flat = Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = renderer.add_mesh_actor(flat, color=color, smooth_shading=False)
+        >>> renderer.render()  # doctest: +SKIP
+
         """
         if isinstance(color, str):
             color = _color_name_to_rgb(color)
@@ -333,6 +356,7 @@ class _BaseHTMLRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "smooth_shading": smooth_shading,
             "texture": texture,
             "show_edges": show_edges,
             "edge_color": edge_color,
@@ -741,8 +765,11 @@ class _BaseHTMLRenderer:
         """
         if not self.lights:
             if self.lighting is None:
-                # No default lights when lighting=None
-                return ""
+                # No default lights when lighting=None; disable auto-creation
+                return (
+                    "      renderer.removeAllLights();\n"
+                    "      renderer.setAutomaticLightCreation(false);"
+                )
             # Default angled directional light for specular highlights
             return (
                 "      // Default directional light\n"
@@ -754,7 +781,10 @@ class _BaseHTMLRenderer:
                 "      light0.setFocalPoint(0, 0, 0);\n"
                 "      renderer.addLight(light0);"
             )
-        lines = []
+        lines = [
+            "      renderer.removeAllLights();",
+            "      renderer.setAutomaticLightCreation(false);",
+        ]
         for idx, light in enumerate(self.lights):
             code = light.generate_vtk_js_code(idx)
             # Indent each line
@@ -923,6 +953,7 @@ class _BaseHTMLRenderer:
                 return _render(
                     _ACTOR_TEMPLATE,
                     SOURCE_CODE=source_code,
+                    NORMALS_CODE="",
                     MAPPER=f"mapper{idx}",
                     ACTOR=f"actor{idx}",
                     MAPPER_CLASS="vtkSphereMapper",
@@ -933,6 +964,7 @@ class _BaseHTMLRenderer:
                     OPACITY=str(opacity),
                     EDGE_CODE="",
                     STYLE_CODE="",
+                    SHADING_CODE="",
                     PBR_CODE="",
                     TEXTURE_CODE="",
                     SCALAR_CODE="",
@@ -946,6 +978,7 @@ class _BaseHTMLRenderer:
             return _render(
                 _ACTOR_TEMPLATE,
                 SOURCE_CODE=source_code,
+                NORMALS_CODE="",
                 MAPPER=f"mapper{idx}",
                 ACTOR=f"actor{idx}",
                 MAPPER_CLASS="vtkMapper",
@@ -956,6 +989,7 @@ class _BaseHTMLRenderer:
                 OPACITY=str(opacity),
                 EDGE_CODE="",
                 STYLE_CODE="",
+                SHADING_CODE="",
                 PBR_CODE=point_props_code,
                 TEXTURE_CODE="",
                 SCALAR_CODE="",
@@ -964,6 +998,7 @@ class _BaseHTMLRenderer:
         pbr = actor_info.get("pbr", False)
         metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
         roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
+        smooth_shading = actor_info.get("smooth_shading", True)
         show_edges = actor_info.get("show_edges", False)
         edge_color = actor_info.get("edge_color")
         style = actor_info.get("style", "surface")
@@ -971,7 +1006,12 @@ class _BaseHTMLRenderer:
         source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
         mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
 
+        normals_code = self._generate_normals_code(idx, smooth_shading, mapper_setup)
+        if normals_code:
+            mapper_setup = f"mapper{idx}.setInputConnection(normals{idx}.getOutputPort());"
+
         pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
+        shading_code = self._generate_shading_code(idx, smooth_shading)
         edge_code = self._generate_edge_code(
             idx,
             show_edges,
@@ -984,6 +1024,7 @@ class _BaseHTMLRenderer:
         return _render(
             _ACTOR_TEMPLATE,
             SOURCE_CODE=source_code,
+            NORMALS_CODE=normals_code,
             MAPPER=f"mapper{idx}",
             ACTOR=f"actor{idx}",
             MAPPER_CLASS="vtkMapper",
@@ -994,6 +1035,7 @@ class _BaseHTMLRenderer:
             OPACITY=str(opacity),
             EDGE_CODE=edge_code,
             STYLE_CODE=style_code,
+            SHADING_CODE=shading_code,
             PBR_CODE=pbr_code,
             TEXTURE_CODE=texture_code,
             SCALAR_CODE=scalar_code,
@@ -1043,6 +1085,80 @@ class _BaseHTMLRenderer:
             f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
             f"actor{idx}.getProperty().setDiffuse({diffuse});"
         )
+
+    @staticmethod
+    def _generate_normals_code(idx: int, smooth_shading: object, mapper_setup: str) -> str:
+        """Generate vtk.js vtkPolyDataNormals filter code for shading control.
+
+        Inserts a vtkPolyDataNormals filter to ensure correct shading.  When
+        the pipeline includes vtkTextureMapToSphere, normals must be
+        recomputed regardless of the shading mode because the texture-map
+        filter may corrupt the original sphere normals.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        smooth_shading : object
+            Whether smooth shading is enabled. When True, point normals are
+            computed (Gouraud interpolation). When False, cell normals are
+            computed (flat shading).
+        mapper_setup : str
+            The mapper setup code, used to determine how to connect the filter.
+
+        Returns
+        -------
+        str
+            JavaScript code for the normals filter, or empty string when the
+            pipeline cannot be intercepted.
+
+        """
+        source_ref = f"source{idx}"
+        tex_map_ref = f"texMapSphere{idx}"
+        if f"setInputData({source_ref})" in mapper_setup:
+            if smooth_shading:
+                return ""
+            input_line = f"normals{idx}.setInputData({source_ref});"
+        elif f"{tex_map_ref}.getOutputPort()" in mapper_setup:
+            input_line = f"normals{idx}.setInputConnection({tex_map_ref}.getOutputPort());"
+        elif f"{source_ref}.getOutputPort()" in mapper_setup:
+            input_line = f"normals{idx}.setInputConnection({source_ref}.getOutputPort());"
+        else:
+            return ""
+        if smooth_shading:
+            return (
+                f"const normals{idx} = vtk.Filters.Core.vtkPolyDataNormals.newInstance();\n"
+                f"normals{idx}.setComputePointNormals(true);\n"
+                f"normals{idx}.setComputeCellNormals(false);\n"
+                f"{input_line}"
+            )
+        return (
+            f"const normals{idx} = vtk.Filters.Core.vtkPolyDataNormals.newInstance();\n"
+            f"normals{idx}.setComputePointNormals(false);\n"
+            f"normals{idx}.setComputeCellNormals(true);\n"
+            f"{input_line}"
+        )
+
+    @staticmethod
+    def _generate_shading_code(idx: int, smooth_shading: object) -> str:
+        """Generate vtk.js shading interpolation code for an actor.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index.
+        smooth_shading : object
+            Whether smooth shading (Gouraud interpolation) is enabled.
+
+        Returns
+        -------
+        str
+            JavaScript code or empty string.
+
+        """
+        if smooth_shading:
+            return f"actor{idx}.getProperty().setInterpolationToGouraud();"
+        return f"actor{idx}.getProperty().setInterpolationToFlat();"
 
     @staticmethod
     def _generate_edge_code(
@@ -1738,6 +1854,7 @@ class MockRenderer:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -1761,6 +1878,8 @@ class MockRenderer:
             Metallic factor (stored but not rendered).
         roughness : float
             Roughness factor (stored but not rendered).
+        smooth_shading : bool
+            Smooth shading flag (stored but not rendered).
         texture : Texture, optional
             Surface texture (stored but not rendered).
         show_edges : bool
@@ -1787,6 +1906,7 @@ class MockRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "smooth_shading": smooth_shading,
             "texture": texture,
             "show_edges": show_edges,
             "edge_color": edge_color,

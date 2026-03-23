@@ -1,8 +1,13 @@
 <script>
-const {{ SOURCE }} = vtk.Filters.Sources.vtkSphereSource.newInstance({ center:
-[{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}], radius: {{ RADIUS }},
-thetaResolution: {{ THETA_RESOLUTION }}, phiResolution: {{ PHI_RESOLUTION }} });
-const {{ TEX_MAP_SPHERE }} =
-vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
-{{ TEX_MAP_SPHERE }}.setInputConnection({{ SOURCE }}.getOutputPort());
+{
+const centerX = {{ CENTER_X }};
+const centerY = {{ CENTER_Y }};
+const centerZ = {{ CENTER_Z }};
+const radius = {{ RADIUS }};
+const thetaResolution = {{ THETA_RESOLUTION }};
+const phiResolution = {{ PHI_RESOLUTION }};
+{% include "sphere_source.ts" %}
+var {{ SOURCE }} = _source;
+var {{ TEX_MAP_SPHERE }} = _texMapSphere;
+}
 </script>

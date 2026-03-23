@@ -7,7 +7,7 @@ using vtk.js in browser environments.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from .rendering import get_renderer
 
@@ -81,6 +81,7 @@ class Plotter:
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -107,6 +108,11 @@ class Plotter:
         roughness : float, optional
             Roughness factor for PBR, between 0 (mirror-like) and 1 (fully
             rough). Only used when ``pbr=True``. Default is 0.5.
+        smooth_shading : bool, optional
+            Enable smooth shading (Gouraud interpolation). When True, the mesh
+            surface appears smooth by interpolating normals across polygons.
+            When False, flat shading is used where each polygon face has a
+            uniform color. Default is True.
         texture : Texture, optional
             Surface texture to apply to the mesh. Create one with
             :class:`~pyvista_js.Texture`. The mesh should have texture
@@ -193,6 +199,17 @@ class Plotter:
         >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
         >>> plotter.show()  # doctest: +SKIP
 
+        Compare smooth shading (left) and flat shading (right) side by side:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> color = (0.8, 0.6, 0.2)
+        >>> smooth = pv.Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = plotter.add_mesh(smooth, color=color, smooth_shading=True)
+        >>> flat = pv.Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = plotter.add_mesh(flat, color=color, smooth_shading=False)
+        >>> plotter.show()  # doctest: +SKIP
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -202,6 +219,7 @@ class Plotter:
             pbr=pbr,
             metallic=metallic,
             roughness=roughness,
+            smooth_shading=smooth_shading,
             texture=texture,
             show_edges=show_edges,
             edge_color=edge_color,
@@ -219,6 +237,7 @@ class Plotter:
                 "pbr": pbr,
                 "metallic": metallic,
                 "roughness": roughness,
+                "smooth_shading": smooth_shading,
                 "texture": texture,
                 "show_edges": show_edges,
                 "edge_color": edge_color,
@@ -847,7 +866,7 @@ class Plotter:
         return None
 
     @camera_position.setter
-    def camera_position(  # noqa: C901
+    def camera_position(
         self,
         cpos: str
         | tuple[float, float, float]
@@ -891,71 +910,75 @@ class Plotter:
         >>> plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
 
         """
-        # Handle string shortcuts
         if isinstance(cpos, str):
-            cpos_lower = cpos.lower()
-            if cpos_lower == "xy":
-                self.view_xy()
-            elif cpos_lower == "xz":
-                self.view_xz()
-            elif cpos_lower == "yz":
-                self.view_yz()
-            elif cpos_lower == "yx":
-                self.view_yx()
-            elif cpos_lower == "zx":
-                self.view_zx()
-            elif cpos_lower == "zy":
-                self.view_zy()
-            elif cpos_lower == "iso":
-                self.view_isometric()
-            else:
-                msg = (
-                    f"Unknown camera position string: '{cpos}'. "
-                    "Supported: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', 'iso'"
-                )
-                raise ValueError(msg)
-            return
+            self._set_camera_position_from_str(cpos)
+        elif isinstance(cpos, (tuple, list)):
+            self._set_camera_position_from_sequence(cpos)
+        else:
+            msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
+            raise TypeError(msg)
 
-        # Handle tuple/list input
-        if isinstance(cpos, (tuple, list)):
-            vector_length = 3
-            # Check if it's a direction vector (3 numbers)
-            if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
-                # Direction vector
-                self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))  # type: ignore[arg-type]
-                return
+    #: Maps camera position string shortcuts to the corresponding view method name.
+    _CAMERA_POSITION_SHORTCUTS: ClassVar[dict[str, str]] = {
+        "xy": "view_xy",
+        "xz": "view_xz",
+        "yz": "view_yz",
+        "yx": "view_yx",
+        "zx": "view_zx",
+        "zy": "view_zy",
+        "iso": "view_isometric",
+    }
 
-            # Check if it's full camera specification (3 tuples/lists of 3 numbers each)
-            if len(cpos) == vector_length and all(
-                isinstance(item, (tuple, list))
-                and len(item) == vector_length
-                and all(isinstance(x, (int, float)) for x in item)
-                for item in cpos
-            ):
-                # Full camera specification
-                position = (float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2]))  # type: ignore[index]
-                focal_point = (float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2]))  # type: ignore[index]
-                view_up = (float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2]))  # type: ignore[index]
-
-                # Import Camera here to avoid circular imports
-                from .camera import Camera  # noqa: PLC0415
-
-                camera = Camera(
-                    position=position,
-                    focal_point=focal_point,
-                    view_up=view_up,
-                )
-                self.camera = camera
-                return
-
+    def _set_camera_position_from_str(self, cpos: str) -> None:
+        """Set camera position from a string shortcut."""
+        key = cpos.lower()
+        method = self._CAMERA_POSITION_SHORTCUTS.get(key)
+        if method is None:
             msg = (
-                "Invalid camera position format. Expected: "
-                "3-element direction vector or 3x3 camera specification"
+                f"Unknown camera position string: '{cpos}'. "
+                "Supported: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', 'iso'"
             )
             raise ValueError(msg)
+        getattr(self, method)()
 
-        msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
-        raise TypeError(msg)
+    def _set_camera_position_from_sequence(
+        self,
+        cpos: tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | list[float]
+        | list[tuple[float, float, float]]
+        | list[list[float]],
+    ) -> None:
+        """Set camera position from a tuple or list."""
+        vector_length = 3
+        if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
+            self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))  # type: ignore[arg-type]
+            return
+
+        if len(cpos) == vector_length and all(
+            isinstance(item, (tuple, list))
+            and len(item) == vector_length
+            and all(isinstance(x, (int, float)) for x in item)
+            for item in cpos
+        ):
+            from .camera import Camera  # noqa: PLC0415
+
+            self.camera = Camera(
+                position=(float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2])),  # type: ignore[index]
+                focal_point=(float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2])),  # type: ignore[index]
+                view_up=(float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2])),  # type: ignore[index]
+            )
+            return
+
+        msg = (
+            "Invalid camera position format. Expected: "
+            "3-element direction vector or 3x3 camera specification"
+        )
+        raise ValueError(msg)
 
     @property
     def background_color(self) -> tuple[float, float, float]:
