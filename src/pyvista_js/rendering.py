@@ -761,8 +761,11 @@ class _BaseHTMLRenderer:
         """
         if not self.lights:
             if self.lighting is None:
-                # No default lights when lighting=None
-                return ""
+                # No default lights when lighting=None; disable auto-creation
+                return (
+                    "      renderer.removeAllLights();\n"
+                    "      renderer.setAutomaticLightCreation(false);"
+                )
             # Default angled directional light for specular highlights
             return (
                 "      // Default directional light\n"
@@ -774,7 +777,10 @@ class _BaseHTMLRenderer:
                 "      light0.setFocalPoint(0, 0, 0);\n"
                 "      renderer.addLight(light0);"
             )
-        lines = []
+        lines = [
+            "      renderer.removeAllLights();",
+            "      renderer.setAutomaticLightCreation(false);",
+        ]
         for idx, light in enumerate(self.lights):
             code = light.generate_vtk_js_code(idx)
             # Indent each line
