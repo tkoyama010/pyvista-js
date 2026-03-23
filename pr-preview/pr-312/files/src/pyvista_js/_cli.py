@@ -158,6 +158,52 @@ def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noq
     return plotter
 
 
+def _apply_camera_movement(
+    plotter,  # noqa: ANN001
+    azimuth: float | None,
+    elevation: float | None,
+    zoom: float | None,
+    roll: float | None,
+) -> None:
+    """Apply relative camera movements to an existing plotter camera.
+
+    All movements are relative to the current camera state.  Delegates
+    to :class:`~pyvista_js.Camera` methods.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter whose camera will be modified.
+    azimuth : float or None
+        Horizontal rotation around the focal point in degrees.
+    elevation : float or None
+        Vertical rotation around the focal point in degrees.
+    zoom : float or None
+        Zoom factor (>1 zooms in, <1 zooms out).
+    roll : float or None
+        Roll rotation around the view axis in degrees.
+
+    """
+    from .camera import Camera  # noqa: PLC0415
+
+    if plotter.camera is None:
+        plotter.camera = Camera()
+
+    cam = plotter.camera
+
+    if azimuth is not None:
+        cam.azimuth(azimuth)
+    if elevation is not None:
+        cam.orbit_elevation(elevation)
+    if zoom is not None:
+        if zoom <= 0:
+            logger.error("zoom must be positive, got %s", zoom)
+            sys.exit(1)
+        cam.zoom(zoom)
+    if roll is not None:
+        cam.roll(roll)
+
+
 # ---------------------------------------------------------------------------
 # Subcommand implementations
 # ---------------------------------------------------------------------------
@@ -237,6 +283,34 @@ def plot(  # noqa: PLR0913, C901, PLR0912
             metavar="SIZE",
         ),
     ] = None,
+    azimuth: Annotated[
+        float | None,
+        typer.Option(
+            help="Rotate camera horizontally around the focal point by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
+    elevation: Annotated[
+        float | None,
+        typer.Option(
+            help="Rotate camera vertically around the focal point by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
+    zoom: Annotated[
+        float | None,
+        typer.Option(
+            help="Zoom factor relative to current distance (>1 zooms in, <1 zooms out).",
+            metavar="FLOAT",
+        ),
+    ] = None,
+    roll: Annotated[
+        float | None,
+        typer.Option(
+            help="Roll camera around its view axis by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
 ) -> None:
     """Plot one or more mesh files in the browser.
 
@@ -280,6 +354,10 @@ def plot(  # noqa: PLR0913, C901, PLR0912
         for file_path in files:
             mesh = _read_mesh(file_path)
             plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    # Apply relative camera movements if any are specified
+    if any(opt is not None for opt in (azimuth, elevation, zoom, roll)):
+        _apply_camera_movement(plotter, azimuth, elevation, zoom, roll)
 
     # Save to pickle file if requested
     if pickle is not None:
@@ -390,21 +468,44 @@ def _run_notebook_cells(page) -> None:  # noqa: ANN001
         page.keyboard.press("Shift+Enter")
 
 
-def _rotate_canvas_with_mouse(page, canvas_selector: str = "canvas") -> None:  # noqa: ANN001
+def _find_canvas_in_frames(page) -> tuple:  # noqa: ANN001
+    """Find a canvas element by searching through all frames (including nested iframes).
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+
+    Returns
+    -------
+    tuple
+        A (frame, element_handle) pair, or (None, None) if not found.
+
+    """
+    for frame in page.frames:
+        try:
+            canvas = frame.query_selector("canvas")
+            if canvas is not None:
+                return frame, canvas
+        except Exception:  # noqa: BLE001
+            logger.debug("Failed to query canvas in frame", exc_info=True)
+            continue
+    return None, None
+
+
+def _rotate_canvas_with_mouse(page) -> None:  # noqa: ANN001
     """Rotate the 3D model by dragging the mouse across the canvas.
 
     Parameters
     ----------
     page : playwright.sync_api.Page
         The Playwright page object.
-    canvas_selector : str
-        CSS selector for the canvas element. Default: "canvas".
 
     """
     try:
-        canvas = page.query_selector(canvas_selector)
+        _frame, canvas = _find_canvas_in_frames(page)
         if canvas is None:
-            logger.warning("Canvas element not found, skipping rotation")
+            logger.warning("Canvas element not found in any frame, skipping rotation")
             return
 
         box = canvas.bounding_box()
@@ -624,6 +725,175 @@ def capture_preview(
             sys.exit(1)
 
     logger.info("Preview GIF saved to: %s", output_path)
+
+
+def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN001
+    """Poll all frames until a canvas element appears or *timeout* seconds elapse.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    timeout : int
+        Maximum seconds to wait.  Default: 120.
+
+    Raises
+    ------
+    TimeoutError
+        If no canvas is found within *timeout* seconds.
+
+    """
+    import time  # noqa: PLC0415
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        _frame, canvas = _find_canvas_in_frames(page)
+        if canvas is not None:
+            logger.info("Found canvas element in iframe")
+            return
+        page.wait_for_timeout(2000)
+
+    msg = f"Canvas element not found in any frame within {timeout} seconds"
+    raise TimeoutError(msg)
+
+
+def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = True) -> Path:
+    """Capture screenshots from the stlite demo using Playwright.
+
+    Parameters
+    ----------
+    output_dir : Path
+        Directory to save temporary screenshots.
+    demo_url : str
+        URL of the stlite demo.
+    rotate : bool
+        If ``True``, rotate the 3D model by mouse drag between
+        screenshots. Default: ``True``.
+
+    Returns
+    -------
+    Path
+        Path to the directory containing screenshots.
+
+    """
+    import contextlib  # noqa: PLC0415
+
+    from playwright.sync_api import sync_playwright  # noqa: PLC0415
+
+    screenshots_dir = output_dir / "screenshots"
+    screenshots_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info("Capturing stlite demo from: %s", demo_url)
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 1200, "height": 800})
+        page = context.new_page()
+
+        try:
+            logger.info("Navigating to stlite demo...")
+            page.goto(demo_url, wait_until="networkidle", timeout=120000)
+
+            logger.info("Waiting for stlite to load and install dependencies...")
+            # Wait for stlite to initialize Python and install pyvista-js
+            page.wait_for_timeout(60000)
+
+            logger.info("Waiting for 3D rendering to appear in iframes...")
+            # stlite renders the Streamlit app in iframes, and
+            # components.html() creates another nested iframe for the
+            # Three.js canvas.  page.wait_for_selector only searches the
+            # top-level document, so we poll all frames instead.
+            _wait_for_canvas_in_frames(page)
+
+            page.wait_for_timeout(5000)
+
+            if rotate:
+                logger.info("Capturing rendering screenshots with rotation...")
+                # Capture first screenshot at initial position
+                page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
+                page.wait_for_timeout(300)
+
+                # Capture remaining screenshots while rotating
+                for i in range(2, 15):
+                    _rotate_canvas_with_mouse(page)
+                    page.wait_for_timeout(300)
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(300)
+            else:
+                logger.info("Capturing rendering screenshots...")
+                for i in range(1, 15):
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(500)
+
+            logger.info("Captured 14 screenshots successfully")
+
+        except Exception:
+            logger.exception("Error during stlite demo capture")
+            with contextlib.suppress(Exception):
+                page.screenshot(path=str(screenshots_dir / "error_screenshot.png"))
+        finally:
+            context.close()
+            browser.close()
+
+    return screenshots_dir
+
+
+@app.command(name="capture-stlite-preview")
+def capture_stlite_preview(
+    output: Annotated[
+        Path,
+        typer.Option(
+            help="Output path for the GIF. Default: assets/stlite-preview.gif.",
+            metavar="PATH",
+        ),
+    ] = Path("assets/stlite-preview.gif"),
+    url: Annotated[
+        str,
+        typer.Option(
+            help="URL of the stlite demo.",
+            metavar="URL",
+        ),
+    ] = "https://tkoyama010.github.io/pyvista-js/stlite/",
+    fps: Annotated[
+        int,
+        typer.Option(
+            help="Frames per second for the GIF. Default: 2.",
+            metavar="INT",
+        ),
+    ] = 2,
+    rotate: Annotated[
+        bool | None,
+        typer.Option(
+            help="Rotate the 3D model by mouse drag while capturing screenshots. Default: True.",
+        ),
+    ] = None,
+) -> None:
+    """Capture a preview GIF of the stlite demo.
+
+    Automate capturing a preview GIF showing pyvista-js rendering in stlite.
+    Requires: playwright, imageio[ffmpeg], pillow.
+    """
+    import tempfile  # noqa: PLC0415
+
+    if rotate is None:
+        rotate = True
+
+    output_path = output
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_dir = Path(tmp)
+        screenshots_dir = _capture_stlite_screenshots(tmp_dir, url, rotate=rotate)
+
+        screenshot_files = list(screenshots_dir.glob("screenshot_*.png"))
+        if not screenshot_files:
+            logger.error("No screenshots were captured")
+            sys.exit(1)
+
+        if not _create_gif(screenshots_dir, output_path, fps=fps):
+            logger.error("Failed to create GIF")
+            sys.exit(1)
+
+    logger.info("stlite preview GIF saved to: %s", output_path)
 
 
 # ---------------------------------------------------------------------------
