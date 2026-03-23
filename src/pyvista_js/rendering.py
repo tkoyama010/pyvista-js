@@ -91,7 +91,7 @@ if TYPE_CHECKING:
 
 import re
 
-from jinja2 import Environment, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from .examples import CubeMap
 
@@ -103,7 +103,11 @@ _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 _POINTS_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "points_source.html").read_text()
 
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+_jinja_env = Environment(
+    loader=FileSystemLoader(_TEMPLATES_DIR),
+    undefined=StrictUndefined,
+    autoescape=False,  # noqa: S701
+)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
@@ -761,8 +765,11 @@ class _BaseHTMLRenderer:
         """
         if not self.lights:
             if self.lighting is None:
-                # No default lights when lighting=None
-                return ""
+                # No default lights when lighting=None; disable auto-creation
+                return (
+                    "      renderer.removeAllLights();\n"
+                    "      renderer.setAutomaticLightCreation(false);"
+                )
             # Default angled directional light for specular highlights
             return (
                 "      // Default directional light\n"
@@ -774,7 +781,10 @@ class _BaseHTMLRenderer:
                 "      light0.setFocalPoint(0, 0, 0);\n"
                 "      renderer.addLight(light0);"
             )
-        lines = []
+        lines = [
+            "      renderer.removeAllLights();",
+            "      renderer.setAutomaticLightCreation(false);",
+        ]
         for idx, light in enumerate(self.lights):
             code = light.generate_vtk_js_code(idx)
             # Indent each line

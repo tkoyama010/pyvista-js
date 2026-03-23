@@ -12,11 +12,6 @@
 #     name: python
 # ---
 
-# %% [markdown]
-# # PyVista-js Introduction
-#
-# This notebook demonstrates the simplified PyVista-js API that works in JupyterLite.
-
 # %%
 import micropip
 

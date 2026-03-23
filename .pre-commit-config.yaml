@@ -60,6 +60,12 @@ repos:
       - id: djlint-reformat-jinja
         files: src/pyvista_js/templates/.*\.html$
 
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: src/pyvista_js/templates/.*\.ts$
+
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
     hooks:

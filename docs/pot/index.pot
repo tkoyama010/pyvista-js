@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 12:16+0000\n"
+"POT-Creation-Date: 2026-03-23 06:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,57 +28,12 @@ msgstr ""
 msgid "Contents"
 msgstr ""
 
-#: ../index.md:73
-msgid "Demos"
-msgstr ""
-
 #: ../../README.md:2
 msgid "pyvista-js"
 msgstr ""
 
 #: ../../README.md:4
-msgid "[![PyPI](https://img.shields.io/pypi/v/pyvista-js.svg)](https://pypi.org/project/pyvista-js/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg)](https://doi.org/10.5281/zenodo.19092335) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/) [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/) [![SPEC 1 — Lazy Loading of Submodules and Functions](https://img.shields.io/badge/SPEC-1-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0001/) [![SPEC 6 — Upper Bound Constraints on Dependencies](https://img.shields.io/badge/SPEC-6-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0006/) [![SPEC 7 — Seeding Pseudo-Random Number Generation](https://img.shields.io/badge/SPEC-7-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0007/) [![SPEC 8 — Securing the Release Process](https://img.shields.io/badge/SPEC-8-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0008/) [![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js) [![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest) [![Transifex](https://img.shields.io/badge/Translations-Transifex-blue.svg)](https://app.transifex.com/tkoyama010/pyvista-js/) [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main) [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/) ![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449) [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg)](CODE_OF_CONDUCT.md) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org) [![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com) [![zizmor](https://img.shields.io/badge/%F0%9F%8C%88-zizmor-white?labelColor=white)](https://zizmor.sh/) [![Diátaxis](https://img.shields.io/badge/Documentation-Di%C3%A1taxis-blue.svg?style=flat)](https://diataxis.fr/) [![Join the community](https://img.shields.io/badge/Join%20the%20community-on%20GitHub%20Discussions-blue)](https://github.com/tkoyama010/pyvista-js/discussions)"
-msgstr ""
-
-#: ../../README.md:4
-msgid "PyPI"
-msgstr ""
-
-#: ../../README.md:4
-msgid "DOI"
-msgstr ""
-
-#: ../../README.md:4
-#: ../../README.md:121
-msgid "License"
-msgstr ""
-
-#: ../../README.md:4
-msgid "Python"
-msgstr ""
-
-#: ../../README.md:4
-msgid "SPEC 0 — Minimum Supported Dependencies"
-msgstr ""
-
-#: ../../README.md:4
-msgid "SPEC 1 — Lazy Loading of Submodules and Functions"
-msgstr ""
-
-#: ../../README.md:4
-msgid "SPEC 6 — Upper Bound Constraints on Dependencies"
-msgstr ""
-
-#: ../../README.md:4
-msgid "SPEC 7 — Seeding Pseudo-Random Number Generation"
-msgstr ""
-
-#: ../../README.md:4
-msgid "SPEC 8 — Securing the Release Process"
-msgstr ""
-
-#: ../../README.md:4
-msgid "codecov"
+msgid "[![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest) [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/) [![stlite](https://img.shields.io/badge/stlite-lite_now-FF4B4B?logo=streamlit&logoColor=white)](https://tkoyama010.github.io/pyvista-js/stlite) [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)"
 msgstr ""
 
 #: ../../README.md:4
@@ -86,122 +41,147 @@ msgid "Documentation Status"
 msgstr ""
 
 #: ../../README.md:4
-msgid "Transifex"
-msgstr ""
-
-#: ../../README.md:4
-msgid "pre-commit.ci status"
-msgstr ""
-
-#: ../../README.md:4
 msgid "JupyterLite"
 msgstr ""
 
 #: ../../README.md:4
-msgid "All Contributors"
+msgid "stlite"
 msgstr ""
 
 #: ../../README.md:4
 msgid "standard-readme compliant"
 msgstr ""
 
-#: ../../README.md:4
-msgid "Conventional Commits"
-msgstr ""
-
-#: ../../README.md:4
-msgid "djlint"
-msgstr ""
-
-#: ../../README.md:4
-msgid "zizmor"
-msgstr ""
-
-#: ../../README.md:4
-msgid "Diátaxis"
-msgstr ""
-
-#: ../../README.md:4
-msgid "Join the community"
-msgstr ""
-
-#: ../../README.md:27
+#: ../../README.md:9
 msgid "[PyVista](https://github.com/pyvista/pyvista)-like API for [vtk.js](https://github.com/Kitware/vtk-js) — bring intuitive 3D visualization to the browser."
 msgstr ""
 
-#: ../../README.md:31
-msgid "![pyvista-js rendering in JupyterLite](https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif)"
+#: ../index.md:1
+msgid "[Try it with JupyterLite]"
 msgstr ""
 
-#: ../../README.md:31
-msgid "pyvista-js rendering in JupyterLite"
+#: ../index.md:1
+msgid "[Try it with Stlite]"
 msgstr ""
 
-#: ../../README.md:33
+#: ../index.md:1
+msgid "![jupyterlite-preview]"
+msgstr ""
+
+#: ../../README.md:13
+msgid "jupyterlite-preview"
+msgstr ""
+
+#: ../index.md:1
+msgid "![stlite-preview]"
+msgstr ""
+
+#: ../../README.md:13
+msgid "stlite-preview"
+msgstr ""
+
+#: ../../README.md:20
 msgid "Table of Contents"
 msgstr ""
 
-#: ../../README.md:35
+#: ../../README.md:25
 msgid "[Install](#install)"
 msgstr ""
 
-#: ../../README.md:36
+#: ../../README.md:26
 msgid "[Usage](#usage)"
 msgstr ""
 
-#: ../../README.md:37
+#: ../../README.md:27
 msgid "[Citation](#citation)"
 msgstr ""
 
-#: ../../README.md:38
+#: ../../README.md:28
 msgid "[Contributing](#contributing)"
 msgstr ""
 
-#: ../../README.md:39
+#: ../../README.md:29
 msgid "[License](#license)"
 msgstr ""
 
-#: ../../README.md:41
+#: ../../README.md:33
 msgid "Install"
 msgstr ""
 
-#: ../../README.md:47
+#: ../../README.md:35
+msgid "[![PyPI](https://img.shields.io/pypi/v/pyvista-js.svg)](https://pypi.org/project/pyvista-js/) [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)"
+msgstr ""
+
+#: ../../README.md:35
+msgid "PyPI"
+msgstr ""
+
+#: ../../README.md:35
+msgid "Python"
+msgstr ""
+
+#: ../../README.md:42
 msgid "For Pyodide/stlite:"
 msgstr ""
 
-#: ../../README.md:55
+#: ../../README.md:50
 msgid "Usage"
 msgstr ""
 
-#: ../../README.md:65
+#: ../../README.md:60
 msgid "Citation"
 msgstr ""
 
-#: ../../README.md:67
+#: ../../README.md:62
+msgid "[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg)](https://doi.org/10.5281/zenodo.19092335)"
+msgstr ""
+
+#: ../../README.md:62
+msgid "DOI"
+msgstr ""
+
+#: ../../README.md:64
 msgid "If you use pyvista-js in your research or projects, please cite it using the following:"
 msgstr ""
 
-#: ../../README.md:80
+#: ../../README.md:77
 msgid "Alternatively, you can use the [CITATION.cff](CITATION.cff) file in this repository, which follows the [Citation File Format](https://citation-file-format.github.io/) standard."
 msgstr ""
 
-#: ../../README.md:82
+#: ../../README.md:79
 msgid "Contributing"
 msgstr ""
 
-#: ../../README.md:84
+#: ../../README.md:81
+msgid "![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)"
+msgstr ""
+
+#: ../../README.md:81
+msgid "All Contributors"
+msgstr ""
+
+#: ../../README.md:83
 msgid "Enjoying pyvista-js? Show your support with a GitHub star — it's a simple click that means the world to us and helps others discover it, too!"
 msgstr ""
 
-#: ../../README.md:92
+#: ../../README.md:91
 msgid "Contributions are welcome! Please open an issue or pull request on [GitHub](https://github.com/tkoyama010/pyvista-js/issues)."
 msgstr ""
 
-#: ../../README.md:94
+#: ../../README.md:93
 msgid "This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!"
 msgstr ""
 
-#: ../../README.md:123
+#: ../../README.md:120
+#: ../../README.md:122
+msgid "License"
+msgstr ""
+
+#: ../../README.md:122
+msgid "[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)"
+msgstr ""
+
+#: ../../README.md:124
 msgid "[BSD 3-Clause](LICENSE) © Tetsuo Koyama"
 msgstr ""
 

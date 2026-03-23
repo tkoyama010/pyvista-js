@@ -17,9 +17,6 @@ Thank you for your interest in contributing to pyvista-js! This document provide
   - [Making Changes](#making-changes)
   - [Committing Changes](#committing-changes)
 - [Code Quality Standards](#code-quality-standards)
-  - [Pre-commit Hooks](#pre-commit-hooks)
-  - [Running Code Quality Checks Manually](#running-code-quality-checks-manually)
-  - [Code Style Guidelines](#code-style-guidelines)
 - [Testing](#testing)
   - [Running Tests](#running-tests)
   - [Writing Tests](#writing-tests)
@@ -39,12 +36,6 @@ Thank you for your interest in contributing to pyvista-js! This document provide
   - [Community](#community)
   - [Recognition](#recognition)
 - [Scientific Python Standards](#scientific-python-standards)
-  - [SPEC 0 — Minimum Supported Dependencies](#spec-0--minimum-supported-dependencies)
-  - [SPEC 1 — Lazy Loading of Submodules](#spec-1--lazy-loading-of-submodules)
-  - [SPEC 4 — Nightly Tests](#spec-4--nightly-tests)
-  - [SPEC 6 — Upper Bound Constraints](#spec-6--upper-bound-constraints)
-  - [SPEC 7 — Seeding Random Number Generation](#spec-7--seeding-random-number-generation)
-  - [SPEC 8 — Securing the Release Process](#spec-8--securing-the-release-process)
 - [Community Resources](#community-resources)
 - [Questions?](#questions)
 
@@ -63,6 +54,8 @@ pyvista-js is a PyVista-like API for vtk.js that brings intuitive 3D visualizati
 1. Read through the [documentation](https://pyvista-js.readthedocs.io/)
 
 ## Development Setup
+
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 ### Prerequisites
 
@@ -161,44 +154,21 @@ git commit -m "feat(plotter): add support for physically based rendering"
 
 ## Code Quality Standards
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
-### Pre-commit Hooks
-
-The project uses pre-commit hooks to ensure code quality. These run automatically on commit:
-
-- **Formatting**: `ruff-format` for Python code, `mdformat` for Markdown
-- **Linting**: `ruff` for Python linting
-- **Type Checking**: `mypy` for static type analysis
-- **HTML Templates**: `djlint` for Jinja template formatting
-- **Security**: `pygrep-hooks` for common security issues
-- **Documentation**: `codespell` for spell checking
-- **Repository Review**: `sp-repo-review` for Scientific Python standards
-
-### Running Code Quality Checks Manually
+The project uses pre-commit hooks to ensure code quality.
 
 ```bash
 # Run all pre-commit hooks
 uv run pre-commit run --all-files
-
-# Run specific tools
-uv run ruff check src/
-uv run ruff format src/
-uv run mypy src/
 ```
-
-### Code Style Guidelines
-
-- **Line Length**: Maximum 100 characters
-- **Type Hints**: Use type hints where appropriate (gradual typing approach)
-- **Docstrings**: Follow existing patterns in the codebase
-- **Naming**: Use descriptive variable and function names
-- **Imports**: Organize imports logically; pre-commit will sort them
 
 ## Testing
 
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)
 
 ### Running Tests
 
@@ -346,50 +316,13 @@ All contributions are recognized using [all-contributors](https://allcontributor
 
 ## Scientific Python Standards
 
-This project follows several [Scientific Python SPECs](https://scientific-python.org/specs/):
-
-### SPEC 0 — Minimum Supported Dependencies
-
 [![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
-
-- **Python**: 3.12+ (drop support 36 months after release)
-- **NumPy**: 2.0+ (drop support 24 months after release)
-- Other core dependencies follow similar policies
-
-### SPEC 1 — Lazy Loading of Submodules
-
 [![SPEC 1 — Lazy Loading of Submodules and Functions](https://img.shields.io/badge/SPEC-1-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0001/)
-
-- Submodules are lazily loaded using `lazy-loader`
-- Improves import time and memory usage
-
-### SPEC 4 — Nightly Tests
-
 [![SPEC 4 — Nightly Tests](https://img.shields.io/badge/SPEC-4-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0004/)
-
-- Regular testing against development versions of dependencies
-- Ensures forward compatibility
-
-### SPEC 6 — Upper Bound Constraints
-
 [![SPEC 6 — Upper Bound Constraints on Dependencies](https://img.shields.io/badge/SPEC-6-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0006/)
-
-- No upper bounds on dependency versions unless technically required
-- Prevents dependency conflicts in downstream projects
-
-### SPEC 7 — Seeding Random Number Generation
-
 [![SPEC 7 — Seeding Pseudo-Random Number Generation](https://img.shields.io/badge/SPEC-7-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0007/)
 
-- Use `numpy.random.default_rng()` for random number generation
-- Use `rng` parameter for seeding
-- Avoid global state and legacy generators
-
-### SPEC 8 — Securing the Release Process
-
-- Trusted publishing via OpenID Connect (OIDC) to PyPI
-- Build provenance attestations using Sigstore
-- All GitHub Actions pinned to commit SHAs
+This project follows several [Scientific Python SPECs](https://scientific-python.org/specs/).
 
 ## Community Resources
 

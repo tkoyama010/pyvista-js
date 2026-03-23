@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"POT-Creation-Date: 2026-03-22 16:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,12 +22,4 @@ msgstr ""
 
 #: ../howtos/index.md:3
 msgid "Focused guides for common tasks with pyvista-js."
-msgstr ""
-
-#: ../howtos/index.md:5
-msgid "stlite Demo"
-msgstr ""
-
-#: ../howtos/index.md:7
-msgid "See the {doc}`stlite Demo <../stlite_demo>` page for an interactive demo using [stlite](https://github.com/whitphx/stlite), the WASM-powered in-browser version of Streamlit."
 msgstr ""
