@@ -6,6 +6,8 @@ import warnings
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import numpy as np  # noqa: E402
+
 import pytest
 
 import pyvista_js as pv
@@ -520,13 +522,6 @@ def test_capture_stlite_preview_rotate_default(tmp_path) -> None:
         capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com")
 
         assert mock_capture.call_args.kwargs["rotate"] is True
-
-
-# ---------------------------------------------------------------------------
-# Camera movement tests
-# ---------------------------------------------------------------------------
-
-import numpy as np  # noqa: E402
 
 
 def _make_plotter_with_camera():
