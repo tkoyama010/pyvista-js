@@ -9,25 +9,20 @@
 
 | [Try it with JupyterLite] | [Try it with Stlite] |
 | :-----------------------: | :------------------: |
-|   ![jupyterlite-preview]  |   ![stlite-preview]  |
-
-[try it with jupyterlite]: https://tkoyama010.github.io/pyvista-js/
-[jupyterlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif
-[try it with stlite]: https://tkoyama010.github.io/pyvista-js/stlite
-[stlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif
+| ![jupyterlite-preview] | ![stlite-preview] |
 
 ## Table of Contents
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
 
+- [Table of Contents](#table-of-contents)
 - [Install](#install)
 - [Usage](#usage)
 - [Citation](#citation)
 - [Contributing](#contributing)
 - [License](#license)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- mdformat-toc end -->
 
 ## Install
 
@@ -92,8 +87,11 @@ Contributions are welcome! Please open an issue or pull request on [GitHub](http
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
+
 <table>
   <tbody>
     <tr>
@@ -108,6 +106,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 </table>
 
 <!-- markdownlint-restore -->
+
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
@@ -117,3 +116,8 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 [BSD 3-Clause](LICENSE) © Tetsuo Koyama
+
+[jupyterlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif
+[stlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif
+[try it with jupyterlite]: https://tkoyama010.github.io/pyvista-js/
+[try it with stlite]: https://tkoyama010.github.io/pyvista-js/stlite
