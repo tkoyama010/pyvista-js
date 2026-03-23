@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-03-23T11:00:36.526191Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-03-23T11:00:36.526191Z",
+      "mimetype": null,
+      "name": "src",
+      "path": "src",
+      "size": null,
+      "type": "directory",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-03-23T11:00:36.525848Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-03-23T11:00:34.840332Z",
+      "mimetype": null,
+      "name": "intro.ipynb",
+      "path": "intro.ipynb",
+      "size": 750,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-03-23T11:00:36.526191Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-03-23T11:00:34.840971Z",
+      "mimetype": "text/x-python",
+      "name": "intro.py",
+      "path": "intro.py",
+      "size": 491,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-03-23T11:00:36.526191Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-03-23T11:00:36.526191Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
