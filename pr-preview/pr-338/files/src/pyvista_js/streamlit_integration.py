@@ -18,8 +18,10 @@ if TYPE_CHECKING:
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _STREAMLIT_TEMPLATE = (_TEMPLATES_DIR / "streamlit.html").read_text()
 _jinja_env = Environment(
-    loader=FileSystemLoader(_TEMPLATES_DIR), undefined=StrictUndefined, autoescape=False
-)  # noqa: S701
+    loader=FileSystemLoader(_TEMPLATES_DIR),
+    undefined=StrictUndefined,
+    autoescape=False,  # noqa: S701
+)
 
 # Check if streamlit is available
 try:

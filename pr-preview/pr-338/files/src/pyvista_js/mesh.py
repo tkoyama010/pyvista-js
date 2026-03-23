@@ -19,8 +19,10 @@ if TYPE_CHECKING:
 
 _TEMPLATES_DIR_FOR_LOADER = Path(__file__).parent / "templates"
 _jinja_env = Environment(
-    loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER), undefined=StrictUndefined, autoescape=False
-)  # noqa: S701
+    loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER),
+    undefined=StrictUndefined,
+    autoescape=False,  # noqa: S701
+)
 
 
 def _render(template_str: str, **kwargs: object) -> str:
