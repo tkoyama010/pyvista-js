@@ -266,25 +266,24 @@ def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     assert "vtkCubeSource" in html
 
 
-def test_generate_render_js(monkeypatch) -> None:
-    """Test that _generate_render_js produces valid JavaScript without script tags."""
+def test_generate_standalone_html(monkeypatch) -> None:
+    """Test that _generate_standalone_html produces a complete HTML page."""
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
     renderer.add_mesh_actor(Sphere(), color="red")
 
-    js = renderer._generate_render_js()
+    html = renderer._generate_standalone_html()
 
-    assert "<script>" not in js
-    assert "</script>" not in js
-    assert "vtkRenderer" in js
-    assert "vtkMapper" in js
-    assert "vtkActor" in js
-    assert "renderer.addActor" in js
+    assert "<!DOCTYPE html>" in html
+    assert "vtkRenderer" in html
+    assert "vtkMapper" in html
+    assert "vtkActor" in html
+    assert "renderer.addActor" in html
 
 
 def test_render_with_ipython_calls_display(monkeypatch) -> None:
-    """Test that VTKJSRenderer.render() calls display(Javascript(...)) in IPython mode."""
+    """Test that VTKJSRenderer.render() calls display(HTML(...)) with an iframe in IPython mode."""
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     displayed = []
@@ -292,20 +291,21 @@ def test_render_with_ipython_calls_display(monkeypatch) -> None:
     def mock_display(obj) -> None:
         displayed.append(obj)
 
-    class MockJavascript:
+    class MockHTML:
         def __init__(self, code: str) -> None:
             self.code = code
 
     monkeypatch.setattr(rendering, "display", mock_display)
-    monkeypatch.setattr(rendering, "Javascript", MockJavascript)
+    monkeypatch.setattr(rendering, "HTML", MockHTML)
 
     renderer = rendering.VTKJSRenderer()
     renderer.add_mesh_actor(Sphere(), color="blue")
     renderer.render()
 
-    assert len(displayed) == 1
-    assert isinstance(displayed[0], MockJavascript)
-    assert "vtkRenderer" in displayed[0].code
+    assert len(displayed) >= 1
+    iframe_displays = [d for d in displayed if "iframe" in d.code and "srcdoc" in d.code]
+    assert len(iframe_displays) == 1
+    assert "vtkRenderer" in iframe_displays[0].code
 
 
 def test_create_container_with_ipython(monkeypatch) -> None:
