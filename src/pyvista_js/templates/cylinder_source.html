@@ -1,16 +1,20 @@
+<div
+  id="cylinder-config-{{ SOURCE }}"
+  data-center-x="{{ CENTER_X }}"
+  data-center-y="{{ CENTER_Y }}"
+  data-center-z="{{ CENTER_Z }}"
+  data-radius="{{ RADIUS }}"
+  data-height="{{ HEIGHT }}"
+  data-resolution="{{ RESOLUTION }}"
+  style="display: none;"
+></div>
 <script>
-  const centerX = {{ CENTER_X }};
-  const centerY = {{ CENTER_Y }};
-  const centerZ = {{ CENTER_Z }};
-  const radius = {{ RADIUS }};
-  const height = {{ HEIGHT }};
-  const resolution = {{ RESOLUTION }};
-
+  const config = document.getElementById('cylinder-config-{{ SOURCE }}').dataset;
   const {{ SOURCE }} = vtk.Filters.Sources.vtkCylinderSource.newInstance({
-    center: [centerX, centerY, centerZ],
-    radius: radius,
-    height: height,
-    resolution: resolution,
+    center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
+    radius: parseFloat(config.radius),
+    height: parseFloat(config.height),
+    resolution: parseInt(config.resolution),
     generateTCoords: true
   });
 </script>

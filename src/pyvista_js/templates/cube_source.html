@@ -1,15 +1,19 @@
+<div
+  id="cube-config-{{ SOURCE }}"
+  data-center-x="{{ CENTER_X }}"
+  data-center-y="{{ CENTER_Y }}"
+  data-center-z="{{ CENTER_Z }}"
+  data-x-length="{{ X_LENGTH }}"
+  data-y-length="{{ Y_LENGTH }}"
+  data-z-length="{{ Z_LENGTH }}"
+  style="display: none;"
+></div>
 <script>
-  const centerX = {{ CENTER_X }};
-  const centerY = {{ CENTER_Y }};
-  const centerZ = {{ CENTER_Z }};
-  const xLength = {{ X_LENGTH }};
-  const yLength = {{ Y_LENGTH }};
-  const zLength = {{ Z_LENGTH }};
-
+  const config = document.getElementById('cube-config-{{ SOURCE }}').dataset;
   const {{ SOURCE }} = vtk.Filters.Sources.vtkCubeSource.newInstance({
-    center: [centerX, centerY, centerZ],
-    xLength: xLength,
-    yLength: yLength,
-    zLength: zLength
+    center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
+    xLength: parseFloat(config.xLength),
+    yLength: parseFloat(config.yLength),
+    zLength: parseFloat(config.zLength)
   });
 </script>

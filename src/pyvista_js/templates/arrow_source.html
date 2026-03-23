@@ -1,20 +1,24 @@
+<div
+  id="arrow-config-{{ SOURCE }}"
+  data-tip-length="{{ TIP_LENGTH }}"
+  data-tip-radius="{{ TIP_RADIUS }}"
+  data-tip-resolution="{{ TIP_RESOLUTION }}"
+  data-shaft-radius="{{ SHAFT_RADIUS }}"
+  data-shaft-resolution="{{ SHAFT_RESOLUTION }}"
+  data-dir-x="{{ DIR_X }}"
+  data-dir-y="{{ DIR_Y }}"
+  data-dir-z="{{ DIR_Z }}"
+  style="display: none;"
+></div>
 <script>
-  const tipLength = {{ TIP_LENGTH }};
-  const tipRadius = {{ TIP_RADIUS }};
-  const tipResolution = {{ TIP_RESOLUTION }};
-  const shaftRadius = {{ SHAFT_RADIUS }};
-  const shaftResolution = {{ SHAFT_RESOLUTION }};
-  const dirX = {{ DIR_X }};
-  const dirY = {{ DIR_Y }};
-  const dirZ = {{ DIR_Z }};
-
+  const config = document.getElementById('arrow-config-{{ SOURCE }}').dataset;
   const {{ SOURCE }} = vtk.Filters.Sources.vtkArrowSource.newInstance({
-    tipLength: tipLength,
-    tipRadius: tipRadius,
-    tipResolution: tipResolution,
-    shaftRadius: shaftRadius,
-    shaftResolution: shaftResolution,
-    direction: [dirX, dirY, dirZ],
+    tipLength: parseFloat(config.tipLength),
+    tipRadius: parseFloat(config.tipRadius),
+    tipResolution: parseInt(config.tipResolution),
+    shaftRadius: parseFloat(config.shaftRadius),
+    shaftResolution: parseInt(config.shaftResolution),
+    direction: [parseFloat(config.dirX), parseFloat(config.dirY), parseFloat(config.dirZ)],
     startAt: 'origin'
   });
 </script>

@@ -1,16 +1,20 @@
+<div
+  id="sphere-config-{{ SOURCE }}"
+  data-center-x="{{ CENTER_X }}"
+  data-center-y="{{ CENTER_Y }}"
+  data-center-z="{{ CENTER_Z }}"
+  data-radius="{{ RADIUS }}"
+  data-theta-resolution="{{ THETA_RESOLUTION }}"
+  data-phi-resolution="{{ PHI_RESOLUTION }}"
+  style="display: none;"
+></div>
 <script>
-  const centerX = {{ CENTER_X }};
-  const centerY = {{ CENTER_Y }};
-  const centerZ = {{ CENTER_Z }};
-  const radius = {{ RADIUS }};
-  const thetaResolution = {{ THETA_RESOLUTION }};
-  const phiResolution = {{ PHI_RESOLUTION }};
-
+  const config = document.getElementById('sphere-config-{{ SOURCE }}').dataset;
   const {{ SOURCE }} = vtk.Filters.Sources.vtkSphereSource.newInstance({
-    center: [centerX, centerY, centerZ],
-    radius: radius,
-    thetaResolution: thetaResolution,
-    phiResolution: phiResolution
+    center: [parseFloat(config.centerX), parseFloat(config.centerY), parseFloat(config.centerZ)],
+    radius: parseFloat(config.radius),
+    thetaResolution: parseInt(config.thetaResolution),
+    phiResolution: parseInt(config.phiResolution)
   });
 
   const {{ TEX_MAP_SPHERE }} = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
