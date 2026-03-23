@@ -1367,8 +1367,9 @@ class _BaseHTMLRenderer:
             AXES_CODE=self._generate_axes_code(),
             CAMERA_CODE=self._generate_camera_code(),
         )
-        rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-        return re.sub(r"\n?\s*</script>\s*$", "", rendered)
+        rendered = re.sub(r"<script[^>]*>\s*\n?", "", rendered)
+        rendered = re.sub(r"\n?\s*</script>", "", rendered)
+        return rendered.strip()
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
