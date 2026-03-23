@@ -13,6 +13,11 @@ import numpy as np
 _NORM_TOL = 1e-12
 
 
+def _to_float3(arr: np.ndarray) -> tuple[float, float, float]:
+    """Convert a 3-element array to a typed 3-tuple of floats."""
+    return (float(arr[0]), float(arr[1]), float(arr[2]))
+
+
 def _rodrigues_rotate(
     vec: np.ndarray,
     axis: np.ndarray,
@@ -413,7 +418,7 @@ class Camera:
         pos, fp, _forward, _right, up_ortho = frame
 
         offset = _rodrigues_rotate(pos - fp, up_ortho, angle)
-        self.position = tuple(float(x) for x in (fp + offset))
+        self.position = _to_float3(fp + offset)
 
     def orbit_elevation(self, angle: float) -> None:
         """Rotate the camera position vertically around the focal point.
@@ -444,8 +449,8 @@ class Camera:
 
         offset = _rodrigues_rotate(pos - fp, right, angle)
         new_up = _rodrigues_rotate(up_ortho, right, angle)
-        self.position = tuple(float(x) for x in (fp + offset))
-        self.view_up = tuple(float(x) for x in new_up)
+        self.position = _to_float3(fp + offset)
+        self.view_up = _to_float3(new_up)
 
     def zoom(self, factor: float) -> None:
         """Move the camera closer to or farther from the focal point.
@@ -485,7 +490,7 @@ class Camera:
 
         forward = direction / dist
         new_pos = fp - forward * (dist / factor)
-        self.position = tuple(float(x) for x in new_pos)
+        self.position = _to_float3(new_pos)
 
     def roll(self, angle: float) -> None:
         """Roll the camera around the view direction axis.
@@ -511,7 +516,7 @@ class Camera:
         _pos, _fp, forward, _right, up_ortho = frame
 
         new_up = _rodrigues_rotate(up_ortho, forward, angle)
-        self.view_up = tuple(float(x) for x in new_up)
+        self.view_up = _to_float3(new_up)
 
     def __repr__(self) -> str:
         """Return string representation of the camera."""
