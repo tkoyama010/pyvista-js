@@ -77,10 +77,15 @@
     var renderWindow = window.renderWindow;
     if (renderer) {
       renderer.resetCamera();
+    }
+  })();
+</script>
 {{ CAMERA_CODE }}
-      if (renderWindow) {
-        renderWindow.render();
-      }
+<script>
+  (function() {
+    var renderWindow = window.renderWindow;
+    if (renderWindow) {
+      renderWindow.render();
     }
   })();
 </script>
