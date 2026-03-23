@@ -7,6 +7,7 @@ __all__ = [
     "Cylinder",
     "Disc",
     "GLTFReader",
+    "GaussianSplatReader",
     "Light",
     "Line",
     "OBJReader",
@@ -48,7 +49,7 @@ from .mesh import (
     Sphere,
 )
 from .plotter import Plotter
-from .readers import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader
+from .readers import GLTFReader, GaussianSplatReader, OBJReader, PLYReader, PolyDataReader, STLReader
 from .streamlit_integration import pyvista_chart
 from .text import Text, TextProperty
 from .texture import Texture
