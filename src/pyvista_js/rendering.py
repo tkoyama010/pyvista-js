@@ -1313,6 +1313,158 @@ class _BaseHTMLRenderer:
             )
         return ""
 
+    def generate_config_object(self) -> dict[str, object]:
+        """Generate a configuration object for the viewer.
+
+        This method creates a configuration dictionary that can be:
+        1. Serialized to JSON for WASM environments
+        2. Used with the initViewer() JavaScript function
+
+        Returns
+        -------
+        dict
+            Configuration object compatible with ViewerConfig TypeScript interface.
+
+        Examples
+        --------
+        >>> from pyvista_js import Sphere
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> sphere = Sphere()
+        >>> _ = renderer.add_mesh_actor(sphere, color='red')
+        >>> config = renderer.generate_config_object()
+        >>> config['containerId']  # doctest: +SKIP
+        'pyvista-container'
+
+        """
+        from .config_types import color_tuple_to_rgb, vector_tuple_to_vector3
+
+        config: dict[str, object] = {
+            "containerId": self.container_id,
+            "backgroundColor": color_tuple_to_rgb(self.background),
+            "vtkjsCdnUrl": _VTKJS_CDN,
+        }
+
+        # Add actors
+        if self.actors:
+            actors_list = []
+            for idx, actor_info in enumerate(self.actors):
+                mesh = actor_info["mesh"]
+
+                # Generate source code
+                source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
+
+                # Build actor config
+                actor_config: dict[str, object] = {
+                    "sourceCode": source_code,
+                }
+
+                # Add color
+                color = actor_info.get("color") or (0.5, 0.5, 0.5)
+                actor_config["color"] = color_tuple_to_rgb(color)  # type: ignore[arg-type]
+
+                # Add opacity
+                opacity = actor_info.get("opacity", 1.0)
+                actor_config["opacity"] = opacity
+
+                # Add style
+                style = actor_info.get("style", "surface")
+                actor_config["style"] = style
+
+                # Add edge properties
+                show_edges = actor_info.get("show_edges", False)
+                if show_edges:
+                    actor_config["showEdges"] = True
+                    edge_color = actor_info.get("edge_color")
+                    if edge_color:
+                        actor_config["edgeColor"] = color_tuple_to_rgb(edge_color)  # type: ignore[arg-type]
+
+                # Add shading
+                smooth_shading = actor_info.get("smooth_shading", True)
+                actor_config["smoothShading"] = smooth_shading
+
+                # Add PBR properties
+                pbr = actor_info.get("pbr", False)
+                if pbr:
+                    actor_config["pbr"] = True
+                    actor_config["metallic"] = actor_info.get("metallic", 0.0)
+                    actor_config["roughness"] = actor_info.get("roughness", 0.5)
+
+                # Add texture code if present
+                texture_code = self._generate_texture_code(actor_info, idx)
+                if texture_code.strip():
+                    actor_config["textureCode"] = texture_code
+
+                # Add scalar code if present
+                scalar_code = self._generate_scalar_code(actor_info, idx)
+                if scalar_code.strip():
+                    actor_config["scalarCode"] = scalar_code
+
+                # Add normals code
+                mapper_setup = actor_info.get("mapper_setup", "")
+                normals_code = self._generate_normals_code(
+                    idx, smooth_shading, str(mapper_setup)
+                )
+                if normals_code.strip():
+                    actor_config["normalsCode"] = normals_code
+
+                actors_list.append(actor_config)
+
+            config["actors"] = actors_list
+
+        # Add lights
+        if self.lights:
+            lights_list = []
+            for light in self.lights:
+                light_config: dict[str, object] = {}
+                light_config["position"] = vector_tuple_to_vector3(light.position)
+                light_config["focalPoint"] = vector_tuple_to_vector3(light.focal_point)
+                light_config["intensity"] = light.intensity
+                light_config["color"] = color_tuple_to_rgb(light.color)
+                lights_list.append(light_config)
+            config["lights"] = lights_list
+
+        # Add camera
+        if self._camera is not None:
+            camera_config: dict[str, object] = {
+                "position": vector_tuple_to_vector3(self._camera.position),
+                "focalPoint": vector_tuple_to_vector3(self._camera.focal_point),
+                "viewUp": vector_tuple_to_vector3(self._camera.view_up),
+                "viewAngle": self._camera.view_angle,
+                "parallelProjection": self._camera.parallel_projection,
+            }
+            config["camera"] = camera_config
+
+        # Add text actors
+        if self.text_actors:
+            text_list = []
+            for text in self.text_actors:
+                text_config: dict[str, object] = {
+                    "text": text.text,
+                }
+                if text.position:
+                    text_config["position"] = vector_tuple_to_vector3(text.position)
+                if text.font_size:
+                    text_config["fontSize"] = text.font_size
+                if text.color:
+                    text_config["color"] = color_tuple_to_rgb(text.color)
+                text_list.append(text_config)
+            config["textActors"] = text_list
+
+        # Add scalar bar
+        if self._scalar_bar:
+            config["scalarBar"] = self._scalar_bar
+
+        # Add environment texture
+        if self._environment_texture_url:
+            config["environment"] = {"textureUrl": self._environment_texture_url}
+
+        # Add axes
+        if self._axes_enabled:
+            config["axes"] = {"enabled": True}
+
+        return config
+
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
         actor_js_code = [
