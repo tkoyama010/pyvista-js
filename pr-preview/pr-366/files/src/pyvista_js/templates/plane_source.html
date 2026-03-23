@@ -1,7 +1,28 @@
+<div id="plane-config"
+     data-source-name="{{ SOURCE }}"
+     data-origin-x="{{ ORIGIN_X }}"
+     data-origin-y="{{ ORIGIN_Y }}"
+     data-origin-z="{{ ORIGIN_Z }}"
+     data-point1-x="{{ POINT1_X }}"
+     data-point1-y="{{ POINT1_Y }}"
+     data-point1-z="{{ POINT1_Z }}"
+     data-point2-x="{{ POINT2_X }}"
+     data-point2-y="{{ POINT2_Y }}"
+     data-point2-z="{{ POINT2_Z }}"
+     data-i-resolution="{{ I_RESOLUTION }}"
+     data-j-resolution="{{ J_RESOLUTION }}"
+     style="display: none"></div>
 <script>
-const {{ SOURCE }} = vtk.Filters.Sources.vtkPlaneSource.newInstance({ origin:
-[{{ ORIGIN_X }}, {{ ORIGIN_Y }}, {{ ORIGIN_Z }}], point1: [{{ POINT1_X }},
-{{ POINT1_Y }}, {{ POINT1_Z }}], point2: [{{ POINT2_X }}, {{ POINT2_Y }},
-{{ POINT2_Z }}], xResolution: {{ I_RESOLUTION }}, yResolution:
-{{ J_RESOLUTION }}, });
+  (function() {
+    const config = document.getElementById('plane-config').dataset;
+    const sourceName = config.sourceName;
+
+    window[sourceName] = vtk.Filters.Sources.vtkPlaneSource.newInstance({
+      origin: [parseFloat(config.originX), parseFloat(config.originY), parseFloat(config.originZ)],
+      point1: [parseFloat(config.point1X), parseFloat(config.point1Y), parseFloat(config.point1Z)],
+      point2: [parseFloat(config.point2X), parseFloat(config.point2Y), parseFloat(config.point2Z)],
+      xResolution: parseInt(config.iResolution),
+      yResolution: parseInt(config.jResolution)
+    });
+  })();
 </script>

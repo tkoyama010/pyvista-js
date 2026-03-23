@@ -1,26 +1,43 @@
+<div id="circle-source-config"
+     data-source-name="{{ SOURCE }}"
+     data-resolution="{{ RESOLUTION }}"
+     data-radius="{{ RADIUS }}"
+     data-center-x="{{ CENTER_X }}"
+     data-center-y="{{ CENTER_Y }}"
+     data-center-z="{{ CENTER_Z }}"
+     style="display: none"></div>
 <script>
-const points = [];
-const resolutionVal = {{ RESOLUTION }};
-const radiusVal = {{ RADIUS }};
-const centerVal = [{{ CENTER_X }}, {{ CENTER_Y }}, {{ CENTER_Z }}];
-for (let i = 0; i < resolutionVal; i++) {
-  const angle = (2 * Math.PI * i) / resolutionVal;
-  points.push(
-    centerVal[0] + radiusVal * Math.cos(angle),
-    centerVal[1] + radiusVal * Math.sin(angle),
-    centerVal[2]
-  );
-}
-points.push(points[0], points[1], points[2]);
-const {{ SOURCE }} = vtk.Common.DataModel.vtkPolyData.newInstance();
-const pts = vtk.Common.Core.vtkPoints.newInstance();
-pts.setData(Float32Array.from(points), 3);
-{{ SOURCE }}.setPoints(pts);
-const nPts = resolutionVal + 1;
-const cellArray = new Int32Array(nPts + 1);
-cellArray[0] = nPts;
-for (let i = 0; i < nPts; i++) cellArray[i + 1] = i;
-const lines = vtk.Common.Core.vtkCellArray.newInstance();
-lines.setData(cellArray);
-{{ SOURCE }}.setLines(lines);
+  (function() {
+    const config = document.getElementById('circle-source-config').dataset;
+    const sourceName = config.sourceName;
+    const points = [];
+    const resolutionVal = parseInt(config.resolution);
+    const radiusVal = parseFloat(config.radius);
+    const centerVal = [
+      parseFloat(config.centerX),
+      parseFloat(config.centerY),
+      parseFloat(config.centerZ)
+    ];
+    for (let i = 0; i < resolutionVal; i++) {
+      const angle = (2 * Math.PI * i) / resolutionVal;
+      points.push(
+        centerVal[0] + radiusVal * Math.cos(angle),
+        centerVal[1] + radiusVal * Math.sin(angle),
+        centerVal[2]
+      );
+    }
+    points.push(points[0], points[1], points[2]);
+    const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+    const pts = vtk.Common.Core.vtkPoints.newInstance();
+    pts.setData(Float32Array.from(points), 3);
+    polydata.setPoints(pts);
+    const nPts = resolutionVal + 1;
+    const cellArray = new Int32Array(nPts + 1);
+    cellArray[0] = nPts;
+    for (let i = 0; i < nPts; i++) cellArray[i + 1] = i;
+    const lines = vtk.Common.Core.vtkCellArray.newInstance();
+    lines.setData(cellArray);
+    polydata.setLines(lines);
+    window[sourceName] = polydata;
+  })();
 </script>

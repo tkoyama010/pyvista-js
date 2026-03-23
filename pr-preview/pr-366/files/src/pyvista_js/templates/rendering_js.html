@@ -1,5 +1,5 @@
 <script>
-  (function () {
+  (function() {
     var container = document.createElement("div");
     container.id = "{{ CONTAINER_ID }}";
     container.setAttribute("data-background-r", "{{ BACKGROUND_R }}");
@@ -38,21 +38,11 @@
         interactor.initialize();
         interactor.bindEvents(container);
 
-        {{ LIGHTS_CODE }}
-
-        {{ ACTORS_CODE }}
-
-        {{ SCALAR_BAR_CODE }}
-
-        {{ TEXT_ACTORS_CODE }}
-
-        {{ ENVIRONMENT_CODE }}
-
-        {{ AXES_CODE }}
-
-        renderer.resetCamera();
-        {{ CAMERA_CODE }}
-        renderWindow.render();
+        // Store for later use
+        window.renderer = renderer;
+        window.renderWindow = renderWindow;
+        window.openGLRenderWindow = openGLRenderWindow;
+        window.interactor = interactor;
       } catch (e) {
         console.error("Error rendering vtk.js scene:", e);
       }
@@ -65,6 +55,37 @@
       script.src = "{{ VTKJS_CDN }}";
       script.onload = doRender;
       document.head.appendChild(script);
+    }
+  })();
+</script>
+
+{{ LIGHTS_CODE }}
+
+{{ ACTORS_CODE }}
+
+{{ SCALAR_BAR_CODE }}
+
+{{ TEXT_ACTORS_CODE }}
+
+{{ ENVIRONMENT_CODE }}
+
+{{ AXES_CODE }}
+
+<script>
+  (function() {
+    var renderer = window.renderer;
+    var renderWindow = window.renderWindow;
+    if (renderer) {
+      renderer.resetCamera();
+    }
+  })();
+</script>
+{{ CAMERA_CODE }}
+<script>
+  (function() {
+    var renderWindow = window.renderWindow;
+    if (renderWindow) {
+      renderWindow.render();
     }
   })();
 </script>

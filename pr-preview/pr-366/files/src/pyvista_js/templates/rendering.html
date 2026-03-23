@@ -8,7 +8,7 @@
             border: 2px solid #333;
             position: relative"></div>
 <script>
-  (function () {
+  (function() {
     function tryRender() {
       if (typeof vtk === "undefined") {
         setTimeout(tryRender, 100);
@@ -39,25 +39,46 @@
         interactor.initialize();
         interactor.bindEvents(container);
 
-        {{ LIGHTS_CODE }}
-
-        {{ ACTORS_CODE }}
-
-        {{ SCALAR_BAR_CODE }}
-
-        {{ TEXT_ACTORS_CODE }}
-
-        {{ ENVIRONMENT_CODE }}
-
-        {{ AXES_CODE }}
-
-        renderer.resetCamera();
-        {{ CAMERA_CODE }}
-        renderWindow.render();
+        // Store for later use
+        window.renderer = renderer;
+        window.renderWindow = renderWindow;
+        window.openGLRenderWindow = openGLRenderWindow;
+        window.interactor = interactor;
       } catch (e) {
         console.error("Error rendering vtk.js scene:", e);
       }
     }
     tryRender();
+  })();
+</script>
+
+{{ LIGHTS_CODE }}
+
+{{ ACTORS_CODE }}
+
+{{ SCALAR_BAR_CODE }}
+
+{{ TEXT_ACTORS_CODE }}
+
+{{ ENVIRONMENT_CODE }}
+
+{{ AXES_CODE }}
+
+<script>
+  (function() {
+    const renderer = window.renderer;
+    const renderWindow = window.renderWindow;
+    if (renderer) {
+      renderer.resetCamera();
+    }
+  })();
+</script>
+{{ CAMERA_CODE }}
+<script>
+  (function() {
+    const renderWindow = window.renderWindow;
+    if (renderWindow) {
+      renderWindow.render();
+    }
   })();
 </script>
