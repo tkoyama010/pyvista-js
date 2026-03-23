@@ -403,13 +403,11 @@ def test_capture_stlite_screenshots_handles_exception(tmp_path) -> None:
 
 def test_capture_stlite_preview_no_screenshots(tmp_path) -> None:
     """capture_stlite_preview exits when no screenshots are captured."""
-    with (
-        patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
-        pytest.raises(SystemExit, match="1"),
-    ):
+    with patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture:
         mock_capture.return_value = tmp_path
         # No screenshot files created in tmp_path
-        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
+        with pytest.raises(SystemExit, match="1"):
+            capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
 
 
 def test_capture_stlite_preview_gif_creation_fails(tmp_path) -> None:
@@ -417,11 +415,11 @@ def test_capture_stlite_preview_gif_creation_fails(tmp_path) -> None:
     with (
         patch("pyvista_js._cli._capture_stlite_screenshots") as mock_capture,
         patch("pyvista_js._cli._create_gif", return_value=False),
-        pytest.raises(SystemExit, match="1"),
     ):
         mock_capture.return_value = tmp_path
         (tmp_path / "screenshot_01.png").write_bytes(b"fake")
-        capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
+        with pytest.raises(SystemExit, match="1"):
+            capture_stlite_preview(output=tmp_path / "out.gif", url="http://example.com", rotate=True)
 
 
 def test_capture_stlite_preview_rotate_default(tmp_path) -> None:
