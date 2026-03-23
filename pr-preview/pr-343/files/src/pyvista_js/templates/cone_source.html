@@ -1,0 +1,16 @@
+<script>
+{
+const centerX = {{ CENTER_X }};
+const centerY = {{ CENTER_Y }};
+const centerZ = {{ CENTER_Z }};
+const directionX = {{ DIRECTION_X }};
+const directionY = {{ DIRECTION_Y }};
+const directionZ = {{ DIRECTION_Z }};
+const height = {{ HEIGHT }};
+const radius = {{ RADIUS }};
+const resolution = {{ RESOLUTION }};
+const capping = {{ CAPPING }};
+{% include "cone_source.ts" %}
+var {{ SOURCE }} = _source;
+}
+</script>
