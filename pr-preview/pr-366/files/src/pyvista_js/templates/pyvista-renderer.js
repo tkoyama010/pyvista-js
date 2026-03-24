@@ -438,8 +438,13 @@
     filters.forEach(function (f) {
       if (f.type === "shrink") {
         current = applyShrinkFilter(current, f.shrinkFactor);
+      } else if (f.type === "tube") {
+        current = applyTubeFilter(current, f.radius, f.numberOfSides);
+      } else if (f.type === "clip") {
+        current = applyClipFilter(current, f.normal, f.origin, f.invert);
+      } else if (f.type === "contour") {
+        current = applyContourFilter(current, f.values, f.scalarName, f.scalarData);
       }
-      // clip, tube, contour can be added here in the future
     });
     return current;
   }
@@ -504,6 +509,202 @@
     var outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();
     outputPD.getPoints().setData(new Float32Array(newPoints), 3);
     outputPD.getPolys().setData(new Uint32Array(newPolys));
+    return { output: outputPD, isFilter: false };
+  }
+
+  function applyTubeFilter(sourceResult, radius, numberOfSides) {
+    var tubeFilter = vtk.Filters.General.vtkTubeFilter.newInstance({
+      radius: radius,
+      numberOfSides: numberOfSides,
+    });
+    if (sourceResult.isFilter) {
+      tubeFilter.setInputConnection(sourceResult.output.getOutputPort());
+    } else {
+      tubeFilter.setInputData(sourceResult.output);
+    }
+    return { output: tubeFilter, isFilter: true };
+  }
+
+  function applyClipFilter(sourceResult, normal, origin, invert) {
+    var plane = vtk.Common.DataModel.vtkPlane.newInstance();
+    plane.setOrigin(origin[0], origin[1], origin[2]);
+    plane.setNormal(normal[0], normal[1], normal[2]);
+
+    var clipper = vtk.Filters.General.vtkClipClosedSurface
+      ? vtk.Filters.General.vtkClipClosedSurface.newInstance()
+      : null;
+    if (clipper) {
+      clipper.setClippingPlanes([plane]);
+      if (sourceResult.isFilter) {
+        clipper.setInputConnection(sourceResult.output.getOutputPort());
+      } else {
+        clipper.setInputData(sourceResult.output);
+      }
+      return { output: clipper, isFilter: true };
+    }
+    // Fallback: manual clip by discarding cells on one side of the plane
+    return applyClipManual(sourceResult, normal, origin, invert);
+  }
+
+  function applyClipManual(sourceResult, normal, origin, invert) {
+    var inputPD;
+    if (sourceResult.isFilter) {
+      sourceResult.output.update();
+      inputPD = sourceResult.output.getOutputData();
+    } else {
+      inputPD = sourceResult.output;
+    }
+    var inPoints = inputPD.getPoints().getData();
+    var polys = inputPD.getPolys ? inputPD.getPolys().getData() : null;
+    if (!polys || polys.length === 0) {
+      return sourceResult;
+    }
+    var nx = normal[0],
+      ny = normal[1],
+      nz = normal[2];
+    var ox = origin[0],
+      oy = origin[1],
+      oz = origin[2];
+
+    // Keep cells whose centroid is on the correct side of the plane
+    var newPoints = [];
+    var newPolys = [];
+    var pointMap = {};
+    var nextIdx = 0;
+    var i = 0;
+    while (i < polys.length) {
+      var nVerts = polys[i];
+      i++;
+      // Compute centroid
+      var cx = 0,
+        cy = 0,
+        cz = 0;
+      var cellIndices = [];
+      for (var j = 0; j < nVerts; j++) {
+        var vi = polys[i + j];
+        cellIndices.push(vi);
+        cx += inPoints[vi * 3];
+        cy += inPoints[vi * 3 + 1];
+        cz += inPoints[vi * 3 + 2];
+      }
+      cx /= nVerts;
+      cy /= nVerts;
+      cz /= nVerts;
+      var dot = (cx - ox) * nx + (cy - oy) * ny + (cz - oz) * nz;
+      var keep = invert ? dot >= 0 : dot <= 0;
+      if (keep) {
+        newPolys.push(nVerts);
+        for (var k = 0; k < nVerts; k++) {
+          var pi = cellIndices[k];
+          if (pointMap[pi] === undefined) {
+            pointMap[pi] = nextIdx++;
+            newPoints.push(inPoints[pi * 3], inPoints[pi * 3 + 1], inPoints[pi * 3 + 2]);
+          }
+          newPolys.push(pointMap[pi]);
+        }
+      }
+      i += nVerts;
+    }
+
+    var outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();
+    outputPD.getPoints().setData(new Float32Array(newPoints), 3);
+    outputPD.getPolys().setData(new Uint32Array(newPolys));
+    return { output: outputPD, isFilter: false };
+  }
+
+  function applyContourFilter(sourceResult, values, scalarName, scalarData) {
+    // Inject scalar data, then use vtk.js contour filter if available
+    var inputPD;
+    if (sourceResult.isFilter) {
+      sourceResult.output.update();
+      inputPD = sourceResult.output.getOutputData();
+    } else {
+      inputPD = sourceResult.output;
+    }
+
+    // Add scalar array to polydata
+    var scalars = vtk.Common.Core.vtkDataArray.newInstance({
+      numberOfComponents: 1,
+      values: Float32Array.from(scalarData),
+      name: scalarName,
+    });
+    inputPD.getPointData().addArray(scalars);
+    inputPD.getPointData().setActiveScalars(scalarName);
+
+    // Try vtk.js built-in contour filter
+    if (vtk.Filters.General && vtk.Filters.General.vtkContourTriangulator) {
+      // vtk.js doesn't have a standard marching-cubes contour for polydata,
+      // fall back to manual isocontour extraction
+    }
+
+    // Manual contour: for each contour value, extract iso-lines from triangles
+    // using marching triangles (linear interpolation on edges)
+    return applyContourManual(inputPD, values, scalarName);
+  }
+
+  function applyContourManual(inputPD, values, scalarName) {
+    var inPoints = inputPD.getPoints().getData();
+    var polys = inputPD.getPolys ? inputPD.getPolys().getData() : null;
+    var scalarsArr = inputPD.getPointData().getArrayByName(scalarName);
+    if (!polys || !scalarsArr) {
+      return { output: inputPD, isFilter: false };
+    }
+    var scalarValues = scalarsArr.getData();
+
+    var outPoints = [];
+    var outPolys = [];
+    var pointIdx = 0;
+
+    // For each triangle, for each contour value, extract intersection edges
+    var i = 0;
+    while (i < polys.length) {
+      var nVerts = polys[i];
+      i++;
+      if (nVerts === 3) {
+        var i0 = polys[i],
+          i1 = polys[i + 1],
+          i2 = polys[i + 2];
+        var s0 = scalarValues[i0],
+          s1 = scalarValues[i1],
+          s2 = scalarValues[i2];
+        var tri = [
+          [i0, i1, s0, s1],
+          [i1, i2, s1, s2],
+          [i2, i0, s2, s0],
+        ];
+        values.forEach(function (val) {
+          var edgePoints = [];
+          tri.forEach(function (edge) {
+            var sa = edge[2],
+              sb = edge[3];
+            if ((sa <= val && val < sb) || (sb <= val && val < sa)) {
+              var t = (val - sa) / (sb - sa);
+              var ai = edge[0],
+                bi = edge[1];
+              edgePoints.push(
+                inPoints[ai * 3] + t * (inPoints[bi * 3] - inPoints[ai * 3]),
+                inPoints[ai * 3 + 1] + t * (inPoints[bi * 3 + 1] - inPoints[ai * 3 + 1]),
+                inPoints[ai * 3 + 2] + t * (inPoints[bi * 3 + 2] - inPoints[ai * 3 + 2])
+              );
+            }
+          });
+          // If we found exactly 2 intersection points, create a line segment
+          if (edgePoints.length === 6) {
+            outPoints.push(edgePoints[0], edgePoints[1], edgePoints[2]);
+            outPoints.push(edgePoints[3], edgePoints[4], edgePoints[5]);
+            outPolys.push(2, pointIdx, pointIdx + 1);
+            pointIdx += 2;
+          }
+        });
+      }
+      i += nVerts;
+    }
+
+    var outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();
+    if (outPoints.length > 0) {
+      outputPD.getPoints().setData(new Float32Array(outPoints), 3);
+      outputPD.getLines().setData(new Uint32Array(outPolys));
+    }
     return { output: outputPD, isFilter: false };
   }
 })();
