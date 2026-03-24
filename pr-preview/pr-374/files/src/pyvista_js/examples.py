@@ -251,7 +251,7 @@ def download_cubemap_park() -> CubeMap:
     >>> plotter.show()  # doctest: +SKIP
 
     """
-    base = "https://github.com/tkoyama010/pyvista-js/releases/download/pyvista-js-v0.11.0"
+    base = "https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/data/cubemap_park"
     return CubeMap(
         posx=f"{base}/posx.jpg",
         negx=f"{base}/negx.jpg",
