@@ -42,7 +42,7 @@ def extract_scene_data(html: str) -> dict:
 def extract_scene_data_from_js(js: str) -> dict:
     """Extract and parse the JSON scene data from generated JavaScript.
 
-    The JS contains ``sceneDataEl.textContent = '...';`` with the JSON string.
+    The JS contains ``var __pvjsSceneData = {...};`` with the JSON object.
 
     Parameters
     ----------
@@ -55,13 +55,11 @@ def extract_scene_data_from_js(js: str) -> dict:
         Parsed scene configuration dictionary.
 
     """
-    match = re.search(r'sceneDataEl\.textContent\s*=\s*(".*?")\s*;', js, re.DOTALL)
+    match = re.search(r'var __pvjsSceneData\s*=\s*(\{.*?\})\s*;', js, re.DOTALL)
     if match is None:
-        msg = "No sceneDataEl.textContent found in JS"
+        msg = "No __pvjsSceneData found in JS"
         raise ValueError(msg)
-    # The value is a JSON-encoded string (double-encoded), so decode twice
-    inner_json_str = json.loads(match.group(1))
-    return json.loads(inner_json_str)
+    return json.loads(match.group(1))
 
 
 if TYPE_CHECKING:

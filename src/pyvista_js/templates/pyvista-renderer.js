@@ -5,18 +5,17 @@
 (function () {
   "use strict";
 
-  // Find scene-data element: try unique ID first (JupyterLite path),
-  // then fall back to fixed "scene-data" ID (standalone HTML path).
-  var sceneDataEl = null;
-  var jsonScripts = document.querySelectorAll('script[type="application/json"]');
-  for (var i = jsonScripts.length - 1; i >= 0; i--) {
-    if (jsonScripts[i].id && jsonScripts[i].id.startsWith("scene-data")) {
-      sceneDataEl = jsonScripts[i];
-      break;
-    }
-  }
-  var sceneData = JSON.parse(sceneDataEl.textContent);
-  var container = document.getElementById(sceneData.containerId);
+  // In JupyterLite path, _generate_render_js() sets __pvjsSceneData and
+  // __pvjsContainer before calling this code. In standalone HTML path,
+  // read from the DOM.
+  var sceneData =
+    typeof __pvjsSceneData !== "undefined"
+      ? __pvjsSceneData
+      : JSON.parse(document.getElementById("scene-data").textContent);
+  var container =
+    typeof __pvjsContainer !== "undefined"
+      ? __pvjsContainer
+      : document.getElementById(sceneData.containerId);
   var bg = sceneData.background;
 
   var renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
