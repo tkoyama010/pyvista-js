@@ -1,3 +1,4 @@
 [codespell]
 # Ignore "socio-economic" in CODE_OF_CONDUCT.md as both hyphenated and non-hyphenated forms are valid
 ignore-words-list = socio-economic,normalY
+skip = package-lock.json

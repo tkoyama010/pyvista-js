@@ -72,6 +72,15 @@ jobs:
         ref: ${{ needs.release-please.outputs.tag_name }}
         persist-credentials: false
 
+    - name: Set up Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+      with:
+        node-version: '22'
+        cache: ''
+
+    - name: Build TypeScript renderer
+      run: npm ci && npm run build
+
     - name: Set up Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
       with:
