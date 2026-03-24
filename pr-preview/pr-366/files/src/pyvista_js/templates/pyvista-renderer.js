@@ -45,7 +45,8 @@
   window.interactor = interactor;
 
   // --- Lights ---
-  if (sceneData.lightingMode === null) {
+  if (sceneData.lightingMode === null && (!sceneData.lights || sceneData.lights.length === 0)) {
+    // lighting=None with no custom lights: disable all lighting
     renderer.removeAllLights();
     renderer.setAutomaticLightCreation(false);
   } else {
