@@ -1129,6 +1129,7 @@ class _UnstructuredGridMesh(PolyData):
             _VTU_READER_SOURCE_TEMPLATE,
             SOURCE=f"source{idx}",
             VTU_READER=f"vtuReader{idx}",
+            SURFACE_FILTER=f"surfaceFilter{idx}",
             VTU_BASE64=escaped,
         )
 
