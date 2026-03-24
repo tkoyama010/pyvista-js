@@ -139,25 +139,27 @@ function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
   }
 }
 
-/** Maps reader source type names to their vtk.js factory and parse method. */
-const readerMap: ReaderFactoryMap = {
-  plyReader: {
-    factory: vtk.IO.Geometry.vtkPLYReader,
-    parseMethod: "parseAsArrayBuffer",
-  },
-  stlReader: {
-    factory: vtk.IO.Geometry.vtkSTLReader,
-    parseMethod: "parseAsArrayBuffer",
-  },
-  objReader: {
-    factory: vtk.IO.Misc.vtkOBJReader,
-    parseMethod: "parseAsText",
-  },
-  vtkReader: {
-    factory: vtk.IO.Legacy.vtkPolyDataReader,
-    parseMethod: "parseAsText",
-  },
-};
+/** Lazily build the reader factory map to avoid accessing vtk.IO at module load time. */
+function getReaderMap(): ReaderFactoryMap {
+  return {
+    plyReader: {
+      factory: vtk.IO.Geometry.vtkPLYReader,
+      parseMethod: "parseAsArrayBuffer",
+    },
+    stlReader: {
+      factory: vtk.IO.Geometry.vtkSTLReader,
+      parseMethod: "parseAsArrayBuffer",
+    },
+    objReader: {
+      factory: vtk.IO.Misc.vtkOBJReader,
+      parseMethod: "parseAsText",
+    },
+    vtkReader: {
+      factory: vtk.IO.Legacy.vtkPolyDataReader,
+      parseMethod: "parseAsText",
+    },
+  };
+}
 
 /** Dispatch to the appropriate source factory based on `cfg.type`. */
 function createSource(cfg: SourceConfig): SourceResult | undefined {
@@ -334,7 +336,7 @@ function createPointsSource(cfg: SourceConfig): SourceResult {
 
 /** Decode base64-encoded file data and parse it with the appropriate vtk.js reader. */
 function createReaderSource(cfg: SourceConfig): SourceResult {
-  const entry = readerMap[cfg.type] as
+  const entry = getReaderMap()[cfg.type] as
     | { factory: VtkReaderFactory; parseMethod: "parseAsArrayBuffer" | "parseAsText" }
     | undefined;
   if (!entry) {
