@@ -46,8 +46,9 @@ jobs:
       - name: Upload GIFs to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
         run: |
-          gh release upload "${{ needs.release-please.outputs.tag_name }}" \
+          gh release upload "$TAG_NAME" \
             assets/preview.gif \
             assets/stlite-preview.gif \
             --clobber
