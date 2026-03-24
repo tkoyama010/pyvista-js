@@ -117,7 +117,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 [BSD 3-Clause](LICENSE) © Tetsuo Koyama
 
-[jupyterlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif
-[stlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif
+[jupyterlite-preview]: https://github.com/tkoyama010/pyvista-js/releases/latest/download/preview.gif
+[stlite-preview]: https://github.com/tkoyama010/pyvista-js/releases/latest/download/stlite-preview.gif
 [try it with jupyterlite]: https://tkoyama010.github.io/pyvista-js/
 [try it with stlite]: https://tkoyama010.github.io/pyvista-js/stlite
