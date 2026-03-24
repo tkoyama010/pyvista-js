@@ -303,6 +303,11 @@
       injectTCoords(pd, cfg.source.tCoords);
     }
 
+    // Apply filters (shrink, clip, tube, contour)
+    if (cfg.source.filters && cfg.source.filters.length > 0) {
+      sourceResult = applyFilters(sourceResult, cfg.source.filters);
+    }
+
     // Normals
     var mapperInput = setupNormals(sourceResult, cfg.normals);
 
@@ -426,5 +431,79 @@
     orientationWidget.setViewportSize(0.15);
     orientationWidget.setMinPixelSize(100);
     orientationWidget.setMaxPixelSize(300);
+  }
+
+  function applyFilters(sourceResult, filters) {
+    var current = sourceResult;
+    filters.forEach(function (f) {
+      if (f.type === "shrink") {
+        current = applyShrinkFilter(current, f.shrinkFactor);
+      }
+      // clip, tube, contour can be added here in the future
+    });
+    return current;
+  }
+
+  function applyShrinkFilter(sourceResult, shrinkFactor) {
+    // vtk.js does not have vtkShrinkFilter, so implement manually:
+    // For each cell, move vertices toward the cell centroid.
+    var inputPD;
+    if (sourceResult.isFilter) {
+      sourceResult.output.update();
+      inputPD = sourceResult.output.getOutputData();
+    } else {
+      inputPD = sourceResult.output;
+    }
+    var inPoints = inputPD.getPoints().getData();
+    var polys = inputPD.getPolys ? inputPD.getPolys().getData() : null;
+    if (!polys || polys.length === 0) {
+      return sourceResult;
+    }
+
+    // Build new points: each cell gets its own copy of vertices
+    var newPoints = [];
+    var newPolys = [];
+    var offset = 0;
+    var i = 0;
+    while (i < polys.length) {
+      var nVerts = polys[i];
+      i++;
+      // Compute centroid
+      var cx = 0,
+        cy = 0,
+        cz = 0;
+      var indices = [];
+      for (var j = 0; j < nVerts; j++) {
+        var vi = polys[i + j];
+        indices.push(vi);
+        cx += inPoints[vi * 3];
+        cy += inPoints[vi * 3 + 1];
+        cz += inPoints[vi * 3 + 2];
+      }
+      cx /= nVerts;
+      cy /= nVerts;
+      cz /= nVerts;
+      // Shrink vertices toward centroid
+      newPolys.push(nVerts);
+      for (var k = 0; k < nVerts; k++) {
+        var pi = indices[k];
+        var px = inPoints[pi * 3];
+        var py = inPoints[pi * 3 + 1];
+        var pz = inPoints[pi * 3 + 2];
+        newPoints.push(
+          cx + (px - cx) * shrinkFactor,
+          cy + (py - cy) * shrinkFactor,
+          cz + (pz - cz) * shrinkFactor
+        );
+        newPolys.push(offset + k);
+      }
+      offset += nVerts;
+      i += nVerts;
+    }
+
+    var outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();
+    outputPD.getPoints().setData(new Float32Array(newPoints), 3);
+    outputPD.getPolys().setData(new Uint32Array(newPolys));
+    return { output: outputPD, isFilter: false };
   }
 })();
