@@ -575,6 +575,7 @@ class TestUnstructuredGridReader:
         ("method", "expected"),
         [
             ("generate_vtk_js_source", "vtkXMLUnstructuredGridReader"),
+            ("generate_vtk_js_source", "vtkGeometryFilter"),
             ("generate_vtk_js_source", "parseAsArrayBuffer"),
             ("generate_vtk_js_source", "source0"),
             ("get_mapper_setup", "setInputData"),

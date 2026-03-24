@@ -1,6 +1,9 @@
 <script>
 const {{ VTU_READER }} = vtk.IO.XML.vtkXMLUnstructuredGridReader.newInstance(); const
 vtuBytes = Uint8Array.from(atob({{ VTU_BASE64 }}), c => c.charCodeAt(0));
-{{ VTU_READER }}.parseAsArrayBuffer(vtuBytes.buffer); const {{ SOURCE }} =
-{{ VTU_READER }}.getOutputData(0);
+{{ VTU_READER }}.parseAsArrayBuffer(vtuBytes.buffer);
+const {{ SURFACE_FILTER }} = vtk.Filters.Geometry.vtkGeometryFilter.newInstance();
+{{ SURFACE_FILTER }}.setInputData({{ VTU_READER }}.getOutputData(0));
+{{ SURFACE_FILTER }}.update();
+const {{ SOURCE }} = {{ SURFACE_FILTER }}.getOutputData(0);
 </script>
