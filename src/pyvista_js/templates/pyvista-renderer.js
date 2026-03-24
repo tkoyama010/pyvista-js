@@ -105,7 +105,7 @@
       light.setAttenuationValues(
         cfg.attenuationValues[0],
         cfg.attenuationValues[1],
-        cfg.attenuationValues[2]
+        cfg.attenuationValues[2],
       );
       ren.addLight(light);
     });
@@ -433,7 +433,7 @@
     });
     orientationWidget.setEnabled(true);
     orientationWidget.setViewportCorner(
-      vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT
+      vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
     );
     orientationWidget.setViewportSize(0.15);
     orientationWidget.setMinPixelSize(100);
@@ -525,7 +525,7 @@
         newPoints.push(
           cx + (px - cx) * shrinkFactor,
           cy + (py - cy) * shrinkFactor,
-          cz + (pz - cz) * shrinkFactor
+          cz + (pz - cz) * shrinkFactor,
         );
         newPolys.push(offset + k);
       }
@@ -711,7 +711,7 @@
               edgePoints.push(
                 inPoints[ai * 3] + t * (inPoints[bi * 3] - inPoints[ai * 3]),
                 inPoints[ai * 3 + 1] + t * (inPoints[bi * 3 + 1] - inPoints[ai * 3 + 1]),
-                inPoints[ai * 3 + 2] + t * (inPoints[bi * 3 + 2] - inPoints[ai * 3 + 2])
+                inPoints[ai * 3 + 2] + t * (inPoints[bi * 3 + 2] - inPoints[ai * 3 + 2]),
               );
             }
           });
