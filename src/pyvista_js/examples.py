@@ -124,7 +124,7 @@ def _download_and_extract_zip(filename: str) -> Path:
             urllib.request.urlretrieve(url, local_zip)  # noqa: S310
         with zipfile.ZipFile(io.BytesIO(local_zip.read_bytes())) as zf:
             extract_dir.mkdir(parents=True, exist_ok=True)
-            zf.extractall(extract_dir)  # noqa: S202
+            zf.extractall(extract_dir)
     return extract_dir
 
 
