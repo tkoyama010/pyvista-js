@@ -122,6 +122,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.examples.download_bunny
    pyvista_js.examples.download_lucy
    pyvista_js.examples.download_cad_model
+   pyvista_js.examples.download_cubemap_park
    pyvista_js.examples.download_damaged_helmet
    pyvista_js.examples.download_masonry_texture
    pyvista_js.examples.download_sky_box_cube_map
