@@ -9,24 +9,12 @@ from __future__ import annotations
 import base64
 import json
 import logging
-import re
 import struct
 from pathlib import Path
 
 import numpy as np
-from jinja2 import Environment, StrictUndefined
 
 from .mesh import PolyData
-
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
-
-
-def _render(template_str: str, **kwargs: object) -> str:
-    rendered = _jinja_env.from_string(template_str).render(**kwargs)
-    # Strip <script> wrapper added for prettier formatting
-    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
-
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +24,6 @@ _MIN_VTK_LINES = 4
 
 # Number of coordinate components per vertex (x, y, z)
 _N_COORDS = 3
-
-# Load JavaScript templates
-_TEMPLATES_DIR = Path(__file__).parent / "templates"
-_VTK_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtk_reader_source.html").read_text()
-_PLY_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "ply_reader_source.html").read_text()
-_OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_text()
-_STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
-_GLTF_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_reader_source.html").read_text()
-_GLTF_URL_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_url_source.html").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -63,20 +42,6 @@ class _OBJMesh(PolyData):
         """
         super().__init__(points)
         self._obj_base64 = obj_base64
-
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkOBJReader."""
-        escaped = json.dumps(self._obj_base64)
-        return _render(
-            _OBJ_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            OBJ_READER=f"objReader{idx}",
-            OBJ_BASE64=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
 
 
 class _GLTFMesh(PolyData):
@@ -101,38 +66,6 @@ class _GLTFMesh(PolyData):
         self._gltf_base64 = gltf_base64
         self._gltf_url = gltf_url
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using model-viewer web component."""
-        if self._gltf_url is not None:
-            return _render(_GLTF_URL_SOURCE_TEMPLATE, INDEX=idx, GLTF_URL=self._gltf_url)
-        escaped = json.dumps(self._gltf_base64)
-        return _render(_GLTF_READER_SOURCE_TEMPLATE, INDEX=idx, GLTF_BASE64=escaped)
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
-
-    def generate_full_actor_code(self, idx: int, _actor_info: dict) -> str:
-        """Generate complete vtk.js actor code for a glTF mesh.
-
-        vtkGLTFImporter adds actors directly via importActors(renderer),
-        bypassing the standard mapper/actor pipeline used by other readers.
-
-        Parameters
-        ----------
-        idx : int
-            Actor index for unique variable names.
-        actor_info : dict
-            Actor info dict (unused; GLTF materials come from the file).
-
-        Returns
-        -------
-        str
-            Self-contained JavaScript that imports the glTF into the scene.
-
-        """
-        return self.generate_vtk_js_source(idx)
-
 
 class _PolyDataMesh(PolyData):
     """Mesh loaded from a legacy VTK file, rendered via vtk.js reader."""
@@ -150,20 +83,6 @@ class _PolyDataMesh(PolyData):
         """
         super().__init__(points)
         self._vtk_text = vtk_text
-
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkPolyDataReader."""
-        escaped = json.dumps(self._vtk_text)
-        return _render(
-            _VTK_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            VTK_READER=f"reader{idx}",
-            VTK_TEXT=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
 
 
 class _PLYMesh(PolyData):
@@ -183,20 +102,6 @@ class _PLYMesh(PolyData):
         super().__init__(points)
         self._ply_base64 = ply_base64
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkPLYReader."""
-        escaped = json.dumps(self._ply_base64)
-        return _render(
-            _PLY_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            PLY_READER=f"plyReader{idx}",
-            PLY_BASE64=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
-
 
 class _STLMesh(PolyData):
     """Mesh loaded from an STL file, rendered via vtk.js STL reader."""
@@ -214,20 +119,6 @@ class _STLMesh(PolyData):
         """
         super().__init__(points)
         self._stl_base64 = stl_base64
-
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkSTLReader."""
-        escaped = json.dumps(self._stl_base64)
-        return _render(
-            _STL_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            STL_READER=f"stlReader{idx}",
-            STL_BASE64=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
 
 
 class PolyDataReader:
