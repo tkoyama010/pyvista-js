@@ -755,6 +755,17 @@ class _BaseHTMLRenderer:
             "lightingMode": self.lighting,
         }
 
+        if self._environment_texture_cubemap is not None:
+            scene["environmentTexture"] = {
+                "type": "cubemap",
+                "faceUrls": self._environment_texture_cubemap.face_urls,
+            }
+        elif self._environment_texture_url is not None:
+            scene["environmentTexture"] = {
+                "type": "url",
+                "url": self._environment_texture_url,
+            }
+
         # Validate JSON serializable
         _json.dumps(scene)
 
