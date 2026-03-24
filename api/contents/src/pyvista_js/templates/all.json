@@ -2,11 +2,11 @@
   "content": [
     {
       "content": null,
-      "created": "2026-03-24T12:48:51.056205Z",
+      "created": "2026-03-24T13:49:02.845010Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-03-24T12:48:49.534803Z",
+      "last_modified": "2026-03-24T13:49:01.325299Z",
       "mimetype": "text/html",
       "name": "streamlit.html",
       "path": "src/pyvista_js/templates/streamlit.html",
@@ -16,11 +16,11 @@
     },
     {
       "content": null,
-      "created": "2026-03-24T12:48:51.055929Z",
+      "created": "2026-03-24T13:49:02.844731Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2026-03-24T12:48:49.534753Z",
+      "last_modified": "2026-03-24T13:49:01.325256Z",
       "mimetype": "text/html",
       "name": "renderer.html",
       "path": "src/pyvista_js/templates/renderer.html",
@@ -29,11 +29,11 @@
       "writable": true
     }
   ],
-  "created": "2026-03-24T12:48:51.056205Z",
+  "created": "2026-03-24T13:49:02.845010Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2026-03-24T12:48:51.056205Z",
+  "last_modified": "2026-03-24T13:49:02.845010Z",
   "mimetype": null,
   "name": "templates",
   "path": "src/pyvista_js/templates",
