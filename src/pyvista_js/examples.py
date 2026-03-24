@@ -6,10 +6,8 @@ Provides download helpers for standard datasets, mirroring the
 
 from __future__ import annotations
 
-import io
 import sys
 import urllib.request
-import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -96,36 +94,6 @@ def _fetch_with_js(url: str, local: Path) -> None:
         raise OSError(msg)
     js_array = Uint8Array.new(req.response)
     local.write_bytes(js_array.to_py().tobytes())
-
-
-def _download_and_extract_zip(filename: str) -> Path:
-    """Download a ZIP file from the PyVista vtk-data repository and extract it.
-
-    Parameters
-    ----------
-    filename : str
-        Filename (including subdirectory) within the vtk-data ``Data/`` directory.
-        For example, ``cubemap_park/cubemap_park.zip``.
-
-    Returns
-    -------
-    Path
-        Local path to the extracted directory.
-
-    """
-    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    local_zip = _CACHE_DIR / filename.replace("/", "_")
-    extract_dir = local_zip.with_suffix(".unzip")
-    if not extract_dir.exists():
-        url = f"{_PYVISTA_DATA_BASE}/{filename}"
-        if "pyodide" in sys.modules:
-            _fetch_with_js(url, local_zip)
-        else:
-            urllib.request.urlretrieve(url, local_zip)  # noqa: S310
-        with zipfile.ZipFile(io.BytesIO(local_zip.read_bytes())) as zf:
-            extract_dir.mkdir(parents=True, exist_ok=True)
-            zf.extractall(extract_dir)
-    return extract_dir
 
 
 class CubeMap:
@@ -285,14 +253,14 @@ def download_cubemap_park() -> CubeMap:
     >>> pl.show()  # doctest: +SKIP
 
     """
-    extract_dir = _download_and_extract_zip("cubemap_park/cubemap_park.zip")
+    base = "https://github.com/tkoyama010/pyvista-js/releases/download/pyvista-js-v0.11.0"
     return CubeMap(
-        posx=str(extract_dir / "posx.jpg"),
-        negx=str(extract_dir / "negx.jpg"),
-        posy=str(extract_dir / "posy.jpg"),
-        negy=str(extract_dir / "negy.jpg"),
-        posz=str(extract_dir / "posz.jpg"),
-        negz=str(extract_dir / "negz.jpg"),
+        posx=f"{base}/posx.jpg",
+        negx=f"{base}/negx.jpg",
+        posy=f"{base}/posy.jpg",
+        negy=f"{base}/negy.jpg",
+        posz=f"{base}/posz.jpg",
+        negz=f"{base}/negz.jpg",
     )
 
 
