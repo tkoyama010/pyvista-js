@@ -1382,12 +1382,12 @@ class _BaseHTMLRenderer:
     def _build_actor_data(self, actor_info: dict[str, object]) -> dict[str, object]:
         """Build JSON-serializable actor configuration."""
         mesh = actor_info["mesh"]
-        color = actor_info.get("color") or (0.5, 0.5, 0.5)
-        opacity = actor_info.get("opacity", 1.0)
-        smooth_shading = actor_info.get("smooth_shading", True)
-        style = actor_info.get("style", "surface")
+        color: tuple[float, ...] = actor_info.get("color") or (0.5, 0.5, 0.5)  # type: ignore[assignment]
+        opacity = float(actor_info.get("opacity", 1.0))  # type: ignore[arg-type]
+        smooth_shading = bool(actor_info.get("smooth_shading", True))
+        style = str(actor_info.get("style", "surface"))
 
-        source_data = mesh.to_scene_data()
+        source_data = mesh.to_scene_data()  # type: ignore[attr-defined]
 
         # Normals configuration
         normals_data = None
@@ -1399,16 +1399,16 @@ class _BaseHTMLRenderer:
 
         # Texture
         texture_data = None
-        texture = actor_info.get("texture")
+        texture: object = actor_info.get("texture")
         if texture is not None:
-            texture_data = {"url": texture.url}
+            texture_data = {"url": getattr(texture, "url", "")}
 
         # Scalars
         scalars_data = None
         scalars_name = actor_info.get("scalars")
         if scalars_name is not None:
             cmap = actor_info.get("cmap", "viridis")
-            scalars_array = mesh.point_data[scalars_name]
+            scalars_array = mesh.point_data[str(scalars_name)]  # type: ignore[attr-defined]
             scalars_data = {
                 "arrayName": scalars_name,
                 "cmap": cmap,
@@ -1432,7 +1432,7 @@ class _BaseHTMLRenderer:
 
                 edge_color = list(_color_name_to_rgb(edge_color))
             elif edge_color is not None:
-                edge_color = list(edge_color)
+                edge_color = list(edge_color)  # type: ignore[call-overload]
             else:
                 edge_color = [0, 0, 0]
             edge_data = {"color": edge_color}
@@ -1455,7 +1455,7 @@ class _BaseHTMLRenderer:
         }
 
         if actor_type == "points":
-            point_size = float(actor_info.get("point_size", 5.0))
+            point_size = float(actor_info.get("point_size", 5.0))  # type: ignore[arg-type]
             as_spheres = bool(
                 actor_info.get("render_points_as_spheres", False),
             )

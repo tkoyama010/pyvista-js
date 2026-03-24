@@ -513,7 +513,8 @@ class PolyData:
             }
         )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append(
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
             {
                 "type": "shrink",
                 "shrinkFactor": shrink_factor,
@@ -662,7 +663,8 @@ class PolyData:
             }
         )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append(
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
             {
                 "type": "clip",
                 "normal": list(normal_vec),
@@ -762,7 +764,8 @@ class PolyData:
             }
         )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append(
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
             {
                 "type": "tube",
                 "radius": radius,
@@ -871,7 +874,8 @@ class PolyData:
             }
         )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append(
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
             {
                 "type": "contour",
                 "values": contour_values,
