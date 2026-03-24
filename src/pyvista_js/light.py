@@ -76,8 +76,10 @@ class Light:
     always emanates from the view point:
 
     >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_bunny()
     >>> plotter = pv.Plotter()
-    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
+    >>> _ = plotter.add_mesh(mesh, color='lightblue')
     >>> light = pv.Light(light_type='Headlight')
     >>> # these don't do anything for a headlight:
     >>> light.position = (1, 2, 3)
@@ -89,7 +91,7 @@ class Light:
     can occupy any fixed relative position with respect to the camera:
 
     >>> plotter = pv.Plotter()
-    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
+    >>> _ = plotter.add_mesh(mesh, color='lightblue')
     >>> # a light that always shines from the right of the camera
     >>> light = pv.Light(position=(1, 0, 0), light_type='CameraLight')
     >>> plotter.add_light(light)
@@ -99,8 +101,8 @@ class Light:
     and focal point are interpreted as global coordinates:
 
     >>> plotter = pv.Plotter()
-    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
-    >>> # a light that always shines on the left side of the object
+    >>> _ = plotter.add_mesh(mesh, color='lightblue')
+    >>> # a light that always shines on the left side of the bunny
     >>> light = pv.Light(position=(0, 1, 0), light_type='SceneLight')
     >>> plotter.add_light(light)
     >>> plotter.show()  # doctest: +SKIP
