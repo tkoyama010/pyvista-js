@@ -77,6 +77,7 @@ class Light:
 
     >>> import pyvista_js as pv
     >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
     >>> light = pv.Light(light_type='Headlight')
     >>> # these don't do anything for a headlight:
     >>> light.position = (1, 2, 3)
@@ -88,6 +89,7 @@ class Light:
     can occupy any fixed relative position with respect to the camera:
 
     >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
     >>> # a light that always shines from the right of the camera
     >>> light = pv.Light(position=(1, 0, 0), light_type='CameraLight')
     >>> plotter.add_light(light)
@@ -97,6 +99,7 @@ class Light:
     and focal point are interpreted as global coordinates:
 
     >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
     >>> # a light that always shines on the left side of the object
     >>> light = pv.Light(position=(0, 1, 0), light_type='SceneLight')
     >>> plotter.add_light(light)
