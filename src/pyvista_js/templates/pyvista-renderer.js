@@ -70,6 +70,11 @@
     setupAxes(interactor);
   }
 
+  // --- Environment Texture (Cubemap) ---
+  if (sceneData.environmentTexture && sceneData.environmentTexture.type === "cubemap") {
+    setupCubemapEnvironment(sceneData.environmentTexture.faceUrls, renderer, renderWindow);
+  }
+
   // --- Camera ---
   renderer.resetCamera();
   if (sceneData.camera) {
@@ -453,6 +458,46 @@
       ren.resetCamera();
       ren.resetCameraClippingRange();
     }
+  }
+
+  function setupCubemapEnvironment(faceUrls, ren, renWin) {
+    // Load 6 cubemap face images and composite into a single canvas texture.
+    // Uses fetch+Blob to handle CORS redirects (e.g. GitHub Releases).
+    var promises = faceUrls.map(function (url) {
+      return fetch(url)
+        .then(function (resp) {
+          return resp.blob();
+        })
+        .then(function (blob) {
+          return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () {
+              URL.revokeObjectURL(img.src);
+              resolve(img);
+            };
+            img.onerror = function () {
+              reject(new Error("Failed to decode cubemap face: " + url));
+            };
+            img.src = URL.createObjectURL(blob);
+          });
+        });
+    });
+    Promise.all(promises).then(function (images) {
+      var size = images[0].width;
+      var canvas = document.createElement("canvas");
+      canvas.width = size * 6;
+      canvas.height = size;
+      var ctx = canvas.getContext("2d");
+      images.forEach(function (img, i) {
+        ctx.drawImage(img, i * size, 0, size, size);
+      });
+      var envTexture = vtk.Rendering.Core.vtkTexture.newInstance();
+      envTexture.setInterpolate(true);
+      envTexture.setCanvas(canvas);
+      ren.setEnvironmentTexture(envTexture);
+      ren.setUseImageBasedLighting(true);
+      renWin.render();
+    });
   }
 
   function setupAxes(interactorObj) {

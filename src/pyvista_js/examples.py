@@ -223,6 +223,45 @@ def download_sky_box_cube_map() -> CubeMap:
     )
 
 
+def download_cubemap_park() -> CubeMap:
+    """Download a cubemap of a park.
+
+    Downloaded from http://www.humus.name/index.php?page=Textures
+    by David Eck, and converted to a smaller 512x512 size for use
+    with WebGL in his free, on-line textbook at
+    http://math.hws.edu/graphicsbook
+
+    This work is licensed under a Creative Commons Attribution 3.0 Unported
+    License.
+
+    Returns
+    -------
+    CubeMap
+        Cubemap containing the six park face image URLs.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv  # doctest: +SKIP
+    >>> from pyvista_js import examples  # doctest: +SKIP
+    >>> cubemap = examples.download_cubemap_park()  # doctest: +SKIP
+    >>> plotter = pv.Plotter()  # doctest: +SKIP
+    >>> plotter.set_environment_texture(cubemap)  # doctest: +SKIP
+    >>> mesh = pv.Sphere()  # doctest: +SKIP
+    >>> _ = plotter.add_mesh(mesh, pbr=True, roughness=0.1, metallic=0.5)  # doctest: +SKIP
+    >>> plotter.show()  # doctest: +SKIP
+
+    """
+    base = "https://raw.githubusercontent.com/tkoyama010/pyvista-js/4579dabaa36bc6834fdecce9d96ec2c65eae08ed/data/cubemap_park"
+    return CubeMap(
+        posx=f"{base}/posx.jpg",
+        negx=f"{base}/negx.jpg",
+        posy=f"{base}/posy.jpg",
+        negy=f"{base}/negy.jpg",
+        posz=f"{base}/posz.jpg",
+        negz=f"{base}/negz.jpg",
+    )
+
+
 def download_masonry_texture() -> Texture:
     """Download the masonry texture dataset.
 
