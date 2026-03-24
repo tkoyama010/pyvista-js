@@ -62,9 +62,6 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Verify built JS is up-to-date
-      run: git diff --exit-code src/pyvista_js/templates/pyvista-renderer.js
-
   test:
     runs-on: ${{ matrix.os }}
     permissions:

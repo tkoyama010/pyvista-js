@@ -187,7 +187,7 @@ npm run watch
 npm run typecheck
 ```
 
-The built `pyvista-renderer.js` is committed to git so that Python-only developers do not need Node.js installed. After editing TypeScript, always run `npm run build` and commit the updated JS file.
+The built `pyvista-renderer.js` is not committed to git. It is generated automatically during `python -m build` via `hatch-build-scripts`. For local development, run `npm run build` after editing TypeScript files.
 
 ## Testing
 
