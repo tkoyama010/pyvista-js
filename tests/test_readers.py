@@ -574,9 +574,8 @@ class TestUnstructuredGridReader:
     @pytest.mark.parametrize(
         ("method", "expected"),
         [
-            ("generate_vtk_js_source", "vtkXMLUnstructuredGridReader"),
-            ("generate_vtk_js_source", "vtkGeometryFilter"),
-            ("generate_vtk_js_source", "parseAsArrayBuffer"),
+            ("generate_vtk_js_source", "vtkPolyDataReader"),
+            ("generate_vtk_js_source", "parseAsText"),
             ("generate_vtk_js_source", "source0"),
             ("get_mapper_setup", "setInputData"),
         ],
@@ -675,6 +674,6 @@ class TestLoadHexbeam:
         """Test that load_hexbeam mesh generates valid vtk.js source."""
         mesh = examples.load_hexbeam()
         source = mesh.generate_vtk_js_source(0)
-        assert "vtkXMLUnstructuredGridReader" in source
-        assert "parseAsArrayBuffer" in source
+        assert "vtkPolyDataReader" in source
+        assert "parseAsText" in source
         assert "source0" in source
