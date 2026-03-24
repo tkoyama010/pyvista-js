@@ -98,6 +98,7 @@ from .examples import CubeMap
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
 _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
 _RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
+_RENDERER_JS = (_TEMPLATES_DIR / "pyvista-renderer.js").read_text()
 _ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
 _SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
 _POINTS_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "points_source.html").read_text()
@@ -114,6 +115,7 @@ def _html_to_pure_js(html: str) -> str:
     ``display(Javascript(...))`` in JupyterLite/replite environments.
     """
     import json as _json  # noqa: PLC0415
+    import re  # noqa: PLC0415
 
     def _div_to_js(m: re.Match) -> str:
         attrs_html = m.group(1)
@@ -1341,32 +1343,191 @@ class _BaseHTMLRenderer:
             )
         return ""
 
+    def _build_lights_data(self) -> list[dict[str, object]]:
+        """Build JSON-serializable light configurations."""
+        if not self.lights:
+            if self.lighting is None:
+                return []
+            return [{
+                "type": "scene",
+                "positional": False,
+                "intensity": 1.0,
+                "position": [1, 1, 1],
+                "focalPoint": [0, 0, 0],
+                "color": [1, 1, 1],
+                "coneAngle": 30,
+                "coneFalloff": 0,
+                "attenuationValues": [1, 0, 0],
+            }]
+        lights_data: list[dict[str, object]] = []
+        for light in self.lights:
+            light_type = light.light_type.lower().replace("light", "")
+            lights_data.append({
+                "type": light_type,
+                "positional": light.positional,
+                "intensity": light.intensity,
+                "position": list(light.position),
+                "focalPoint": list(light.focal_point),
+                "color": list(light.color),
+                "coneAngle": light.cone_angle,
+                "coneFalloff": light.cone_falloff,
+                "attenuationValues": list(light.attenuation_values),
+            })
+        return lights_data
+
+    def _build_actor_data(self, actor_info: dict[str, object]) -> dict[str, object]:
+        """Build JSON-serializable actor configuration."""
+        mesh = actor_info["mesh"]
+        color = actor_info.get("color") or (0.5, 0.5, 0.5)
+        opacity = actor_info.get("opacity", 1.0)
+        smooth_shading = actor_info.get("smooth_shading", True)
+        style = actor_info.get("style", "surface")
+
+        source_data = mesh.to_scene_data()
+
+        # Normals configuration
+        normals_data = None
+        if smooth_shading or source_data.get("type") == "sphere":
+            normals_data = {
+                "computePointNormals": bool(smooth_shading),
+                "computeCellNormals": not bool(smooth_shading),
+            }
+
+        # Texture
+        texture_data = None
+        texture = actor_info.get("texture")
+        if texture is not None:
+            texture_data = {"url": texture.url}
+
+        # Scalars
+        scalars_data = None
+        scalars_name = actor_info.get("scalars")
+        if scalars_name is not None:
+            cmap = actor_info.get("cmap", "viridis")
+            scalars_array = mesh.point_data[scalars_name]
+            scalars_data = {
+                "arrayName": scalars_name,
+                "cmap": cmap,
+                "range": [float(scalars_array.min()), float(scalars_array.max())],
+            }
+
+        # PBR
+        pbr_data = None
+        if actor_info.get("pbr"):
+            pbr_data = {
+                "metallic": actor_info.get("metallic", 0.0),
+                "roughness": actor_info.get("roughness", 0.5),
+            }
+
+        # Edge
+        edge_data = None
+        if actor_info.get("show_edges"):
+            edge_color = actor_info.get("edge_color")
+            if isinstance(edge_color, str):
+                from pyvista_js.light import _color_name_to_rgb  # noqa: PLC0415
+
+                edge_color = list(_color_name_to_rgb(edge_color))
+            elif edge_color is not None:
+                edge_color = list(edge_color)
+            else:
+                edge_color = [0, 0, 0]
+            edge_data = {"color": edge_color}
+
+        actor_type = actor_info.get("type", "mesh")
+
+        result: dict[str, object] = {
+            "source": source_data,
+            "normals": normals_data,
+            "mapper": {"class": "vtkMapper"},
+            "color": list(color),
+            "opacity": float(opacity),
+            "style": style,
+            "shading": "gouraud" if smooth_shading else "flat",
+            "edges": edge_data,
+            "pbr": pbr_data,
+            "texture": texture_data,
+            "scalars": scalars_data,
+            "actorType": actor_type,
+        }
+
+        if actor_type == "points":
+            point_size = float(actor_info.get("point_size", 5.0))
+            as_spheres = bool(
+                actor_info.get("render_points_as_spheres", False),
+            )
+            result["pointSize"] = point_size
+            result["renderPointsAsSpheres"] = as_spheres
+            if as_spheres:
+                result["mapper"] = {"class": "vtkSphereMapper"}
+            else:
+                result["mapper"] = {"class": "vtkMapper"}
+
+        return result
+
+    def _build_camera_data(self) -> dict[str, object] | None:
+        """Build JSON-serializable camera configuration."""
+        if self._camera is not None:
+            cam = self._camera
+            data: dict[str, object] = {
+                "position": list(cam.position),
+                "focalPoint": list(cam.focal_point),
+                "viewUp": list(cam.view_up),
+            }
+            if cam.view_angle is not None:
+                data["viewAngle"] = cam.view_angle
+            if cam.clipping_range is not None:
+                data["clippingRange"] = list(cam.clipping_range)
+            if cam.parallel_projection:
+                data["parallelProjection"] = True
+            return data
+        if self._view_vector is not None:
+            return {
+                "viewVector": list(self._view_vector),
+                "viewUp": list(self._view_up),
+            }
+        return None
+
+    def _build_scene_data(self) -> dict[str, object]:
+        """Build a complete JSON-serializable scene description.
+
+        Returns
+        -------
+        dict
+            Scene configuration including container, background, lights,
+            actors, camera, etc.
+
+        """
+        import json as _json  # noqa: PLC0415
+
+        actors_data = [self._build_actor_data(info) for info in self.actors]
+
+        scene: dict[str, object] = {
+            "containerId": self.container_id,
+            "background": list(self.background),
+            "lights": self._build_lights_data(),
+            "actors": actors_data,
+            "axes": self._axes_enabled,
+            "camera": self._build_camera_data(),
+            "lightingMode": self.lighting,
+        }
+
+        # Validate JSON serializable
+        _json.dumps(scene)
+
+        return scene
+
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
-        actor_js_code = [
-            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
-        ]
+        import json as _json  # noqa: PLC0415
 
-        indented_actors = []
-        for actor in actor_js_code:
-            lines = actor.split("\n")
-            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
-            indented_actors.append(indented_lines)
-        actors_code = "\n\n".join(indented_actors)
+        scene_data = self._build_scene_data()
+        scene_json = _json.dumps(scene_data)
 
         return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
             VTKJS_CDN=_VTKJS_CDN,
             CONTAINER_ID=self.container_id,
-            BACKGROUND_R=str(self.background[0]),
-            BACKGROUND_G=str(self.background[1]),
-            BACKGROUND_B=str(self.background[2]),
-            LIGHTS_CODE=self._generate_lights_code(),
-            ACTORS_CODE=actors_code,
-            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
-            TEXT_ACTORS_CODE=self._generate_text_actors_code(),
-            ENVIRONMENT_CODE=self._generate_environment_code(),
-            AXES_CODE=self._generate_axes_code(),
-            CAMERA_CODE=self._generate_camera_code(),
+            SCENE_JSON=scene_json,
+            RENDERER_JS=_RENDERER_JS,
         )
 
     def _generate_standalone_html(self) -> str:
@@ -1386,36 +1547,44 @@ class _BaseHTMLRenderer:
     def _generate_render_js(self) -> str:
         """Generate pure JavaScript for display(Javascript(...)) in JupyterLite.
 
-        Renders the scene using rendering_js.html, then converts all HTML
-        data-config ``<div>`` elements to equivalent ``document.createElement``
-        calls so the result contains no HTML markup.
+        Embeds scene data as a JS variable and uses the same renderer logic,
+        but creates the container element dynamically via DOM APIs.
         """
-        actor_js_code = [
-            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
-        ]
+        import json as _json  # noqa: PLC0415
 
-        indented_actors = []
-        for actor in actor_js_code:
-            lines = actor.split("\n")
-            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
-            indented_actors.append(indented_lines)
-        actors_code = "\n\n".join(indented_actors)
+        scene_data = self._build_scene_data()
+        scene_json = _json.dumps(scene_data)
 
-        rendered = _jinja_env.from_string(_RENDERING_JS_TEMPLATE).render(
-            VTKJS_CDN=_VTKJS_CDN,
-            CONTAINER_ID=self.container_id,
-            BACKGROUND_R=str(self.background[0]),
-            BACKGROUND_G=str(self.background[1]),
-            BACKGROUND_B=str(self.background[2]),
-            LIGHTS_CODE=self._generate_lights_code(),
-            ACTORS_CODE=actors_code,
-            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
-            TEXT_ACTORS_CODE=self._generate_text_actors_code(),
-            ENVIRONMENT_CODE=self._generate_environment_code(),
-            AXES_CODE=self._generate_axes_code(),
-            CAMERA_CODE=self._generate_camera_code(),
+        # For JupyterLite: create container and scene-data div dynamically
+        return (
+            "(function() {\n"
+            "  var container = document.createElement('div');\n"
+            f"  container.id = {_json.dumps(self.container_id)};\n"
+            "  container.style.cssText = "
+            "'width:600px;height:400px;border:2px solid #333;position:relative';\n"
+            "  if (typeof element !== 'undefined' && element) {\n"
+            "    element.appendChild(container);\n"
+            "  } else {\n"
+            "    document.body.appendChild(container);\n"
+            "  }\n"
+            "  var sceneDataEl = document.createElement('script');\n"
+            "  sceneDataEl.type = 'application/json';\n"
+            "  sceneDataEl.id = 'scene-data';\n"
+            f"  sceneDataEl.textContent = {_json.dumps(scene_json)};\n"
+            "  document.body.appendChild(sceneDataEl);\n"
+            "  function doRender() {\n"
+            f"    {_RENDERER_JS}\n"
+            "  }\n"
+            "  if (typeof vtk !== 'undefined') {\n"
+            "    doRender();\n"
+            "  } else {\n"
+            "    var script = document.createElement('script');\n"
+            f"    script.src = {_json.dumps(_VTKJS_CDN)};\n"
+            "    script.onload = doRender;\n"
+            "    document.head.appendChild(script);\n"
+            "  }\n"
+            "})();\n"
         )
-        return _html_to_pure_js(rendered)
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
