@@ -63,6 +63,7 @@ def extract_scene_data_from_js(js: str) -> dict:
     inner_json_str = json.loads(match.group(1))
     return json.loads(inner_json_str)
 
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 

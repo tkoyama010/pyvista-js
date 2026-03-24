@@ -1348,31 +1348,35 @@ class _BaseHTMLRenderer:
         if not self.lights:
             if self.lighting is None:
                 return []
-            return [{
-                "type": "scene",
-                "positional": False,
-                "intensity": 1.0,
-                "position": [1, 1, 1],
-                "focalPoint": [0, 0, 0],
-                "color": [1, 1, 1],
-                "coneAngle": 30,
-                "coneFalloff": 0,
-                "attenuationValues": [1, 0, 0],
-            }]
+            return [
+                {
+                    "type": "scene",
+                    "positional": False,
+                    "intensity": 1.0,
+                    "position": [1, 1, 1],
+                    "focalPoint": [0, 0, 0],
+                    "color": [1, 1, 1],
+                    "coneAngle": 30,
+                    "coneFalloff": 0,
+                    "attenuationValues": [1, 0, 0],
+                }
+            ]
         lights_data: list[dict[str, object]] = []
         for light in self.lights:
             light_type = light.light_type.lower().replace("light", "")
-            lights_data.append({
-                "type": light_type,
-                "positional": light.positional,
-                "intensity": light.intensity,
-                "position": list(light.position),
-                "focalPoint": list(light.focal_point),
-                "color": list(light.color),
-                "coneAngle": light.cone_angle,
-                "coneFalloff": light.cone_falloff,
-                "attenuationValues": list(light.attenuation_values),
-            })
+            lights_data.append(
+                {
+                    "type": light_type,
+                    "positional": light.positional,
+                    "intensity": light.intensity,
+                    "position": list(light.position),
+                    "focalPoint": list(light.focal_point),
+                    "color": list(light.color),
+                    "coneAngle": light.cone_angle,
+                    "coneFalloff": light.cone_falloff,
+                    "attenuationValues": list(light.attenuation_values),
+                }
+            )
         return lights_data
 
     def _build_actor_data(self, actor_info: dict[str, object]) -> dict[str, object]:

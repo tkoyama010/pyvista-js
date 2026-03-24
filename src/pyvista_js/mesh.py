@@ -504,15 +504,21 @@ class PolyData:
         def _mapper_setup_shrink(idx: int) -> str:
             return f"mapper{idx}.setInputData(shrunkPD{idx});"
 
-        base_scene = dict(self._scene_data) if self._scene_data else {
-            "type": "mesh",
-            "points": self.points.flatten().tolist(),
-        }
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append({
-            "type": "shrink",
-            "shrinkFactor": shrink_factor,
-        })
+        base_scene["filters"].append(
+            {
+                "type": "shrink",
+                "shrinkFactor": shrink_factor,
+            }
+        )
 
         return PolyData(
             points=self.points,
@@ -647,17 +653,23 @@ class PolyData:
         def _mapper_setup_clip(idx: int) -> str:
             return f"mapper{idx}.setInputData(clippedPD{idx});"
 
-        base_scene = dict(self._scene_data) if self._scene_data else {
-            "type": "mesh",
-            "points": self.points.flatten().tolist(),
-        }
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append({
-            "type": "clip",
-            "normal": list(normal_vec),
-            "origin": list(origin),
-            "invert": invert,
-        })
+        base_scene["filters"].append(
+            {
+                "type": "clip",
+                "normal": list(normal_vec),
+                "origin": list(origin),
+                "invert": invert,
+            }
+        )
 
         return PolyData(
             points=self.points,
@@ -741,16 +753,22 @@ class PolyData:
         def _mapper_setup_tube(idx: int) -> str:
             return f"mapper{idx}.setInputData(tubedPD{idx});"
 
-        base_scene = dict(self._scene_data) if self._scene_data else {
-            "type": "mesh",
-            "points": self.points.flatten().tolist(),
-        }
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append({
-            "type": "tube",
-            "radius": radius,
-            "numberOfSides": n_sides,
-        })
+        base_scene["filters"].append(
+            {
+                "type": "tube",
+                "radius": radius,
+                "numberOfSides": n_sides,
+            }
+        )
 
         return PolyData(
             points=self.points,
@@ -844,17 +862,23 @@ class PolyData:
         def _mapper_setup_contour(idx: int) -> str:
             return f"mapper{idx}.setInputData(contourPD{idx});"
 
-        base_scene = dict(self._scene_data) if self._scene_data else {
-            "type": "mesh",
-            "points": self.points.flatten().tolist(),
-        }
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
         base_scene.setdefault("filters", [])
-        base_scene["filters"].append({
-            "type": "contour",
-            "values": contour_values,
-            "scalarName": scalar_name_final,
-            "scalarData": scalar_data.flatten().tolist(),
-        })
+        base_scene["filters"].append(
+            {
+                "type": "contour",
+                "values": contour_values,
+                "scalarName": scalar_name_final,
+                "scalarData": scalar_data.flatten().tolist(),
+            }
+        )
 
         # Return new PolyData with contour filter applied
         return PolyData(
@@ -1025,11 +1049,13 @@ class PolyData:
             point_data_arrays: list[dict[str, object]] = []
             for name, array in self._point_data.items():
                 n_components = 1 if array.ndim == 1 else array.shape[1]
-                point_data_arrays.append({
-                    "name": name,
-                    "numberOfComponents": n_components,
-                    "values": array.flatten().tolist(),
-                })
+                point_data_arrays.append(
+                    {
+                        "name": name,
+                        "numberOfComponents": n_components,
+                        "values": array.flatten().tolist(),
+                    }
+                )
             data["pointData"] = point_data_arrays
 
         return data
