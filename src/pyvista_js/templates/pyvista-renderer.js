@@ -5,8 +5,31 @@
 (function () {
   "use strict";
 
-  var sceneData = JSON.parse(document.getElementById("scene-data").textContent);
+  var sceneDataEl = document.getElementById("scene-data");
+  if (!sceneDataEl) {
+    // Fallback: search in the current script's parent context
+    var scripts = document.querySelectorAll('script[type="application/json"]');
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      if (scripts[i].id === "scene-data") {
+        sceneDataEl = scripts[i];
+        break;
+      }
+    }
+  }
+  var sceneData = JSON.parse(sceneDataEl.textContent);
   var container = document.getElementById(sceneData.containerId);
+  if (!container) {
+    // In JupyterLite, the container may not be findable via getElementById
+    // Create a fallback container
+    container = document.createElement("div");
+    container.id = sceneData.containerId;
+    container.style.cssText = "width:600px;height:400px;border:2px solid #333;position:relative";
+    if (sceneDataEl && sceneDataEl.parentNode) {
+      sceneDataEl.parentNode.insertBefore(container, sceneDataEl);
+    } else {
+      document.body.appendChild(container);
+    }
+  }
   var bg = sceneData.background;
 
   var renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
