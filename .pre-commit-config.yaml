@@ -62,6 +62,15 @@ repos:
       - id: prettier
         types_or: [javascript, ts]
 
+  - repo: local
+    hooks:
+      - id: xo
+        name: xo
+        entry: npx xo
+        language: node
+        types_or: [javascript, ts]
+        pass_filenames: false
+
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
     hooks:
@@ -106,5 +115,5 @@ ci:
   autoupdate_branch: ''
   autoupdate_commit_msg: 'chore: pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: []
+  skip: [xo]
   submodules: false
