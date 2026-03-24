@@ -45,7 +45,6 @@ _OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_t
 _STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
 _GLTF_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_reader_source.html").read_text()
 _GLTF_URL_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_url_source.html").read_text()
-_VTU_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtu_reader_source.html").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -1174,13 +1173,11 @@ def _extract_surface_vtk(
         "DATASET POLYDATA",
         f"POINTS {len(points)} float",
     ]
-    for pt in points:
-        lines.append(f"{pt[0]} {pt[1]} {pt[2]}")
+    lines.extend(f"{pt[0]} {pt[1]} {pt[2]}" for pt in points)
 
     total_size = sum(len(f) + 1 for f in surface_faces)
     lines.append(f"POLYGONS {len(surface_faces)} {total_size}")
-    for face in surface_faces:
-        lines.append(f"{len(face)} " + " ".join(str(v) for v in face))
+    lines.extend(f"{len(face)} " + " ".join(str(v) for v in face) for face in surface_faces)
 
     return "\n".join(lines) + "\n"
 
