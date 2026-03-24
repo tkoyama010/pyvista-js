@@ -1152,9 +1152,9 @@ class UnstructuredGridReader:
 
     Examples
     --------
-    >>> import pyvista_js as pv
-    >>> reader = pv.UnstructuredGridReader("mesh.vtu")  # doctest: +SKIP
-    >>> mesh = reader.read()  # doctest: +SKIP
+    >>> from pyvista_js import examples
+    >>> mesh = examples.load_hexbeam()  # doctest: +SKIP
+    >>> mesh.plot()  # doctest: +SKIP
 
     """
 
