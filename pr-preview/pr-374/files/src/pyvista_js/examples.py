@@ -273,15 +273,15 @@ def download_cubemap_park() -> CubeMap:
 
     Examples
     --------
-    >>> from pyvista_js import examples
-    >>> import pyvista_js as pv
-    >>> pl = pv.Plotter(lighting=None)
-    >>> dataset = examples.download_cubemap_park()
-    >>> _ = pl.add_actor(dataset.to_skybox())
-    >>> pl.set_environment_texture(dataset, is_srgb=True)
-    >>> pl.camera_position = 'xy'
-    >>> pl.camera.zoom(0.4)
-    >>> _ = pl.add_mesh(pv.Sphere(), pbr=True, roughness=0.1, metallic=0.5)
+    >>> from pyvista_js import examples  # doctest: +SKIP
+    >>> import pyvista_js as pv  # doctest: +SKIP
+    >>> pl = pv.Plotter(lighting=None)  # doctest: +SKIP
+    >>> dataset = examples.download_cubemap_park()  # doctest: +SKIP
+    >>> _ = pl.add_actor(dataset.to_skybox())  # doctest: +SKIP
+    >>> pl.set_environment_texture(dataset, is_srgb=True)  # doctest: +SKIP
+    >>> pl.camera_position = 'xy'  # doctest: +SKIP
+    >>> pl.camera.zoom(0.4)  # doctest: +SKIP
+    >>> _ = pl.add_mesh(pv.Sphere(), pbr=True, roughness=0.1, metallic=0.5)  # doctest: +SKIP
     >>> pl.show()  # doctest: +SKIP
 
     """
