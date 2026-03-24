@@ -45,6 +45,7 @@ _OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_t
 _STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
 _GLTF_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_reader_source.html").read_text()
 _GLTF_URL_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_url_source.html").read_text()
+_VTU_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtu_reader_source.html").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -1102,3 +1103,147 @@ class GLTFReader:
             for z in [min_vals[2], max_vals[2]]
         ]
         return np.array(points)
+
+
+class _UnstructuredGridMesh(PolyData):
+    """Mesh loaded from a VTU file, rendered via vtk.js XML reader."""
+
+    def __init__(self, points: np.ndarray, vtu_base64: str) -> None:
+        """Initialize with points and base64-encoded VTU file content.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            Vertex coordinates (N, 3) extracted for bounding sphere computation.
+        vtu_base64 : str
+            Base64-encoded content of the VTU file passed to vtk.js for rendering.
+
+        """
+        super().__init__(points)
+        self._vtu_base64 = vtu_base64
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code using vtkXMLUnstructuredGridReader."""
+        escaped = json.dumps(self._vtu_base64)
+        return _render(
+            _VTU_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            VTU_READER=f"vtuReader{idx}",
+            VTU_BASE64=escaped,
+        )
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code."""
+        return f"mapper{idx}.setInputData(source{idx});"
+
+
+class UnstructuredGridReader:
+    """Reader for VTK XML UnstructuredGrid files (``.vtu``).
+
+    Reads a VTU file and produces a :class:`Mesh` that delegates parsing
+    to vtk.js's ``vtkXMLUnstructuredGridReader`` at render time. Python
+    extracts only the point coordinates so that camera framing and
+    bounding-sphere queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.vtu`` file.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.UnstructuredGridReader("mesh.vtu")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() != ".vtu":
+            msg = f"Expected a .vtu file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the VTU file.
+
+        """
+        return self._path
+
+    def read(self) -> _UnstructuredGridMesh:
+        """Read the VTU file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Point coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the VTU file content.
+
+        Raises
+        ------
+        ValueError
+            If the file format is invalid.
+
+        """
+        raw = self._path.read_bytes()
+        text = raw.decode("utf-8", errors="replace")
+
+        if "<VTKFile" not in text or 'type="UnstructuredGrid"' not in text:
+            msg = "Invalid VTU file: missing VTKFile UnstructuredGrid header"
+            raise ValueError(msg)
+
+        points = self._extract_points(text)
+        vtu_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _UnstructuredGridMesh(points=points, vtu_base64=vtu_base64)
+
+    @staticmethod
+    def _extract_points(text: str) -> np.ndarray:
+        """Extract point coordinates from VTU XML text.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Parameters
+        ----------
+        text : str
+            Full content of the VTU file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        # Find the <Points> section and extract data from the DataArray
+        points_match = re.search(
+            r"<Points>\s*<DataArray[^>]*format=\"ascii\"[^>]*>(.*?)</DataArray>",
+            text,
+            re.DOTALL,
+        )
+        if points_match is None:
+            return np.empty((0, 3))
+
+        data_text = points_match.group(1).strip()
+        if not data_text:
+            return np.empty((0, 3))
+
+        values = [float(v) for v in data_text.split()]
+        if len(values) < _N_COORDS:
+            return np.empty((0, 3))
+
+        n_points = len(values) // _N_COORDS
+        return np.array(values[: n_points * _N_COORDS]).reshape(n_points, _N_COORDS)

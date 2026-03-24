@@ -5,7 +5,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader, examples
+from pyvista_js import (
+    GLTFReader,
+    OBJReader,
+    PLYReader,
+    PolyDataReader,
+    STLReader,
+    UnstructuredGridReader,
+    examples,
+)
 
 DATA_DIR = Path(__file__).parent / "data"
 TRIANGLE_VTK = DATA_DIR / "triangle.vtk"
@@ -13,6 +21,7 @@ TRIANGLE_PLY = DATA_DIR / "triangle.ply"
 TRIANGLE_OBJ = DATA_DIR / "triangle.obj"
 TRIANGLE_STL = DATA_DIR / "triangle.stl"
 TRIANGLE_GLTF = DATA_DIR / "triangle.gltf"
+TRIANGLE_VTU = DATA_DIR / "triangle.vtu"
 
 
 class TestPolyDataReader:
@@ -533,5 +542,138 @@ class TestDownloadLucy:
         mesh = examples.download_lucy()
         source = mesh.generate_vtk_js_source(0)
         assert "vtkPLYReader" in source
+        assert "parseAsArrayBuffer" in source
+        assert "source0" in source
+
+
+class TestUnstructuredGridReader:
+    """Tests for UnstructuredGridReader."""
+
+    def test_path(self) -> None:
+        """Test that the reader exposes the path property."""
+        reader = UnstructuredGridReader(TRIANGLE_VTU)
+        assert reader.path == TRIANGLE_VTU
+
+    def test_read_points(self) -> None:
+        """Test reading points from a VTU file."""
+        reader = UnstructuredGridReader(TRIANGLE_VTU)
+        mesh = reader.read()
+
+        assert mesh.n_points == 4
+        expected = np.array(
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.5, 1.0, 0.0], [0.5, 0.5, 1.0]],
+        )
+        assert np.allclose(mesh.points, expected)
+
+    def test_string_path(self) -> None:
+        """Test that string paths are accepted."""
+        reader = UnstructuredGridReader(str(TRIANGLE_VTU))
+        mesh = reader.read()
+        assert mesh.n_points == 4
+
+    @pytest.mark.parametrize(
+        ("method", "expected"),
+        [
+            ("generate_vtk_js_source", "vtkXMLUnstructuredGridReader"),
+            ("generate_vtk_js_source", "parseAsArrayBuffer"),
+            ("generate_vtk_js_source", "source0"),
+            ("get_mapper_setup", "setInputData"),
+        ],
+    )
+    def test_js_output(self, method: str, expected: str) -> None:
+        """Test that generated JavaScript contains expected strings."""
+        mesh = UnstructuredGridReader(TRIANGLE_VTU).read()
+        result = getattr(mesh, method)(0)
+        assert expected in result
+
+    @pytest.mark.parametrize(
+        ("filename", "content", "error_type", "match"),
+        [
+            (
+                "bad.vtu",
+                "<root>not a VTU file</root>",
+                ValueError,
+                "missing VTKFile UnstructuredGrid header",
+            ),
+        ],
+    )
+    def test_invalid_files(
+        self,
+        tmp_path: Path,
+        filename: str,
+        content: str,
+        error_type: type,
+        match: str,
+    ) -> None:
+        """Test ValueError for various invalid VTU files."""
+        bad_file = tmp_path / filename
+        bad_file.write_text(content)
+        with pytest.raises(error_type, match=match):
+            UnstructuredGridReader(bad_file).read()
+
+    @pytest.mark.parametrize(
+        ("fixture_type", "match"),
+        [
+            ("not_found", "File not found"),
+            ("wrong_ext", "Expected a .vtu file"),
+        ],
+    )
+    def test_init_errors(
+        self,
+        tmp_path: Path,
+        fixture_type: str,
+        match: str,
+    ) -> None:
+        """Test errors raised during reader initialization."""
+        if fixture_type == "not_found":
+            with pytest.raises(FileNotFoundError, match=match):
+                UnstructuredGridReader("nonexistent.vtu")
+        else:
+            bad_file = tmp_path / "data.txt"
+            bad_file.write_text("hello")
+            with pytest.raises(ValueError, match=match):
+                UnstructuredGridReader(bad_file)
+
+    def test_no_points(self, tmp_path: Path) -> None:
+        """Test reading a VTU file with no points yields empty mesh."""
+        vtu_file = tmp_path / "empty.vtu"
+        vtu_file.write_text(
+            '<?xml version="1.0"?>\n'
+            '<VTKFile type="UnstructuredGrid" version="0.1">\n'
+            "  <UnstructuredGrid>\n"
+            '    <Piece NumberOfPoints="0" NumberOfCells="0">\n'
+            "      <Points>\n"
+            '        <DataArray type="Float64" NumberOfComponents="3" format="ascii">\n'
+            "        </DataArray>\n"
+            "      </Points>\n"
+            "      <Cells>\n"
+            '        <DataArray type="Int64" Name="connectivity" format="ascii">\n'
+            "        </DataArray>\n"
+            '        <DataArray type="Int64" Name="offsets" format="ascii">\n'
+            "        </DataArray>\n"
+            '        <DataArray type="UInt8" Name="types" format="ascii">\n'
+            "        </DataArray>\n"
+            "      </Cells>\n"
+            "    </Piece>\n"
+            "  </UnstructuredGrid>\n"
+            "</VTKFile>\n",
+        )
+        mesh = UnstructuredGridReader(vtu_file).read()
+        assert mesh.n_points == 0
+
+
+class TestLoadHexbeam:
+    """Tests for load_hexbeam example."""
+
+    def test_returns_mesh(self) -> None:
+        """Test that load_hexbeam returns a mesh with 99 points."""
+        mesh = examples.load_hexbeam()
+        assert mesh.n_points == 99
+
+    def test_js_output(self) -> None:
+        """Test that load_hexbeam mesh generates valid vtk.js source."""
+        mesh = examples.load_hexbeam()
+        source = mesh.generate_vtk_js_source(0)
+        assert "vtkXMLUnstructuredGridReader" in source
         assert "parseAsArrayBuffer" in source
         assert "source0" in source
