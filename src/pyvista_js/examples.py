@@ -278,18 +278,18 @@ def _convert_legacy_vtk_to_vtu(vtk_text: str) -> str:
         f'    <Piece NumberOfPoints="{n_points}" NumberOfCells="{n_cells}">\n'
         "      <Points>\n"
         '        <DataArray type="Float64" NumberOfComponents="3" format="ascii">\n'
-        f'          {" ".join(points_data)}\n'
+        f"          {' '.join(points_data)}\n"
         "        </DataArray>\n"
         "      </Points>\n"
         "      <Cells>\n"
         '        <DataArray type="Int64" Name="connectivity" format="ascii">\n'
-        f'          {" ".join(connectivity)}\n'
+        f"          {' '.join(connectivity)}\n"
         "        </DataArray>\n"
         '        <DataArray type="Int64" Name="offsets" format="ascii">\n'
-        f'          {" ".join(offsets)}\n'
+        f"          {' '.join(offsets)}\n"
         "        </DataArray>\n"
         '        <DataArray type="UInt8" Name="types" format="ascii">\n'
-        f'          {" ".join(cell_types)}\n'
+        f"          {' '.join(cell_types)}\n"
         "        </DataArray>\n"
         "      </Cells>\n"
         "    </Piece>\n"
