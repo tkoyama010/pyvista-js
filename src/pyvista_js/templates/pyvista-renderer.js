@@ -140,7 +140,7 @@
       case "stlReader":
         return createReaderSource(cfg, "IO.Geometry.vtkSTLReader", "parseAsArrayBuffer");
       case "objReader":
-        return createReaderSource(cfg, "IO.Misc.vtkOBJReader", "parseAsArrayBuffer");
+        return createReaderSource(cfg, "IO.Misc.vtkOBJReader", "parseAsText");
       case "vtkReader":
         return createReaderSource(cfg, "IO.Legacy.vtkPolyDataReader", "parseAsText");
       default:

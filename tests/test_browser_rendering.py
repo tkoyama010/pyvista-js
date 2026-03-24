@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from pyvista_js import Line, Plotter, Sphere, Text
-from pyvista_js.examples import download_bunny
+from pyvista_js.examples import download_bunny, download_trumpet
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -442,3 +442,28 @@ def test_ply_reader_renders_in_browser(page: Page) -> None:
     canvas = page.query_selector("canvas")
     assert canvas is not None, "Canvas element not found for PLY reader mesh"
     assert len(js_errors) == 0, f"JavaScript errors during PLY rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_obj_reader_renders_in_browser(page: Page) -> None:
+    """Test that OBJ file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = download_trumpet()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="gold")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for OBJ reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during OBJ rendering: {js_errors}"
