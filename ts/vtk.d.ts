@@ -43,7 +43,10 @@ interface VtkCellArray extends VtkInstance {
 }
 
 interface VtkPolyData extends VtkInstance {
-  getPoints(): VtkPoints & { getData(): Float32Array; setData(data: Float32Array, n: number): void };
+  getPoints(): VtkPoints & {
+    getData(): Float32Array;
+    setData(data: Float32Array, n: number): void;
+  };
   setPoints(points: VtkPoints): void;
   getPolys(): VtkCellArray;
   getLines(): VtkCellArray;
@@ -169,7 +172,10 @@ interface VtkOrientationMarkerWidget extends VtkInstance {
 }
 
 interface VtkOrientationMarkerWidgetFactory {
-  newInstance(options: { actor: VtkInstance; interactor: VtkInteractor }): VtkOrientationMarkerWidget;
+  newInstance(options: {
+    actor: VtkInstance;
+    interactor: VtkInteractor;
+  }): VtkOrientationMarkerWidget;
   Corners: { BOTTOM_LEFT: number };
 }
 
