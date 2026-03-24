@@ -1105,32 +1105,111 @@ class GLTFReader:
         return np.array(points)
 
 
-class _UnstructuredGridMesh(PolyData):
-    """Mesh loaded from a VTU file, rendered via vtk.js XML reader."""
+_VTK_CELL_FACES: dict[int, list[list[int]]] = {
+    # VTK_TETRA
+    10: [[0, 1, 3], [1, 2, 3], [0, 3, 2], [0, 2, 1]],
+    # VTK_HEXAHEDRON
+    12: [
+        [0, 4, 7, 3],
+        [1, 2, 6, 5],
+        [0, 1, 5, 4],
+        [3, 7, 6, 2],
+        [0, 3, 2, 1],
+        [4, 5, 6, 7],
+    ],
+    # VTK_WEDGE
+    13: [[0, 1, 2], [3, 5, 4], [0, 3, 4, 1], [1, 4, 5, 2], [0, 2, 5, 3]],
+    # VTK_PYRAMID
+    14: [[0, 3, 2, 1], [0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]],
+}
 
-    def __init__(self, points: np.ndarray, vtu_base64: str) -> None:
-        """Initialize with points and base64-encoded VTU file content.
+
+def _extract_surface_vtk(
+    points: np.ndarray,
+    connectivity: list[int],
+    offsets: list[int],
+    cell_types: list[int],
+) -> str:
+    """Extract the external surface and return a legacy VTK PolyData string.
+
+    Parameters
+    ----------
+    points : np.ndarray
+        Vertex coordinates (N, 3).
+    connectivity : list[int]
+        Flat cell connectivity array.
+    offsets : list[int]
+        Cumulative offsets into *connectivity* for each cell.
+    cell_types : list[int]
+        VTK cell type IDs.
+
+    Returns
+    -------
+    str
+        Legacy VTK ASCII PolyData text.
+
+    """
+    # Collect all faces, keyed by sorted vertex tuple
+    face_map: dict[tuple[int, ...], list[list[int]]] = {}
+    for cell_idx, ctype in enumerate(cell_types):
+        start = 0 if cell_idx == 0 else offsets[cell_idx - 1]
+        end = offsets[cell_idx]
+        verts = connectivity[start:end]
+        face_defs = _VTK_CELL_FACES.get(ctype)
+        if face_defs is None:
+            continue
+        for local_face in face_defs:
+            face = [verts[i] for i in local_face]
+            key = tuple(sorted(face))
+            face_map.setdefault(key, []).append(face)
+
+    # Surface faces appear exactly once
+    surface_faces = [faces[0] for faces in face_map.values() if len(faces) == 1]
+
+    # Build legacy VTK PolyData text
+    lines = [
+        "# vtk DataFile Version 3.0",
+        "UnstructuredGrid surface",
+        "ASCII",
+        "DATASET POLYDATA",
+        f"POINTS {len(points)} float",
+    ]
+    for pt in points:
+        lines.append(f"{pt[0]} {pt[1]} {pt[2]}")
+
+    total_size = sum(len(f) + 1 for f in surface_faces)
+    lines.append(f"POLYGONS {len(surface_faces)} {total_size}")
+    for face in surface_faces:
+        lines.append(f"{len(face)} " + " ".join(str(v) for v in face))
+
+    return "\n".join(lines) + "\n"
+
+
+class _UnstructuredGridMesh(PolyData):
+    """Mesh loaded from a VTU file, rendered via vtk.js PolyData reader."""
+
+    def __init__(self, points: np.ndarray, vtk_text: str) -> None:
+        """Initialize with points and legacy VTK PolyData surface text.
 
         Parameters
         ----------
         points : np.ndarray
             Vertex coordinates (N, 3) extracted for bounding sphere computation.
-        vtu_base64 : str
-            Base64-encoded content of the VTU file passed to vtk.js for rendering.
+        vtk_text : str
+            Legacy VTK PolyData text of the extracted surface for rendering.
 
         """
         super().__init__(points)
-        self._vtu_base64 = vtu_base64
+        self._vtk_text = vtk_text
 
     def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkXMLUnstructuredGridReader."""
-        escaped = json.dumps(self._vtu_base64)
+        """Generate vtk.js source code using vtkPolyDataReader."""
+        escaped = json.dumps(self._vtk_text)
         return _render(
-            _VTU_READER_SOURCE_TEMPLATE,
+            _VTK_READER_SOURCE_TEMPLATE,
             SOURCE=f"source{idx}",
-            VTU_READER=f"vtuReader{idx}",
-            SURFACE_FILTER=f"surfaceFilter{idx}",
-            VTU_BASE64=escaped,
+            VTK_READER=f"reader{idx}",
+            VTK_TEXT=escaped,
         )
 
     def get_mapper_setup(self, idx: int) -> str:
@@ -1207,9 +1286,10 @@ class UnstructuredGridReader:
             raise ValueError(msg)
 
         points = self._extract_points(text)
-        vtu_base64 = base64.b64encode(raw).decode("ascii")
+        connectivity, offsets, cell_types = self._extract_cells(text)
+        vtk_text = _extract_surface_vtk(points, connectivity, offsets, cell_types)
         logger.info("Read %d points from %s", len(points), self._path)
-        return _UnstructuredGridMesh(points=points, vtu_base64=vtu_base64)
+        return _UnstructuredGridMesh(points=points, vtk_text=vtk_text)
 
     @staticmethod
     def _extract_points(text: str) -> np.ndarray:
@@ -1248,3 +1328,27 @@ class UnstructuredGridReader:
 
         n_points = len(values) // _N_COORDS
         return np.array(values[: n_points * _N_COORDS]).reshape(n_points, _N_COORDS)
+
+    @staticmethod
+    def _extract_cells(text: str) -> tuple[list[int], list[int], list[int]]:
+        """Extract cell connectivity, offsets and types from VTU XML.
+
+        Parameters
+        ----------
+        text : str
+            Full content of the VTU file.
+
+        Returns
+        -------
+        tuple[list[int], list[int], list[int]]
+            Connectivity, offsets and cell type arrays.
+
+        """
+        def _get_data(name: str) -> list[int]:
+            pattern = rf'<DataArray[^>]*Name="{name}"[^>]*format="ascii"[^>]*>(.*?)</DataArray>'
+            match = re.search(pattern, text, re.DOTALL)
+            if match is None:
+                return []
+            return [int(v) for v in match.group(1).split()]
+
+        return _get_data("connectivity"), _get_data("offsets"), _get_data("types")
