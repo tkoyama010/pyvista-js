@@ -109,6 +109,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.PLYReader
    pyvista_js.PolyDataReader
    pyvista_js.STLReader
+   pyvista_js.UnstructuredGridReader
 ```
 
 ## Examples
@@ -126,6 +127,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.examples.download_masonry_texture
    pyvista_js.examples.download_sky_box_cube_map
    pyvista_js.examples.download_trumpet
+   pyvista_js.examples.load_hexbeam
 ```
 
 ## CLI
