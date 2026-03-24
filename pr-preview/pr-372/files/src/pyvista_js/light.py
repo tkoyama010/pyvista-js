@@ -71,20 +71,36 @@ class Light:
 
     Examples
     --------
-    Create a light at (10, 10, 10) and set its color to red.
+    Headlight. For headlights the position and focal point properties
+    are meaningless. No matter where you move the camera, the light
+    always emanates from the view point:
 
     >>> import pyvista_js as pv
-    >>> light = pv.Light(position=(10, 10, 10), color='red')
+    >>> plotter = pv.Plotter()
+    >>> light = pv.Light(light_type='Headlight')
+    >>> # these don't do anything for a headlight:
+    >>> light.position = (1, 2, 3)
+    >>> light.focal_point = (4, 5, 6)
+    >>> plotter.add_light(light)
+    >>> plotter.show()  # doctest: +SKIP
 
-    Create a positional light at (0, 0, 3) with a cone angle of
-    30 and a cone falloff of 20.
+    Camera light. Camera lights move together with the camera, but
+    can occupy any fixed relative position with respect to the camera:
 
-    >>> light = pv.Light(
-    ...     position=(0, 0, 3),
-    ...     positional=True,
-    ...     cone_angle=30,
-    ...     cone_falloff=20,
-    ... )
+    >>> plotter = pv.Plotter()
+    >>> # a light that always shines from the right of the camera
+    >>> light = pv.Light(position=(1, 0, 0), light_type='CameraLight')
+    >>> plotter.add_light(light)
+    >>> plotter.show()  # doctest: +SKIP
+
+    Scene light. Scene lights are attached to the scene, their position
+    and focal point are interpreted as global coordinates:
+
+    >>> plotter = pv.Plotter()
+    >>> # a light that always shines on the left side of the object
+    >>> light = pv.Light(position=(0, 1, 0), light_type='SceneLight')
+    >>> plotter.add_light(light)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
