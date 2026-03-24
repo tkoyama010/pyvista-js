@@ -97,7 +97,7 @@ from .examples import CubeMap
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
 _RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
-_RENDERER_JS = (_TEMPLATES_DIR / "pyvista-renderer.js").read_text()
+_RENDERER_JS = (_TEMPLATES_DIR / "renderer.js").read_text()
 
 _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
 
@@ -801,7 +801,7 @@ class _BaseHTMLRenderer:
         scene_json = _json.dumps(scene_data)
 
         # For JupyterLite: pass scene data and container via JS variables
-        # so pyvista-renderer.js can use them directly without DOM lookups.
+        # so renderer.js can use them directly without DOM lookups.
         return (
             "(function() {\n"
             "  var container = document.createElement('div');\n"
