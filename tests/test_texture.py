@@ -124,7 +124,9 @@ def test_generated_html_contains_texture_code(monkeypatch) -> None:
 
 
 def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
-    """Test that HTML output does not contain texture code when no texture set."""
+    """Test that scene data has no texture when no texture is set."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     plotter = pv.Plotter()
@@ -132,7 +134,8 @@ def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
     plotter.add_mesh(sphere)
 
     html = plotter._renderer._generate_html()
-    assert "addTexture" not in html
+    scene = extract_scene_data(html)
+    assert scene["actors"][0]["texture"] is None
 
 
 def test_texture_with_primitive_sphere(monkeypatch) -> None:

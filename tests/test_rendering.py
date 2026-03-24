@@ -144,6 +144,8 @@ def test_html_generation_mesh_sources(mesh_factory, vtk_source_name, monkeypatch
 
 def test_mesh_parameters_in_html(monkeypatch) -> None:
     """Test that mesh parameters are correctly passed to HTML/JS."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     # Mock IPython availability
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
@@ -152,15 +154,19 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
     renderer.add_mesh_actor(sphere, color="blue")
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    # Verify parameters are in the generated HTML
-    assert 'data-radius="2.5"' in html
-    assert 'data-center-x="1' in html
-    assert 'data-theta-resolution="60"' in html
+    # Verify parameters are in the scene data
+    source = scene["actors"][0]["source"]
+    assert source["radius"] == 2.5
+    assert source["center"] == [1, 2, 3]
+    assert source["thetaResolution"] == 60
 
 
 def test_view_vector_in_html(monkeypatch) -> None:
-    """Test that view_vector generates correct camera JS in HTML output."""
+    """Test that view_vector generates correct camera data in HTML output."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
@@ -168,20 +174,17 @@ def test_view_vector_in_html(monkeypatch) -> None:
     renderer.view_vector((1.0, 2.0, 3.0))
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    assert "getActiveCamera" in html
-    assert "getFocalPoint" in html
-    assert "getDistance" in html
-    assert "cam.setPosition" in html
-    assert "dist*1.0/vlen" in html
-    assert "dist*2.0/vlen" in html
-    assert "dist*3.0/vlen" in html
-    assert "setViewUp" in html
-    assert "resetCameraClippingRange" in html
+    camera = scene["camera"]
+    assert camera["viewVector"] == [1.0, 2.0, 3.0]
+    assert camera["viewUp"] == [0.0, 1.0, 0.0]
 
 
 def test_view_vector_default_viewup_in_html(monkeypatch) -> None:
-    """Test that the default viewup (0, 1, 0) appears in HTML when not specified."""
+    """Test that the default viewup (0, 1, 0) appears in scene data when not specified."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
@@ -189,12 +192,15 @@ def test_view_vector_default_viewup_in_html(monkeypatch) -> None:
     renderer.view_vector((0.0, 0.0, 1.0))
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    assert "setViewUp(0.0, 1.0, 0.0)" in html
+    assert scene["camera"]["viewUp"] == [0.0, 1.0, 0.0]
 
 
 def test_view_vector_custom_viewup_in_html(monkeypatch) -> None:
-    """Test that a custom viewup appears correctly in HTML."""
+    """Test that a custom viewup appears correctly in scene data."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
@@ -202,22 +208,25 @@ def test_view_vector_custom_viewup_in_html(monkeypatch) -> None:
     renderer.view_vector((1.0, 0.0, 0.0), viewup=(0.0, 0.0, 1.0))
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    assert "setViewUp(0.0, 0.0, 1.0)" in html
+    assert scene["camera"]["viewVector"] == [1.0, 0.0, 0.0]
+    assert scene["camera"]["viewUp"] == [0.0, 0.0, 1.0]
 
 
 def test_no_view_vector_no_camera_code(monkeypatch) -> None:
-    """Test that no camera override code is generated when view_vector is not called."""
+    """Test that no camera data is generated when view_vector is not called."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
     renderer.add_mesh_actor(Sphere(), color="blue")
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    assert "getActiveCamera" not in html
-    assert "cam.setPosition" not in html
-    assert "{{CAMERA_CODE}}" not in html
+    assert scene["camera"] is None
 
 
 def test_mock_renderer_view_vector(caplog) -> None:
@@ -240,7 +249,9 @@ def test_mock_renderer_view_vector_with_viewup(caplog) -> None:
 
 
 def test_multiple_meshes_unique_variables(monkeypatch) -> None:
-    """Test that multiple meshes use unique variable names in generated JavaScript."""
+    """Test that multiple meshes produce unique actor entries in scene data."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     # Mock IPython availability
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
@@ -251,23 +262,18 @@ def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     renderer.add_mesh_actor(mesh2, color="blue", opacity=0.8)
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    # Verify unique variable names for each mesh
-    assert "source0" in html
-    assert "mapper0" in html
-    assert "actor0" in html
-    assert "source1" in html
-    assert "mapper1" in html
-    assert "actor1" in html
-
-    # Verify both actors are added to renderer
-    assert html.count("renderer.addActor") == 2
-    assert "vtkSphereSource" in html
-    assert "vtkCubeSource" in html
+    # Verify two actors exist in scene data
+    assert len(scene["actors"]) == 2
+    assert scene["actors"][0]["source"]["type"] == "sphere"
+    assert scene["actors"][1]["source"]["type"] == "cube"
 
 
 def test_generate_standalone_html(monkeypatch) -> None:
-    """Test that _generate_standalone_html produces a complete HTML page."""
+    """Test that _generate_standalone_html produces a complete HTML page with scene data."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
@@ -276,14 +282,16 @@ def test_generate_standalone_html(monkeypatch) -> None:
     html = renderer._generate_standalone_html()
 
     assert "<!DOCTYPE html>" in html
-    assert "vtkRenderer" in html
-    assert "vtkMapper" in html
-    assert "vtkActor" in html
-    assert "renderer.addActor" in html
+    assert 'id="scene-data"' in html
+    scene = extract_scene_data(html)
+    assert len(scene["actors"]) == 1
+    assert scene["actors"][0]["source"]["type"] == "sphere"
 
 
 def test_generate_render_js(monkeypatch) -> None:
-    """Test that _generate_render_js produces valid JavaScript without HTML markup."""
+    """Test that _generate_render_js produces valid JavaScript with scene data."""
+    from tests.conftest import extract_scene_data_from_js  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
     renderer = rendering.VTKJSRenderer()
@@ -294,10 +302,10 @@ def test_generate_render_js(monkeypatch) -> None:
     assert "<script>" not in js
     assert "</script>" not in js
     assert "<div" not in js
-    assert "vtkRenderer" in js
-    assert "vtkMapper" in js
-    assert "vtkActor" in js
-    assert "renderer.addActor" in js
+    # Scene data is embedded as JSON in the JS
+    scene = extract_scene_data_from_js(js)
+    assert len(scene["actors"]) == 1
+    assert scene["actors"][0]["source"]["type"] == "sphere"
 
 
 def test_render_with_ipython_calls_display(monkeypatch) -> None:
@@ -360,8 +368,10 @@ def test_base_html_renderer_screenshot_raises() -> None:
 
 
 def test_points_actor_html_no_spheres(monkeypatch) -> None:
-    """Test HTML generation for point cloud with render_points_as_spheres=False."""
+    """Test scene data for point cloud with render_points_as_spheres=False."""
     import numpy as np  # noqa: PLC0415
+
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
 
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
     renderer = rendering.VTKJSRenderer()
@@ -369,16 +379,19 @@ def test_points_actor_html_no_spheres(monkeypatch) -> None:
     renderer.add_points_actor(points, color="red", point_size=10.0, render_points_as_spheres=False)
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    assert "vtkMapper" in html
-    assert "setRepresentationToPoints" in html
-    assert "setPointSize(10.0)" in html
-    assert "vtkSphereMapper" not in html
+    actor = scene["actors"][0]
+    assert actor["mapper"]["class"] == "vtkMapper"
+    assert actor["pointSize"] == 10.0
+    assert actor["renderPointsAsSpheres"] is False
 
 
 def test_points_actor_html_with_spheres(monkeypatch) -> None:
-    """Test HTML generation for point cloud with render_points_as_spheres=True."""
+    """Test scene data for point cloud with render_points_as_spheres=True."""
     import numpy as np  # noqa: PLC0415
+
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
 
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
     renderer = rendering.VTKJSRenderer()
@@ -386,10 +399,11 @@ def test_points_actor_html_with_spheres(monkeypatch) -> None:
     renderer.add_points_actor(points, color="blue", point_size=20.0, render_points_as_spheres=True)
 
     html = renderer._repr_html_()
+    scene = extract_scene_data(html)
 
-    assert "vtkSphereMapper" in html
-    assert "setRadius(0.2)" in html
-    assert "setRepresentationToPoints" not in html
+    actor = scene["actors"][0]
+    assert actor["mapper"]["class"] == "vtkSphereMapper"
+    assert actor["renderPointsAsSpheres"] is True
 
 
 def test_mock_renderer_add_points_actor(caplog) -> None:
@@ -465,43 +479,55 @@ def test_smooth_shading_enabled(monkeypatch) -> None:
 
 def test_smooth_shading_disabled(monkeypatch) -> None:
     """Test flat shading when smooth shading is disabled."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
     renderer = rendering.VTKJSRenderer()
     renderer.add_mesh_actor(Sphere(), smooth_shading=False)
 
     html = renderer._repr_html_()
-    assert "setInterpolationToFlat" in html
-    assert "vtkPolyDataNormals" in html
-    assert "setComputeCellNormals(true)" in html
-    assert "setComputePointNormals(false)" in html
+    scene = extract_scene_data(html)
+
+    actor = scene["actors"][0]
+    assert actor["shading"] == "flat"
+    assert actor["normals"]["computeCellNormals"] is True
+    assert actor["normals"]["computePointNormals"] is False
 
 
 def test_smooth_shading_enabled_with_texmap_recomputes_point_normals(monkeypatch) -> None:
     """Test that smooth shading with texmap recomputes point normals."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
     renderer = rendering.VTKJSRenderer()
     renderer.add_mesh_actor(Sphere(), smooth_shading=True)
 
     html = renderer._repr_html_()
-    assert "setInterpolationToGouraud" in html
-    assert "vtkPolyDataNormals" in html
-    assert "setComputePointNormals(true)" in html
-    assert "setComputeCellNormals(false)" in html
+    scene = extract_scene_data(html)
+
+    actor = scene["actors"][0]
+    assert actor["shading"] == "gouraud"
+    assert actor["normals"]["computePointNormals"] is True
+    assert actor["normals"]["computeCellNormals"] is False
 
 
 def test_smooth_shading_with_actor_index(monkeypatch) -> None:
-    """Test smooth shading code uses correct actor index."""
+    """Test smooth shading uses correct settings per actor."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
     renderer = rendering.VTKJSRenderer()
     renderer.add_mesh_actor(Sphere(), smooth_shading=True)
     renderer.add_mesh_actor(Cube(), smooth_shading=False)
 
     html = renderer._repr_html_()
-    # First actor (Sphere with texmap): Gouraud shading + point normals recomputed
-    assert "actor0.getProperty().setInterpolationToGouraud()" in html
-    assert "normals0.setComputePointNormals(true)" in html
-    assert "mapper0.setInputConnection(normals0.getOutputPort())" in html
-    # Second actor (Cube, no texmap): flat shading with cell normals filter
-    assert "actor1.getProperty().setInterpolationToFlat()" in html
-    assert "normals1.setComputeCellNormals(true)" in html
-    assert "mapper1.setInputConnection(normals1.getOutputPort())" in html
+    scene = extract_scene_data(html)
+
+    # First actor (Sphere): Gouraud shading + point normals recomputed
+    actor0 = scene["actors"][0]
+    assert actor0["shading"] == "gouraud"
+    assert actor0["normals"]["computePointNormals"] is True
+    assert actor0["normals"]["computeCellNormals"] is False
+    # Second actor (Cube with smooth_shading=False): flat shading
+    actor1 = scene["actors"][1]
+    assert actor1["shading"] == "flat"

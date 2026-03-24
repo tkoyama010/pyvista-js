@@ -35,15 +35,15 @@ def test_scalar_rendering_html_generation(monkeypatch) -> None:
     with Path(html_path).open() as f:
         html_content = f.read()
 
-    # Verify vtk.js scalar-related code is present
-    assert "elevation" in html_content
-    assert "vtkDataArray" in html_content
-    assert "addArray" in html_content
-    assert "vtkColorTransferFunction" in html_content
-    assert "setScalarVisibility(true)" in html_content
-    assert "setColorByArrayName" in html_content
-    assert "setLookupTable" in html_content
-    assert "viridis" in html_content
+    # Verify scalar-related data is present in the scene JSON
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
+    scene = extract_scene_data(html_content)
+    actor = scene["actors"][0]
+    assert actor["scalars"] is not None
+    assert actor["scalars"]["arrayName"] == "elevation"
+    assert actor["scalars"]["cmap"] == "viridis"
+    assert "range" in actor["scalars"]
 
 
 def test_multiple_colormaps_html_generation(monkeypatch) -> None:

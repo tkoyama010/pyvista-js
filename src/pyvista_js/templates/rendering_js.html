@@ -59,28 +59,72 @@
   })();
 </script>
 
-{{ LIGHTS_CODE }}
+{% if LIGHTS_CODE %}
+<script>
+  (function() {
+    var renderer = window.renderer;
+    if (!renderer) return;
+    {{ LIGHTS_CODE }}
+  })();
+</script>
+{% endif %}
 
 {{ ACTORS_CODE }}
 
+{% if SCALAR_BAR_CODE %}
 {{ SCALAR_BAR_CODE }}
+{% endif %}
 
-{{ TEXT_ACTORS_CODE }}
+{% if TEXT_ACTORS_CODE %}
+<script>
+  (function() {
+    var renderer = window.renderer;
+    if (!renderer) return;
+    {{ TEXT_ACTORS_CODE }}
+  })();
+</script>
+{% endif %}
 
-{{ ENVIRONMENT_CODE }}
-
-{{ AXES_CODE }}
-
+{% if ENVIRONMENT_CODE %}
 <script>
   (function() {
     var renderer = window.renderer;
     var renderWindow = window.renderWindow;
+    if (!renderer) return;
+    {{ ENVIRONMENT_CODE }}
+  })();
+</script>
+{% endif %}
+
+{% if AXES_CODE %}
+<script>
+  (function() {
+    var interactor = window.interactor;
+    if (!interactor) return;
+    {{ AXES_CODE }}
+  })();
+</script>
+{% endif %}
+
+<script>
+  (function() {
+    var renderer = window.renderer;
     if (renderer) {
       renderer.resetCamera();
     }
   })();
 </script>
-{{ CAMERA_CODE }}
+
+{% if CAMERA_CODE %}
+<script>
+  (function() {
+    var renderer = window.renderer;
+    if (!renderer) return;
+    {{ CAMERA_CODE }}
+  })();
+</script>
+{% endif %}
+
 <script>
   (function() {
     var renderWindow = window.renderWindow;

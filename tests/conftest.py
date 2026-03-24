@@ -6,9 +6,62 @@ fixtures for browser-based testing.
 
 from __future__ import annotations
 
+import json
+import re
 from typing import TYPE_CHECKING
 
 import pytest
+
+
+def extract_scene_data(html: str) -> dict:
+    """Extract and parse the JSON scene data from generated HTML.
+
+    Parameters
+    ----------
+    html : str
+        HTML string containing a ``<script type="application/json" id="scene-data">``
+        block.
+
+    Returns
+    -------
+    dict
+        Parsed scene configuration dictionary.
+
+    """
+    match = re.search(
+        r'<script type="application/json" id="scene-data">\s*(.*?)\s*</script>',
+        html,
+        re.DOTALL,
+    )
+    if match is None:
+        msg = "No scene-data JSON block found in HTML"
+        raise ValueError(msg)
+    return json.loads(match.group(1))
+
+
+def extract_scene_data_from_js(js: str) -> dict:
+    """Extract and parse the JSON scene data from generated JavaScript.
+
+    The JS contains ``sceneDataEl.textContent = '...';`` with the JSON string.
+
+    Parameters
+    ----------
+    js : str
+        JavaScript string from ``_generate_render_js()``.
+
+    Returns
+    -------
+    dict
+        Parsed scene configuration dictionary.
+
+    """
+    match = re.search(r'sceneDataEl\.textContent\s*=\s*(".*?")\s*;', js, re.DOTALL)
+    if match is None:
+        msg = "No sceneDataEl.textContent found in JS"
+        raise ValueError(msg)
+    # The value is a JSON-encoded string (double-encoded), so decode twice
+    inner_json_str = json.loads(match.group(1))
+    return json.loads(inner_json_str)
 
 if TYPE_CHECKING:
     from collections.abc import Generator

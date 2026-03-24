@@ -1,5 +1,11 @@
 {{ SOURCE_CODE }}
-{{ NORMALS_CODE }}
+{% if NORMALS_CODE %}
+<script>
+  (function() {
+    {{ NORMALS_CODE }}
+  })();
+</script>
+{% endif %}
 <div id="actor-config"
      data-actor-name="{{ ACTOR }}"
      data-mapper-name="{{ MAPPER }}"
@@ -18,8 +24,20 @@
     window[mapperName] = vtk.Rendering.Core[config.mapperClass].newInstance();
   })();
 </script>
-{{ MAPPER_SETUP }}
-{{ SCALAR_CODE }}
+{% if MAPPER_SETUP %}
+<script>
+  (function() {
+    {{ MAPPER_SETUP }}
+  })();
+</script>
+{% endif %}
+{% if SCALAR_CODE %}
+<script>
+  (function() {
+    {{ SCALAR_CODE }}
+  })();
+</script>
+{% endif %}
 <script>
   (function() {
     const config = document.getElementById('actor-config').dataset;
@@ -36,11 +54,41 @@
     window[actorName].getProperty().setOpacity(parseFloat(config.opacity));
   })();
 </script>
-{{ EDGE_CODE }}
-{{ STYLE_CODE }}
-{{ SHADING_CODE }}
-{{ PBR_CODE }}
-{{ TEXTURE_CODE }}
+{% if EDGE_CODE %}
+<script>
+  (function() {
+    {{ EDGE_CODE }}
+  })();
+</script>
+{% endif %}
+{% if STYLE_CODE %}
+<script>
+  (function() {
+    {{ STYLE_CODE }}
+  })();
+</script>
+{% endif %}
+{% if SHADING_CODE %}
+<script>
+  (function() {
+    {{ SHADING_CODE }}
+  })();
+</script>
+{% endif %}
+{% if PBR_CODE %}
+<script>
+  (function() {
+    {{ PBR_CODE }}
+  })();
+</script>
+{% endif %}
+{% if TEXTURE_CODE %}
+<script>
+  (function() {
+    {{ TEXTURE_CODE }}
+  })();
+</script>
+{% endif %}
 <script>
   (function() {
     const config = document.getElementById('actor-config').dataset;
