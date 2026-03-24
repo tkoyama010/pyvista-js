@@ -29,7 +29,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install uv
-      uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82  # v7
+      uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78  # v7
       with:
         enable-cache: false
 
@@ -54,7 +54,7 @@ jobs:
 
     - name: Open issue on failure
       if: failure() && github.event_name == 'schedule'
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v7
       with:
         script: |
           const title = `Nightly test failure (Python ${{ matrix.python-version }}) - ${new Date().toISOString().slice(0, 10)}`;
