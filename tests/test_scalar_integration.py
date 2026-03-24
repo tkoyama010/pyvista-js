@@ -32,18 +32,18 @@ def test_scalar_rendering_html_generation(monkeypatch) -> None:
 
     # Read the generated HTML file
     html_path = url2pathname(urlparse(opened[0]).path)
-    with Path(html_path).open() as f:
+    with Path(html_path).open(encoding="utf-8") as f:
         html_content = f.read()
 
-    # Verify vtk.js scalar-related code is present
-    assert "elevation" in html_content
-    assert "vtkDataArray" in html_content
-    assert "addArray" in html_content
-    assert "vtkColorTransferFunction" in html_content
-    assert "setScalarVisibility(true)" in html_content
-    assert "setColorByArrayName" in html_content
-    assert "setLookupTable" in html_content
-    assert "viridis" in html_content
+    # Verify scalar-related data is present in the scene JSON
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
+    scene = extract_scene_data(html_content)
+    actor = scene["actors"][0]
+    assert actor["scalars"] is not None
+    assert actor["scalars"]["arrayName"] == "elevation"
+    assert actor["scalars"]["cmap"] == "viridis"
+    assert "range" in actor["scalars"]
 
 
 def test_multiple_colormaps_html_generation(monkeypatch) -> None:
@@ -63,7 +63,7 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     plotter1.show()
 
     html_path1 = url2pathname(urlparse(opened[-1]).path)
-    with Path(html_path1).open() as f:
+    with Path(html_path1).open(encoding="utf-8") as f:
         html1 = f.read()
 
     assert "viridis" in html1
@@ -76,7 +76,7 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     plotter2.show()
 
     html_path2 = url2pathname(urlparse(opened[-1]).path)
-    with Path(html_path2).open() as f:
+    with Path(html_path2).open(encoding="utf-8") as f:
         html2 = f.read()
 
     assert "plasma" in html2
@@ -97,7 +97,7 @@ def test_no_scalars_no_lut(monkeypatch) -> None:
     plotter.show()
 
     html_path = url2pathname(urlparse(opened[0]).path)
-    with Path(html_path).open() as f:
+    with Path(html_path).open(encoding="utf-8") as f:
         html_content = f.read()
 
     # Verify scalar-related code is NOT present

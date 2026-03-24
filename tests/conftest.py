@@ -6,9 +6,61 @@ fixtures for browser-based testing.
 
 from __future__ import annotations
 
+import json
+import re
 from typing import TYPE_CHECKING
 
 import pytest
+
+
+def extract_scene_data(html: str) -> dict:
+    """Extract and parse the JSON scene data from generated HTML.
+
+    Parameters
+    ----------
+    html : str
+        HTML string containing a ``<script type="application/json" id="scene-data">``
+        block.
+
+    Returns
+    -------
+    dict
+        Parsed scene configuration dictionary.
+
+    """
+    match = re.search(
+        r'<script type="application/json" id="scene-data">\s*(.*?)\s*</script>',
+        html,
+        re.DOTALL,
+    )
+    if match is None:
+        msg = "No scene-data JSON block found in HTML"
+        raise ValueError(msg)
+    return json.loads(match.group(1))
+
+
+def extract_scene_data_from_js(js: str) -> dict:
+    """Extract and parse the JSON scene data from generated JavaScript.
+
+    The JS contains ``var __pvjsSceneData = {...};`` with the JSON object.
+
+    Parameters
+    ----------
+    js : str
+        JavaScript string from ``_generate_render_js()``.
+
+    Returns
+    -------
+    dict
+        Parsed scene configuration dictionary.
+
+    """
+    match = re.search(r"var __pvjsSceneData\s*=\s*(\{.*?\})\s*;", js, re.DOTALL)
+    if match is None:
+        msg = "No __pvjsSceneData found in JS"
+        raise ValueError(msg)
+    return json.loads(match.group(1))
+
 
 if TYPE_CHECKING:
     from collections.abc import Generator

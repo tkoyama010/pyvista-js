@@ -87,29 +87,31 @@ def test_point_data_values() -> None:
     assert np.array_equal(values[0], np.array([1.0, 2.0, 3.0]))
 
 
-def test_vtk_js_source_with_scalars() -> None:
-    """Test that scalar arrays are included in vtk.js source code."""
+def test_scene_data_with_scalars() -> None:
+    """Test that scalar arrays are included in scene data."""
     mesh = PolyData(points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     mesh["elevation"] = np.array([0.0, 0.5, 1.0])
 
-    source_code = mesh.generate_vtk_js_source(0)
+    scene = mesh.to_scene_data()
 
-    assert "elevation" in source_code
-    assert "vtkDataArray" in source_code
-    assert "addArray" in source_code
+    assert "pointData" in scene
+    assert len(scene["pointData"]) == 1
+    assert scene["pointData"][0]["name"] == "elevation"
 
 
-def test_vtk_js_source_with_multiple_scalars() -> None:
-    """Test that multiple scalar arrays are included in vtk.js source code."""
+def test_scene_data_with_multiple_scalars() -> None:
+    """Test that multiple scalar arrays are included in scene data."""
     mesh = PolyData(points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     mesh["elevation"] = np.array([0.0, 0.5, 1.0])
     mesh["temperature"] = np.array([100.0, 200.0, 300.0])
 
-    source_code = mesh.generate_vtk_js_source(0)
+    scene = mesh.to_scene_data()
 
-    assert "elevation" in source_code
-    assert "temperature" in source_code
-    assert source_code.count("addArray") == 2
+    assert "pointData" in scene
+    assert len(scene["pointData"]) == 2
+    names = [arr["name"] for arr in scene["pointData"]]
+    assert "elevation" in names
+    assert "temperature" in names
 
 
 def test_plotter_add_mesh_with_scalars(monkeypatch) -> None:
@@ -203,19 +205,22 @@ def test_scalar_array_2d() -> None:
     # 2D array with 2 components per point
     mesh["vectors"] = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
 
-    source_code = mesh.generate_vtk_js_source(0)
+    scene = mesh.to_scene_data()
 
-    assert "vectors" in source_code
-    assert "numberOfComponents: 2" in source_code
+    assert "pointData" in scene
+    vec_array = scene["pointData"][0]
+    assert vec_array["name"] == "vectors"
+    assert vec_array["numberOfComponents"] == 2
 
 
-def test_scalar_array_invalid_dimensions() -> None:
-    """Test that 3D+ arrays raise an error."""
+def test_scalar_array_3d_still_serializes() -> None:
+    """Test that 3D arrays are flattened and serialized in scene data."""
     mesh = PolyData(points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
-    mesh["invalid"] = np.array([[[1.0]]])
+    mesh["data3d"] = np.array([[[1.0]], [[2.0]], [[3.0]]])
 
-    with pytest.raises(ValueError, match="must be 1D or 2D"):
-        mesh.generate_vtk_js_source(0)
+    scene = mesh.to_scene_data()
+    assert "pointData" in scene
+    assert scene["pointData"][0]["name"] == "data3d"
 
 
 def test_point_data_convert_list_to_array() -> None:
