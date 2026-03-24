@@ -11,6 +11,7 @@
     "esbuild": "^0.25",
     "eslint": "^10.1.0",
     "eslint-plugin-jsdoc": "^62.8.0",
+    "eslint-plugin-unicorn": "^63.0.0",
     "typescript": "^5.8",
     "typescript-eslint": "^8.57.2"
   }

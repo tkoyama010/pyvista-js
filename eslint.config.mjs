@@ -1,5 +1,6 @@
 import eslint from "@eslint/js";
 import jsdoc from "eslint-plugin-jsdoc";
+import unicorn from "eslint-plugin-unicorn";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -7,6 +8,7 @@ export default tseslint.config(
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
   jsdoc.configs["flat/recommended-typescript-error"],
+  unicorn.configs["flat/all"],
   {
     languageOptions: {
       parserOptions: {
@@ -31,6 +33,12 @@ export default tseslint.config(
       "jsdoc/no-blank-block-descriptions": "error",
       "jsdoc/require-param": "off",
       "jsdoc/require-returns": "off",
+    },
+  },
+  {
+    files: ["ts/*.d.ts"],
+    rules: {
+      "unicorn/no-keyword-prefix": "off",
     },
   },
   {

@@ -8,8 +8,8 @@
  */
 
 /** Access a typed array element, returning 0 for out-of-bounds. */
-function at(arr: Float32Array | Uint32Array, i: number): number {
-  return arr[i] ?? 0;
+function at(array: Float32Array | Uint32Array, index: number): number {
+  return array[index] ?? 0;
 }
 
 /** Wraps either a vtk.js algorithm (filter/source) or raw PolyData. */
@@ -37,13 +37,14 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
 }
 
 const sceneData: SceneData =
-  typeof __pvjsSceneData !== "undefined"
-    ? __pvjsSceneData
-    : (JSON.parse(document.getElementById("scene-data")?.textContent ?? "{}") as SceneData);
+  typeof __pvjsSceneData === "undefined"
+    ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
+    : __pvjsSceneData;
 const container: HTMLElement =
-  typeof __pvjsContainer !== "undefined"
-    ? __pvjsContainer
-    : (document.getElementById(sceneData.containerId) ?? document.createElement("div"));
+  typeof __pvjsContainer === "undefined"
+    ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
+      document.createElement("div"))
+    : __pvjsContainer;
 const bg = sceneData.background;
 
 const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
@@ -66,9 +67,13 @@ interactor.setView(openGLRenderWindow);
 interactor.initialize();
 interactor.bindEvents(container);
 
+// eslint-disable-next-line unicorn/prefer-global-this -- Window augmentation requires window
 window.renderer = renderer;
+// eslint-disable-next-line unicorn/prefer-global-this
 window.renderWindow = renderWindow;
+// eslint-disable-next-line unicorn/prefer-global-this
 window.openGLRenderWindow = openGLRenderWindow;
+// eslint-disable-next-line unicorn/prefer-global-this
 window.interactor = interactor;
 
 if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
@@ -78,9 +83,9 @@ if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
   setupLights(sceneData.lights, renderer);
 }
 
-sceneData.actors.forEach((actorConfig: ActorConfig, idx: number) => {
-  setupActor(actorConfig, idx, renderer, renderWindow);
-});
+for (const [index, actorConfig] of sceneData.actors.entries()) {
+  setupActor(actorConfig, index, renderer, renderWindow);
+}
 
 if (sceneData.textActors) {
   for (const textConfig of sceneData.textActors) {
@@ -114,9 +119,9 @@ function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
       head: "setLightTypeToHeadLight",
     };
     const setter = typeMap[cfg.type] ?? "setLightTypeToSceneLight";
-    const setterFn = light[setter];
-    if (typeof setterFn === "function") {
-      (setterFn as () => void).call(light);
+    const setterFunction = light[setter];
+    if (typeof setterFunction === "function") {
+      (setterFunction as () => void).call(light);
     }
     light.setPosition(cfg.position[0], cfg.position[1], cfg.position[2]);
     light.setFocalPoint(cfg.focalPoint[0], cfg.focalPoint[1], cfg.focalPoint[2]);
@@ -155,38 +160,51 @@ const readerMap: ReaderFactoryMap = {
 };
 
 /** Dispatch to the appropriate source factory based on `cfg.type`. */
-function createSource(cfg: SourceConfig): SourceResult | null {
+function createSource(cfg: SourceConfig): SourceResult | undefined {
   switch (cfg.type) {
-    case "sphere":
+    case "sphere": {
       return createSphereSource(cfg);
-    case "cone":
+    }
+    case "cone": {
       return createConeSource(cfg);
-    case "cube":
+    }
+    case "cube": {
       return createCubeSource(cfg);
-    case "cylinder":
+    }
+    case "cylinder": {
       return createCylinderSource(cfg);
-    case "disk":
+    }
+    case "disk": {
       return createDiskSource(cfg);
-    case "circle":
+    }
+    case "circle": {
       return createCircleSource(cfg);
-    case "arrow":
+    }
+    case "arrow": {
       return createArrowSource(cfg);
-    case "line":
+    }
+    case "line": {
       return createLineSource(cfg);
-    case "plane":
+    }
+    case "plane": {
       return createPlaneSource(cfg);
-    case "mesh":
+    }
+    case "mesh": {
       return createMeshSource(cfg);
-    case "points":
+    }
+    case "points": {
       return createPointsSource(cfg);
+    }
     case "plyReader":
     case "stlReader":
     case "objReader":
-    case "vtkReader":
+    case "vtkReader": {
       return createReaderSource(cfg);
-    default:
+    }
+    default: {
       console.error("Unknown source type:", cfg.type);
-      return null;
+      return undefined;
+    }
   }
 }
 
@@ -243,7 +261,7 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
         radialResolution: 1,
         circumferentialResolution: cfg.resolution,
       })
-    : null;
+    : undefined;
   return {
     output: source ?? vtk.Common.DataModel.vtkPolyData.newInstance(),
     isFilter: true,
@@ -324,8 +342,8 @@ function createReaderSource(cfg: SourceConfig): SourceResult {
   }
   const binary = atob(cfg.data ?? "");
   const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
+  for (let index = 0; index < binary.length; index++) {
+    bytes[index] = binary.codePointAt(index) ?? 0;
   }
   const reader = entry.factory.newInstance();
   if (entry.parseMethod === "parseAsText") {
@@ -347,11 +365,11 @@ function injectPointData(
   if (!pointDataArrays) {
     return;
   }
-  for (const arr of pointDataArrays) {
+  for (const array of pointDataArrays) {
     const dataArray = vtk.Common.Core.vtkDataArray.newInstance({
-      numberOfComponents: arr.numberOfComponents,
-      values: Float32Array.from(arr.values),
-      name: arr.name,
+      numberOfComponents: array.numberOfComponents,
+      values: Float32Array.from(array.values),
+      name: array.name,
     });
     polydata.getPointData().addArray(dataArray);
   }
@@ -388,7 +406,7 @@ function setupNormals(
 /** Build a complete vtk.js actor from an {@link ActorConfig} and add it to the renderer. */
 function setupActor(
   cfg: ActorConfig,
-  _idx: number,
+  _index: number,
   ren: VtkRenderer,
   renWin: VtkRenderWindow,
 ): void {
@@ -474,10 +492,10 @@ function setupActor(
     actor.addTexture(texture);
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.onload = () => {
+    img.addEventListener("load", () => {
       texture.setImage(img);
       renWin.render();
-    };
+    });
     img.src = cfg.texture.url;
   }
 
@@ -515,11 +533,11 @@ function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
 }
 
 /** Add an orientation-marker axes widget to the bottom-left corner. */
-function setupAxes(interactorObj: VtkInteractor): void {
+function setupAxes(interactorObject: VtkInteractor): void {
   const axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
   const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
     actor: axes,
-    interactor: interactorObj,
+    interactor: interactorObject,
   });
   orientationWidget.setEnabled(true);
   orientationWidget.setViewportCorner(
@@ -531,9 +549,9 @@ function setupAxes(interactorObj: VtkInteractor): void {
 }
 
 /** Create an absolutely-positioned HTML overlay for 2D text. */
-function setupTextActor(cfg: TextActorConfig, containerEl: HTMLElement): void {
+function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): void {
   const div = document.createElement("div");
-  div.innerText = cfg.text;
+  div.textContent = cfg.text;
   div.style.position = "absolute";
   div.style.left = `${String(cfg.position[0] * 100)}%`;
   div.style.bottom = `${String(cfg.position[1] * 100)}%`;
@@ -548,7 +566,7 @@ function setupTextActor(cfg: TextActorConfig, containerEl: HTMLElement): void {
   div.style.zIndex = "10";
   div.style.whiteSpace = "pre";
   div.style.textShadow = "1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8)";
-  containerEl.appendChild(div);
+  containerElement.append(div);
 }
 
 /** Apply a chain of filters (shrink, tube, clip, contour) to a source. */
@@ -582,19 +600,19 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     return sourceResult;
   }
 
-  const newPoints: number[] = [];
-  const newPolys: number[] = [];
+  const resultPoints: number[] = [];
+  const resultPolys: number[] = [];
   let offset = 0;
-  let i = 0;
-  while (i < polys.length) {
-    const nVerts = at(polys, i);
-    i++;
+  let index = 0;
+  while (index < polys.length) {
+    const nVerts = at(polys, index);
+    index++;
     let cx = 0,
       cy = 0,
       cz = 0;
     const indices: number[] = [];
-    for (let j = 0; j < nVerts; j++) {
-      const vi = at(polys, i + j);
+    for (let index_ = 0; index_ < nVerts; index_++) {
+      const vi = at(polys, index + index_);
       indices.push(vi);
       cx += at(inPoints, vi * 3);
       cy += at(inPoints, vi * 3 + 1);
@@ -603,26 +621,26 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     cx /= nVerts;
     cy /= nVerts;
     cz /= nVerts;
-    newPolys.push(nVerts);
+    resultPolys.push(nVerts);
     for (let k = 0; k < nVerts; k++) {
       const pi = indices[k] ?? 0;
       const px = at(inPoints, pi * 3);
       const py = at(inPoints, pi * 3 + 1);
       const pz = at(inPoints, pi * 3 + 2);
-      newPoints.push(
+      resultPoints.push(
         cx + (px - cx) * shrinkFactor,
         cy + (py - cy) * shrinkFactor,
         cz + (pz - cz) * shrinkFactor,
       );
-      newPolys.push(offset + k);
+      resultPolys.push(offset + k);
     }
     offset += nVerts;
-    i += nVerts;
+    index += nVerts;
   }
 
   const outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();
-  outputPD.getPoints().setData(new Float32Array(newPoints), 3);
-  outputPD.getPolys().setData(new Uint32Array(newPolys));
+  outputPD.getPoints().setData(new Float32Array(resultPoints), 3);
+  outputPD.getPolys().setData(new Uint32Array(resultPolys));
   return { output: outputPD, isFilter: false };
 }
 
@@ -680,20 +698,20 @@ function applyClipManual(
   const [nx, ny, nz] = normal;
   const [ox, oy, oz] = origin;
 
-  const newPoints: number[] = [];
-  const newPolys: number[] = [];
+  const resultPoints: number[] = [];
+  const resultPolys: number[] = [];
   const pointMap = new Map<number, number>();
-  let nextIdx = 0;
-  let i = 0;
-  while (i < polys.length) {
-    const nVerts = at(polys, i);
-    i++;
+  let nextIndex = 0;
+  let index = 0;
+  while (index < polys.length) {
+    const nVerts = at(polys, index);
+    index++;
     let cx = 0,
       cy = 0,
       cz = 0;
     const cellIndices: number[] = [];
-    for (let j = 0; j < nVerts; j++) {
-      const vi = at(polys, i + j);
+    for (let index_ = 0; index_ < nVerts; index_++) {
+      const vi = at(polys, index + index_);
       cellIndices.push(vi);
       cx += at(inPoints, vi * 3);
       cy += at(inPoints, vi * 3 + 1);
@@ -705,22 +723,26 @@ function applyClipManual(
     const dot = (cx - ox) * nx + (cy - oy) * ny + (cz - oz) * nz;
     const keep = invert ? dot >= 0 : dot <= 0;
     if (keep) {
-      newPolys.push(nVerts);
+      resultPolys.push(nVerts);
       for (let k = 0; k < nVerts; k++) {
         const pi = cellIndices[k] ?? 0;
         if (!pointMap.has(pi)) {
-          pointMap.set(pi, nextIdx++);
-          newPoints.push(at(inPoints, pi * 3), at(inPoints, pi * 3 + 1), at(inPoints, pi * 3 + 2));
+          pointMap.set(pi, nextIndex++);
+          resultPoints.push(
+            at(inPoints, pi * 3),
+            at(inPoints, pi * 3 + 1),
+            at(inPoints, pi * 3 + 2),
+          );
         }
-        newPolys.push(pointMap.get(pi) ?? 0);
+        resultPolys.push(pointMap.get(pi) ?? 0);
       }
     }
-    i += nVerts;
+    index += nVerts;
   }
 
   const outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();
-  outputPD.getPoints().setData(new Float32Array(newPoints), 3);
-  outputPD.getPolys().setData(new Uint32Array(newPolys));
+  outputPD.getPoints().setData(new Float32Array(resultPoints), 3);
+  outputPD.getPolys().setData(new Uint32Array(resultPolys));
   return { output: outputPD, isFilter: false };
 }
 
@@ -757,38 +779,38 @@ function applyContourManual(
 ): SourceResult {
   const inPoints = inputPD.getPoints().getData();
   const polys = inputPD.getPolys().getData();
-  const scalarsArr = inputPD.getPointData().getArrayByName(scalarName);
-  if (polys.length === 0 || !scalarsArr) {
+  const scalarsArray = inputPD.getPointData().getArrayByName(scalarName);
+  if (polys.length === 0 || !scalarsArray) {
     return { output: inputPD, isFilter: false };
   }
-  const scalarValues = scalarsArr.getData();
+  const scalarValues = scalarsArray.getData();
 
   const outPoints: number[] = [];
   const outPolys: number[] = [];
-  let pointIdx = 0;
+  let pointIndex = 0;
 
-  let i = 0;
-  while (i < polys.length) {
-    const nVerts = at(polys, i);
-    i++;
+  let index = 0;
+  while (index < polys.length) {
+    const nVerts = at(polys, index);
+    index++;
     if (nVerts === 3) {
-      const i0 = at(polys, i),
-        i1 = at(polys, i + 1),
-        i2 = at(polys, i + 2);
-      const s0 = at(scalarValues, i0),
-        s1 = at(scalarValues, i1),
-        s2 = at(scalarValues, i2);
+      const index0 = at(polys, index),
+        index1 = at(polys, index + 1),
+        index2 = at(polys, index + 2);
+      const s0 = at(scalarValues, index0),
+        s1 = at(scalarValues, index1),
+        s2 = at(scalarValues, index2);
       const tri: [number, number, number, number][] = [
-        [i0, i1, s0, s1],
-        [i1, i2, s1, s2],
-        [i2, i0, s2, s0],
+        [index0, index1, s0, s1],
+        [index1, index2, s1, s2],
+        [index2, index0, s2, s0],
       ];
-      for (const val of values) {
+      for (const value of values) {
         const edgePoints: number[] = [];
         for (const edge of tri) {
           const [ai, bi, sa, sb] = edge;
-          if ((sa <= val && val < sb) || (sb <= val && val < sa)) {
-            const t = (val - sa) / (sb - sa);
+          if ((sa <= value && value < sb) || (sb <= value && value < sa)) {
+            const t = (value - sa) / (sb - sa);
             edgePoints.push(
               at(inPoints, ai * 3) + t * (at(inPoints, bi * 3) - at(inPoints, ai * 3)),
               at(inPoints, ai * 3 + 1) + t * (at(inPoints, bi * 3 + 1) - at(inPoints, ai * 3 + 1)),
@@ -797,14 +819,20 @@ function applyContourManual(
           }
         }
         if (edgePoints.length === 6) {
-          outPoints.push(edgePoints[0] ?? 0, edgePoints[1] ?? 0, edgePoints[2] ?? 0);
-          outPoints.push(edgePoints[3] ?? 0, edgePoints[4] ?? 0, edgePoints[5] ?? 0);
-          outPolys.push(2, pointIdx, pointIdx + 1);
-          pointIdx += 2;
+          outPoints.push(
+            edgePoints[0] ?? 0,
+            edgePoints[1] ?? 0,
+            edgePoints[2] ?? 0,
+            edgePoints[3] ?? 0,
+            edgePoints[4] ?? 0,
+            edgePoints[5] ?? 0,
+          );
+          outPolys.push(2, pointIndex, pointIndex + 1);
+          pointIndex += 2;
         }
       }
     }
-    i += nVerts;
+    index += nVerts;
   }
 
   const outputPD = vtk.Common.DataModel.vtkPolyData.newInstance();

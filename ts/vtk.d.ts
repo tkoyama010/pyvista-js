@@ -27,8 +27,8 @@ interface VtkDataArrayFactory {
 
 /** Manages per-point data arrays (scalars, vectors, texture coordinates). */
 interface VtkPointData {
-  addArray(arr: VtkDataArray): void;
-  setTCoords(arr: VtkDataArray): void;
+  addArray(array: VtkDataArray): void;
+  setTCoords(array: VtkDataArray): void;
   setActiveScalars(name: string): void;
   getArrayByName(name: string): VtkDataArray | null;
 }
@@ -143,7 +143,7 @@ interface VtkLight {
   setLightTypeToSceneLight(): void;
   setLightTypeToCameraLight(): void;
   setLightTypeToHeadLight(): void;
-  [key: string]: ((...args: number[]) => void) | undefined;
+  [key: string]: ((...arguments_: number[]) => void) | undefined;
 }
 
 /** The vtk.js renderer that holds actors, lights, and a camera. */
