@@ -29,12 +29,12 @@ jobs:
         run: pip install jupytext
 
       - name: Convert py to ipynb
-        run: jupytext --to notebook jupyterlite/content/intro.py
+        run: jupytext --to notebook jupyterlite/content/intro.py --output intro.ipynb
 
       - name: Commit and push to notebook-link branch
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add -f jupyterlite/content/intro.ipynb
+          git add intro.ipynb
           git commit -m "chore: auto-generate intro.ipynb for Notebook.link [skip ci]"
           git push origin HEAD:notebook-link --force
