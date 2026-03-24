@@ -18,9 +18,10 @@ function at(array: Float32Array | Uint32Array, index: number): number {
 }
 
 /** Wraps either a vtk.js algorithm (filter/source) or raw PolyData. */
-type SourceResult =
-  | { output: VtkAlgorithm; isFilter: true }
-  | { output: VtkPolyData; isFilter: false };
+type SourceResult = {
+  output: VtkAlgorithm | VtkPolyData;
+  isFilter: boolean;
+};
 
 /**
  * Resolve a {@link SourceResult} to its underlying PolyData.
@@ -29,11 +30,11 @@ type SourceResult =
  */
 function getPolyData(sourceResult: SourceResult): VtkPolyData {
   if (sourceResult.isFilter) {
-    sourceResult.output.update();
-    return sourceResult.output.getOutputData();
+    (sourceResult.output as VtkAlgorithm).update();
+    return (sourceResult.output as VtkAlgorithm).getOutputData();
   }
 
-  return sourceResult.output;
+  return sourceResult.output as VtkPolyData;
 }
 
 /**
@@ -43,18 +44,15 @@ function getPolyData(sourceResult: SourceResult): VtkPolyData {
  */
 function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
   if (sourceResult.isFilter) {
-    filter.setInputConnection(sourceResult.output.getOutputPort());
+    filter.setInputConnection((sourceResult.output as VtkAlgorithm).getOutputPort());
   } else {
-    filter.setInputData(sourceResult.output);
+    filter.setInputData(sourceResult.output as VtkPolyData);
   }
 }
 
 const sceneData: SceneData =
   typeof __pvjsSceneData === "undefined"
-    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-      (JSON.parse(
-        document.querySelector("#scene-data")?.textContent ?? "{}",
-      ) as unknown as SceneData)
+    ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
     : __pvjsSceneData;
 const container: HTMLElement =
   typeof __pvjsContainer === "undefined"
@@ -446,7 +444,6 @@ function createReaderSource(cfg: SourceConfig): SourceResult {
   }
 
   return {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     output: reader as unknown as VtkAlgorithm,
     isFilter: true,
   };
@@ -551,9 +548,9 @@ function setupActor(
       : vtk.Rendering.Core.vtkMapper;
   const mapper = mapperClass.newInstance();
   if (mapperInput.isFilter) {
-    mapper.setInputConnection(mapperInput.output.getOutputPort());
+    mapper.setInputConnection((mapperInput.output as VtkAlgorithm).getOutputPort());
   } else {
-    mapper.setInputData(mapperInput.output);
+    mapper.setInputData(mapperInput.output as VtkPolyData);
   }
 
   const actor = vtk.Rendering.Core.vtkActor.newInstance();

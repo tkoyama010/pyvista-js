@@ -10,6 +10,8 @@ export default [
       jsdoc: jsdocPlugin,
     },
     rules: {
+      // VTK.js bridges require assertions between its untyped API and our typed interfaces
+      "@typescript-eslint/no-unsafe-type-assertion": "off",
       "jsdoc/require-jsdoc": [
         "error",
         {
