@@ -21,6 +21,7 @@ import pytest
 
 from pyvista_js import Line, Plotter, Sphere, Text
 from pyvista_js.examples import download_bunny, download_trumpet
+from pyvista_js.readers import OBJReader, PLYReader, PolyDataReader, STLReader
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -467,3 +468,106 @@ def test_obj_reader_renders_in_browser(page: Page) -> None:
     canvas = page.query_selector("canvas")
     assert canvas is not None, "Canvas element not found for OBJ reader mesh"
     assert len(js_errors) == 0, f"JavaScript errors during OBJ rendering: {js_errors}"
+
+
+_TEST_DATA_DIR = Path(__file__).parent / "data"
+
+
+@pytest.mark.playwright
+def test_stl_reader_renders_in_browser(page: Page) -> None:
+    """Test that STL file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = STLReader(_TEST_DATA_DIR / "triangle.stl").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="red")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for STL reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during STL rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_vtk_reader_renders_in_browser(page: Page) -> None:
+    """Test that VTK legacy file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = PolyDataReader(_TEST_DATA_DIR / "triangle.vtk").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="green")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for VTK reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during VTK rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_obj_reader_from_file_renders_in_browser(page: Page) -> None:
+    """Test that OBJ file meshes from local file render correctly.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = OBJReader(_TEST_DATA_DIR / "triangle.obj").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="blue")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for OBJ reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during OBJ rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_ply_reader_from_file_renders_in_browser(page: Page) -> None:
+    """Test that PLY file meshes from local file render correctly.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = PLYReader(_TEST_DATA_DIR / "triangle.ply").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="yellow")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for PLY reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during PLY rendering: {js_errors}"
