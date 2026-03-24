@@ -55,7 +55,7 @@ def extract_scene_data_from_js(js: str) -> dict:
         Parsed scene configuration dictionary.
 
     """
-    match = re.search(r'var __pvjsSceneData\s*=\s*(\{.*?\})\s*;', js, re.DOTALL)
+    match = re.search(r"var __pvjsSceneData\s*=\s*(\{.*?\})\s*;", js, re.DOTALL)
     if match is None:
         msg = "No __pvjsSceneData found in JS"
         raise ValueError(msg)
