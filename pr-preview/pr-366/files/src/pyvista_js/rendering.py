@@ -781,23 +781,20 @@ class _BaseHTMLRenderer:
 
         scene_data = self._build_scene_data()
         scene_json = _json.dumps(scene_data)
-        scene_data_id = f"scene-data-{self.container_id}"
 
-        # For JupyterLite: create container and scene-data inside the cell output
+        # For JupyterLite: pass scene data and container via JS variables
+        # so pyvista-renderer.js can use them directly without DOM lookups.
         return (
             "(function() {\n"
             "  var container = document.createElement('div');\n"
             f"  container.id = {_json.dumps(self.container_id)};\n"
             "  container.style.cssText = "
             "'width:600px;height:400px;border:2px solid #333;position:relative';\n"
-            "  var sceneDataEl = document.createElement('script');\n"
-            "  sceneDataEl.type = 'application/json';\n"
-            f"  sceneDataEl.id = {_json.dumps(scene_data_id)};\n"
-            f"  sceneDataEl.textContent = {_json.dumps(scene_json)};\n"
             "  var parent = (typeof element !== 'undefined' && element)"
             " ? element : document.body;\n"
             "  parent.appendChild(container);\n"
-            "  parent.appendChild(sceneDataEl);\n"
+            f"  var __pvjsSceneData = {scene_json};\n"
+            "  var __pvjsContainer = container;\n"
             "  function doRender() {\n"
             f"    {_RENDERER_JS}\n"
             "  }\n"
