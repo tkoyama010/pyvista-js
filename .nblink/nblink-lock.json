@@ -1,0 +1,240 @@
+{
+  "lockVersion": "1.0.3",
+  "platform": "emscripten-wasm32",
+  "specs": [
+    "numpy",
+    "pip"
+  ],
+  "channels": [
+    "conda-forge",
+    "https://repo.mamba.pm/emscripten-forge"
+  ],
+  "channelInfo": {
+    "conda-forge": [
+      {
+        "url": "https://prefix.dev/conda-forge",
+        "protocol": "https"
+      },
+      {
+        "url": "https://repo.prefix.dev/conda-forge",
+        "protocol": "https"
+      }
+    ],
+    "https://repo.mamba.pm/emscripten-forge": [
+      {
+        "url": "https://repo.mamba.pm/emscripten-forge",
+        "protocol": "https"
+      }
+    ]
+  },
+  "packages": {
+    "numpy-2.2.4-py311h876eb57_0.tar.bz2": {
+      "name": "numpy",
+      "build": "py311h876eb57_0",
+      "version": "2.2.4",
+      "subdir": "emscripten-wasm32",
+      "channel": "https://repo.mamba.pm/emscripten-forge",
+      "hash": {
+        "md5": "081f92d5e67dc9ca38b5577c3076d30a",
+        "sha256": "f7619343f044fd26bb312a5c0d46717c543e64ab0944e644e47110df2f31957e"
+      },
+      "size": 7550819
+    },
+    "pip-26.0.1-pyh8b19718_0.conda": {
+      "name": "pip",
+      "build": "pyh8b19718_0",
+      "version": "26.0.1",
+      "subdir": "noarch",
+      "channel": "conda-forge",
+      "hash": {
+        "md5": "67bdec43082fd8a9cffb9484420b39a2",
+        "sha256": "8e1497814a9997654ed7990a79c054ea5a42545679407acbc6f7e809c73c9120"
+      },
+      "size": 1181790
+    },
+    "python-3.11.3-h_bbba66e_25_cpython.tar.bz2": {
+      "name": "python",
+      "build": "h_bbba66e_25_cpython",
+      "version": "3.11.3",
+      "subdir": "emscripten-wasm32",
+      "channel": "https://repo.mamba.pm/emscripten-forge",
+      "hash": {
+        "md5": "27e4974cd7474bb2eadb09403504dc41",
+        "sha256": "968148ee2b13a9278910670873ad6a4fea77ea464d22fdd392be8039a43f49c7"
+      },
+      "size": 13185712
+    },
+    "emscripten-abi-3.1.45-h267e887_33.tar.bz2": {
+      "name": "emscripten-abi",
+      "build": "h267e887_33",
+      "version": "3.1.45",
+      "subdir": "noarch",
+      "channel": "https://repo.mamba.pm/emscripten-forge",
+      "hash": {
+        "md5": "c0c59546e009b1e28aeff9f015005c22",
+        "sha256": "9a434e877f4201e887818f7f51142c8f1819e6297a83fa8ede4785b5f6f1020e"
+      },
+      "size": 11088
+    },
+    "setuptools-82.0.1-pyh332efcf_0.conda": {
+      "name": "setuptools",
+      "build": "pyh332efcf_0",
+      "version": "82.0.1",
+      "subdir": "noarch",
+      "channel": "conda-forge",
+      "hash": {
+        "md5": "8e194e7b992f99a5015edbd4ebd38efd",
+        "sha256": "82088a6e4daa33329a30bc26dc19a98c7c1d3f05c0f73ce9845d4eab4924e9e1"
+      },
+      "size": 639697
+    },
+    "wheel-0.46.3-pyhd8ed1ab_0.conda": {
+      "name": "wheel",
+      "build": "pyhd8ed1ab_0",
+      "version": "0.46.3",
+      "subdir": "noarch",
+      "channel": "conda-forge",
+      "hash": {
+        "md5": "bdbd7385b4a67025ac2dba4ef8cb6a8f",
+        "sha256": "d6cf2f0ebd5e09120c28ecba450556ce553752652d91795442f0e70f837126ae"
+      },
+      "size": 31858
+    },
+    "packaging-26.0-pyhcf101f3_0.conda": {
+      "name": "packaging",
+      "build": "pyhcf101f3_0",
+      "version": "26.0",
+      "subdir": "noarch",
+      "channel": "conda-forge",
+      "hash": {
+        "md5": "b76541e68fea4d511b1ac46a28dcd2c6",
+        "sha256": "c1fc0f953048f743385d31c468b4a678b3ad20caffdeaa94bed85ba63049fd58"
+      },
+      "size": 72010
+    }
+  },
+  "pipPackages": {
+    "pyvista_js-0.12.0-py3-none-any.whl": {
+      "name": "pyvista-js",
+      "version": "0.12.0",
+      "url": "https://files.pythonhosted.org/packages/a5/1d/f982dc26fd755bb4e7ad5329caf3654aadad5d9b86573350a90c72af8596/pyvista_js-0.12.0-py3-none-any.whl",
+      "size": 73649,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "35fa54bc9704e07f40fd8eb794dbd709",
+        "sha256": "d2b53353bd38f356adca7de649749f033ab94bfa77cf77cfc9cce55253fa94c6"
+      }
+    },
+    "jinja2-3.1.6-py3-none-any.whl": {
+      "name": "jinja2",
+      "version": "3.1.6",
+      "url": "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl",
+      "size": 134899,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "845b37cea56edd0f4dbd949244e9d798",
+        "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"
+      }
+    },
+    "lazy_loader-0.5-py3-none-any.whl": {
+      "name": "lazy-loader",
+      "version": "0.5",
+      "url": "https://files.pythonhosted.org/packages/8a/a1/8d812e53a5da1687abb10445275d41a8b13adb781bbf7196ddbcf8d88505/lazy_loader-0.5-py3-none-any.whl",
+      "size": 8044,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "1b7f228e8c1c7d745ae0e45d9fe33960",
+        "sha256": "ab0ea149e9c554d4ffeeb21105ac60bed7f3b4fd69b1d2360a4add51b170b005"
+      }
+    },
+    "typer-0.24.1-py3-none-any.whl": {
+      "name": "typer",
+      "version": "0.24.1",
+      "url": "https://files.pythonhosted.org/packages/4a/91/48db081e7a63bb37284f9fbcefda7c44c277b18b0e13fbc36ea2335b71e6/typer-0.24.1-py3-none-any.whl",
+      "size": 56085,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "b856b041c333db2be8db38dfaf563db0",
+        "sha256": "112c1f0ce578bfb4cab9ffdabc68f031416ebcc216536611ba21f04e9aa84c9e"
+      }
+    },
+    "click-8.3.1-py3-none-any.whl": {
+      "name": "click",
+      "version": "8.3.1",
+      "url": "https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl",
+      "size": 108274,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "f032502934a5979330da77e3f09d889c",
+        "sha256": "981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6"
+      }
+    },
+    "shellingham-1.5.4-py2.py3-none-any.whl": {
+      "name": "shellingham",
+      "version": "1.5.4",
+      "url": "https://files.pythonhosted.org/packages/e0/f9/0595336914c5619e5f28a1fb793285925a8cd4b432c9da0a987836c7f822/shellingham-1.5.4-py2.py3-none-any.whl",
+      "size": 9755,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "c7dfcd723fcc27c548ad3a7b06c976dc",
+        "sha256": "7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686"
+      }
+    },
+    "rich-14.3.3-py3-none-any.whl": {
+      "name": "rich",
+      "version": "14.3.3",
+      "url": "https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl",
+      "size": 310458,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "ee3da182efc77318e42755f7e5d50dea",
+        "sha256": "793431c1f8619afa7d3b52b2cdec859562b950ea0d4b6b505397612db8d5362d"
+      }
+    },
+    "markdown_it_py-4.0.0-py3-none-any.whl": {
+      "name": "markdown-it-py",
+      "version": "4.0.0",
+      "url": "https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl",
+      "size": 87321,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "181b28678354490622ff96eab5d27841",
+        "sha256": "87327c59b172c5011896038353a81343b6754500a08cd7a4973bb48c6d578147"
+      }
+    },
+    "mdurl-0.1.2-py3-none-any.whl": {
+      "name": "mdurl",
+      "version": "0.1.2",
+      "url": "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl",
+      "size": 9979,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "7db14dc5d739bfca141f035953620659",
+        "sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"
+      }
+    },
+    "pygments-2.19.2-py3-none-any.whl": {
+      "name": "pygments",
+      "version": "2.19.2",
+      "url": "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl",
+      "size": 1225217,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "c6f882e4a4ffd8543f245d4f7ce0d7fa",
+        "sha256": "86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b"
+      }
+    },
+    "annotated_doc-0.0.4-py3-none-any.whl": {
+      "name": "annotated-doc",
+      "version": "0.0.4",
+      "url": "https://files.pythonhosted.org/packages/1e/d3/26bf1008eb3d2daa8ef4cacc7f3bfdc11818d111f7e2d0201bc6e3b49d45/annotated_doc-0.0.4-py3-none-any.whl",
+      "size": 5303,
+      "registry": "PyPi",
+      "hash": {
+        "md5": "ca0b005f5bcfb025d36cba1b10c77927",
+        "sha256": "571ac1dc6991c450b25a9c2d84a3705e2ae7a53467b5d111c24fa8baabbed320"
+      }
+    }
+  },
+  "id": "2700897347923773"
+}
