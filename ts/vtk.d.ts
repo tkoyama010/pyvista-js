@@ -437,13 +437,15 @@ type SceneData = {
   camera?: CameraConfig;
 };
 
-/** Extends the global Window with vtk.js renderer references. */
-type Window = {
-  renderer: VtkRenderer;
-  renderWindow: VtkRenderWindow;
-  openGlRenderWindow: VtkOpenGlRenderWindow;
-  interactor: VtkInteractor;
-};
+declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, jsdoc/require-jsdoc -- global interface augmentation requires interface
+  interface Window {
+    renderer: VtkRenderer;
+    renderWindow: VtkRenderWindow;
+    openGlRenderWindow: VtkOpenGlRenderWindow;
+    interactor: VtkInteractor;
+  }
+}
 
 /** Maps reader type names to their vtk.js factory and parse method. */
 type ReaderFactoryMap = Record<
