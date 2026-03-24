@@ -1,3 +1,6 @@
 # Build artifacts
 _build/
 node_modules/
+
+# esbuild output (generated from ts/pyvista-renderer.ts)
+src/pyvista_js/templates/pyvista-renderer.js

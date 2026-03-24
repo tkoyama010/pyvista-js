@@ -161,6 +161,31 @@ git commit -m "feat(plotter): add support for physically based rendering"
 
 The project uses pre-commit hooks to ensure code quality.
 
+## TypeScript Development
+
+The JavaScript renderer (`src/pyvista_js/templates/pyvista-renderer.js`) is generated from TypeScript source at `ts/pyvista-renderer.ts`. Node.js is only required when editing TypeScript files.
+
+### Setup
+
+```bash
+npm install
+```
+
+### Building
+
+```bash
+# One-time build
+npm run build
+
+# Watch mode (auto-rebuild on save)
+npm run watch
+
+# Type check only (no output)
+npm run typecheck
+```
+
+The built `pyvista-renderer.js` is committed to git so that Python-only developers do not need Node.js installed. After editing TypeScript, always run `npm run build` and commit the updated JS file.
+
 ## Testing
 
 [![codecov](https://codecov.io/gh/tkoyama010/pyvista-js/branch/main/graph/badge.svg)](https://codecov.io/gh/tkoyama010/pyvista-js)

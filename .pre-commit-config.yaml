@@ -58,7 +58,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        types: [javascript]
+        types_or: [javascript, ts]
 
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
