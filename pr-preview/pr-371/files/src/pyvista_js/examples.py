@@ -163,6 +163,132 @@ class CubeMap:
         return self
 
 
+def _convert_legacy_vtk_to_vtu(vtk_text: str) -> str:
+    """Convert legacy VTK ASCII unstructured grid text to VTU XML format.
+
+    Parameters
+    ----------
+    vtk_text : str
+        Content of a legacy VTK ASCII file with DATASET UNSTRUCTURED_GRID.
+
+    Returns
+    -------
+    str
+        VTU XML string suitable for ``vtkXMLUnstructuredGridReader``.
+
+    """
+    import re  # noqa: PLC0415
+
+    lines = vtk_text.splitlines()
+
+    # Parse POINTS
+    points_data: list[str] = []
+    n_points = 0
+    i = 0
+    while i < len(lines):
+        if lines[i].strip().upper().startswith("POINTS"):
+            parts = lines[i].strip().split()
+            n_points = int(parts[1])
+            needed = n_points * 3
+            i += 1
+            values: list[str] = []
+            while len(values) < needed and i < len(lines):
+                row = lines[i].strip()
+                if row and not re.match(r"^[A-Z]", row):
+                    values.extend(row.split())
+                elif row and re.match(r"^[A-Z]", row):
+                    break
+                i += 1
+            points_data = values[:needed]
+            break
+        i += 1
+
+    # Parse CELLS
+    connectivity: list[str] = []
+    offsets: list[str] = []
+    n_cells = 0
+    i = 0
+    while i < len(lines):
+        if lines[i].strip().upper().startswith("CELLS "):
+            parts = lines[i].strip().split()
+            n_cells = int(parts[1])
+            i += 1
+            cell_values: list[str] = []
+            while len(cell_values) < int(parts[2]) and i < len(lines):
+                row = lines[i].strip()
+                if row and not re.match(r"^[A-Z]", row):
+                    cell_values.extend(row.split())
+                elif row and re.match(r"^[A-Z]", row):
+                    break
+                i += 1
+            # Parse cell connectivity: each cell starts with vertex count
+            offset = 0
+            idx = 0
+            for _ in range(n_cells):
+                if idx >= len(cell_values):
+                    break
+                n_verts = int(cell_values[idx])
+                idx += 1
+                for j in range(n_verts):
+                    connectivity.append(cell_values[idx + j])
+                idx += n_verts
+                offset += n_verts
+                offsets.append(str(offset))
+            break
+        i += 1
+
+    # Parse CELL_TYPES
+    cell_types: list[str] = []
+    i = 0
+    while i < len(lines):
+        if lines[i].strip().upper().startswith("CELL_TYPES"):
+            parts = lines[i].strip().split()
+            n_ct = int(parts[1])
+            i += 1
+            while len(cell_types) < n_ct and i < len(lines):
+                row = lines[i].strip()
+                if row and not re.match(r"^[A-Z]", row):
+                    cell_types.extend(row.split())
+                elif row and re.match(r"^[A-Z]", row):
+                    break
+                i += 1
+            cell_types = cell_types[:n_ct]
+            break
+        i += 1
+
+    # Build VTU XML
+    points_str = " ".join(points_data)
+    conn_str = " ".join(connectivity)
+    offsets_str = " ".join(offsets)
+    types_str = " ".join(cell_types)
+
+    return (
+        '<?xml version="1.0"?>\n'
+        '<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">\n'
+        "  <UnstructuredGrid>\n"
+        f'    <Piece NumberOfPoints="{n_points}" NumberOfCells="{n_cells}">\n'
+        "      <Points>\n"
+        '        <DataArray type="Float64" NumberOfComponents="3" format="ascii">\n'
+        f"          {points_str}\n"
+        "        </DataArray>\n"
+        "      </Points>\n"
+        "      <Cells>\n"
+        '        <DataArray type="Int64" Name="connectivity" format="ascii">\n'
+        f"          {conn_str}\n"
+        "        </DataArray>\n"
+        '        <DataArray type="Int64" Name="offsets" format="ascii">\n'
+        f"          {offsets_str}\n"
+        "        </DataArray>\n"
+        '        <DataArray type="UInt8" Name="types" format="ascii">\n'
+        f"          {types_str}\n"
+        "        </DataArray>\n"
+        "      </Cells>\n"
+        "    </Piece>\n"
+        "  </UnstructuredGrid>\n"
+        "</VTKFile>\n"
+    )
+
+
 def download_trumpet() -> PolyData:
     """Download the trumpet dataset.
 
@@ -378,3 +504,40 @@ def download_lucy() -> PolyData:
 
     path = _download_file("lucy.ply")
     return PLYReader(path).read()
+
+
+def load_hexbeam() -> PolyData:
+    """Load a sample UnstructuredGrid hexahedral beam dataset.
+
+    Downloads ``hexbeam.vtk`` from the PyVista repository, converts it
+    from legacy VTK format to VTU XML format, and returns it as a mesh
+    via :class:`~pyvista_js.UnstructuredGridReader`.
+
+    The hexahedral beam is a widely used test mesh in computational
+    mechanics, consisting of 40 hexahedral cells and 99 points.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The hexahedral beam mesh.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> dataset = examples.load_hexbeam()  # doctest: +SKIP
+    >>> dataset.plot()  # doctest: +SKIP
+
+    """
+    from .readers import UnstructuredGridReader  # noqa: PLC0415
+
+    _PYVISTA_REPO_BASE = "https://raw.githubusercontent.com/pyvista/pyvista/main/pyvista/examples"
+    vtu_path = _CACHE_DIR / "hexbeam.vtu"
+    if not vtu_path.exists():
+        vtk_path = _download_url(
+            f"{_PYVISTA_REPO_BASE}/hexbeam.vtk",
+            "hexbeam.vtk",
+        )
+        vtk_text = vtk_path.read_text()
+        vtu_text = _convert_legacy_vtk_to_vtu(vtk_text)
+        vtu_path.write_text(vtu_text)
+    return UnstructuredGridReader(vtu_path).read()
