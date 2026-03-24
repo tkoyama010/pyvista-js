@@ -32,7 +32,7 @@ def test_scalar_rendering_html_generation(monkeypatch) -> None:
 
     # Read the generated HTML file
     html_path = url2pathname(urlparse(opened[0]).path)
-    with Path(html_path).open() as f:
+    with Path(html_path).open(encoding="utf-8") as f:
         html_content = f.read()
 
     # Verify scalar-related data is present in the scene JSON
@@ -63,7 +63,7 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     plotter1.show()
 
     html_path1 = url2pathname(urlparse(opened[-1]).path)
-    with Path(html_path1).open() as f:
+    with Path(html_path1).open(encoding="utf-8") as f:
         html1 = f.read()
 
     assert "viridis" in html1
@@ -76,7 +76,7 @@ def test_multiple_colormaps_html_generation(monkeypatch) -> None:
     plotter2.show()
 
     html_path2 = url2pathname(urlparse(opened[-1]).path)
-    with Path(html_path2).open() as f:
+    with Path(html_path2).open(encoding="utf-8") as f:
         html2 = f.read()
 
     assert "plasma" in html2
@@ -97,7 +97,7 @@ def test_no_scalars_no_lut(monkeypatch) -> None:
     plotter.show()
 
     html_path = url2pathname(urlparse(opened[0]).path)
-    with Path(html_path).open() as f:
+    with Path(html_path).open(encoding="utf-8") as f:
         html_content = f.read()
 
     # Verify scalar-related code is NOT present
