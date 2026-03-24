@@ -15,6 +15,7 @@
   "xo": {
     "space": true,
     "prettier": true,
+    "semicolon": true,
     "ignores": [
       "src/"
     ],
