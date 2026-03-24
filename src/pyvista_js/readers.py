@@ -43,7 +43,10 @@ class _GLTFMesh(PolyData):
     """Mesh loaded from a glTF file, rendered via vtk.js GLTF importer."""
 
     def __init__(
-        self, points: np.ndarray, gltf_base64: str, gltf_url: str | None = None,
+        self,
+        points: np.ndarray,
+        gltf_base64: str,
+        gltf_url: str | None = None,
     ) -> None:
         """Initialize with points and base64-encoded glTF file content."""
         super().__init__(points)
