@@ -163,6 +163,82 @@ class CubeMap:
         return self
 
 
+def _read_vtk_section(lines: list[str], keyword: str, count: int) -> list[str]:
+    """Read numeric data values following a VTK section keyword.
+
+    Parameters
+    ----------
+    lines : list[str]
+        All lines of the legacy VTK file.
+    keyword : str
+        Section keyword to search for (e.g. ``"POINTS"``, ``"CELLS"``).
+    count : int
+        Number of values to collect.
+
+    Returns
+    -------
+    list[str]
+        Collected string values, up to *count* items.
+
+    """
+    import re  # noqa: PLC0415
+
+    values: list[str] = []
+    reading = False
+    for line in lines:
+        stripped = line.strip()
+        if not reading:
+            if stripped.upper().startswith(keyword):
+                reading = True
+            continue
+        if stripped and re.match(r"^[A-Z]", stripped):
+            break
+        if stripped:
+            values.extend(stripped.split())
+        if len(values) >= count:
+            break
+    return values[:count]
+
+
+def _parse_vtk_cells(
+    lines: list[str],
+    n_cells: int,
+    total_size: int,
+) -> tuple[list[str], list[str]]:
+    """Parse CELLS section into connectivity and offsets for VTU format.
+
+    Parameters
+    ----------
+    lines : list[str]
+        All lines of the legacy VTK file.
+    n_cells : int
+        Number of cells.
+    total_size : int
+        Total number of integers in the CELLS data block.
+
+    Returns
+    -------
+    tuple[list[str], list[str]]
+        Connectivity values and cumulative offset values.
+
+    """
+    cell_values = _read_vtk_section(lines, "CELLS", total_size)
+    connectivity: list[str] = []
+    offsets: list[str] = []
+    offset = 0
+    idx = 0
+    for _ in range(n_cells):
+        if idx >= len(cell_values):
+            break
+        n_verts = int(cell_values[idx])
+        idx += 1
+        connectivity.extend(cell_values[idx : idx + n_verts])
+        idx += n_verts
+        offset += n_verts
+        offsets.append(str(offset))
+    return connectivity, offsets
+
+
 def _convert_legacy_vtk_to_vtu(vtk_text: str) -> str:
     """Convert legacy VTK ASCII unstructured grid text to VTU XML format.
 
@@ -177,90 +253,23 @@ def _convert_legacy_vtk_to_vtu(vtk_text: str) -> str:
         VTU XML string suitable for ``vtkXMLUnstructuredGridReader``.
 
     """
-    import re  # noqa: PLC0415
-
     lines = vtk_text.splitlines()
 
-    # Parse POINTS
-    points_data: list[str] = []
     n_points = 0
-    i = 0
-    while i < len(lines):
-        if lines[i].strip().upper().startswith("POINTS"):
-            parts = lines[i].strip().split()
-            n_points = int(parts[1])
-            needed = n_points * 3
-            i += 1
-            values: list[str] = []
-            while len(values) < needed and i < len(lines):
-                row = lines[i].strip()
-                if row and not re.match(r"^[A-Z]", row):
-                    values.extend(row.split())
-                elif row and re.match(r"^[A-Z]", row):
-                    break
-                i += 1
-            points_data = values[:needed]
-            break
-        i += 1
-
-    # Parse CELLS
-    connectivity: list[str] = []
-    offsets: list[str] = []
     n_cells = 0
-    i = 0
-    while i < len(lines):
-        if lines[i].strip().upper().startswith("CELLS "):
-            parts = lines[i].strip().split()
+    total_cell_size = 0
+    for line in lines:
+        stripped = line.strip().upper()
+        if stripped.startswith("POINTS"):
+            n_points = int(stripped.split()[1])
+        elif stripped.startswith("CELLS "):
+            parts = stripped.split()
             n_cells = int(parts[1])
-            i += 1
-            cell_values: list[str] = []
-            while len(cell_values) < int(parts[2]) and i < len(lines):
-                row = lines[i].strip()
-                if row and not re.match(r"^[A-Z]", row):
-                    cell_values.extend(row.split())
-                elif row and re.match(r"^[A-Z]", row):
-                    break
-                i += 1
-            # Parse cell connectivity: each cell starts with vertex count
-            offset = 0
-            idx = 0
-            for _ in range(n_cells):
-                if idx >= len(cell_values):
-                    break
-                n_verts = int(cell_values[idx])
-                idx += 1
-                for j in range(n_verts):
-                    connectivity.append(cell_values[idx + j])
-                idx += n_verts
-                offset += n_verts
-                offsets.append(str(offset))
-            break
-        i += 1
+            total_cell_size = int(parts[2])
 
-    # Parse CELL_TYPES
-    cell_types: list[str] = []
-    i = 0
-    while i < len(lines):
-        if lines[i].strip().upper().startswith("CELL_TYPES"):
-            parts = lines[i].strip().split()
-            n_ct = int(parts[1])
-            i += 1
-            while len(cell_types) < n_ct and i < len(lines):
-                row = lines[i].strip()
-                if row and not re.match(r"^[A-Z]", row):
-                    cell_types.extend(row.split())
-                elif row and re.match(r"^[A-Z]", row):
-                    break
-                i += 1
-            cell_types = cell_types[:n_ct]
-            break
-        i += 1
-
-    # Build VTU XML
-    points_str = " ".join(points_data)
-    conn_str = " ".join(connectivity)
-    offsets_str = " ".join(offsets)
-    types_str = " ".join(cell_types)
+    points_data = _read_vtk_section(lines, "POINTS", n_points * 3)
+    connectivity, offsets = _parse_vtk_cells(lines, n_cells, total_cell_size)
+    cell_types = _read_vtk_section(lines, "CELL_TYPES", n_cells)
 
     return (
         '<?xml version="1.0"?>\n'
@@ -269,18 +278,18 @@ def _convert_legacy_vtk_to_vtu(vtk_text: str) -> str:
         f'    <Piece NumberOfPoints="{n_points}" NumberOfCells="{n_cells}">\n'
         "      <Points>\n"
         '        <DataArray type="Float64" NumberOfComponents="3" format="ascii">\n'
-        f"          {points_str}\n"
+        f'          {" ".join(points_data)}\n'
         "        </DataArray>\n"
         "      </Points>\n"
         "      <Cells>\n"
         '        <DataArray type="Int64" Name="connectivity" format="ascii">\n'
-        f"          {conn_str}\n"
+        f'          {" ".join(connectivity)}\n'
         "        </DataArray>\n"
         '        <DataArray type="Int64" Name="offsets" format="ascii">\n'
-        f"          {offsets_str}\n"
+        f'          {" ".join(offsets)}\n'
         "        </DataArray>\n"
         '        <DataArray type="UInt8" Name="types" format="ascii">\n'
-        f"          {types_str}\n"
+        f'          {" ".join(cell_types)}\n'
         "        </DataArray>\n"
         "      </Cells>\n"
         "    </Piece>\n"
@@ -530,11 +539,11 @@ def load_hexbeam() -> PolyData:
     """
     from .readers import UnstructuredGridReader  # noqa: PLC0415
 
-    _PYVISTA_REPO_BASE = "https://raw.githubusercontent.com/pyvista/pyvista/main/pyvista/examples"
+    pyvista_repo_base = "https://raw.githubusercontent.com/pyvista/pyvista/main/pyvista/examples"
     vtu_path = _CACHE_DIR / "hexbeam.vtu"
     if not vtu_path.exists():
         vtk_path = _download_url(
-            f"{_PYVISTA_REPO_BASE}/hexbeam.vtk",
+            f"{pyvista_repo_base}/hexbeam.vtk",
             "hexbeam.vtk",
         )
         vtk_text = vtk_path.read_text()
