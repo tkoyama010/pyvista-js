@@ -5,9 +5,7 @@
 (function () {
   "use strict";
 
-  var sceneData = JSON.parse(
-    document.getElementById("scene-data").textContent
-  );
+  var sceneData = JSON.parse(document.getElementById("scene-data").textContent);
   var container = document.getElementById(sceneData.containerId);
   var bg = sceneData.background;
 
@@ -17,18 +15,15 @@
   var renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
   renderWindow.addRenderer(renderer);
 
-  var openGLRenderWindow =
-    vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+  var openGLRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
   renderWindow.addView(openGLRenderWindow);
   openGLRenderWindow.setContainer(container);
 
   var bbox = container.getBoundingClientRect();
   openGLRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
 
-  var interactor =
-    vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
-  var interactorStyle =
-    vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
+  var interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+  var interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
   interactor.setInteractorStyle(interactorStyle);
   interactor.setView(openGLRenderWindow);
   interactor.initialize();
@@ -84,11 +79,7 @@
       var setter = typeMap[cfg.type] || "setLightTypeToSceneLight";
       light[setter]();
       light.setPosition(cfg.position[0], cfg.position[1], cfg.position[2]);
-      light.setFocalPoint(
-        cfg.focalPoint[0],
-        cfg.focalPoint[1],
-        cfg.focalPoint[2]
-      );
+      light.setFocalPoint(cfg.focalPoint[0], cfg.focalPoint[1], cfg.focalPoint[2]);
       light.setColor(cfg.color[0], cfg.color[1], cfg.color[2]);
       light.setIntensity(cfg.intensity);
       light.setPositional(cfg.positional);
@@ -140,8 +131,7 @@
       thetaResolution: cfg.thetaResolution,
       phiResolution: cfg.phiResolution,
     });
-    var texMap =
-      vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
+    var texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
     texMap.setInputConnection(source.getOutputPort());
     return { output: texMap, isFilter: true };
   }
@@ -273,8 +263,7 @@
     if (!normalsConfig) {
       return sourceResult;
     }
-    var normals =
-      vtk.Filters.Core.vtkPolyDataNormals.newInstance();
+    var normals = vtk.Filters.Core.vtkPolyDataNormals.newInstance();
     normals.setComputePointNormals(normalsConfig.computePointNormals);
     normals.setComputeCellNormals(normalsConfig.computeCellNormals);
     if (sourceResult.isFilter) {
@@ -308,9 +297,10 @@
     var mapperInput = setupNormals(sourceResult, cfg.normals);
 
     // Mapper
-    var MapperClass = cfg.actorType === "points" && cfg.renderPointsAsSpheres
-      ? vtk.Rendering.Core.vtkSphereMapper
-      : vtk.Rendering.Core.vtkMapper;
+    var MapperClass =
+      cfg.actorType === "points" && cfg.renderPointsAsSpheres
+        ? vtk.Rendering.Core.vtkSphereMapper
+        : vtk.Rendering.Core.vtkMapper;
     var mapper = MapperClass.newInstance();
     if (mapperInput.isFilter) {
       mapper.setInputConnection(mapperInput.output.getOutputPort());
@@ -341,11 +331,7 @@
     // Edges
     if (cfg.edges) {
       actor.getProperty().setEdgeVisibility(true);
-      actor.getProperty().setEdgeColor(
-        cfg.edges.color[0],
-        cfg.edges.color[1],
-        cfg.edges.color[2]
-      );
+      actor.getProperty().setEdgeColor(cfg.edges.color[0], cfg.edges.color[1], cfg.edges.color[2]);
     }
 
     // PBR
@@ -357,9 +343,7 @@
       actor.getProperty().setRoughness(r);
       actor.getProperty().setAmbient(0.1);
       actor.getProperty().setSpecular(0.75 * m + 0.25);
-      actor.getProperty().setSpecularPower(
-        Math.max(1, 100 * (1 - r))
-      );
+      actor.getProperty().setSpecularPower(Math.max(1, 100 * (1 - r)));
       actor.getProperty().setDiffuse(0.65 + 0.35 * (1 - m));
     }
 
@@ -393,49 +377,26 @@
   function setupCamera(ren, camConfig) {
     var cam = ren.getActiveCamera();
     if (camConfig.position) {
-      cam.setPosition(
-        camConfig.position[0],
-        camConfig.position[1],
-        camConfig.position[2]
-      );
+      cam.setPosition(camConfig.position[0], camConfig.position[1], camConfig.position[2]);
     }
     if (camConfig.focalPoint) {
-      cam.setFocalPoint(
-        camConfig.focalPoint[0],
-        camConfig.focalPoint[1],
-        camConfig.focalPoint[2]
-      );
+      cam.setFocalPoint(camConfig.focalPoint[0], camConfig.focalPoint[1], camConfig.focalPoint[2]);
     }
     if (camConfig.viewUp) {
-      cam.setViewUp(
-        camConfig.viewUp[0],
-        camConfig.viewUp[1],
-        camConfig.viewUp[2]
-      );
+      cam.setViewUp(camConfig.viewUp[0], camConfig.viewUp[1], camConfig.viewUp[2]);
     }
     if (camConfig.viewAngle !== undefined) {
       cam.setViewAngle(camConfig.viewAngle);
     }
     if (camConfig.clippingRange) {
-      cam.setClippingRange(
-        camConfig.clippingRange[0],
-        camConfig.clippingRange[1]
-      );
+      cam.setClippingRange(camConfig.clippingRange[0], camConfig.clippingRange[1]);
     }
     if (camConfig.parallelProjection) {
       cam.setParallelProjection(true);
     }
     if (camConfig.viewVector) {
-      cam.setPosition(
-        camConfig.viewVector[0],
-        camConfig.viewVector[1],
-        camConfig.viewVector[2]
-      );
-      cam.setViewUp(
-        camConfig.viewUp[0],
-        camConfig.viewUp[1],
-        camConfig.viewUp[2]
-      );
+      cam.setPosition(camConfig.viewVector[0], camConfig.viewVector[1], camConfig.viewVector[2]);
+      cam.setViewUp(camConfig.viewUp[0], camConfig.viewUp[1], camConfig.viewUp[2]);
       cam.setFocalPoint(0, 0, 0);
       ren.resetCamera();
       ren.resetCameraClippingRange();
@@ -444,15 +405,13 @@
 
   function setupAxes(interactorObj) {
     var axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
-    var orientationWidget =
-      vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
-        actor: axes,
-        interactor: interactorObj,
-      });
+    var orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
+      actor: axes,
+      interactor: interactorObj,
+    });
     orientationWidget.setEnabled(true);
     orientationWidget.setViewportCorner(
-      vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners
-        .BOTTOM_LEFT
+      vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT
     );
     orientationWidget.setViewportSize(0.15);
     orientationWidget.setMinPixelSize(100);
