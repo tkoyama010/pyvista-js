@@ -9,24 +9,12 @@ from __future__ import annotations
 import base64
 import json
 import logging
-import re
 import struct
 from pathlib import Path
 
 import numpy as np
-from jinja2 import Environment, StrictUndefined
 
 from .mesh import PolyData
-
-_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
-
-
-def _render(template_str: str, **kwargs: object) -> str:
-    rendered = _jinja_env.from_string(template_str).render(**kwargs)
-    # Strip <script> wrapper added for prettier formatting
-    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
-
 
 logger = logging.getLogger(__name__)
 
@@ -37,203 +25,82 @@ _MIN_VTK_LINES = 4
 # Number of coordinate components per vertex (x, y, z)
 _N_COORDS = 3
 
-# Load JavaScript templates
-_TEMPLATES_DIR = Path(__file__).parent / "templates"
-_VTK_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtk_reader_source.html").read_text()
-_PLY_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "ply_reader_source.html").read_text()
-_OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_text()
-_STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
-_GLTF_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_reader_source.html").read_text()
-_GLTF_URL_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_url_source.html").read_text()
-
 
 class _OBJMesh(PolyData):
     """Mesh loaded from an OBJ file, rendered via vtk.js OBJ reader."""
 
     def __init__(self, points: np.ndarray, obj_base64: str) -> None:
-        """Initialize with points and base64-encoded OBJ file content.
-
-        Parameters
-        ----------
-        points : np.ndarray
-            Vertex coordinates (N, 3) extracted for bounding sphere computation.
-        obj_base64 : str
-            Base64-encoded content of the OBJ file passed to vtk.js for rendering.
-
-        """
+        """Initialize with points and base64-encoded OBJ file content."""
         super().__init__(points)
         self._obj_base64 = obj_base64
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkOBJReader."""
-        escaped = json.dumps(self._obj_base64)
-        return _render(
-            _OBJ_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            OBJ_READER=f"objReader{idx}",
-            OBJ_BASE64=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
+    def to_scene_data(self) -> dict[str, object]:
+        """Return scene data using vtk.js OBJ reader."""
+        return {"type": "objReader", "data": self._obj_base64}
 
 
 class _GLTFMesh(PolyData):
     """Mesh loaded from a glTF file, rendered via vtk.js GLTF importer."""
 
-    def __init__(self, points: np.ndarray, gltf_base64: str, gltf_url: str | None = None) -> None:
-        """Initialize with points and base64-encoded glTF file content.
-
-        Parameters
-        ----------
-        points : np.ndarray
-            Vertex coordinates (N, 3) extracted for bounding sphere computation.
-        gltf_base64 : str
-            Base64-encoded content of the glTF file passed to vtk.js for rendering.
-        gltf_url : str or None, optional
-            Source URL of the glTF file. When provided, the URL is used directly
-            in the model-viewer element instead of embedding the full base64 data,
-            which avoids large payload issues in JupyterLite.
-
-        """
+    def __init__(
+        self,
+        points: np.ndarray,
+        gltf_base64: str,
+        gltf_url: str | None = None,
+    ) -> None:
+        """Initialize with points and base64-encoded glTF file content."""
         super().__init__(points)
         self._gltf_base64 = gltf_base64
         self._gltf_url = gltf_url
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using model-viewer web component."""
+    def to_scene_data(self) -> dict[str, object]:
+        """Return scene data using vtk.js GLTF importer."""
+        data: dict[str, object] = {"type": "gltfReader", "data": self._gltf_base64}
         if self._gltf_url is not None:
-            return _GLTF_URL_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{GLTF_URL}}",
-                self._gltf_url,
-            )
-        escaped = json.dumps(self._gltf_base64)
-        return _GLTF_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{GLTF_BASE64}}", escaped)
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
-
-    def generate_full_actor_code(self, idx: int, _actor_info: dict) -> str:
-        """Generate complete vtk.js actor code for a glTF mesh.
-
-        vtkGLTFImporter adds actors directly via importActors(renderer),
-        bypassing the standard mapper/actor pipeline used by other readers.
-
-        Parameters
-        ----------
-        idx : int
-            Actor index for unique variable names.
-        actor_info : dict
-            Actor info dict (unused; GLTF materials come from the file).
-
-        Returns
-        -------
-        str
-            Self-contained JavaScript that imports the glTF into the scene.
-
-        """
-        return self.generate_vtk_js_source(idx)
+            data["url"] = self._gltf_url
+        return data
 
 
 class _PolyDataMesh(PolyData):
     """Mesh loaded from a legacy VTK file, rendered via vtk.js reader."""
 
     def __init__(self, points: np.ndarray, vtk_text: str) -> None:
-        """Initialize with points and raw VTK file content.
-
-        Parameters
-        ----------
-        points : np.ndarray
-            Vertex coordinates (N, 3) extracted for bounding sphere computation.
-        vtk_text : str
-            Raw content of the VTK file passed to vtk.js for rendering.
-
-        """
+        """Initialize with points and raw VTK file content."""
         super().__init__(points)
         self._vtk_text = vtk_text
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkPolyDataReader."""
-        escaped = json.dumps(self._vtk_text)
-        return _render(
-            _VTK_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            VTK_READER=f"reader{idx}",
-            VTK_TEXT=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
+    def to_scene_data(self) -> dict[str, object]:
+        """Return scene data using vtk.js VTK reader."""
+        return {
+            "type": "vtkReader",
+            "data": base64.b64encode(self._vtk_text.encode()).decode("ascii"),
+        }
 
 
 class _PLYMesh(PolyData):
     """Mesh loaded from a PLY file, rendered via vtk.js PLY reader."""
 
     def __init__(self, points: np.ndarray, ply_base64: str) -> None:
-        """Initialize with points and base64-encoded PLY file content.
-
-        Parameters
-        ----------
-        points : np.ndarray
-            Vertex coordinates (N, 3) extracted for bounding sphere computation.
-        ply_base64 : str
-            Base64-encoded content of the PLY file passed to vtk.js for rendering.
-
-        """
+        """Initialize with points and base64-encoded PLY file content."""
         super().__init__(points)
         self._ply_base64 = ply_base64
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkPLYReader."""
-        escaped = json.dumps(self._ply_base64)
-        return _render(
-            _PLY_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            PLY_READER=f"plyReader{idx}",
-            PLY_BASE64=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
+    def to_scene_data(self) -> dict[str, object]:
+        """Return scene data using vtk.js PLY reader."""
+        return {"type": "plyReader", "data": self._ply_base64}
 
 
 class _STLMesh(PolyData):
     """Mesh loaded from an STL file, rendered via vtk.js STL reader."""
 
     def __init__(self, points: np.ndarray, stl_base64: str) -> None:
-        """Initialize with points and base64-encoded STL file content.
-
-        Parameters
-        ----------
-        points : np.ndarray
-            Vertex coordinates (N, 3) extracted for bounding sphere computation.
-        stl_base64 : str
-            Base64-encoded content of the STL file passed to vtk.js for rendering.
-
-        """
+        """Initialize with points and base64-encoded STL file content."""
         super().__init__(points)
         self._stl_base64 = stl_base64
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code using vtkSTLReader."""
-        escaped = json.dumps(self._stl_base64)
-        return _render(
-            _STL_READER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            STL_READER=f"stlReader{idx}",
-            STL_BASE64=escaped,
-        )
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code."""
-        return f"mapper{idx}.setInputData(source{idx});"
+    def to_scene_data(self) -> dict[str, object]:
+        """Return scene data using vtk.js STL reader."""
+        return {"type": "stlReader", "data": self._stl_base64}
 
 
 class PolyDataReader:
