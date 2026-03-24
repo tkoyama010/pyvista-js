@@ -135,6 +135,14 @@
         return createMeshSource(cfg);
       case "points":
         return createPointsSource(cfg);
+      case "plyReader":
+        return createReaderSource(cfg, "IO.Geometry.vtkPLYReader", "parseAsArrayBuffer");
+      case "stlReader":
+        return createReaderSource(cfg, "IO.Geometry.vtkSTLReader", "parseAsArrayBuffer");
+      case "objReader":
+        return createReaderSource(cfg, "IO.Misc.vtkOBJReader", "parseAsArrayBuffer");
+      case "vtkReader":
+        return createReaderSource(cfg, "IO.Legacy.vtkPolyDataReader", "parseAsText");
       default:
         console.error("Unknown source type:", cfg.type);
         return null;
@@ -248,6 +256,28 @@
     vtkPoints.setData(pointsArray, 3);
     polydata.setPoints(vtkPoints);
     return { output: polydata, isFilter: false };
+  }
+
+  function createReaderSource(cfg, readerPath, parseMethod) {
+    // Decode base64 data and parse with vtk.js reader
+    var binary = atob(cfg.data);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    // Navigate to the correct vtk.js namespace
+    var parts = readerPath.split(".");
+    var ns = vtk;
+    for (var j = 0; j < parts.length; j++) {
+      ns = ns[parts[j]];
+    }
+    var reader = ns.newInstance();
+    if (parseMethod === "parseAsText") {
+      reader.parseAsText(new TextDecoder().decode(bytes));
+    } else {
+      reader.parseAsArrayBuffer(bytes.buffer);
+    }
+    return { output: reader, isFilter: true };
   }
 
   function injectPointData(polydata, pointDataArrays) {

@@ -46,8 +46,8 @@ def test_poly_data_reader_scene_data() -> None:
     mesh = PolyDataReader(TRIANGLE_VTK).read()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "vtkReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -146,8 +146,8 @@ def test_ply_reader_scene_data() -> None:
     mesh = PLYReader(TRIANGLE_PLY).read()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "plyReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -251,8 +251,8 @@ def test_obj_reader_scene_data() -> None:
     mesh = OBJReader(TRIANGLE_OBJ).read()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "objReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -349,8 +349,8 @@ def test_stl_reader_scene_data() -> None:
     mesh = STLReader(TRIANGLE_STL).read()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "stlReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -423,8 +423,8 @@ def test_download_damaged_helmet_scene_data() -> None:
     mesh = examples.download_damaged_helmet()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "gltfReader"
+    assert "data" in scene
 
 
 # --- download_cad_model tests ---
@@ -441,8 +441,8 @@ def test_download_cad_model_scene_data() -> None:
     mesh = examples.download_cad_model()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "stlReader"
+    assert "data" in scene
 
 
 def test_gltf_reader_scene_data() -> None:
@@ -450,8 +450,8 @@ def test_gltf_reader_scene_data() -> None:
     mesh = GLTFReader(TRIANGLE_GLTF).read()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "gltfReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -507,8 +507,8 @@ def test_download_bunny_scene_data() -> None:
     mesh = examples.download_bunny()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "plyReader"
+    assert "data" in scene
 
 
 def test_download_lucy_returns_ply_mesh() -> None:
@@ -522,5 +522,5 @@ def test_download_lucy_scene_data() -> None:
     mesh = examples.download_lucy()
     scene = mesh.to_scene_data()
     assert scene is not None
-    assert scene["type"] == "mesh"
-    assert "points" in scene
+    assert scene["type"] == "plyReader"
+    assert "data" in scene
