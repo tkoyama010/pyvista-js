@@ -715,20 +715,18 @@ class _BaseHTMLRenderer:
 
     def _build_text_actors_data(self) -> list[dict[str, object]]:
         """Build JSON-serializable text actor configurations."""
-        result: list[dict[str, object]] = []
-        for text_actor in self.text_actors:
-            result.append(
-                {
-                    "text": text_actor.input,
-                    "position": list(text_actor.position),
-                    "fontSize": text_actor.prop.font_size,
-                    "color": list(text_actor.prop.color),
-                    "opacity": text_actor.prop.opacity,
-                    "bold": text_actor.prop.bold,
-                    "italic": text_actor.prop.italic,
-                },
-            )
-        return result
+        return [
+            {
+                "text": ta.input,
+                "position": list(ta.position),
+                "fontSize": ta.prop.font_size,
+                "color": list(ta.prop.color),
+                "opacity": ta.prop.opacity,
+                "bold": ta.prop.bold,
+                "italic": ta.prop.italic,
+            }
+            for ta in self.text_actors
+        ]
 
     def _build_scene_data(self) -> dict[str, object]:
         """Build a complete JSON-serializable scene description.
