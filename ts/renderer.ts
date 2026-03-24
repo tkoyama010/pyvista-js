@@ -512,6 +512,48 @@ function setupNormals(
 }
 
 /**
+ * Apply physically-based rendering properties to an actor.
+ * @param actor
+ * @param pbr
+ */
+function applyPbr(actor: VtkActor, pbr: PbrConfig | undefined): void {
+  if (!pbr) return;
+  actor.getProperty().setInterpolationToPhong();
+  const m = pbr.metallic;
+  const r = pbr.roughness;
+  actor.getProperty().setMetallic(m);
+  actor.getProperty().setRoughness(r);
+  actor.getProperty().setAmbient(0.1);
+  actor.getProperty().setSpecular(0.75 * m + 0.25);
+  actor.getProperty().setSpecularPower(Math.max(1, 100 * (1 - r)));
+  actor.getProperty().setDiffuse(0.65 + 0.35 * (1 - m));
+}
+
+/**
+ * Load and attach a URL-based texture to an actor.
+ * @param actor
+ * @param renWin
+ * @param textureCfg
+ */
+function applyTexture(
+  actor: VtkActor,
+  renWin: VtkRenderWindow,
+  textureCfg: TextureConfig | undefined,
+): void {
+  if (!textureCfg) return;
+  const texture = vtk.Rendering.Core.vtkTexture.newInstance();
+  texture.setInterpolate(true);
+  actor.addTexture(texture);
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.addEventListener("load", () => {
+    texture.setImage(img);
+    renWin.render();
+  });
+  img.src = textureCfg.url;
+}
+
+/**
  * Build a complete vtk.js actor from an {@link ActorConfig} and add it to the renderer.
  * @param cfg
  * @param _index
@@ -579,17 +621,7 @@ function setupActor(
     actor.getProperty().setEdgeColor(cfg.edges.color[0], cfg.edges.color[1], cfg.edges.color[2]);
   }
 
-  if (cfg.pbr) {
-    actor.getProperty().setInterpolationToPhong();
-    const m = cfg.pbr.metallic;
-    const r = cfg.pbr.roughness;
-    actor.getProperty().setMetallic(m);
-    actor.getProperty().setRoughness(r);
-    actor.getProperty().setAmbient(0.1);
-    actor.getProperty().setSpecular(0.75 * m + 0.25);
-    actor.getProperty().setSpecularPower(Math.max(1, 100 * (1 - r)));
-    actor.getProperty().setDiffuse(0.65 + 0.35 * (1 - m));
-  }
+  applyPbr(actor, cfg.pbr);
 
   if (cfg.actorType === "points") {
     if (cfg.renderPointsAsSpheres && mapper.setRadius) {
@@ -600,18 +632,7 @@ function setupActor(
     }
   }
 
-  if (cfg.texture) {
-    const texture = vtk.Rendering.Core.vtkTexture.newInstance();
-    texture.setInterpolate(true);
-    actor.addTexture(texture);
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.addEventListener("load", () => {
-      texture.setImage(img);
-      renWin.render();
-    });
-    img.src = cfg.texture.url;
-  }
+  applyTexture(actor, renWin, cfg.texture);
 
   ren.addActor(actor);
 }
@@ -939,6 +960,34 @@ function applyContourFilter(
 }
 
 /**
+ * Collect the intersection points of a contour value along the edges of a triangle.
+ * @param tri
+ * @param value
+ * @param inPoints
+ * @returns Flat array of intersection coordinates (0 or 6 elements).
+ */
+function collectEdgeIntersections(
+  tri: Array<[number, number, number, number]>,
+  value: number,
+  inPoints: Float32Array | Uint32Array,
+): number[] {
+  const edgePoints: number[] = [];
+  for (const edge of tri) {
+    const [ai, bi, sa, sb] = edge;
+    if ((sa <= value && value < sb) || (sb <= value && value < sa)) {
+      const t = (value - sa) / (sb - sa);
+      edgePoints.push(
+        at(inPoints, ai * 3) + t * (at(inPoints, bi * 3) - at(inPoints, ai * 3)),
+        at(inPoints, ai * 3 + 1) + t * (at(inPoints, bi * 3 + 1) - at(inPoints, ai * 3 + 1)),
+        at(inPoints, ai * 3 + 2) + t * (at(inPoints, bi * 3 + 2) - at(inPoints, ai * 3 + 2)),
+      );
+    }
+  }
+
+  return edgePoints;
+}
+
+/**
  * Manual marching-triangles contour extraction.
  *
  * For each triangle, linearly interpolate along edges to find intersection
@@ -983,18 +1032,7 @@ function applyContourManual(
         [index2, index0, s2, s0],
       ];
       for (const value of values) {
-        const edgePoints: number[] = [];
-        for (const edge of tri) {
-          const [ai, bi, sa, sb] = edge;
-          if ((sa <= value && value < sb) || (sb <= value && value < sa)) {
-            const t = (value - sa) / (sb - sa);
-            edgePoints.push(
-              at(inPoints, ai * 3) + t * (at(inPoints, bi * 3) - at(inPoints, ai * 3)),
-              at(inPoints, ai * 3 + 1) + t * (at(inPoints, bi * 3 + 1) - at(inPoints, ai * 3 + 1)),
-              at(inPoints, ai * 3 + 2) + t * (at(inPoints, bi * 3 + 2) - at(inPoints, ai * 3 + 2)),
-            );
-          }
-        }
+        const edgePoints = collectEdgeIntersections(tri, value, inPoints);
 
         if (edgePoints.length === 6) {
           outPoints.push(

@@ -28,6 +28,8 @@ export default [
       "jsdoc/no-blank-block-descriptions": "error",
       "jsdoc/require-param": "error",
       "jsdoc/require-returns": "error",
+      "complexity": ["error", 20],
+      "max-depth": ["error", 4],
     },
   },
   {
