@@ -6,7 +6,9 @@ Provides download helpers for standard datasets, mirroring the
 
 from __future__ import annotations
 
+import io
 import urllib.request
+import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -39,6 +41,33 @@ def _download_file(filename: str) -> Path:
         url = f"{_PYVISTA_DATA_BASE}/{filename}"
         urllib.request.urlretrieve(url, local)  # noqa: S310
     return local
+
+
+def _download_and_extract_zip(filename: str) -> Path:
+    """Download a ZIP file from the PyVista vtk-data repository and extract it.
+
+    Parameters
+    ----------
+    filename : str
+        Filename (including subdirectory) within the vtk-data ``Data/`` directory.
+        For example, ``cubemap_park/cubemap_park.zip``.
+
+    Returns
+    -------
+    Path
+        Local path to the extracted directory.
+
+    """
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    local_zip = _CACHE_DIR / filename.replace("/", "_")
+    extract_dir = local_zip.with_suffix(".unzip")
+    if not extract_dir.exists():
+        url = f"{_PYVISTA_DATA_BASE}/{filename}"
+        urllib.request.urlretrieve(url, local_zip)  # noqa: S310
+        with zipfile.ZipFile(io.BytesIO(local_zip.read_bytes())) as zf:
+            extract_dir.mkdir(parents=True, exist_ok=True)
+            zf.extractall(extract_dir)  # noqa: S202
+    return extract_dir
 
 
 class CubeMap:
@@ -165,6 +194,47 @@ def download_sky_box_cube_map() -> CubeMap:
         negy=f"{base}/skybox2-negy.jpg",
         posz=f"{base}/skybox2-posz.jpg",
         negz=f"{base}/skybox2-negz.jpg",
+    )
+
+
+def download_cubemap_park() -> CubeMap:
+    """Download a cubemap of a park.
+
+    Downloaded from http://www.humus.name/index.php?page=Textures
+    by David Eck, and converted to a smaller 512x512 size for use
+    with WebGL in his free, on-line textbook at
+    http://math.hws.edu/graphicsbook
+
+    This work is licensed under a Creative Commons Attribution 3.0 Unported
+    License.
+
+    Returns
+    -------
+    CubeMap
+        Cubemap containing the six park face image URLs.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> import pyvista_js as pv
+    >>> pl = pv.Plotter(lighting=None)
+    >>> dataset = examples.download_cubemap_park()
+    >>> _ = pl.add_actor(dataset.to_skybox())
+    >>> pl.set_environment_texture(dataset, is_srgb=True)
+    >>> pl.camera_position = 'xy'
+    >>> pl.camera.zoom(0.4)
+    >>> _ = pl.add_mesh(pv.Sphere(), pbr=True, roughness=0.1, metallic=0.5)
+    >>> pl.show()  # doctest: +SKIP
+
+    """
+    extract_dir = _download_and_extract_zip("cubemap_park/cubemap_park.zip")
+    return CubeMap(
+        posx=str(extract_dir / "posx.jpg"),
+        negx=str(extract_dir / "negx.jpg"),
+        posy=str(extract_dir / "posy.jpg"),
+        negy=str(extract_dir / "negy.jpg"),
+        posz=str(extract_dir / "posz.jpg"),
+        negz=str(extract_dir / "negz.jpg"),
     )
 
 
