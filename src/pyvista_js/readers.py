@@ -1344,6 +1344,7 @@ class UnstructuredGridReader:
             Connectivity, offsets and cell type arrays.
 
         """
+
         def _get_data(name: str) -> list[int]:
             pattern = rf'<DataArray[^>]*Name="{name}"[^>]*format="ascii"[^>]*>(.*?)</DataArray>'
             match = re.search(pattern, text, re.DOTALL)
