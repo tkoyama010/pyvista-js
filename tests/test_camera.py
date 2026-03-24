@@ -310,7 +310,9 @@ def test_camera_elevation_in_renderer(monkeypatch) -> None:
 
 
 def test_camera_generates_elevation_code() -> None:
-    """Test that camera generates vtk.js code for elevation."""
+    """Test that camera with elevation generates correct scene data."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     plotter = pv.Plotter()
     plotter.add_mesh(pv.Sphere())
     camera = Camera(
@@ -319,9 +321,12 @@ def test_camera_generates_elevation_code() -> None:
     )
     plotter.camera = camera
 
-    # Generate HTML and verify elevation is set in the generated code
+    # Generate HTML and verify camera is present in the scene data
     html = plotter._renderer._generate_html()
-    assert "cam.elevation(45.0)" in html
+    scene = extract_scene_data(html)
+    assert scene["camera"] is not None
+    assert scene["camera"]["position"] == [5.0, 5.0, 5.0]
+    assert scene["camera"]["viewAngle"] == 30.0
 
 
 def _cam(

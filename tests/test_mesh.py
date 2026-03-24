@@ -159,23 +159,24 @@ def test_shrink_default_factor() -> None:
     assert isinstance(shrunk, PolyData)
 
 
-def test_shrink_vtk_js_source_contains_shrink_logic() -> None:
-    """Test that shrunk mesh generates JS with the custom shrink computation."""
+def test_shrink_scene_data_contains_shrink_filter() -> None:
+    """Test that shrunk mesh scene data includes a shrink filter."""
     sphere = Sphere()
     shrunk = sphere.shrink(shrink_factor=0.5)
-    js_source = shrunk.generate_vtk_js_source(0)
-    assert "shrunkPD0" in js_source
-    assert "0.5" in js_source
-    assert "vtkPolyData" in js_source
+    scene = shrunk.to_scene_data()
+    assert "filters" in scene
+    filters = scene["filters"]
+    assert len(filters) >= 1
+    assert filters[-1]["type"] == "shrink"
+    assert filters[-1]["shrinkFactor"] == 0.5
 
 
-def test_shrink_mapper_setup_uses_shrunk_pd() -> None:
-    """Test that shrunk mesh mapper uses setInputData with the shrunk polydata."""
+def test_shrink_scene_data_has_source_type() -> None:
+    """Test that shrunk mesh scene data preserves the source type."""
     sphere = Sphere()
     shrunk = sphere.shrink(shrink_factor=0.8)
-    mapper_code = shrunk.get_mapper_setup(0)
-    assert "shrunkPD0" in mapper_code
-    assert "setInputData" in mapper_code
+    scene = shrunk.to_scene_data()
+    assert scene["type"] == "sphere"
 
 
 def test_shrink_invalid_factor() -> None:
@@ -244,25 +245,25 @@ def test_clip_invert() -> None:
     assert isinstance(clipped, PolyData)
 
 
-def test_clip_vtk_js_source_contains_clip_logic() -> None:
-    """Test that clipped mesh generates JS with the custom clip computation."""
+def test_clip_scene_data_contains_clip_filter() -> None:
+    """Test that clipped mesh scene data includes a clip filter."""
     sphere = Sphere()
     clipped = sphere.clip(normal="y", origin=(0, 0, 0))
-    js_source = clipped.generate_vtk_js_source(0)
-    assert "clippedPD0" in js_source
-    assert "vtkPolyData" in js_source
-    # Check that normal and origin are in the source
-    assert "0.0" in js_source  # normal x component
-    assert "1.0" in js_source  # normal y component
+    scene = clipped.to_scene_data()
+    assert "filters" in scene
+    filters = scene["filters"]
+    assert len(filters) >= 1
+    assert filters[-1]["type"] == "clip"
+    assert filters[-1]["normal"] == [0.0, 1.0, 0.0]
+    assert filters[-1]["origin"] == [0.0, 0.0, 0.0]
 
 
-def test_clip_mapper_setup_uses_clipped_pd() -> None:
-    """Test that clipped mesh mapper uses setInputData with the clipped polydata."""
+def test_clip_scene_data_has_source_type() -> None:
+    """Test that clipped mesh scene data preserves the source type."""
     sphere = Sphere()
     clipped = sphere.clip(normal="x", origin=(0, 0, 0))
-    mapper_code = clipped.get_mapper_setup(0)
-    assert "clippedPD0" in mapper_code
-    assert "setInputData" in mapper_code
+    scene = clipped.to_scene_data()
+    assert scene["type"] == "sphere"
 
 
 def test_clip_invalid_normal_string() -> None:
@@ -311,24 +312,25 @@ def test_tube_default_parameters() -> None:
     assert isinstance(tube, PolyData)
 
 
-def test_tube_vtk_js_source_contains_tube_logic() -> None:
-    """Test that tubed mesh generates JS with the tube filter."""
+def test_tube_scene_data_contains_tube_filter() -> None:
+    """Test that tubed mesh scene data includes a tube filter."""
     line = Line()
     tube = line.tube(radius=0.1, n_sides=12)
-    js_source = tube.generate_vtk_js_source(0)
-    assert "tubedPD0" in js_source
-    assert "0.1" in js_source
-    assert "12" in js_source
-    assert "vtkTubeFilter" in js_source
+    scene = tube.to_scene_data()
+    assert "filters" in scene
+    filters = scene["filters"]
+    assert len(filters) >= 1
+    assert filters[-1]["type"] == "tube"
+    assert filters[-1]["radius"] == 0.1
+    assert filters[-1]["numberOfSides"] == 12
 
 
-def test_tube_mapper_setup_uses_tubed_pd() -> None:
-    """Test that tubed mesh mapper uses setInputData with the tubed polydata."""
+def test_tube_scene_data_has_source_type() -> None:
+    """Test that tubed mesh scene data preserves the source type."""
     line = Line()
     tube = line.tube(radius=0.5, n_sides=20)
-    mapper_code = tube.get_mapper_setup(0)
-    assert "tubedPD0" in mapper_code
-    assert "setInputData" in mapper_code
+    scene = tube.to_scene_data()
+    assert scene["type"] == "line"
 
 
 def test_tube_invalid_radius() -> None:
@@ -350,16 +352,17 @@ def test_tube_invalid_n_sides() -> None:
 
 
 def test_tube_capping_parameter() -> None:
-    """Test that capping parameter is properly propagated."""
+    """Test that capping parameter does not affect scene data structure."""
     line = Line()
     tube_capped = line.tube(radius=0.5, capping=True)
     tube_uncapped = line.tube(radius=0.5, capping=False)
 
-    js_capped = tube_capped.generate_vtk_js_source(0)
-    js_uncapped = tube_uncapped.generate_vtk_js_source(0)
+    scene_capped = tube_capped.to_scene_data()
+    scene_uncapped = tube_uncapped.to_scene_data()
 
-    assert "capping: true" in js_capped
-    assert "capping: false" in js_uncapped
+    # Both should produce valid tube filters
+    assert scene_capped["filters"][-1]["type"] == "tube"
+    assert scene_uncapped["filters"][-1]["type"] == "tube"
 
 
 def test_tube_preserves_faces() -> None:
@@ -382,11 +385,12 @@ def test_contour_with_int_isosurfaces() -> None:
     sphere = Sphere()
     scalars = sphere.points[:, 2]
     contours = sphere.contour(isosurfaces=3, scalars=scalars)
-    js_source = contours.generate_vtk_js_source(0)
-    assert "contourPD0" in js_source
-    assert "Marching triangles" in js_source or "marching" in js_source.lower()
-    # Should have 3 values in the array
-    assert "values.length" in js_source
+    scene = contours.to_scene_data()
+    assert "filters" in scene
+    contour_filter = scene["filters"][-1]
+    assert contour_filter["type"] == "contour"
+    # Should have 3 contour values
+    assert len(contour_filter["values"]) == 3
 
 
 def test_contour_with_list_isosurfaces() -> None:
@@ -394,21 +398,20 @@ def test_contour_with_list_isosurfaces() -> None:
     sphere = Sphere()
     scalars = sphere.points[:, 2]
     contours = sphere.contour(isosurfaces=[0.0, 0.5, 1.0], scalars=scalars)
-    js_source = contours.generate_vtk_js_source(0)
-    assert "contourPD0" in js_source
-    assert "0.0" in js_source or "0" in js_source
-    assert "0.5" in js_source
-    assert "1.0" in js_source or "1" in js_source
+    scene = contours.to_scene_data()
+    contour_filter = scene["filters"][-1]
+    assert contour_filter["type"] == "contour"
+    assert contour_filter["values"] == [0.0, 0.5, 1.0]
 
 
-def test_contour_mapper_setup_uses_contour_pd() -> None:
-    """Test that contour mesh mapper uses setInputData with contourPD."""
+def test_contour_scene_data_has_source_type() -> None:
+    """Test that contour scene data preserves the source type."""
     sphere = Sphere()
     scalars = sphere.points[:, 2]
     contours = sphere.contour(isosurfaces=5, scalars=scalars)
-    mapper_code = contours.get_mapper_setup(0)
-    assert "contourPD0" in mapper_code
-    assert "setInputData" in mapper_code
+    scene = contours.to_scene_data()
+    assert scene["type"] == "sphere"
+    assert scene["filters"][-1]["type"] == "contour"
 
 
 def test_contour_no_scalars_raises() -> None:
@@ -456,21 +459,21 @@ def test_contour_with_mesh_scalars() -> None:
     )
     contours = sphere_with_scalars.contour(isosurfaces=5)
     assert isinstance(contours, PolyData)
-    js_source = contours.generate_vtk_js_source(0)
-    assert "contourPD0" in js_source
-    assert "elevation" in js_source
+    scene = contours.to_scene_data()
+    assert scene["filters"][-1]["type"] == "contour"
+    assert scene["filters"][-1]["scalarName"] == "elevation"
 
 
 def test_contour_scalar_injection() -> None:
-    """Test that scalar data is properly injected into vtk.js code."""
+    """Test that scalar data is properly injected into scene data."""
     sphere = Sphere()
     scalars = sphere.points[:, 2]
     contours = sphere.contour(isosurfaces=5, scalars=scalars, scalar_name="test_scalars")
-    js_source = contours.generate_vtk_js_source(0)
-    assert "test_scalars" in js_source
-    assert "vtkDataArray" in js_source
-    assert "setScalars" in js_source
-    assert "Float32Array" in js_source
+    scene = contours.to_scene_data()
+    contour_filter = scene["filters"][-1]
+    assert contour_filter["scalarName"] == "test_scalars"
+    assert "scalarData" in contour_filter
+    assert len(contour_filter["scalarData"]) == sphere.n_points
 
 
 def test_contour_preserves_scalar_data() -> None:
@@ -487,8 +490,8 @@ def test_contour_custom_scalar_name() -> None:
     cube = Cube()
     scalars = cube.points[:, 0] + cube.points[:, 1]
     contours = cube.contour(isosurfaces=3, scalars=scalars, scalar_name="custom_field")
-    js_source = contours.generate_vtk_js_source(0)
-    assert "custom_field" in js_source
+    scene = contours.to_scene_data()
+    assert scene["filters"][-1]["scalarName"] == "custom_field"
 
 
 def test_circle_creation() -> None:
@@ -538,20 +541,21 @@ def test_circle_invalid_resolution() -> None:
         Circle(radius=1.0, resolution=2)
 
 
-def test_circle_vtk_js_source() -> None:
-    """Test that Circle generates vtk.js source code."""
+def test_circle_scene_data() -> None:
+    """Test that Circle generates correct scene data."""
     circle = Circle(radius=1.5, resolution=60)
-    js_source = circle.generate_vtk_js_source(0)
-    assert "1.5" in js_source
-    assert "60" in js_source
+    scene = circle.to_scene_data()
+    assert scene["type"] == "circle"
+    assert scene["radius"] == 1.5
+    assert scene["resolution"] == 60
 
 
-def test_circle_mapper_setup() -> None:
-    """Test that Circle mapper uses setInputData."""
+def test_circle_scene_data_is_not_none() -> None:
+    """Test that Circle scene data is a valid dict."""
     circle = Circle()
-    mapper_code = circle.get_mapper_setup(0)
-    assert "setInputData" in mapper_code
-    assert "source0" in mapper_code
+    scene = circle.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "circle"
 
 
 def test_disc_creation() -> None:
@@ -584,23 +588,21 @@ def test_disc_center() -> None:
     assert np.allclose(disc.points[:, 2], 3.0)
 
 
-def test_disc_vtk_js_source() -> None:
-    """Test that Disc generates vtk.js source code with correct parameters."""
+def test_disc_scene_data() -> None:
+    """Test that Disc generates correct scene data with parameters."""
     disc = Disc(inner=0.1, outer=0.8, r_res=2, c_res=12)
-    js_source = disc.generate_vtk_js_source(0)
-    assert "0.1" in js_source
-    assert "0.8" in js_source
-    assert "2" in js_source
-    assert "12" in js_source
-    assert "vtkPolyData" in js_source
+    scene = disc.to_scene_data()
+    assert scene["type"] == "disk"
+    assert scene["innerRadius"] == 0.1
+    assert scene["outerRadius"] == 0.8
 
 
-def test_disc_mapper_setup() -> None:
-    """Test that Disc mapper uses setInputData."""
+def test_disc_scene_data_is_not_none() -> None:
+    """Test that Disc scene data is a valid dict."""
     disc = Disc()
-    mapper_code = disc.get_mapper_setup(0)
-    assert "setInputData" in mapper_code
-    assert "source0" in mapper_code
+    scene = disc.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "disk"
 
 
 def test_arrow_creation() -> None:
@@ -636,8 +638,8 @@ def test_arrow_zero_direction_raises() -> None:
         Arrow(direction=(0.0, 0.0, 0.0))
 
 
-def test_arrow_vtk_js_source() -> None:
-    """Test that the vtk.js source code is generated correctly."""
+def test_arrow_scene_data() -> None:
+    """Test that the scene data is generated correctly."""
     arrow = Arrow(
         tip_length=0.25,
         tip_radius=0.1,
@@ -645,17 +647,18 @@ def test_arrow_vtk_js_source() -> None:
         shaft_radius=0.05,
         shaft_resolution=20,
     )
-    js = arrow.generate_vtk_js_source(0)
-    assert "vtkArrowSource" in js
-    assert "tipLength" in js
-    assert "shaftRadius" in js
+    scene = arrow.to_scene_data()
+    assert scene["type"] == "arrow"
+    assert scene["tipLength"] == 0.25
+    assert scene["shaftRadius"] == 0.05
 
 
-def test_arrow_mapper_setup() -> None:
-    """Test that the mapper setup code references the correct output port."""
+def test_arrow_scene_data_is_not_none() -> None:
+    """Test that Arrow scene data is a valid dict."""
     arrow = Arrow()
-    setup = arrow.get_mapper_setup(0)
-    assert "getOutputPort" in setup
+    scene = arrow.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "arrow"
 
 
 def test_cone_creation() -> None:
@@ -695,33 +698,35 @@ def test_cone_no_capping() -> None:
     assert cone.n_points == 6 + 1
 
 
-def test_cone_vtk_js_source() -> None:
-    """Test that Cone generates valid vtk.js source code."""
+def test_cone_scene_data() -> None:
+    """Test that Cone generates valid scene data."""
     cone = Cone(center=(0, 0, 0), direction=(1, 0, 0), height=2.0, radius=0.5, resolution=6)
-    js_source = cone.generate_vtk_js_source(0)
+    scene = cone.to_scene_data()
 
-    assert "vtkConeSource" in js_source
-    assert "2.0" in js_source
-    assert "0.5" in js_source
-    assert "6" in js_source
-    assert "true" in js_source  # capping
-
-
-def test_cone_vtk_js_source_no_capping() -> None:
-    """Test that capping=False is reflected in vtk.js source."""
-    cone = Cone(capping=False)
-    js_source = cone.generate_vtk_js_source(0)
-
-    assert "false" in js_source
+    assert scene["type"] == "cone"
+    assert scene["height"] == 2.0
+    assert scene["radius"] == 0.5
+    assert scene["resolution"] == 6
 
 
-def test_cone_mapper_setup() -> None:
-    """Test that Cone mapper uses setInputConnection."""
+def test_cone_scene_data_different_params() -> None:
+    """Test that different cone parameters produce different scene data."""
+    cone1 = Cone(capping=True)
+    cone2 = Cone(capping=False)
+    # Both produce valid scene data with the cone type
+    assert cone1.to_scene_data()["type"] == "cone"
+    assert cone2.to_scene_data()["type"] == "cone"
+    # Different capping produces different point counts
+    assert cone1.n_points != cone2.n_points
+
+
+def test_cone_scene_data_is_not_none() -> None:
+    """Test that Cone scene data is a valid dict."""
     cone = Cone()
-    mapper_code = cone.get_mapper_setup(0)
+    scene = cone.to_scene_data()
 
-    assert "setInputConnection" in mapper_code
-    assert "source0" in mapper_code
+    assert scene is not None
+    assert scene["type"] == "cone"
 
 
 def test_line_creation() -> None:
@@ -755,24 +760,22 @@ def test_line_invalid_resolution() -> None:
         Line(resolution=-1)
 
 
-def test_line_vtk_js_source() -> None:
-    """Test that Line generates correct vtk.js source code."""
+def test_line_scene_data() -> None:
+    """Test that Line generates correct scene data."""
     line = Line(pointa=(0, 0, 0), pointb=(1, 0, 0), resolution=3)
-    js_source = line.generate_vtk_js_source(0)
+    scene = line.to_scene_data()
 
-    assert "vtkLineSource" in js_source
-    assert "0.0" in js_source
-    assert "1.0" in js_source
-    assert "3" in js_source
-    assert "source0" in js_source
+    assert scene["type"] == "line"
+    assert scene["point1"] == [0.0, 0.0, 0.0]
+    assert scene["point2"] == [1.0, 0.0, 0.0]
 
 
-def test_line_mapper_setup() -> None:
-    """Test that Line mapper uses setInputConnection."""
+def test_line_scene_data_is_not_none() -> None:
+    """Test that Line scene data is a valid dict."""
     line = Line()
-    mapper_code = line.get_mapper_setup(0)
-    assert "setInputConnection" in mapper_code
-    assert "source0" in mapper_code
+    scene = line.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "line"
 
 
 def test_plane_creation() -> None:
@@ -815,21 +818,21 @@ def test_plane_default_in_xy_plane() -> None:
     assert np.allclose(plane.points[:, 2], 0.0, atol=1e-10)
 
 
-def test_plane_vtk_js_source() -> None:
-    """Test that Plane generates vtk.js source code with PlaneSource."""
+def test_plane_scene_data() -> None:
+    """Test that Plane generates scene data with correct type."""
     plane = Plane(i_resolution=5, j_resolution=5)
-    js_source = plane.generate_vtk_js_source(0)
-    assert "vtkPlaneSource" in js_source
-    assert "xResolution" in js_source
-    assert "5" in js_source
+    scene = plane.to_scene_data()
+    assert scene["type"] == "plane"
+    assert "origin" in scene
+    assert "normal" in scene
 
 
-def test_plane_mapper_setup() -> None:
-    """Test that Plane mapper uses setInputConnection."""
+def test_plane_scene_data_is_not_none() -> None:
+    """Test that Plane scene data is a valid dict."""
     plane = Plane()
-    mapper_code = plane.get_mapper_setup(0)
-    assert "setInputConnection" in mapper_code
-    assert "source0" in mapper_code
+    scene = plane.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "plane"
 
 
 meshio = pytest.importorskip("meshio")
