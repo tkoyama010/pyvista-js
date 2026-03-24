@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/tkoyama010/pyvista-js/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: Security Vulnerability
+    url: https://github.com/tkoyama010/pyvista-js/security/advisories/new
+    about: Report security vulnerabilities privately (DO NOT create a public issue)
+  - name: Translation Contributions
+    url: https://app.transifex.com/tkoyama010/pyvista-js/
+    about: Help translate pyvista-js documentation on Transifex

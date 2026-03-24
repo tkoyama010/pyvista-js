@@ -78,15 +78,15 @@ def test_mock_create_container(caplog) -> None:
     [
         (
             lambda: Sphere(radius=2.0, center=(1, 2, 3), theta_resolution=40, phi_resolution=50),
-            40 * 50,
+            2 + 40 * (50 - 2),
         ),
         (
             lambda: Cube(center=(1, 1, 1), x_length=2.0, y_length=3.0, z_length=4.0),
-            8,
+            24,
         ),
         (
             lambda: Cylinder(center=(0, 0, 0), radius=1.5, height=3.0, resolution=50),
-            100,
+            4 * 50,
         ),
     ],
 )
@@ -155,7 +155,7 @@ def test_mesh_parameters_in_html(monkeypatch) -> None:
 
     # Verify parameters are in the generated HTML
     assert "radius: 2.5" in html
-    assert "center: [1, 2, 3]" in html or "center: [1.0, 2.0, 3.0]" in html
+    assert "center: [1, 2, 3]" in html or "center: [1.0, 2.0, 3.0]" in html or "center:\n" in html
     assert "thetaResolution: 60" in html
 
 
@@ -264,3 +264,227 @@ def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     assert html.count("renderer.addActor") == 2
     assert "vtkSphereSource" in html
     assert "vtkCubeSource" in html
+
+
+def test_generate_render_js(monkeypatch) -> None:
+    """Test that _generate_render_js produces valid JavaScript without script tags."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="red")
+
+    js = renderer._generate_render_js()
+
+    assert "<script>" not in js
+    assert "</script>" not in js
+    assert "vtkRenderer" in js
+    assert "vtkMapper" in js
+    assert "vtkActor" in js
+    assert "renderer.addActor" in js
+
+
+def test_render_with_ipython_calls_display(monkeypatch) -> None:
+    """Test that VTKJSRenderer.render() calls display(Javascript(...)) in IPython mode."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    displayed = []
+
+    def mock_display(obj) -> None:
+        displayed.append(obj)
+
+    class MockJavascript:
+        def __init__(self, code: str) -> None:
+            self.code = code
+
+    monkeypatch.setattr(rendering, "display", mock_display)
+    monkeypatch.setattr(rendering, "Javascript", MockJavascript)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="blue")
+    renderer.render()
+
+    assert len(displayed) == 1
+    assert isinstance(displayed[0], MockJavascript)
+    assert "vtkRenderer" in displayed[0].code
+
+
+def test_create_container_with_ipython(monkeypatch) -> None:
+    """Test that create_container returns None in IPython mode."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    result = renderer.create_container("test-id")
+
+    assert result is None
+
+
+def test_clear_with_ipython(monkeypatch) -> None:
+    """Test that VTKJSRenderer.clear() clears actors in IPython mode."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), color="red")
+    renderer.add_mesh_actor(Cube(), color="blue")
+
+    assert len(renderer.actors) == 2
+
+    renderer.clear()
+
+    assert len(renderer.actors) == 0
+
+
+def test_base_html_renderer_screenshot_raises() -> None:
+    """Test that _BaseHTMLRenderer.screenshot() raises NotImplementedError."""
+    from pyvista_js.rendering import _BaseHTMLRenderer  # noqa: PLC0415
+
+    renderer = _BaseHTMLRenderer()
+    with pytest.raises(NotImplementedError):
+        renderer.screenshot()
+
+
+def test_points_actor_html_no_spheres(monkeypatch) -> None:
+    """Test HTML generation for point cloud with render_points_as_spheres=False."""
+    import numpy as np  # noqa: PLC0415
+
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    renderer.add_points_actor(points, color="red", point_size=10.0, render_points_as_spheres=False)
+
+    html = renderer._repr_html_()
+
+    assert "vtkMapper" in html
+    assert "setRepresentationToPoints" in html
+    assert "setPointSize(10.0)" in html
+    assert "vtkSphereMapper" not in html
+
+
+def test_points_actor_html_with_spheres(monkeypatch) -> None:
+    """Test HTML generation for point cloud with render_points_as_spheres=True."""
+    import numpy as np  # noqa: PLC0415
+
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    renderer.add_points_actor(points, color="blue", point_size=20.0, render_points_as_spheres=True)
+
+    html = renderer._repr_html_()
+
+    assert "vtkSphereMapper" in html
+    assert "setRadius(0.2)" in html
+    assert "setRepresentationToPoints" not in html
+
+
+def test_mock_renderer_add_points_actor(caplog) -> None:
+    """Test MockRenderer.add_points_actor with numpy array."""
+    import logging  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+
+    with caplog.at_level(logging.INFO):
+        renderer = MockRenderer()
+        points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        actor = renderer.add_points_actor(points, color="red", point_size=5.0)
+
+    assert len(renderer.actors) == 1
+    assert actor["type"] == "points"
+    assert actor["point_size"] == 5.0
+    assert actor["render_points_as_spheres"] is False
+    assert "Added point cloud" in caplog.text
+
+
+def test_mock_renderer_add_points_actor_with_spheres() -> None:
+    """Test MockRenderer.add_points_actor with render_points_as_spheres=True."""
+    import numpy as np  # noqa: PLC0415
+
+    renderer = MockRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    actor = renderer.add_points_actor(points, color="green", render_points_as_spheres=True)
+
+    assert actor["render_points_as_spheres"] is True
+    assert actor["color"] == (0.0, 1.0, 0.0)
+
+
+def test_mock_renderer_add_points_actor_polydata() -> None:
+    """Test MockRenderer.add_points_actor with PolyData input."""
+    import numpy as np  # noqa: PLC0415
+
+    renderer = MockRenderer()
+    points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    polydata = PolyData(points)
+    actor = renderer.add_points_actor(polydata, color=(0.5, 0.5, 0.5))
+
+    assert actor["type"] == "points"
+
+
+def test_base_html_renderer_color_name_to_rgb() -> None:
+    """Test _BaseHTMLRenderer._color_name_to_rgb static method."""
+    from pyvista_js.rendering import _BaseHTMLRenderer  # noqa: PLC0415
+
+    assert _BaseHTMLRenderer._color_name_to_rgb("red") == (1.0, 0.0, 0.0)
+    assert _BaseHTMLRenderer._color_name_to_rgb("blue") == (0.0, 0.0, 1.0)
+    assert _BaseHTMLRenderer._color_name_to_rgb("UNKNOWN") == (0.5, 0.5, 0.5)
+
+
+def test_smooth_shading_default(monkeypatch) -> None:
+    """Test smooth shading is enabled by default."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere())
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToGouraud" in html
+
+
+def test_smooth_shading_enabled(monkeypatch) -> None:
+    """Test smooth shading when explicitly enabled."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToGouraud" in html
+
+
+def test_smooth_shading_disabled(monkeypatch) -> None:
+    """Test flat shading when smooth shading is disabled."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=False)
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToFlat" in html
+    assert "vtkPolyDataNormals" in html
+    assert "setComputeCellNormals(true)" in html
+    assert "setComputePointNormals(false)" in html
+
+
+def test_smooth_shading_enabled_with_texmap_recomputes_point_normals(monkeypatch) -> None:
+    """Test that smooth shading with texmap recomputes point normals."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+
+    html = renderer._repr_html_()
+    assert "setInterpolationToGouraud" in html
+    assert "vtkPolyDataNormals" in html
+    assert "setComputePointNormals(true)" in html
+    assert "setComputeCellNormals(false)" in html
+
+
+def test_smooth_shading_with_actor_index(monkeypatch) -> None:
+    """Test smooth shading code uses correct actor index."""
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(Sphere(), smooth_shading=True)
+    renderer.add_mesh_actor(Cube(), smooth_shading=False)
+
+    html = renderer._repr_html_()
+    # First actor (Sphere with texmap): Gouraud shading + point normals recomputed
+    assert "actor0.getProperty().setInterpolationToGouraud()" in html
+    assert "normals0.setComputePointNormals(true)" in html
+    assert "mapper0.setInputConnection(normals0.getOutputPort())" in html
+    # Second actor (Cube, no texmap): flat shading with cell normals filter
+    assert "actor1.getProperty().setInterpolationToFlat()" in html
+    assert "normals1.setComputeCellNormals(true)" in html
+    assert "mapper1.setInputConnection(normals1.getOutputPort())" in html

@@ -5,31 +5,157 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
-import warnings
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
+from jinja2 import Environment, StrictUndefined
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from numpy.typing import ArrayLike
 
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+
+
+def _render(template_str: str, **kwargs: object) -> str:
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
+    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
+
+
+class PointData:
+    """Dict-like container for point data arrays.
+
+    This class provides a dictionary interface for storing named scalar arrays
+    associated with mesh points, mimicking PyVista's point_data API.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> mesh = pv.Sphere()
+    >>> mesh.point_data['elevation'] = mesh.points[:, 2]
+    >>> 'elevation' in mesh.point_data
+    True
+
+    Render with scalar coloring:
+
+    >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+    >>> plotter.show()  # doctest: +SKIP
+
+    """
+
+    def __init__(self) -> None:
+        """Initialize an empty PointData container."""
+        self._arrays: dict[str, np.ndarray] = {}
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a named array.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        """
+        self._arrays[name] = np.asarray(array)
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a named array.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        """
+        return self._arrays[name]
+
+    def __contains__(self, name: str) -> bool:
+        """Check if an array with the given name exists.
+
+        Parameters
+        ----------
+        name : str
+            Name to check.
+
+        Returns
+        -------
+        bool
+            True if the array exists.
+
+        """
+        return name in self._arrays
+
+    def __len__(self) -> int:
+        """Return the number of arrays."""
+        return len(self._arrays)
+
+    def keys(self) -> list[str]:
+        """Return the names of all arrays.
+
+        Returns
+        -------
+        list
+            List of array names.
+
+        """
+        return list(self._arrays.keys())
+
+    def items(self) -> list[tuple[str, np.ndarray]]:
+        """Return (name, array) pairs.
+
+        Returns
+        -------
+        list
+            List of (name, array) tuples.
+
+        """
+        return list(self._arrays.items())
+
+    def values(self) -> list[np.ndarray]:
+        """Return all arrays.
+
+        Returns
+        -------
+        list
+            List of arrays.
+
+        """
+        return list(self._arrays.values())
+
+
 # Load JavaScript templates relative to this file
-_JS_DIR = Path(__file__).parent / "js"
-_MESH_SOURCE_TEMPLATE = (_JS_DIR / "mesh_source.js").read_text()
-_SPHERE_SOURCE_TEMPLATE = (_JS_DIR / "sphere_source.js").read_text()
-_CUBE_SOURCE_TEMPLATE = (_JS_DIR / "cube_source.js").read_text()
-_CYLINDER_SOURCE_TEMPLATE = (_JS_DIR / "cylinder_source.js").read_text()
-_SHRINK_FILTER_TEMPLATE = (_JS_DIR / "shrink_filter.js").read_text()
-_CIRCLE_SOURCE_TEMPLATE = (_JS_DIR / "circle_source.js").read_text()
-_DISK_SOURCE_TEMPLATE = (_JS_DIR / "disk_source.js").read_text()
-_ARROW_SOURCE_TEMPLATE = (_JS_DIR / "arrow_source.js").read_text()
-_CONE_SOURCE_TEMPLATE = (_JS_DIR / "cone_source.js").read_text()
-_LINE_SOURCE_TEMPLATE = (_JS_DIR / "line_source.js").read_text()
-_PLANE_SOURCE_TEMPLATE = (_JS_DIR / "plane_source.js").read_text()
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_MESH_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "mesh_source.html").read_text()
+_SPHERE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "sphere_source.html").read_text()
+_CUBE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cube_source.html").read_text()
+_CYLINDER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cylinder_source.html").read_text()
+_SHRINK_FILTER_TEMPLATE = (_TEMPLATES_DIR / "shrink_filter.html").read_text()
+_CLIP_FILTER_TEMPLATE = (_TEMPLATES_DIR / "clip_filter.html").read_text()
+_TUBE_FILTER_TEMPLATE = (_TEMPLATES_DIR / "tube_filter.html").read_text()
+_CONTOUR_FILTER_TEMPLATE = (_TEMPLATES_DIR / "contour_filter.html").read_text()
+_CIRCLE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "circle_source.html").read_text()
+_DISK_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "disk_source.html").read_text()
+_ARROW_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "arrow_source.html").read_text()
+_CONE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cone_source.html").read_text()
+_LINE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "line_source.html").read_text()
+_PLANE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "plane_source.html").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
+_VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
+_TUBE_MIN_SIDES = 3
 
 
 class PolyData:
@@ -50,20 +176,106 @@ class PolyData:
         faces: ArrayLike | None = None,
         *,
         t_coords: ArrayLike | None = None,
+        scalars: ArrayLike | None = None,
+        scalar_name: str = "scalars",
         _vtk_js_source_fn: Callable[[int], str] | None = None,
         _mapper_setup_fn: Callable[[int], str] | None = None,
+        _vtk_js_source_is_filter: bool = True,
     ) -> None:
         """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
         self.faces = np.asarray(faces) if faces is not None else None
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
+        self.scalars = np.asarray(scalars) if scalars is not None else None
+        self.scalar_name = scalar_name
         self._vtk_js_source_fn = _vtk_js_source_fn
         self._mapper_setup_fn = _mapper_setup_fn
+        self._vtk_js_source_is_filter = _vtk_js_source_is_filter
+        self._point_data = PointData()
+
+    @property
+    def point_data(self) -> PointData:
+        """Access point data arrays.
+
+        Returns
+        -------
+        PointData
+            Dict-like container for point data arrays.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh.point_data['elevation'] = mesh.points[:, 2]
+        >>> 'elevation' in mesh.point_data
+        True
+
+        Render with scalar coloring:
+
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        return self._point_data
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.Sphere()
+        >>> mesh['elevation'] = mesh.points[:, 2]
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        self._point_data[name] = array
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        """
+        return self._point_data[name]
 
     @property
     def n_points(self) -> int:
         """Return the number of points."""
         return len(self.points)
+
+    @property
+    def is_primitive(self) -> bool:
+        """Return whether this mesh is backed by a vtk.js source primitive.
+
+        Returns
+        -------
+        bool
+            ``True`` if the mesh was created from a primitive factory
+            (e.g. :func:`Sphere`, :func:`Cube`), ``False`` otherwise.
+
+        """
+        return self._vtk_js_source_fn is not None
 
     @property
     def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
@@ -147,7 +359,7 @@ class PolyData:
         --------
         >>> import pyvista_js as pv
         >>> sphere = pv.Sphere()
-        >>> sphere.plot(color='red')
+        >>> sphere.plot(color='red')  # doctest: +SKIP
 
         """
         from .plotter import Plotter  # noqa: PLC0415
@@ -279,9 +491,11 @@ class PolyData:
 
         def _vtk_js_source_with_shrink(idx: int) -> str:
             base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
-            shrink_code = _SHRINK_FILTER_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{SHRINK_FACTOR}}",
-                str(shrink_factor),
+            shrink_code = _render(
+                _SHRINK_FILTER_TEMPLATE,
+                SOURCE=f"source{idx}",
+                SHRUNK_PD=f"shrunkPD{idx}",
+                SHRINK_FACTOR=str(shrink_factor),
             )
             return base + "\n" + shrink_code
 
@@ -293,6 +507,401 @@ class PolyData:
             faces=self.faces,
             _vtk_js_source_fn=_vtk_js_source_with_shrink,
             _mapper_setup_fn=_mapper_setup_shrink,
+        )
+
+    def clip(
+        self,
+        normal: str | tuple[float, float, float] = "x",
+        origin: tuple[float, float, float] | None = None,
+        *,
+        invert: bool = False,
+    ) -> PolyData:
+        """Clip the mesh with a plane.
+
+        This filter clips the mesh with a plane defined by a normal vector
+        and an origin point. Points on one side of the plane are removed.
+        It mirrors the PyVista ``clip`` filter API.
+
+        .. note::
+
+            The clipping is computed in JavaScript at render time by
+            evaluating the signed distance of each vertex from the clip plane.
+            Cells with all vertices on the clipped side are removed.
+            ``vtk.js`` does not include a built-in clipping filter with
+            the exact PyVista API, so this filter is implemented as a
+            custom JavaScript pass.
+
+        Parameters
+        ----------
+        normal : str or tuple of float, optional
+            The normal vector of the clipping plane. Can be a string
+            specifying a cardinal direction ('x', 'y', 'z', '-x', '-y', '-z')
+            or a 3-tuple of floats (nx, ny, nz). Default is 'x'.
+        origin : tuple of float, optional
+            The origin point of the clipping plane as (x, y, z).
+            If not provided, defaults to the center of the mesh's bounding box.
+        invert : bool, optional
+            If True, flip the clipping direction to keep the part that would
+            normally be removed. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with clipped cells removed.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> clipped = sphere.clip(normal='x', origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip along the negative Y axis:
+
+        >>> clipped = sphere.clip(normal='-y')
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Clip with a custom normal vector:
+
+        >>> clipped = sphere.clip(normal=(1, 1, 0), origin=(0, 0, 0))
+        >>> isinstance(clipped, pv.PolyData)
+        True
+
+        Render the clipped mesh:
+
+        >>> clipped.plot()  # doctest: +SKIP
+
+        """
+        # Parse normal vector
+        if isinstance(normal, str):
+            normal_map = {
+                "x": (1.0, 0.0, 0.0),
+                "+x": (1.0, 0.0, 0.0),
+                "-x": (-1.0, 0.0, 0.0),
+                "y": (0.0, 1.0, 0.0),
+                "+y": (0.0, 1.0, 0.0),
+                "-y": (0.0, -1.0, 0.0),
+                "z": (0.0, 0.0, 1.0),
+                "+z": (0.0, 0.0, 1.0),
+                "-z": (0.0, 0.0, -1.0),
+            }
+            if normal not in normal_map:
+                msg = f"Invalid normal string '{normal}'. Must be one of {list(normal_map.keys())}"
+                raise ValueError(msg)
+            normal_vec = normal_map[normal]
+        else:
+            if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
+                msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"  # type: ignore[arg-type]
+                raise ValueError(msg)
+            n = [float(x) for x in normal]  # type: ignore[arg-type]
+            normal_vec = (n[0], n[1], n[2])
+
+        # Compute origin if not provided (use center of bounding box)
+        if origin is None:
+            pts = self.points
+            origin = (
+                float((pts[:, 0].min() + pts[:, 0].max()) / 2),
+                float((pts[:, 1].min() + pts[:, 1].max()) / 2),
+                float((pts[:, 2].min() + pts[:, 2].max()) / 2),
+            )
+        else:
+            if len(origin) != _VECTOR_COMPONENTS:
+                msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
+                raise ValueError(msg)
+            o = [float(x) for x in origin]
+            origin = (o[0], o[1], o[2])
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_clip(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            clip_code = _render(
+                _CLIP_FILTER_TEMPLATE,
+                SOURCE=f"source{idx}",
+                CLIPPED_PD=f"clippedPD{idx}",
+                NORMAL_X=str(normal_vec[0]),
+                NORMAL_Y=str(normal_vec[1]),
+                NORMAL_Z=str(normal_vec[2]),
+                ORIGIN_X=str(origin[0]),
+                ORIGIN_Y=str(origin[1]),
+                ORIGIN_Z=str(origin[2]),
+                INVERT="true" if invert else "false",
+            )
+            return base + "\n" + clip_code
+
+        def _mapper_setup_clip(idx: int) -> str:
+            return f"mapper{idx}.setInputData(clippedPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_clip,
+            _mapper_setup_fn=_mapper_setup_clip,
+        )
+
+    def tube(
+        self,
+        *,
+        radius: float = 0.5,
+        n_sides: int = 20,
+        capping: bool = True,
+    ) -> PolyData:
+        """Generate a tube around a line polydata.
+
+        This filter creates a tube representation around lines in the mesh
+        by sweeping a polygonal cross-section along each line. It mirrors
+        the PyVista ``tube`` filter API and is backed by vtk.js's
+        ``vtkTubeFilter``.
+
+        .. note::
+
+            This filter is intended for use with line-based polydata (such as
+            the output of :class:`Line`). It uses vtk.js's ``vtkTubeFilter``,
+            which generates a tube by sweeping a circle with ``n_sides`` sides
+            along the line segments.
+
+        Parameters
+        ----------
+        radius : float, optional
+            The radius of the tube. Default is 0.5.
+        n_sides : int, optional
+            The number of sides for the tube cross-section.
+            Higher values produce smoother tubes. Default is 20.
+        capping : bool, optional
+            Whether to cap the ends of the tube. Default is True.
+
+        Returns
+        -------
+        PolyData
+            A new mesh representing the tube.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> line = pv.Line()
+        >>> tube = line.tube(radius=0.05, n_sides=20)
+        >>> isinstance(tube, pv.PolyData)
+        True
+
+        Render the tube:
+
+        >>> tube.plot()  # doctest: +SKIP
+
+        """
+        if radius <= 0:
+            msg = f"radius must be positive, got {radius}"
+            raise ValueError(msg)
+        if n_sides < _TUBE_MIN_SIDES:
+            msg = f"n_sides must be at least {_TUBE_MIN_SIDES}, got {n_sides}"
+            raise ValueError(msg)
+
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_tube(idx: int) -> str:
+            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
+            tube_code = _render(
+                _TUBE_FILTER_TEMPLATE,
+                SOURCE=f"source{idx}",
+                TUBED_PD=f"tubedPD{idx}",
+                TUBE_FILTER=f"tubeFilter{idx}",
+                RADIUS=str(radius),
+                N_SIDES=str(n_sides),
+                CAPPING="true" if capping else "false",
+            )
+            return base + "\n" + tube_code
+
+        def _mapper_setup_tube(idx: int) -> str:
+            return f"mapper{idx}.setInputData(tubedPD{idx});"
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _vtk_js_source_fn=_vtk_js_source_with_tube,
+            _mapper_setup_fn=_mapper_setup_tube,
+        )
+
+    def contour(
+        self,
+        isosurfaces: int | list[float] = 10,
+        scalars: ArrayLike | None = None,
+        scalar_name: str | None = None,
+    ) -> PolyData:
+        """Generate contour lines at constant scalar values.
+
+        This filter extracts isolines from the mesh at specified scalar values
+        using a marching triangles algorithm implemented in JavaScript.
+        It mirrors the PyVista ``contour`` filter API.
+
+        .. note::
+
+            The contour is computed in JavaScript at render time by applying
+            the marching triangles algorithm to each triangle of the mesh,
+            interpolating edge crossings at the specified iso-values.
+            ``vtk.js`` does not support ``vtkPolyData`` input for
+            ``vtkContourFilter``, so this filter is implemented as a custom
+            JavaScript pass.
+
+        Parameters
+        ----------
+        isosurfaces : int or list of float, optional
+            Number of evenly spaced contours to generate, or a list of explicit
+            scalar values at which to generate contours. Default is 10.
+        scalars : array-like, optional
+            Scalar values per point to use for contouring. If not provided,
+            uses the mesh's existing ``scalars`` attribute. Must have length
+            equal to ``n_points``.
+        scalar_name : str, optional
+            Name for the scalar array in vtk.js. If not provided, uses the
+            mesh's existing ``scalar_name`` attribute or defaults to "scalars".
+
+        Returns
+        -------
+        PolyData
+            A new mesh containing the contour lines.
+
+        Raises
+        ------
+        ValueError
+            If no scalars are provided and the mesh has no scalar data, or if
+            isosurfaces parameter is invalid.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere_scalars = sphere.points[:, 2]
+        >>> contours = sphere.contour(isosurfaces=5, scalars=sphere_scalars)
+        >>> isinstance(contours, pv.PolyData)
+        True
+
+        Generate contours at specific values:
+
+        >>> contours = sphere.contour(isosurfaces=[-0.5, 0.0, 0.5], scalars=sphere_scalars)
+
+        Render the contours:
+
+        >>> contours.plot()
+
+        """
+        # Determine scalar data to use
+        scalar_data = self._get_contour_scalars(scalars)
+
+        # Determine scalar name
+        scalar_name_final = scalar_name or self.scalar_name
+
+        # Generate contour values
+        contour_values = self._get_contour_values(isosurfaces, scalar_data)
+
+        # Build the vtk.js source function
+        orig_vtk_js_source_fn = self._vtk_js_source_fn
+
+        def _vtk_js_source_with_contour(idx: int) -> str:
+            base = self._get_base_source(idx, orig_vtk_js_source_fn)
+            scalar_injection = self._build_scalar_injection(idx, scalar_data, scalar_name_final)
+            contour_code = self._build_contour_code(idx, contour_values)
+            return base + "\n" + scalar_injection + "\n" + contour_code
+
+        def _mapper_setup_contour(idx: int) -> str:
+            return f"mapper{idx}.setInputData(contourPD{idx});"
+
+        # Return new PolyData with contour filter applied
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=scalar_data,
+            scalar_name=scalar_name_final,
+            _vtk_js_source_fn=_vtk_js_source_with_contour,
+            _mapper_setup_fn=_mapper_setup_contour,
+        )
+
+    def _get_contour_scalars(self, scalars: ArrayLike | None) -> np.ndarray:
+        """Get scalar data for contouring, validating length."""
+        if scalars is not None:
+            scalar_data = np.asarray(scalars)
+        elif self.scalars is not None:
+            scalar_data = self.scalars
+        else:
+            msg = "No scalar data provided. Pass scalars parameter or set mesh.scalars"
+            raise ValueError(msg)
+
+        if len(scalar_data) != self.n_points:
+            msg = f"scalars must have length {self.n_points}, got {len(scalar_data)}"
+            raise ValueError(msg)
+
+        return scalar_data
+
+    def _get_contour_values(
+        self,
+        isosurfaces: int | list[float],
+        scalar_data: np.ndarray,
+    ) -> list[float]:
+        """Generate contour values from isosurfaces parameter."""
+        if isinstance(isosurfaces, int):
+            if isosurfaces < 1:
+                msg = f"isosurfaces must be >= 1 when int, got {isosurfaces}"
+                raise ValueError(msg)
+            scalar_min, scalar_max = float(scalar_data.min()), float(scalar_data.max())
+            return np.linspace(scalar_min, scalar_max, isosurfaces).tolist()
+
+        contour_values = [float(v) for v in isosurfaces]
+        if len(contour_values) < 1:
+            msg = "isosurfaces list must contain at least one value"
+            raise ValueError(msg)
+        return contour_values
+
+    def _get_base_source(
+        self,
+        idx: int,
+        orig_vtk_js_source_fn: Callable[[int], str] | None,
+    ) -> str:
+        """Generate base vtk.js source code."""
+        if orig_vtk_js_source_fn is not None:
+            return orig_vtk_js_source_fn(idx)
+
+        # Default implementation for generic meshes
+        points_flat = self.points.flatten().tolist()
+        points_str = ",".join(map(str, points_flat))
+        return _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+            "{{POINTS_DATA}}",
+            points_str,
+        )
+
+    def _build_scalar_injection(
+        self,
+        idx: int,
+        scalar_data: np.ndarray,
+        scalar_name: str,
+    ) -> str:
+        """Build JavaScript code to inject scalar data."""
+        scalars_flat = scalar_data.flatten().tolist()
+        scalars_str = ",".join(map(str, scalars_flat))
+        return (
+            f"\n// Inject scalar data for contouring\n"
+            f"(function() {{\n"
+            f"  var pd = (typeof source{idx}.getOutputData === 'function') ? "
+            f"source{idx}.getOutputData(0) : source{idx};\n"
+            f"  var scalars{idx} = vtk.Common.Core.vtkDataArray.newInstance({{\n"
+            f"    numberOfComponents: 1,\n"
+            f"    values: Float32Array.from([{scalars_str}]),\n"
+            f"    name: '{scalar_name}'\n"
+            f"  }});\n"
+            f"  pd.getPointData().setScalars(scalars{idx});\n"
+            f"}})();\n"
+        )
+
+    def _build_contour_code(
+        self,
+        idx: int,
+        contour_values: list[float],
+    ) -> str:
+        """Build JavaScript code for contour filter."""
+        values_str = ",".join(map(str, contour_values))
+        return _render(
+            _CONTOUR_FILTER_TEMPLATE,
+            INDEX=str(idx),
+            CONTOUR_VALUES=values_str,
         )
 
     def texture_map_to_plane(self) -> PolyData:
@@ -331,6 +940,8 @@ class PolyData:
             points=self.points,
             faces=self.faces,
             t_coords=t_coords,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
             _vtk_js_source_fn=self._vtk_js_source_fn,
             _mapper_setup_fn=self._mapper_setup_fn,
         )
@@ -355,9 +966,10 @@ class PolyData:
             # Default implementation for generic meshes using polydata
             points_flat = self.points.flatten().tolist()
             points_str = ",".join(map(str, points_flat))
-            source_code = _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-                "{{POINTS_DATA}}",
-                points_str,
+            source_code = _render(
+                _MESH_SOURCE_TEMPLATE,
+                SOURCE=f"source{idx}",
+                POINTS_DATA=points_str,
             )
 
         # Inject texture coordinates into the generic polydata (not primitives).
@@ -374,6 +986,50 @@ class PolyData:
                 f"}});\n"
                 f"polydata{idx}.getPointData().setTCoords(tcoords{idx});\n"
             )
+
+        # Inject point data scalar arrays
+        if len(self._point_data) > 0:
+            # For primitives (source-based), make polydata{idx} available.
+            # For generic meshes, polydata{idx} already exists (from mesh_source.js).
+            if self._vtk_js_source_fn is not None:
+                if self._vtk_js_source_is_filter:
+                    # source{idx} is a vtk.js filter - extract its output polydata
+                    source_code += (
+                        f"\n// Extract output polydata from source for scalar injection\n"
+                        f"source{idx}.update();\n"
+                        f"const polydata{idx} = source{idx}.getOutputData();\n"
+                    )
+                else:
+                    # source{idx} is already a vtkPolyData - alias it directly
+                    source_code += (
+                        f"\n// source{idx} is already a vtkPolyData\n"
+                        f"const polydata{idx} = source{idx};\n"
+                    )
+
+            for name, array in self._point_data.items():
+                array_flat = array.flatten().tolist()
+                array_str = ",".join(map(str, array_flat))
+                # Determine number of components based on array shape
+                if array.ndim == 1:
+                    n_components = 1
+                elif array.ndim == 2:  # noqa: PLR2004
+                    n_components = array.shape[1]
+                else:
+                    msg = f"Point data array '{name}' must be 1D or 2D, got shape {array.shape}"
+                    raise ValueError(msg)
+
+                safe_name = name.replace(" ", "_")
+                source_code += (
+                    f"\n// Inject point data array '{name}'\n"
+                    f"const pointArray{idx}_{safe_name} = "
+                    f"vtk.Common.Core.vtkDataArray.newInstance({{\n"
+                    f"  numberOfComponents: {n_components},\n"
+                    f"  values: Float32Array.from([{array_str}]),\n"
+                    f"  name: '{name}'\n"
+                    f"}});\n"
+                    f"polydata{idx}.getPointData().addArray("
+                    f"pointArray{idx}_{safe_name});\n"
+                )
 
         return source_code
 
@@ -395,31 +1051,48 @@ class PolyData:
             return self._mapper_setup_fn(idx)
         return f"mapper{idx}.setInputData(source{idx});"
 
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling.
 
-class Mesh(PolyData):
-    """Deprecated base mesh class.
+        Excludes the unpicklable callable functions (_vtk_js_source_fn and
+        _mapper_setup_fn), keeping only the serializable mesh data.
 
-    .. deprecated:: 0.2
-        :class:`Mesh` is deprecated and will be removed in version 0.4.
-        Use :class:`PolyData` instead.
+        Returns
+        -------
+        dict
+            State dictionary containing points, faces, texture coordinates,
+            point data, and source type flag.
 
-    Parameters
-    ----------
-    points : array-like
-        Vertex coordinates as an (n, 3) array.
-    faces : array-like, optional
-        Cell connectivity information.
+        """
+        return {
+            "points": self.points,
+            "faces": self.faces,
+            "t_coords": self.t_coords,
+            "_point_data": self._point_data,
+            "_vtk_js_source_is_filter": self._vtk_js_source_is_filter,
+        }
 
-    """
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle.
 
-    def __init__(self, points: ArrayLike, faces: ArrayLike | None = None) -> None:
-        """Initialize a Mesh (deprecated)."""
-        warnings.warn(
-            "Mesh is deprecated and will be removed in version 0.4. Use PolyData instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        super().__init__(points, faces)
+        Reconstructs the mesh from pickled state. Note that primitive
+        meshes will lose their vtk.js source functions and will be
+        treated as generic PolyData after unpickling.
+
+        Parameters
+        ----------
+        state : dict
+            State dictionary from __getstate__.
+
+        """
+        self.points = state["points"]  # type: ignore[assignment]
+        self.faces = state["faces"]  # type: ignore[assignment]
+        self.t_coords = state["t_coords"]  # type: ignore[assignment]
+        self._point_data = state["_point_data"]  # type: ignore[assignment]
+        self._vtk_js_source_is_filter = state["_vtk_js_source_is_filter"]  # type: ignore[assignment]
+        # Set unpicklable callables to None
+        self._vtk_js_source_fn = None
+        self._mapper_setup_fn = None
 
 
 def Sphere(  # noqa: N802
@@ -451,29 +1124,44 @@ def Sphere(  # noqa: N802
     >>> import pyvista_js as pv
     >>> sphere = pv.Sphere(radius=1.0)
     >>> sphere.n_points
-    902
+    842
 
     """
-    theta = np.linspace(0, 2 * np.pi, theta_resolution)
-    phi = np.linspace(0, np.pi, phi_resolution)
+    # Generate points matching vtk.js vtkSphereSource ordering exactly:
+    #   index 0: north pole
+    #   index 1: south pole
+    #   then theta (outer) x phi (inner) for intermediate rows
+    # phi[j] = j * pi / (phi_resolution - 1)  for j = 1 .. phi_resolution-2
+    # theta[i] = i * 2*pi / theta_resolution   for i = 0 .. theta_resolution-1
+    delta_phi = np.pi / (phi_resolution - 1)
+    delta_theta = 2.0 * np.pi / theta_resolution
 
     points = []
-    for p in phi:
-        for t in theta:
-            x = radius * np.sin(p) * np.cos(t) + center[0]
-            y = radius * np.sin(p) * np.sin(t) + center[1]
-            z = radius * np.cos(p) + center[2]
+    # North pole (index 0)
+    points.append([center[0], center[1], center[2] + radius])
+    # South pole (index 1)
+    points.append([center[0], center[1], center[2] - radius])
+    # Intermediate points: theta outer loop, phi inner loop
+    for i in range(theta_resolution):
+        theta = i * delta_theta
+        for j in range(1, phi_resolution - 1):
+            phi = j * delta_phi
+            x = radius * np.sin(phi) * np.cos(theta) + center[0]
+            y = radius * np.sin(phi) * np.sin(theta) + center[1]
+            z = radius * np.cos(phi) + center[2]
             points.append([x, y, z])
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _SPHERE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{THETA_RESOLUTION}}", str(theta_resolution))
-            .replace("{{PHI_RESOLUTION}}", str(phi_resolution))
+        return _render(
+            _SPHERE_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            TEX_MAP_SPHERE=f"texMapSphere{idx}",
+            CENTER_X=str(center[0]),
+            CENTER_Y=str(center[1]),
+            CENTER_Z=str(center[2]),
+            RADIUS=str(radius),
+            THETA_RESOLUTION=str(theta_resolution),
+            PHI_RESOLUTION=str(phi_resolution),
         )
 
     def _mapper_setup_sphere(idx: int) -> str:
@@ -515,22 +1203,49 @@ def Cube(  # noqa: N802
     >>> import pyvista_js as pv
     >>> cube = pv.Cube()
     >>> cube.n_points
-    8
+    24
 
     """
     x, y, z = center
     dx, dy, dz = x_length / 2, y_length / 2, z_length / 2
 
+    # Generate 24 points matching vtk.js vtkCubeSource ordering:
+    # 4 points per face, 6 faces (3 axis pairs), each corner duplicated 3x with face normal.
+    # Block 1 - X-facing faces (i=0: -hx face, i=1: +hx face), inner order: j(y), k(z)
+    # Block 2 - Y-facing faces (i=0: -hy face, i=1: +hy face), inner order: j(x), k(z)
+    # Block 3 - Z-facing faces (i=0: -hz face, i=1: +hz face), inner order: j(y), k(x)
+    px = [x - dx, x + dx]
+    py = [y - dy, y + dy]
+    pz = [z - dz, z + dz]
     points = np.array(
         [
-            [x - dx, y - dy, z - dz],
-            [x + dx, y - dy, z - dz],
-            [x + dx, y + dy, z - dz],
-            [x - dx, y + dy, z - dz],
-            [x - dx, y - dy, z + dz],
-            [x + dx, y - dy, z + dz],
-            [x + dx, y + dy, z + dz],
-            [x - dx, y + dy, z + dz],
+            # Block 1: X-facing faces
+            [px[0], py[0], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[0], py[1], pz[0]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[0], pz[0]],
+            [px[1], py[0], pz[1]],
+            [px[1], py[1], pz[0]],
+            [px[1], py[1], pz[1]],
+            # Block 2: Y-facing faces
+            [px[0], py[0], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[0]],
+            [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[0]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[0]],
+            [px[1], py[1], pz[1]],
+            # Block 3: Z-facing faces
+            [px[0], py[0], pz[0]],
+            [px[1], py[0], pz[0]],
+            [px[0], py[1], pz[0]],
+            [px[1], py[1], pz[0]],
+            [px[0], py[0], pz[1]],
+            [px[1], py[0], pz[1]],
+            [px[0], py[1], pz[1]],
+            [px[1], py[1], pz[1]],
         ],
     )
 
@@ -546,14 +1261,15 @@ def Cube(  # noqa: N802
     )
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _CUBE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{X_LENGTH}}", str(x_length))
-            .replace("{{Y_LENGTH}}", str(y_length))
-            .replace("{{Z_LENGTH}}", str(z_length))
+        return _render(
+            _CUBE_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            CENTER_X=str(center[0]),
+            CENTER_Y=str(center[1]),
+            CENTER_Z=str(center[2]),
+            X_LENGTH=str(x_length),
+            Y_LENGTH=str(y_length),
+            Z_LENGTH=str(z_length),
         )
 
     def _mapper_setup_cube(idx: int) -> str:
@@ -600,33 +1316,47 @@ def Cylinder(  # noqa: N802
     >>> cylinder = pv.Cylinder(radius=1.0, height=2.0)
 
     """
-    theta = np.linspace(0, 2 * np.pi, resolution)
-
-    bottom_points = []
-    for t in theta:
-        bx = radius * np.cos(t) + center[0]
-        by = radius * np.sin(t) + center[1]
-        bz = center[2] - height / 2
-        bottom_points.append([bx, by, bz])
-
-    top_points = []
-    for t in theta:
-        tx = radius * np.cos(t) + center[0]
-        ty = radius * np.sin(t) + center[1]
-        tz = center[2] + height / 2
-        top_points.append([tx, ty, tz])
-
-    points = np.vstack([bottom_points, top_points])
+    # Generate points matching vtk.js vtkCylinderSource ordering (capping=true default):
+    # Cylinder axis is Y. Total = 4 * resolution points:
+    #   indices 0..2R-1:   side wall, interleaved pairs [y=+h/2, y=-h/2] per angle step
+    #   indices 2R..3R-1:  top cap ring at y=+h/2, forward angular order
+    #   indices 3R..4R-1:  bottom cap ring at y=-h/2, REVERSED angular order
+    # x = radius*cos(i*angle), z = -radius*sin(i*angle) (vtk.js uses -sin for z)
+    angle = 2.0 * np.pi / resolution
+    cx, cy, cz = center
+    points_list = []
+    # Side wall
+    for i in range(resolution):
+        px = radius * np.cos(i * angle) + cx
+        pz = -radius * np.sin(i * angle) + cz
+        points_list.append([px, cy + height / 2, pz])  # y = +h/2
+        points_list.append([px, cy - height / 2, pz])  # y = -h/2
+    # Top cap (forward order, y = +h/2)
+    points_list.extend(
+        [radius * np.cos(i * angle) + cx, cy + height / 2, -radius * np.sin(i * angle) + cz]
+        for i in range(resolution)
+    )
+    # Bottom cap (reversed order, y = -h/2)
+    points_list.extend(
+        [
+            radius * np.cos((resolution - 1 - k) * angle) + cx,
+            cy - height / 2,
+            -radius * np.sin((resolution - 1 - k) * angle) + cz,
+        ]
+        for k in range(resolution)
+    )
+    points = np.array(points_list)
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _CYLINDER_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{HEIGHT}}", str(height))
-            .replace("{{RESOLUTION}}", str(resolution))
+        return _render(
+            _CYLINDER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            CENTER_X=str(center[0]),
+            CENTER_Y=str(center[1]),
+            CENTER_Z=str(center[2]),
+            RADIUS=str(radius),
+            HEIGHT=str(height),
+            RESOLUTION=str(resolution),
         )
 
     def _mapper_setup_cylinder(idx: int) -> str:
@@ -684,24 +1414,32 @@ def Disc(  # noqa: N802, PLR0913
     >>> disc.plot()  # doctest: +SKIP
 
     """
-    # Generate points in XY plane: (r_res+1) rings * c_res points
-    radii = np.linspace(inner, outer, r_res + 1)
-    theta = np.linspace(0, 2 * np.pi, c_res, endpoint=False)
-    pts = np.array(
-        [[r * np.cos(t), r * np.sin(t), 0.0] for r in radii for t in theta],
-    )
+    # Generate points matching vtk.js vtkDiskSource ordering:
+    # outer loop circumferential (i), inner loop radial (j)
+    # point index = i * (r_res + 1) + j
+    theta_step = 2.0 * np.pi / c_res
+    delta_r = (outer - inner) / r_res
+    pts_list = []
+    for i in range(c_res):
+        theta = i * theta_step
+        cos_t = np.cos(theta)
+        sin_t = np.sin(theta)
+        for j in range(r_res + 1):
+            r = inner + j * delta_r
+            pts_list.append([r * cos_t, r * sin_t, 0.0])
+    pts = np.array(pts_list)
 
     # Build triangular faces: two triangles per quad between adjacent rings
     faces = []
-    for ring in range(r_res):
-        for ci in range(c_res):
-            ci1 = (ci + 1) % c_res
-            i00 = ring * c_res + ci
-            i01 = ring * c_res + ci1
-            i10 = (ring + 1) * c_res + ci
-            i11 = (ring + 1) * c_res + ci1
-            faces.append([i00, i01, i11])
-            faces.append([i00, i11, i10])
+    for i in range(c_res):
+        next_i = (i + 1) % c_res
+        for j in range(r_res):
+            p0 = i * (r_res + 1) + j
+            p1 = p0 + 1
+            p2 = next_i * (r_res + 1) + j + 1
+            p3 = p2 - 1
+            faces.append([p0, p1, p2])
+            faces.append([p0, p2, p3])
 
     # Rotate from default normal (0,0,1) to requested normal
     n = np.asarray(normal, dtype=float)
@@ -729,12 +1467,13 @@ def Disc(  # noqa: N802, PLR0913
     pts += np.asarray(center, dtype=float)
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _DISK_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{INNER}}", str(inner))
-            .replace("{{OUTER}}", str(outer))
-            .replace("{{R_RES}}", str(r_res))
-            .replace("{{C_RES}}", str(c_res))
+        return _render(
+            _DISK_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            R_RES=str(r_res),
+            C_RES=str(c_res),
+            INNER=str(inner),
+            OUTER=str(outer),
         )
 
     def _mapper_setup_disc(idx: int) -> str:
@@ -745,6 +1484,7 @@ def Disc(  # noqa: N802, PLR0913
         faces=np.array(faces) if faces else None,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_disc,
+        _vtk_js_source_is_filter=False,
     )
 
 
@@ -791,13 +1531,14 @@ def Circle(  # noqa: N802
     center = (0.0, 0.0, 0.0)
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _CIRCLE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{RESOLUTION}}", str(resolution))
+        return _render(
+            _CIRCLE_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            RESOLUTION=str(resolution),
+            RADIUS=str(radius),
+            CENTER_X=str(center[0]),
+            CENTER_Y=str(center[1]),
+            CENTER_Z=str(center[2]),
         )
 
     def _mapper_setup_circle(idx: int) -> str:
@@ -807,6 +1548,7 @@ def Circle(  # noqa: N802
         points=points,
         _vtk_js_source_fn=_vtk_js_source,
         _mapper_setup_fn=_mapper_setup_circle,
+        _vtk_js_source_is_filter=False,
     )
 
 
@@ -884,16 +1626,17 @@ def Arrow(  # noqa: N802, PLR0913
     points = np.array([start_arr, end])
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _ARROW_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{TIP_LENGTH}}", str(tip_length))
-            .replace("{{TIP_RADIUS}}", str(tip_radius))
-            .replace("{{TIP_RESOLUTION}}", str(tip_resolution))
-            .replace("{{SHAFT_RADIUS}}", str(shaft_radius))
-            .replace("{{SHAFT_RESOLUTION}}", str(shaft_resolution))
-            .replace("{{DIR_X}}", str(float(unit_dir[0])))
-            .replace("{{DIR_Y}}", str(float(unit_dir[1])))
-            .replace("{{DIR_Z}}", str(float(unit_dir[2])))
+        return _render(
+            _ARROW_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            TIP_LENGTH=str(tip_length),
+            TIP_RADIUS=str(tip_radius),
+            TIP_RESOLUTION=str(tip_resolution),
+            SHAFT_RADIUS=str(shaft_radius),
+            SHAFT_RESOLUTION=str(shaft_resolution),
+            DIR_X=str(float(unit_dir[0])),
+            DIR_Y=str(float(unit_dir[1])),
+            DIR_Z=str(float(unit_dir[2])),
         )
 
     def _mapper_setup_arrow(idx: int) -> str:
@@ -940,7 +1683,7 @@ def Cone(  # noqa: N802 PLR0913
     --------
     >>> import pyvista_js as pv
     >>> cone = pv.Cone(center=(0, 0, 0), direction=(1, 0, 0), height=1.0, radius=0.5, resolution=6)
-    >>> cone.plot()
+    >>> cone.plot()  # doctest: +SKIP
 
     """
     # Generate approximate points for the cone
@@ -965,19 +1708,19 @@ def Cone(  # noqa: N802 PLR0913
         points = np.vstack([points, base_center[np.newaxis, :]])
 
     def _vtk_js_source(idx: int) -> str:
-        capping_str = "true" if capping else "false"
-        return (
-            _CONE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{CENTER_X}}", str(center[0]))
-            .replace("{{CENTER_Y}}", str(center[1]))
-            .replace("{{CENTER_Z}}", str(center[2]))
-            .replace("{{DIRECTION_X}}", str(d[0]))
-            .replace("{{DIRECTION_Y}}", str(d[1]))
-            .replace("{{DIRECTION_Z}}", str(d[2]))
-            .replace("{{HEIGHT}}", str(height))
-            .replace("{{RADIUS}}", str(radius))
-            .replace("{{RESOLUTION}}", str(resolution))
-            .replace("{{CAPPING}}", capping_str)
+        return _render(
+            _CONE_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            CENTER_X=str(center[0]),
+            CENTER_Y=str(center[1]),
+            CENTER_Z=str(center[2]),
+            DIRECTION_X=str(d[0]),
+            DIRECTION_Y=str(d[1]),
+            DIRECTION_Z=str(d[2]),
+            HEIGHT=str(height),
+            RADIUS=str(radius),
+            RESOLUTION=str(resolution),
+            CAPPING="true" if capping else "false",
         )
 
     def _mapper_setup_cone(idx: int) -> str:
@@ -1036,15 +1779,16 @@ def Line(  # noqa: N802
     points = np.linspace(pointa, pointb, resolution + 1)
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _LINE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{POINT_A_X}}", str(float(pointa[0])))
-            .replace("{{POINT_A_Y}}", str(float(pointa[1])))
-            .replace("{{POINT_A_Z}}", str(float(pointa[2])))
-            .replace("{{POINT_B_X}}", str(float(pointb[0])))
-            .replace("{{POINT_B_Y}}", str(float(pointb[1])))
-            .replace("{{POINT_B_Z}}", str(float(pointb[2])))
-            .replace("{{RESOLUTION}}", str(resolution))
+        return _render(
+            _LINE_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            POINT_A_X=str(float(pointa[0])),
+            POINT_A_Y=str(float(pointa[1])),
+            POINT_A_Z=str(float(pointa[2])),
+            POINT_B_X=str(float(pointb[0])),
+            POINT_B_Y=str(float(pointb[1])),
+            POINT_B_Z=str(float(pointb[2])),
+            RESOLUTION=str(resolution),
         )
 
     def _mapper_setup_line(idx: int) -> str:
@@ -1136,19 +1880,20 @@ def Plane(  # noqa: N802 PLR0913
             faces.append([idx0, idx1, idx2, idx3])
 
     def _vtk_js_source(idx: int) -> str:
-        return (
-            _PLANE_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx))
-            .replace("{{ORIGIN_X}}", str(float(origin[0])))
-            .replace("{{ORIGIN_Y}}", str(float(origin[1])))
-            .replace("{{ORIGIN_Z}}", str(float(origin[2])))
-            .replace("{{POINT1_X}}", str(float(point1[0])))
-            .replace("{{POINT1_Y}}", str(float(point1[1])))
-            .replace("{{POINT1_Z}}", str(float(point1[2])))
-            .replace("{{POINT2_X}}", str(float(point2[0])))
-            .replace("{{POINT2_Y}}", str(float(point2[1])))
-            .replace("{{POINT2_Z}}", str(float(point2[2])))
-            .replace("{{I_RESOLUTION}}", str(i_resolution))
-            .replace("{{J_RESOLUTION}}", str(j_resolution))
+        return _render(
+            _PLANE_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            ORIGIN_X=str(float(origin[0])),
+            ORIGIN_Y=str(float(origin[1])),
+            ORIGIN_Z=str(float(origin[2])),
+            POINT1_X=str(float(point1[0])),
+            POINT1_Y=str(float(point1[1])),
+            POINT1_Z=str(float(point1[2])),
+            POINT2_X=str(float(point2[0])),
+            POINT2_Y=str(float(point2[1])),
+            POINT2_Z=str(float(point2[2])),
+            I_RESOLUTION=str(i_resolution),
+            J_RESOLUTION=str(j_resolution),
         )
 
     def _mapper_setup_plane(idx: int) -> str:

@@ -1,0 +1,49 @@
+name: Transifex Sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '!docs/pot/**'
+      - '!docs/locale/**'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  transifex:
+    runs-on: ubuntu-latest
+    environment: transifex
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: true  # zizmor: ignore[persist-credentials]
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -e ".[docs]"
+
+      - name: Generate .pot files
+        run: cd docs && make gettext
+
+      - name: Commit updated .pot files
+        run: |
+          git config user.name "transifex-integration[bot]"
+          git config user.email "transifex-integration[bot]@users.noreply.github.com"
+          git add docs/pot/
+          if git diff --cached --quiet; then
+            echo "No changes to .pot files."
+          else
+            git commit -m "chore: update pot files"
+            git push
+          fi

@@ -1,0 +1,29 @@
+name: Update Preview GIF
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  update-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: true  # zizmor: ignore[persist-credentials]
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install . playwright "imageio[ffmpeg]" pillow
+          playwright install chromium
+      - run: python -m pyvista_js capture-preview --rotate
+      - uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9  # v7.1.0
+        with:
+          commit_message: "chore: update preview GIF"
+          file_pattern: assets/preview.gif
+          commit_user_name: pyvista-bot
+          commit_user_email: pyvista-bot@users.noreply.github.com
+          commit_author: pyvista-bot <pyvista-bot@users.noreply.github.com>

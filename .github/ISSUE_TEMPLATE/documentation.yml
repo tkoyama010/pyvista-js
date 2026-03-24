@@ -1,0 +1,84 @@
+name: Documentation Issue
+description: Report an issue with documentation or suggest improvements
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Please fill out the information below.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation issue is this?
+      options:
+        - Tutorial
+        - How-To Guide
+        - Explanation
+        - Reference
+        - API Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Documentation Location
+      description: Where is the documentation that needs improvement?
+      placeholder: |
+        - URL: https://pyvista-js.readthedocs.io/...
+        - File: docs/...
+        - Section: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue Description
+      description: What is wrong or missing in the documentation?
+      placeholder: Describe the issue with the current documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: How should the documentation be improved?
+      placeholder: Describe what changes would improve the documentation
+    validations:
+      required: false
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: Is this issue related to a specific language translation?
+      options:
+        - English (en)
+        - Japanese (ja)
+        - Other language
+        - Not language-specific
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or links here
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/tkoyama010/pyvista-js/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

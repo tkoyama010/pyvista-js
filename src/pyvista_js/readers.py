@@ -9,11 +9,24 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
+import struct
 from pathlib import Path
 
 import numpy as np
+from jinja2 import Environment, StrictUndefined
 
 from .mesh import PolyData
+
+_jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
+
+
+def _render(template_str: str, **kwargs: object) -> str:
+    rendered = _jinja_env.from_string(template_str).render(**kwargs)
+    # Strip <script> wrapper added for prettier formatting
+    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
+    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +38,13 @@ _MIN_VTK_LINES = 4
 _N_COORDS = 3
 
 # Load JavaScript templates
-_JS_DIR = Path(__file__).parent / "js"
-_VTK_READER_SOURCE_TEMPLATE = (_JS_DIR / "vtk_reader_source.js").read_text()
-_PLY_READER_SOURCE_TEMPLATE = (_JS_DIR / "ply_reader_source.js").read_text()
-_OBJ_READER_SOURCE_TEMPLATE = (_JS_DIR / "obj_reader_source.js").read_text()
+_TEMPLATES_DIR = Path(__file__).parent / "templates"
+_VTK_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "vtk_reader_source.html").read_text()
+_PLY_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "ply_reader_source.html").read_text()
+_OBJ_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "obj_reader_source.html").read_text()
+_STL_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "stl_reader_source.html").read_text()
+_GLTF_READER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_reader_source.html").read_text()
+_GLTF_URL_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "gltf_url_source.html").read_text()
 
 
 class _OBJMesh(PolyData):
@@ -51,14 +67,77 @@ class _OBJMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkOBJReader."""
         escaped = json.dumps(self._obj_base64)
-        return _OBJ_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{OBJ_BASE64}}", escaped)
+        return _render(
+            _OBJ_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            OBJ_READER=f"objReader{idx}",
+            OBJ_BASE64=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
         return f"mapper{idx}.setInputData(source{idx});"
+
+
+class _GLTFMesh(PolyData):
+    """Mesh loaded from a glTF file, rendered via vtk.js GLTF importer."""
+
+    def __init__(self, points: np.ndarray, gltf_base64: str, gltf_url: str | None = None) -> None:
+        """Initialize with points and base64-encoded glTF file content.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            Vertex coordinates (N, 3) extracted for bounding sphere computation.
+        gltf_base64 : str
+            Base64-encoded content of the glTF file passed to vtk.js for rendering.
+        gltf_url : str or None, optional
+            Source URL of the glTF file. When provided, the URL is used directly
+            in the model-viewer element instead of embedding the full base64 data,
+            which avoids large payload issues in JupyterLite.
+
+        """
+        super().__init__(points)
+        self._gltf_base64 = gltf_base64
+        self._gltf_url = gltf_url
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code using model-viewer web component."""
+        if self._gltf_url is not None:
+            return _GLTF_URL_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
+                "{{GLTF_URL}}",
+                self._gltf_url,
+            )
+        escaped = json.dumps(self._gltf_base64)
+        return _GLTF_READER_SOURCE_TEMPLATE.replace(
+            "{{INDEX}}",
+            str(idx),
+        ).replace("{{GLTF_BASE64}}", escaped)
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code."""
+        return f"mapper{idx}.setInputData(source{idx});"
+
+    def generate_full_actor_code(self, idx: int, _actor_info: dict) -> str:
+        """Generate complete vtk.js actor code for a glTF mesh.
+
+        vtkGLTFImporter adds actors directly via importActors(renderer),
+        bypassing the standard mapper/actor pipeline used by other readers.
+
+        Parameters
+        ----------
+        idx : int
+            Actor index for unique variable names.
+        actor_info : dict
+            Actor info dict (unused; GLTF materials come from the file).
+
+        Returns
+        -------
+        str
+            Self-contained JavaScript that imports the glTF into the scene.
+
+        """
+        return self.generate_vtk_js_source(idx)
 
 
 class _PolyDataMesh(PolyData):
@@ -81,10 +160,12 @@ class _PolyDataMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkPolyDataReader."""
         escaped = json.dumps(self._vtk_text)
-        return _VTK_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{VTK_TEXT}}", escaped)
+        return _render(
+            _VTK_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            VTK_READER=f"reader{idx}",
+            VTK_TEXT=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -111,10 +192,44 @@ class _PLYMesh(PolyData):
     def generate_vtk_js_source(self, idx: int) -> str:
         """Generate vtk.js source code using vtkPLYReader."""
         escaped = json.dumps(self._ply_base64)
-        return _PLY_READER_SOURCE_TEMPLATE.replace(
-            "{{INDEX}}",
-            str(idx),
-        ).replace("{{PLY_BASE64}}", escaped)
+        return _render(
+            _PLY_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            PLY_READER=f"plyReader{idx}",
+            PLY_BASE64=escaped,
+        )
+
+    def get_mapper_setup(self, idx: int) -> str:
+        """Get the mapper setup code."""
+        return f"mapper{idx}.setInputData(source{idx});"
+
+
+class _STLMesh(PolyData):
+    """Mesh loaded from an STL file, rendered via vtk.js STL reader."""
+
+    def __init__(self, points: np.ndarray, stl_base64: str) -> None:
+        """Initialize with points and base64-encoded STL file content.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            Vertex coordinates (N, 3) extracted for bounding sphere computation.
+        stl_base64 : str
+            Base64-encoded content of the STL file passed to vtk.js for rendering.
+
+        """
+        super().__init__(points)
+        self._stl_base64 = stl_base64
+
+    def generate_vtk_js_source(self, idx: int) -> str:
+        """Generate vtk.js source code using vtkSTLReader."""
+        escaped = json.dumps(self._stl_base64)
+        return _render(
+            _STL_READER_SOURCE_TEMPLATE,
+            SOURCE=f"source{idx}",
+            STL_READER=f"stlReader{idx}",
+            STL_BASE64=escaped,
+        )
 
     def get_mapper_setup(self, idx: int) -> str:
         """Get the mapper setup code."""
@@ -309,9 +424,12 @@ class PLYReader:
             raise ValueError(msg)
 
         header_end = None
+        header_byte_offset = 0
         for i, line in enumerate(lines):
             if line.strip() == "end_header":
                 header_end = i
+                # Calculate byte offset after header
+                header_byte_offset = raw.find(b"end_header") + len(b"end_header") + 1
                 break
 
         if header_end is None:
@@ -319,11 +437,20 @@ class PLYReader:
             raise ValueError(msg)
 
         fmt = self._parse_format(lines[1 : header_end + 1])
-        if fmt != "ascii":
-            msg = f"Only ASCII PLY files are supported, got: {fmt}"
+
+        if fmt == "ascii":
+            points = self._extract_points(lines, header_end)
+        elif fmt in ("binary_little_endian", "binary_big_endian"):
+            points = self._extract_points_binary(
+                raw,
+                lines[1 : header_end + 1],
+                header_byte_offset,
+                fmt,
+            )
+        else:
+            msg = f"Unsupported PLY format: {fmt}"
             raise ValueError(msg)
 
-        points = self._extract_points(lines, header_end)
         ply_base64 = base64.b64encode(raw).decode("ascii")
         logger.info("Read %d points from %s", len(points), self._path)
         return _PLYMesh(points=points, ply_base64=ply_base64)
@@ -394,6 +521,114 @@ class PLYReader:
             parts = lines[data_start + i].strip().split()
             if len(parts) >= _N_COORDS:
                 points.append([float(parts[0]), float(parts[1]), float(parts[2])])
+
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+    @staticmethod
+    def _parse_vertex_info(header_lines: list[str]) -> tuple[int, list[str]]:
+        """Extract vertex count and property types from PLY header lines.
+
+        Parameters
+        ----------
+        header_lines : list[str]
+            Header lines between 'ply' and 'end_header'.
+
+        Returns
+        -------
+        tuple[int, list[str]]
+            Vertex count and list of property type strings.
+
+        """
+        n_vertices = 0
+        vertex_properties: list[str] = []
+        in_vertex_element = False
+
+        for line in header_lines:
+            parts = line.strip().split()
+            if not parts:
+                continue
+            if parts[0] == "element":
+                if len(parts) >= _N_COORDS and parts[1] == "vertex":
+                    n_vertices = int(parts[2])
+                    in_vertex_element = True
+                else:
+                    in_vertex_element = False
+            elif parts[0] == "property" and in_vertex_element and len(parts) >= _N_COORDS:
+                vertex_properties.append(parts[1])
+
+        return n_vertices, vertex_properties
+
+    @staticmethod
+    def _extract_points_binary(
+        raw: bytes,
+        header_lines: list[str],
+        data_offset: int,
+        fmt: str,
+    ) -> np.ndarray:
+        """Extract vertex coordinates from binary PLY data.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw binary content of the PLY file.
+        header_lines : list[str]
+            Header lines between 'ply' and 'end_header'.
+        data_offset : int
+            Byte offset where vertex data starts (after 'end_header').
+        fmt : str
+            Format string ('binary_little_endian' or 'binary_big_endian').
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        endian = "<" if fmt == "binary_little_endian" else ">"
+
+        n_vertices, vertex_properties = PLYReader._parse_vertex_info(header_lines)
+
+        if n_vertices == 0:
+            return np.empty((0, 3))
+
+        # Build struct format for one vertex
+        # We need to know the size of each property to skip them
+        type_map = {
+            "char": "b",
+            "uchar": "B",
+            "short": "h",
+            "ushort": "H",
+            "int": "i",
+            "uint": "I",
+            "float": "f",
+            "double": "d",
+        }
+
+        # Calculate bytes per vertex
+        vertex_fmt = endian
+        bytes_per_vertex = 0
+        for prop_type in vertex_properties:
+            if prop_type in type_map:
+                vertex_fmt += type_map[prop_type]
+                bytes_per_vertex += struct.calcsize(endian + type_map[prop_type])
+
+        # Extract points (first 3 properties assumed to be x, y, z)
+        points = []
+        offset = data_offset
+
+        for _ in range(n_vertices):
+            if offset + bytes_per_vertex > len(raw):
+                break
+
+            try:
+                vertex_data = struct.unpack_from(vertex_fmt, raw, offset)
+                # Take only first 3 values (x, y, z)
+                points.append([float(vertex_data[0]), float(vertex_data[1]), float(vertex_data[2])])
+                offset += bytes_per_vertex
+            except struct.error:
+                break
 
         if not points:
             return np.empty((0, 3))
@@ -499,4 +734,371 @@ class OBJReader:
                     )
         if not points:
             return np.empty((0, 3))
+        return np.array(points)
+
+
+class STLReader:
+    """Reader for STL (STereoLithography) files (``.stl``).
+
+    Reads an STL file (ASCII or binary) and produces a :class:`Mesh` that
+    delegates parsing to vtk.js's ``vtkSTLReader`` at render time. Python
+    extracts only the vertex coordinates so that camera framing and
+    bounding-sphere queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.stl`` file.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_cad_model()  # doctest: +SKIP
+    >>> mesh.plot()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() != ".stl":
+            msg = f"Expected a .stl file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the STL file.
+
+        """
+        return self._path
+
+    def read(self) -> _STLMesh:
+        """Read the STL file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Vertex coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the STL file content.
+
+        Raises
+        ------
+        ValueError
+            If the file format is invalid or unsupported.
+
+        """
+        raw = self._path.read_bytes()
+
+        if self._is_binary_stl(raw):
+            points = self._extract_points_binary(raw)
+        else:
+            text = raw.decode("ascii", errors="replace")
+            lines = text.splitlines()
+            if not lines or "solid" not in lines[0].lower():
+                msg = "Invalid STL file: missing 'solid' header"
+                raise ValueError(msg)
+            points = self._extract_points(lines)
+
+        stl_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _STLMesh(points=points, stl_base64=stl_base64)
+
+    @staticmethod
+    def _extract_points(lines: list[str]) -> np.ndarray:
+        """Extract vertex coordinates from STL ASCII data.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Parameters
+        ----------
+        lines : list[str]
+            All lines of the STL file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        points = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("vertex"):
+                parts = stripped.split()
+                if len(parts) >= _N_COORDS + 1:
+                    points.append(
+                        [float(parts[1]), float(parts[2]), float(parts[3])],
+                    )
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+    @staticmethod
+    def _is_binary_stl(raw: bytes) -> bool:
+        """Check whether raw bytes represent a binary STL file.
+
+        Binary STL is exactly 84 + 50*N bytes (80-byte header, 4-byte
+        triangle count, 50 bytes per triangle). This size check
+        reliably distinguishes binary from ASCII.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw file content.
+
+        Returns
+        -------
+        bool
+            True if the file appears to be binary STL.
+
+        """
+        _header_size = 80
+        _count_size = 4
+        _triangle_size = 50
+
+        if len(raw) < _header_size + _count_size:
+            return False
+
+        (n_triangles,) = struct.unpack_from("<I", raw, _header_size)
+        expected = _header_size + _count_size + _triangle_size * n_triangles
+        return len(raw) == expected
+
+    @staticmethod
+    def _extract_points_binary(raw: bytes) -> np.ndarray:
+        """Extract vertex coordinates from a binary STL file.
+
+        Binary STL layout: 80-byte header, 4-byte triangle count,
+        then 50 bytes per triangle (12 normal + 36 vertices + 2 attr).
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw file content.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        _header_size = 80
+        _count_size = 4
+        _triangle_size = 50
+
+        if len(raw) < _header_size + _count_size:
+            return np.empty((0, 3))
+
+        (n_triangles,) = struct.unpack_from("<I", raw, _header_size)
+        offset = _header_size + _count_size
+        points = []
+
+        for _ in range(n_triangles):
+            if offset + _triangle_size > len(raw):
+                break
+            # Skip 12-byte normal, read 3 vertices (each 3 floats = 12 bytes)
+            v = struct.unpack_from("<9f", raw, offset + 12)
+            points.append([v[0], v[1], v[2]])
+            points.append([v[3], v[4], v[5]])
+            points.append([v[6], v[7], v[8]])
+            offset += _triangle_size
+
+        if not points:
+            return np.empty((0, 3))
+        return np.array(points)
+
+
+class GLTFReader:
+    """Reader for glTF (GL Transmission Format) files (``.gltf`` or ``.glb``).
+
+    Reads a glTF file and produces a :class:`Mesh` that delegates parsing
+    to vtk.js's ``vtkGLTFImporter`` at render time. Python extracts
+    vertex coordinates from the JSON structure so that camera framing and
+    bounding-sphere queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.gltf`` or ``.glb`` file.
+
+    See Also
+    --------
+    :ref:`using-download-damaged-helmet`
+        Interactive browser tutorial for glTF rendering.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.GLTFReader("model.gltf")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path, gltf_url: str | None = None) -> None:
+        """Initialize the reader with a file path.
+
+        Parameters
+        ----------
+        path : str or Path
+            Path to the ``.gltf`` or ``.glb`` file.
+        gltf_url : str or None, optional
+            Source URL of the glTF file. When provided, the returned mesh will
+            render using the URL directly (avoiding large base64 embedding).
+
+        """
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() not in (".gltf", ".glb"):
+            msg = f"Expected a .gltf or .glb file, got: {self._path.suffix}"
+            raise ValueError(msg)
+        self._gltf_url = gltf_url
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the glTF file.
+
+        """
+        return self._path
+
+    def read(self) -> _GLTFMesh:
+        """Read the glTF file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Vertex coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the glTF file content.
+
+        Raises
+        ------
+        ValueError
+            If the file format is invalid.
+
+        """
+        raw = self._path.read_bytes()
+
+        # Extract points from glTF JSON structure
+        points = self._extract_points(raw)
+        gltf_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _GLTFMesh(points=points, gltf_base64=gltf_base64, gltf_url=self._gltf_url)
+
+    @staticmethod
+    def _extract_points(raw: bytes) -> np.ndarray:
+        """Extract vertex coordinates from glTF file.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw content of the glTF file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        # Parse glTF JSON
+        try:
+            text = raw.decode("utf-8")
+            gltf_data = json.loads(text)
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return np.empty((0, 3))
+
+        # Extract position accessor
+        accessor = GLTFReader._get_position_accessor(gltf_data)
+        if accessor is None:
+            return np.empty((0, 3))
+
+        # Extract bounding box from accessor min/max
+        return GLTFReader._extract_bounds_points(accessor)
+
+    @staticmethod
+    def _get_position_accessor(gltf_data: dict) -> dict | None:
+        """Get the position accessor from glTF data.
+
+        Parameters
+        ----------
+        gltf_data : dict
+            Parsed glTF JSON data.
+
+        Returns
+        -------
+        dict or None
+            The position accessor or None if not found.
+
+        """
+        if "meshes" not in gltf_data or not gltf_data["meshes"]:
+            return None
+
+        first_mesh = gltf_data["meshes"][0]
+        if "primitives" not in first_mesh or not first_mesh["primitives"]:
+            return None
+
+        primitives = first_mesh["primitives"][0]
+        if "attributes" not in primitives or "POSITION" not in primitives["attributes"]:
+            return None
+
+        position_accessor_idx = primitives["attributes"]["POSITION"]
+        if "accessors" not in gltf_data or position_accessor_idx >= len(
+            gltf_data["accessors"],
+        ):
+            return None
+
+        return gltf_data["accessors"][position_accessor_idx]
+
+    @staticmethod
+    def _extract_bounds_points(accessor: dict) -> np.ndarray:
+        """Extract bounding box corners from accessor.
+
+        Parameters
+        ----------
+        accessor : dict
+            The position accessor from glTF.
+
+        Returns
+        -------
+        np.ndarray
+            Array of 8 bounding box corners or empty array.
+
+        """
+        if "min" not in accessor or "max" not in accessor:
+            return np.empty((0, 3))
+
+        min_vals = accessor["min"]
+        max_vals = accessor["max"]
+        if len(min_vals) < _N_COORDS or len(max_vals) < _N_COORDS:
+            return np.empty((0, 3))
+
+        # Generate 8 corners of bounding box
+        points = [
+            [x, y, z]
+            for x in [min_vals[0], max_vals[0]]
+            for y in [min_vals[1], max_vals[1]]
+            for z in [min_vals[2], max_vals[2]]
+        ]
         return np.array(points)

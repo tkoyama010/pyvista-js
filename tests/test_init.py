@@ -29,7 +29,7 @@ def test_metadata_attributes(attr, expected) -> None:
     "name",
     [
         "Plotter",
-        "Mesh",
+        "PolyData",
         "Sphere",
         "Cube",
         "Cylinder",
@@ -45,6 +45,6 @@ def test_all_attribute() -> None:
     assert hasattr(pyvista_js, "__all__")
     assert isinstance(pyvista_js.__all__, list)
 
-    expected_exports = ["__version__", "Plotter", "Mesh", "Sphere", "Cube", "Cylinder"]
+    expected_exports = ["__version__", "Plotter", "PolyData", "Sphere", "Cube", "Cylinder"]
     for name in expected_exports:
         assert name in pyvista_js.__all__

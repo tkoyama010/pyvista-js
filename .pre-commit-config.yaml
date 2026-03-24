@@ -24,20 +24,34 @@ repos:
     rev: 1.0.0
     hooks:
       - id: mdformat
+        additional_dependencies: ['mdformat-toc==0.5.0']
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.16.2"
+    rev: "v2.20.0"
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.5
+    rev: v0.15.7
     hooks:
       # Run the linter
       - id: ruff-check
         args: [--fix, --show-fixes]
       # Run the formatter
       - id: ruff-format
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.10.12
+    hooks:
+      - id: uv-lock
+        args: [--check, --offline]
+
+
+  - repo: https://github.com/djlint/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint-reformat-jinja
+        files: src/pyvista_js/templates/.*\.html$
 
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.03.02
@@ -48,8 +62,10 @@ repos:
     rev: v1.19.1
     hooks:
       - id: mypy
-        files: ^src/
-        additional_dependencies: [numpy>=1.20]
+        files: ^src/.*\.py$
+        # SPEC 0: Use minimum supported numpy version
+        # SPEC 1: Use lazy loading for submodules and functions
+        additional_dependencies: [numpy>=2.0]
 
   - repo: https://github.com/adamchainz/blacken-docs
     rev: 1.20.0
@@ -63,7 +79,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/tkoyama010/standard-readme-pre-commit
-    rev: 0f0602b6c3b7e891e2c8e23a27ad93e41177fa90
+    rev: 810adb53324d6891fc270081b58e21db67fdafcb
     hooks:
       - id: standard-readme
 
@@ -74,12 +90,12 @@ repos:
 
 ci:
   autofix_commit_msg: |
-    [pre-commit.ci] auto fixes from pre-commit.com hooks
+    chore: auto fixes from pre-commit.com hooks
 
     for more information, see https://pre-commit.ci
   autofix_prs: true
   autoupdate_branch: ''
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_commit_msg: 'chore: pre-commit autoupdate'
   autoupdate_schedule: weekly
   skip: []
   submodules: false

@@ -41,7 +41,11 @@ jobs:
       - name: Install JupyterLite
         run: |
           python -m pip install --upgrade pip
-          pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server
+          pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server jupytext
+
+      - name: Sync Jupytext files
+        run: |
+          jupytext --sync jupyterlite/content/*.py
 
       - name: Copy source code to JupyterLite
         run: |
@@ -51,6 +55,11 @@ jobs:
       - name: Build JupyterLite
         run: |
           jupyter lite build --contents jupyterlite/content --output-dir _site
+
+      - name: Copy stlite directory to _site
+        run: |
+          mkdir -p _site/stlite
+          cp -r stlite/* _site/stlite/
 
       - name: Deploy to gh-pages (main branch)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

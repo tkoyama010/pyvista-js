@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-18 13:08+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ja\n"
+"Language-Team: ja <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst:2
+msgid "pyvista\\_js.Camera"
+msgstr ""
+
+#: of pyvista_js.camera.Camera:1
+msgid "Represents a virtual camera in a 3D scene."
+msgstr ""
+
+#: of pyvista_js.camera.Camera:3
+msgid ""
+"Provides a PyVista-like API for controlling camera position, orientation,"
+" and projection settings in vtk.js scenes."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst
+msgid "Parameters"
+msgstr ""
+
+#: of pyvista_js.camera.Camera:6
+msgid "Camera position as (x, y, z). Default is (0, 0, 1)."
+msgstr ""
+
+#: of pyvista_js.camera.Camera:8
+msgid "Point the camera looks at as (x, y, z). Default is (0, 0, 0)."
+msgstr ""
+
+#: of pyvista_js.camera.Camera:10
+msgid "View-up vector as (x, y, z). Default is (0, 1, 0)."
+msgstr ""
+
+#: of pyvista_js.camera.Camera:12
+msgid "Camera view angle (field of view) in degrees. Default is 30.0."
+msgstr ""
+
+#: of pyvista_js.camera.Camera:14
+msgid ""
+"Near and far clipping plane distances as (near, far). Default is (0.01, "
+"1000.01)."
+msgstr ""
+
+#: of pyvista_js.Camera.clipping_range:10 pyvista_js.Camera.focal_point:10
+#: pyvista_js.Camera.position:10 pyvista_js.Camera.view_angle:10
+#: pyvista_js.Camera.view_up:10 pyvista_js.camera.Camera:19
+msgid "Examples"
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst:21:<autosummary>:1 of
+#: pyvista_js.camera.Camera.__init__:1
+msgid "Initialize a Camera instance."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst:13
+msgid "Methods"
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst:21:<autosummary>:1
+msgid ""
+":py:obj:`__init__ <pyvista_js.Camera.__init__>`\\ \\(\\[position\\, "
+"focal\\_point\\, view\\_up\\, ...\\]\\)"
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst:23
+msgid "Attributes"
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ":py:obj:`clipping_range <pyvista_js.Camera.clipping_range>`"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.Camera.clipping_range:1
+msgid "Get or set the clipping range (near, far)."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ":py:obj:`focal_point <pyvista_js.Camera.focal_point>`"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.Camera.focal_point:1
+msgid "Get or set the camera focal point."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ":py:obj:`position <pyvista_js.Camera.position>`"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.Camera.position:1
+msgid "Get or set the camera position."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ":py:obj:`view_angle <pyvista_js.Camera.view_angle>`"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.Camera.view_angle:1
+msgid "Get or set the camera view angle in degrees."
+msgstr ""
+
+#: ../../:1:<autosummary>:1
+msgid ":py:obj:`view_up <pyvista_js.Camera.view_up>`"
+msgstr ""
+
+#: ../../:1:<autosummary>:1 of pyvista_js.Camera.view_up:1
+msgid "Get or set the view-up vector."
+msgstr ""
+
+#: of pyvista_js.Camera.clipping_range:3
+msgid "Near and far clipping plane distances as (near, far)."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst
+msgid "Returns"
+msgstr ""
+
+#: of pyvista_js.Camera.clipping_range:6
+msgid "Clipping range as (near, far)."
+msgstr ""
+
+#: ../../api/_autosummary/pyvista_js.Camera.rst
+msgid "Return type"
+msgstr ""
+
+#: of pyvista_js.Camera.focal_point:3 pyvista_js.Camera.focal_point:6
+msgid "Focal point as (x, y, z)."
+msgstr ""
+
+#: of pyvista_js.Camera.position:3 pyvista_js.Camera.position:6
+msgid "Camera position as (x, y, z)."
+msgstr ""
+
+#: of pyvista_js.Camera.view_angle:3
+msgid "View angle in degrees (field of view)."
+msgstr ""
+
+#: of pyvista_js.Camera.view_angle:6
+msgid "View angle in degrees."
+msgstr ""
+
+#: of pyvista_js.Camera.view_up:3 pyvista_js.Camera.view_up:6
+msgid "View-up vector as (x, y, z)."
+msgstr ""

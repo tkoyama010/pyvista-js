@@ -50,6 +50,17 @@ def test_light_color_name() -> None:
     assert light.color == (0.0, 0.0, 1.0)
 
 
+def test_light_color_list_to_tuple() -> None:
+    """Test Light converts color lists to tuples."""
+    light = Light(color=[0.886, 0.345, 0.133])
+    assert isinstance(light.color, tuple), "Color should be converted to tuple"
+    assert light.color == (0.886, 0.345, 0.133)
+
+    # Test with integers
+    light = Light(color=[1, 0, 0])
+    assert light.color == (1.0, 0.0, 0.0)
+
+
 def test_light_invalid_color_name() -> None:
     """Test Light raises on unknown color name."""
     with pytest.raises(ValueError, match="Unknown color name"):
@@ -134,3 +145,64 @@ def test_light_exported_from_package() -> None:
     """Test that Light is accessible from the top-level package."""
     assert hasattr(pv, "Light")
     assert pv.Light is Light
+
+
+def test_plotter_lighting_default() -> None:
+    """Test that Plotter() creates default lighting."""
+    plotter = pv.Plotter()
+    assert plotter._renderer.lighting == "default"
+    # Default lighting should generate light code when no custom lights are added
+    light_code = plotter._renderer._generate_lights_code()
+    assert "const light0 = vtk.Rendering.Core.vtkLight.newInstance()" in light_code
+    assert "light0.setPosition(1, 1, 1)" in light_code
+
+
+def test_plotter_lighting_explicit_default() -> None:
+    """Test that Plotter(lighting='default') creates default lighting."""
+    plotter = pv.Plotter(lighting="default")
+    assert plotter._renderer.lighting == "default"
+    light_code = plotter._renderer._generate_lights_code()
+    assert "const light0 = vtk.Rendering.Core.vtkLight.newInstance()" in light_code
+
+
+def test_plotter_lighting_none() -> None:
+    """Test that Plotter(lighting=None) disables default lighting."""
+    plotter = pv.Plotter(lighting=None)
+    assert plotter._renderer.lighting is None
+    # With lighting=None, auto light creation should be disabled
+    light_code = plotter._renderer._generate_lights_code()
+    assert "removeAllLights" in light_code
+    assert "setAutomaticLightCreation(false)" in light_code
+    assert "vtkLight.newInstance" not in light_code
+
+
+def test_plotter_lighting_none_with_custom_lights() -> None:
+    """Test that custom lights work with lighting=None."""
+    plotter = pv.Plotter(lighting=None)
+    light1 = pv.Light(position=(1, 0, 0), color="red", intensity=2.0)
+    light2 = pv.Light(position=(-1, 0, 0), color="blue", intensity=1.5)
+    plotter.add_light(light1)
+    plotter.add_light(light2)
+
+    assert len(plotter._renderer.lights) == 2
+    light_code = plotter._renderer._generate_lights_code()
+    # Should generate code for custom lights, not default light
+    assert "light0" in light_code
+    assert "light1" in light_code
+    assert "setPosition(1, 0, 0)" in light_code or "setPosition(1.0, 0.0, 0.0)" in light_code
+    assert "setPosition(-1, 0, 0)" in light_code or "setPosition(-1.0, 0.0, 0.0)" in light_code
+
+
+def test_plotter_lighting_default_with_custom_lights() -> None:
+    """Test that custom lights override default lighting."""
+    plotter = pv.Plotter(lighting="default")
+    light = pv.Light(position=(2, 2, 2), intensity=3.0)
+    plotter.add_light(light)
+
+    # When custom lights are added, default light is not used
+    light_code = plotter._renderer._generate_lights_code()
+    assert "light0" in light_code
+    # Should use custom light position, not default (1, 1, 1)
+    assert "setPosition(2, 2, 2)" in light_code or "setPosition(2.0, 2.0, 2.0)" in light_code
+    # Should not contain the default light comment
+    assert "Default directional light" not in light_code

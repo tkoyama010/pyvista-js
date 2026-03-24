@@ -15,7 +15,6 @@ from pyvista_js import (
     Cylinder,
     Disc,
     Line,
-    Mesh,
     Plane,
     PolyData,
     Sphere,
@@ -29,15 +28,6 @@ def test_mesh_creation() -> None:
 
     assert mesh.n_points == 3
     assert np.array_equal(mesh.points, points)
-
-
-def test_mesh_deprecated() -> None:
-    """Test that Mesh emits a DeprecationWarning."""
-    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
-    with pytest.warns(DeprecationWarning, match="Mesh is deprecated"):
-        mesh = Mesh(points)
-    assert isinstance(mesh, PolyData)
-    assert mesh.n_points == 3
 
 
 def test_sphere_creation() -> None:
@@ -62,7 +52,7 @@ def test_cube_creation() -> None:
     """Test cube primitive creation."""
     cube = Cube()
 
-    assert cube.n_points == 8
+    assert cube.n_points == 24
     assert cube.n_faces == 6
 
 
@@ -202,6 +192,303 @@ def test_shrink_preserves_faces() -> None:
     cube = Cube()
     shrunk = cube.shrink(shrink_factor=0.8)
     assert shrunk.n_faces == cube.n_faces
+
+
+def test_clip_returns_polydata() -> None:
+    """Test that clip returns a PolyData instance."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0, 0, 0))
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_default_normal() -> None:
+    """Test that clip works with default normal ('x')."""
+    cube = Cube()
+    clipped = cube.clip()
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_string_normals() -> None:
+    """Test clip with all valid string normal directions."""
+    sphere = Sphere()
+    for normal in ["x", "+x", "-x", "y", "+y", "-y", "z", "+z", "-z"]:
+        clipped = sphere.clip(normal=normal)
+        assert isinstance(clipped, PolyData)
+
+
+def test_clip_tuple_normal() -> None:
+    """Test clip with tuple normal vector."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal=(1.0, 1.0, 0.0), origin=(0, 0, 0))
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_default_origin() -> None:
+    """Test that clip uses mesh center as default origin."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x")
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_custom_origin() -> None:
+    """Test clip with custom origin."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0.5, 0.0, 0.0))
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_invert() -> None:
+    """Test clip with invert flag."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0, 0, 0), invert=True)
+    assert isinstance(clipped, PolyData)
+
+
+def test_clip_vtk_js_source_contains_clip_logic() -> None:
+    """Test that clipped mesh generates JS with the custom clip computation."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="y", origin=(0, 0, 0))
+    js_source = clipped.generate_vtk_js_source(0)
+    assert "clippedPD0" in js_source
+    assert "vtkPolyData" in js_source
+    # Check that normal and origin are in the source
+    assert "0.0" in js_source  # normal x component
+    assert "1.0" in js_source  # normal y component
+
+
+def test_clip_mapper_setup_uses_clipped_pd() -> None:
+    """Test that clipped mesh mapper uses setInputData with the clipped polydata."""
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x", origin=(0, 0, 0))
+    mapper_code = clipped.get_mapper_setup(0)
+    assert "clippedPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_clip_invalid_normal_string() -> None:
+    """Test that an invalid normal string raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Invalid normal string"):
+        sphere.clip(normal="invalid")
+
+
+def test_clip_invalid_normal_tuple_length() -> None:
+    """Test that a normal tuple with wrong length raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Normal vector must have 3 components"):
+        sphere.clip(normal=(1.0, 0.0))  # type: ignore[arg-type]
+
+
+def test_clip_invalid_origin_length() -> None:
+    """Test that an origin with wrong length raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="Origin must have 3 components"):
+        sphere.clip(normal="x", origin=(0.0, 0.0))  # type: ignore[arg-type]
+
+
+def test_clip_preserves_points_and_faces() -> None:
+    """Test that clip preserves point and face data structures."""
+    cube = Cube()
+    clipped = cube.clip(normal="x", origin=(0, 0, 0))
+    # The clipped mesh should have the same point and face arrays
+    # (filtering happens in JavaScript)
+    assert clipped.points.shape == cube.points.shape
+    assert clipped.n_faces == cube.n_faces
+
+
+def test_tube_returns_polydata() -> None:
+    """Test that tube returns a PolyData instance."""
+    line = Line()
+    tube = line.tube(radius=0.5, n_sides=20)
+    assert isinstance(tube, PolyData)
+    assert tube.n_points == line.n_points
+
+
+def test_tube_default_parameters() -> None:
+    """Test that tube works with default parameters."""
+    line = Line()
+    tube = line.tube()
+    assert isinstance(tube, PolyData)
+
+
+def test_tube_vtk_js_source_contains_tube_logic() -> None:
+    """Test that tubed mesh generates JS with the tube filter."""
+    line = Line()
+    tube = line.tube(radius=0.1, n_sides=12)
+    js_source = tube.generate_vtk_js_source(0)
+    assert "tubedPD0" in js_source
+    assert "0.1" in js_source
+    assert "12" in js_source
+    assert "vtkTubeFilter" in js_source
+
+
+def test_tube_mapper_setup_uses_tubed_pd() -> None:
+    """Test that tubed mesh mapper uses setInputData with the tubed polydata."""
+    line = Line()
+    tube = line.tube(radius=0.5, n_sides=20)
+    mapper_code = tube.get_mapper_setup(0)
+    assert "tubedPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_tube_invalid_radius() -> None:
+    """Test that an invalid radius raises ValueError."""
+    line = Line()
+    with pytest.raises(ValueError, match="radius must be positive"):
+        line.tube(radius=0)
+    with pytest.raises(ValueError, match="radius must be positive"):
+        line.tube(radius=-0.1)
+
+
+def test_tube_invalid_n_sides() -> None:
+    """Test that invalid n_sides raises ValueError."""
+    line = Line()
+    with pytest.raises(ValueError, match="n_sides must be at least 3"):
+        line.tube(n_sides=2)
+    with pytest.raises(ValueError, match="n_sides must be at least 3"):
+        line.tube(n_sides=0)
+
+
+def test_tube_capping_parameter() -> None:
+    """Test that capping parameter is properly propagated."""
+    line = Line()
+    tube_capped = line.tube(radius=0.5, capping=True)
+    tube_uncapped = line.tube(radius=0.5, capping=False)
+
+    js_capped = tube_capped.generate_vtk_js_source(0)
+    js_uncapped = tube_uncapped.generate_vtk_js_source(0)
+
+    assert "capping: true" in js_capped
+    assert "capping: false" in js_uncapped
+
+
+def test_tube_preserves_faces() -> None:
+    """Test that tube preserves face information."""
+    line = Line()
+    tube = line.tube(radius=0.5, n_sides=20)
+    assert tube.n_faces == line.n_faces
+
+
+def test_contour_returns_polydata() -> None:
+    """Test that contour returns a PolyData instance."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]  # Z coordinate
+    contours = sphere.contour(isosurfaces=5, scalars=scalars)
+    assert isinstance(contours, PolyData)
+
+
+def test_contour_with_int_isosurfaces() -> None:
+    """Test contour with integer number of isosurfaces."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=3, scalars=scalars)
+    js_source = contours.generate_vtk_js_source(0)
+    assert "contourPD0" in js_source
+    assert "Marching triangles" in js_source or "marching" in js_source.lower()
+    # Should have 3 values in the array
+    assert "values.length" in js_source
+
+
+def test_contour_with_list_isosurfaces() -> None:
+    """Test contour with explicit list of isosurface values."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=[0.0, 0.5, 1.0], scalars=scalars)
+    js_source = contours.generate_vtk_js_source(0)
+    assert "contourPD0" in js_source
+    assert "0.0" in js_source or "0" in js_source
+    assert "0.5" in js_source
+    assert "1.0" in js_source or "1" in js_source
+
+
+def test_contour_mapper_setup_uses_contour_pd() -> None:
+    """Test that contour mesh mapper uses setInputData with contourPD."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=5, scalars=scalars)
+    mapper_code = contours.get_mapper_setup(0)
+    assert "contourPD0" in mapper_code
+    assert "setInputData" in mapper_code
+
+
+def test_contour_no_scalars_raises() -> None:
+    """Test that contour without scalars raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="No scalar data provided"):
+        sphere.contour(isosurfaces=5)
+
+
+def test_contour_invalid_scalar_length_raises() -> None:
+    """Test that scalars with wrong length raises ValueError."""
+    sphere = Sphere()
+    scalars = np.array([1, 2, 3])  # Wrong length
+    with pytest.raises(ValueError, match="scalars must have length"):
+        sphere.contour(isosurfaces=5, scalars=scalars)
+
+
+def test_contour_invalid_isosurfaces_int_raises() -> None:
+    """Test that invalid integer isosurfaces raises ValueError."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    with pytest.raises(ValueError, match="isosurfaces must be >= 1"):
+        sphere.contour(isosurfaces=0, scalars=scalars)
+    with pytest.raises(ValueError, match="isosurfaces must be >= 1"):
+        sphere.contour(isosurfaces=-5, scalars=scalars)
+
+
+def test_contour_empty_list_raises() -> None:
+    """Test that empty isosurfaces list raises ValueError."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    with pytest.raises(ValueError, match="isosurfaces list must contain at least one value"):
+        sphere.contour(isosurfaces=[], scalars=scalars)
+
+
+def test_contour_with_mesh_scalars() -> None:
+    """Test contour using scalars stored on the mesh."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    sphere_with_scalars = PolyData(
+        points=sphere.points,
+        faces=sphere.faces,
+        scalars=scalars,
+        scalar_name="elevation",
+    )
+    contours = sphere_with_scalars.contour(isosurfaces=5)
+    assert isinstance(contours, PolyData)
+    js_source = contours.generate_vtk_js_source(0)
+    assert "contourPD0" in js_source
+    assert "elevation" in js_source
+
+
+def test_contour_scalar_injection() -> None:
+    """Test that scalar data is properly injected into vtk.js code."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=5, scalars=scalars, scalar_name="test_scalars")
+    js_source = contours.generate_vtk_js_source(0)
+    assert "test_scalars" in js_source
+    assert "vtkDataArray" in js_source
+    assert "setScalars" in js_source
+    assert "Float32Array" in js_source
+
+
+def test_contour_preserves_scalar_data() -> None:
+    """Test that contour preserves scalar data in returned mesh."""
+    sphere = Sphere()
+    scalars = sphere.points[:, 2]
+    contours = sphere.contour(isosurfaces=5, scalars=scalars)
+    assert contours.scalars is not None
+    assert len(contours.scalars) == sphere.n_points
+
+
+def test_contour_custom_scalar_name() -> None:
+    """Test contour with custom scalar name."""
+    cube = Cube()
+    scalars = cube.points[:, 0] + cube.points[:, 1]
+    contours = cube.contour(isosurfaces=3, scalars=scalars, scalar_name="custom_field")
+    js_source = contours.generate_vtk_js_source(0)
+    assert "custom_field" in js_source
 
 
 def test_circle_creation() -> None:
