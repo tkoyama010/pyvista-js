@@ -1359,7 +1359,7 @@ class _BaseHTMLRenderer:
                     "coneAngle": 30,
                     "coneFalloff": 0,
                     "attenuationValues": [1, 0, 0],
-                }
+                },
             ]
         lights_data: list[dict[str, object]] = []
         for light in self.lights:
@@ -1375,7 +1375,7 @@ class _BaseHTMLRenderer:
                     "coneAngle": light.cone_angle,
                     "coneFalloff": light.cone_falloff,
                     "attenuationValues": list(light.attenuation_values),
-                }
+                },
             )
         return lights_data
 
