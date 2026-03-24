@@ -109,6 +109,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.PLYReader
    pyvista_js.PolyDataReader
    pyvista_js.STLReader
+   pyvista_js.UnstructuredGridReader
 ```
 
 ## Examples
