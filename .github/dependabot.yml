@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -14,7 +13,6 @@ updates:
         patterns:
           - "*"
 
-  # npm dependencies (TypeScript build tooling)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -28,7 +26,6 @@ updates:
         patterns:
           - "*"
 
-  # Python dependencies
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
