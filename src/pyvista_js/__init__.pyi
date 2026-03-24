@@ -49,7 +49,14 @@ from .mesh import (
     Sphere,
 )
 from .plotter import Plotter
-from .readers import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader, UnstructuredGridReader
+from .readers import (
+    GLTFReader,
+    OBJReader,
+    PLYReader,
+    PolyDataReader,
+    STLReader,
+    UnstructuredGridReader,
+)
 from .streamlit_integration import pyvista_chart
 from .text import Text, TextProperty
 from .texture import Texture
