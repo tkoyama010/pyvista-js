@@ -33,8 +33,8 @@ jobs:
 
       - name: Commit and push to notebook-link branch
         run: |
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
+          git config user.email "53544751+pyvista-bot@users.noreply.github.com"
+          git config user.name "pyvista-bot"
           git add intro.ipynb
           git commit -m "chore: auto-generate intro.ipynb for Notebook.link [skip ci]"
           git push origin HEAD:notebook-link --force
