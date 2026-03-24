@@ -461,20 +461,26 @@
   }
 
   function setupCubemapEnvironment(faceUrls, ren, renWin) {
-    // Load 6 cubemap face images and composite into a single canvas texture
-    // Face order: [+X, -X, +Y, -Y, +Z, -Z]
+    // Load 6 cubemap face images and composite into a single canvas texture.
+    // Uses fetch+Blob to handle CORS redirects (e.g. GitHub Releases).
     var promises = faceUrls.map(function (url) {
-      return new Promise(function (resolve, reject) {
-        var img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = function () {
-          resolve(img);
-        };
-        img.onerror = function () {
-          reject(new Error("Failed to load cubemap face: " + url));
-        };
-        img.src = url;
-      });
+      return fetch(url)
+        .then(function (resp) {
+          return resp.blob();
+        })
+        .then(function (blob) {
+          return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () {
+              URL.revokeObjectURL(img.src);
+              resolve(img);
+            };
+            img.onerror = function () {
+              reject(new Error("Failed to decode cubemap face: " + url));
+            };
+            img.src = URL.createObjectURL(blob);
+          });
+        });
     });
     Promise.all(promises).then(function (images) {
       var size = images[0].width;
