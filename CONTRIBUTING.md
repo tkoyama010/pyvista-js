@@ -166,7 +166,7 @@ The project uses pre-commit hooks to ensure code quality.
 
 ## TypeScript Development
 
-The JavaScript renderer (`src/pyvista_js/templates/pyvista-renderer.js`) is generated from TypeScript source at `ts/pyvista-renderer.ts`. Node.js is only required when editing TypeScript files.
+The JavaScript renderer (`src/pyvista_js/templates/pyvista-renderer.js`) is generated from TypeScript source at `ts/renderer.ts`. Node.js is only required when editing TypeScript files.
 
 ### Setup
 

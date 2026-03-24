@@ -8,5 +8,5 @@
     "moduleResolution": "bundler",
     "isolatedModules": true
   },
-  "include": ["pyvista-renderer.ts", "vtk.d.ts"]
+  "include": ["renderer.ts", "vtk.d.ts"]
 }

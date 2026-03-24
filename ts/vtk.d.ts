@@ -1,7 +1,7 @@
 /**
  * Type declarations for the vtk.js CDN global object.
  *
- * Only the APIs actually used by `pyvista-renderer.ts` are declared here.
+ * Only the APIs actually used by `renderer.ts` are declared here.
  * These correspond to the global `vtk` object loaded from the CDN
  * (`https://unpkg.com/vtk.js`), not the ES-module `@kitware/vtk.js` package.
  */
