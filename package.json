@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "esbuild ts/renderer.ts --bundle --format=iife --outfile=src/pyvista_js/templates/renderer.js --target=es2017",
     "lint": "xo",
@@ -10,45 +11,6 @@
     "esbuild": "^0.27",
     "eslint-plugin-jsdoc": "^62.8.0",
     "typescript": "^5.8",
-    "xo": "^0.60.0"
-  },
-  "xo": {
-    "space": true,
-    "prettier": true,
-    "ignores": [
-      "src/"
-    ],
-    "rules": {
-      "jsdoc/require-jsdoc": [
-        "error",
-        {
-          "require": {
-            "FunctionDeclaration": true,
-            "MethodDefinition": true,
-            "ClassDeclaration": true
-          },
-          "contexts": [
-            "TSInterfaceDeclaration",
-            "TSTypeAliasDeclaration"
-          ]
-        }
-      ],
-      "jsdoc/require-description": "error",
-      "jsdoc/no-blank-blocks": "error",
-      "jsdoc/no-blank-block-descriptions": "error",
-      "jsdoc/require-param": "error",
-      "jsdoc/require-returns": "error"
-    },
-    "plugins": [
-      "jsdoc"
-    ],
-    "overrides": [
-      {
-        "files": "ts/*.d.ts",
-        "rules": {
-          "unicorn/no-keyword-prefix": "error"
-        }
-      }
-    ]
+    "xo": "^2.0.2"
   }
 }
