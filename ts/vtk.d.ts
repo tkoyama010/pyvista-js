@@ -433,6 +433,7 @@ interface SceneData {
   camera?: CameraConfig;
 }
 
+/** Extends the global Window with vtk.js renderer references. */
 interface Window {
   renderer: VtkRenderer;
   renderWindow: VtkRenderWindow;
