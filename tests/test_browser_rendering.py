@@ -274,3 +274,37 @@ def test_headless_browser_execution(page: Page) -> None:
     # Verify canvas is visible (not hidden)
     is_visible = canvas.is_visible()
     assert is_visible, "Canvas is not visible in headless mode"
+
+
+@pytest.mark.playwright
+def test_shrink_filter_renders_in_browser(page: Page) -> None:
+    """Test that the shrink filter renders correctly in a browser.
+
+    This test verifies that meshes with the shrink filter applied
+    produce a canvas without JavaScript errors, catching regressions
+    where the JS-side filter implementation is missing or broken.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    sphere = Sphere()
+    shrunk = sphere.shrink(shrink_factor=0.5)
+
+    plotter = Plotter()
+    plotter.add_mesh(shrunk, color="red")
+
+    # Collect JS errors
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    # Verify canvas exists
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for shrunk mesh"
+
+    # Verify no JS errors (catches missing filter implementations)
+    assert len(js_errors) == 0, f"JavaScript errors during shrink rendering: {js_errors}"
