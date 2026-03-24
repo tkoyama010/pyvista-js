@@ -10,6 +10,7 @@ permissions: {}
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    environment: release-please
     permissions:
       contents: write
       pull-requests: write
