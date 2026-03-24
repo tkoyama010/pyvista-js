@@ -58,6 +58,13 @@
     setupActor(actorConfig, idx, renderer, renderWindow);
   });
 
+  // --- Text Actors ---
+  if (sceneData.textActors) {
+    sceneData.textActors.forEach(function (textConfig) {
+      setupTextActor(textConfig, container);
+    });
+  }
+
   // --- Axes ---
   if (sceneData.axes) {
     setupAxes(interactor);
@@ -431,6 +438,26 @@
     orientationWidget.setViewportSize(0.15);
     orientationWidget.setMinPixelSize(100);
     orientationWidget.setMaxPixelSize(300);
+  }
+
+  function setupTextActor(cfg, containerEl) {
+    var div = document.createElement("div");
+    div.innerText = cfg.text;
+    div.style.position = "absolute";
+    div.style.left = cfg.position[0] * 100 + "%";
+    div.style.bottom = cfg.position[1] * 100 + "%";
+    var r = Math.round(cfg.color[0] * 255);
+    var g = Math.round(cfg.color[1] * 255);
+    var b = Math.round(cfg.color[2] * 255);
+    div.style.color = "rgba(" + r + "," + g + "," + b + "," + cfg.opacity + ")";
+    div.style.fontSize = cfg.fontSize + "px";
+    div.style.fontWeight = cfg.bold ? "bold" : "normal";
+    div.style.fontStyle = cfg.italic ? "italic" : "normal";
+    div.style.pointerEvents = "none";
+    div.style.zIndex = "10";
+    div.style.whiteSpace = "pre";
+    div.style.textShadow = "1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.8)";
+    containerEl.appendChild(div);
   }
 
   function applyFilters(sourceResult, filters) {

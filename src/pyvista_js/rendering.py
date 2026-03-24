@@ -713,6 +713,23 @@ class _BaseHTMLRenderer:
             }
         return None
 
+    def _build_text_actors_data(self) -> list[dict[str, object]]:
+        """Build JSON-serializable text actor configurations."""
+        result: list[dict[str, object]] = []
+        for text_actor in self.text_actors:
+            result.append(
+                {
+                    "text": text_actor.input,
+                    "position": list(text_actor.position),
+                    "fontSize": text_actor.prop.font_size,
+                    "color": list(text_actor.prop.color),
+                    "opacity": text_actor.prop.opacity,
+                    "bold": text_actor.prop.bold,
+                    "italic": text_actor.prop.italic,
+                },
+            )
+        return result
+
     def _build_scene_data(self) -> dict[str, object]:
         """Build a complete JSON-serializable scene description.
 
@@ -727,11 +744,14 @@ class _BaseHTMLRenderer:
 
         actors_data = [self._build_actor_data(info) for info in self.actors]
 
+        text_actors_data = self._build_text_actors_data()
+
         scene: dict[str, object] = {
             "containerId": self.container_id,
             "background": list(self.background),
             "lights": self._build_lights_data(),
             "actors": actors_data,
+            "textActors": text_actors_data,
             "axes": self._axes_enabled,
             "camera": self._build_camera_data(),
             "lightingMode": self.lighting,

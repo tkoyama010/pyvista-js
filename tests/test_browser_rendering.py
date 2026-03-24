@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from pyvista_js import Line, Plotter, Sphere
+from pyvista_js import Line, Plotter, Sphere, Text
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -387,3 +387,32 @@ def test_contour_filter_renders_in_browser(page: Page) -> None:
     canvas = page.query_selector("canvas")
     assert canvas is not None, "Canvas element not found for contour mesh"
     assert len(js_errors) == 0, f"JavaScript errors during contour rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_text_actor_renders_in_browser(page: Page) -> None:
+    """Test that text actors render as HTML overlays in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), color="white")
+    plotter.add_text(Text("Hello World", position=(0.5, 0.9)))
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found"
+    assert len(js_errors) == 0, f"JavaScript errors during text rendering: {js_errors}"
+
+    # Verify the text overlay div exists with correct content
+    text_el = page.query_selector(f"#{plotter._container_id} div")
+    assert text_el is not None, "Text overlay div not found"
+    assert text_el.inner_text() == "Hello World"
