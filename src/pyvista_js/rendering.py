@@ -773,31 +773,31 @@ class _BaseHTMLRenderer:
     def _generate_render_js(self) -> str:
         """Generate pure JavaScript for display(Javascript(...)) in JupyterLite.
 
-        Embeds scene data as a JS variable and uses the same renderer logic,
-        but creates the container element dynamically via DOM APIs.
+        Embeds scene data as a JS variable and creates the container and
+        scene-data elements inside the cell output area. Each invocation
+        uses a unique scene-data ID to avoid collisions between cells.
         """
         import json as _json  # noqa: PLC0415
 
         scene_data = self._build_scene_data()
         scene_json = _json.dumps(scene_data)
+        scene_data_id = f"scene-data-{self.container_id}"
 
-        # For JupyterLite: create container and scene-data div dynamically
+        # For JupyterLite: create container and scene-data inside the cell output
         return (
             "(function() {\n"
             "  var container = document.createElement('div');\n"
             f"  container.id = {_json.dumps(self.container_id)};\n"
             "  container.style.cssText = "
             "'width:600px;height:400px;border:2px solid #333;position:relative';\n"
-            "  if (typeof element !== 'undefined' && element) {\n"
-            "    element.appendChild(container);\n"
-            "  } else {\n"
-            "    document.body.appendChild(container);\n"
-            "  }\n"
             "  var sceneDataEl = document.createElement('script');\n"
             "  sceneDataEl.type = 'application/json';\n"
-            "  sceneDataEl.id = 'scene-data';\n"
+            f"  sceneDataEl.id = {_json.dumps(scene_data_id)};\n"
             f"  sceneDataEl.textContent = {_json.dumps(scene_json)};\n"
-            "  document.body.appendChild(sceneDataEl);\n"
+            "  var parent = (typeof element !== 'undefined' && element)"
+            " ? element : document.body;\n"
+            "  parent.appendChild(container);\n"
+            "  parent.appendChild(sceneDataEl);\n"
             "  function doRender() {\n"
             f"    {_RENDERER_JS}\n"
             "  }\n"
