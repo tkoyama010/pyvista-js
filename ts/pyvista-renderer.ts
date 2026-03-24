@@ -8,17 +8,33 @@ interface SourceResult {
   isFilter: boolean;
 }
 
+function getPolyData(sourceResult: SourceResult): VtkPolyData {
+  if (sourceResult.isFilter) {
+    (sourceResult.output as VtkAlgorithm).update();
+    return (sourceResult.output as VtkAlgorithm).getOutputData();
+  }
+  return sourceResult.output as VtkPolyData;
+}
+
+function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
+  if (sourceResult.isFilter) {
+    filter.setInputConnection((sourceResult.output as VtkAlgorithm).getOutputPort());
+  } else {
+    filter.setInputData(sourceResult.output as VtkPolyData);
+  }
+}
+
 // In JupyterLite path, _generate_render_js() sets __pvjsSceneData and
 // __pvjsContainer before calling this code. In standalone HTML path,
 // read from the DOM.
 const sceneData: SceneData =
   typeof __pvjsSceneData !== "undefined"
     ? __pvjsSceneData
-    : JSON.parse(document.getElementById("scene-data")!.textContent!);
+    : (JSON.parse(document.getElementById("scene-data")?.textContent ?? "{}") as SceneData);
 const container: HTMLElement =
   typeof __pvjsContainer !== "undefined"
     ? __pvjsContainer
-    : document.getElementById(sceneData.containerId)!;
+    : (document.getElementById(sceneData.containerId) ?? document.createElement("div"));
 const bg = sceneData.background;
 
 const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
@@ -48,7 +64,7 @@ window.openGLRenderWindow = openGLRenderWindow;
 window.interactor = interactor;
 
 // --- Lights ---
-if (sceneData.lightingMode === null && (!sceneData.lights || sceneData.lights.length === 0)) {
+if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
   // lighting=None with no custom lights: disable all lighting
   renderer.removeAllLights();
   renderer.setAutomaticLightCreation(false);
@@ -63,9 +79,9 @@ sceneData.actors.forEach((actorConfig: ActorConfig, idx: number) => {
 
 // --- Text Actors ---
 if (sceneData.textActors) {
-  sceneData.textActors.forEach((textConfig: TextActorConfig) => {
+  for (const textConfig of sceneData.textActors) {
     setupTextActor(textConfig, container);
-  });
+  }
 }
 
 // --- Axes ---
@@ -84,20 +100,23 @@ renderWindow.render();
 // ========== Helper functions ==========
 
 function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
-  if (!lightsConfig || lightsConfig.length === 0) {
+  if (lightsConfig.length === 0) {
     return;
   }
   ren.removeAllLights();
   ren.setAutomaticLightCreation(false);
-  lightsConfig.forEach((cfg: LightConfig) => {
+  for (const cfg of lightsConfig) {
     const light = vtk.Rendering.Core.vtkLight.newInstance();
     const typeMap: Record<string, string> = {
       scene: "setLightTypeToSceneLight",
       camera: "setLightTypeToCameraLight",
       head: "setLightTypeToHeadLight",
     };
-    const setter = typeMap[cfg.type] || "setLightTypeToSceneLight";
-    (light[setter] as () => void)();
+    const setter = typeMap[cfg.type] ?? "setLightTypeToSceneLight";
+    const setterFn = light[setter];
+    if (typeof setterFn === "function") {
+      (setterFn as () => void).call(light);
+    }
     light.setPosition(cfg.position[0], cfg.position[1], cfg.position[2]);
     light.setFocalPoint(cfg.focalPoint[0], cfg.focalPoint[1], cfg.focalPoint[2]);
     light.setColor(cfg.color[0], cfg.color[1], cfg.color[2]);
@@ -111,8 +130,27 @@ function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
       cfg.attenuationValues[2],
     );
     ren.addLight(light);
-  });
+  }
 }
+
+const readerMap: ReaderFactoryMap = {
+  plyReader: {
+    factory: vtk.IO.Geometry.vtkPLYReader,
+    parseMethod: "parseAsArrayBuffer",
+  },
+  stlReader: {
+    factory: vtk.IO.Geometry.vtkSTLReader,
+    parseMethod: "parseAsArrayBuffer",
+  },
+  objReader: {
+    factory: vtk.IO.Misc.vtkOBJReader,
+    parseMethod: "parseAsText",
+  },
+  vtkReader: {
+    factory: vtk.IO.Legacy.vtkPolyDataReader,
+    parseMethod: "parseAsText",
+  },
+};
 
 function createSource(cfg: SourceConfig): SourceResult | null {
   switch (cfg.type) {
@@ -139,13 +177,10 @@ function createSource(cfg: SourceConfig): SourceResult | null {
     case "points":
       return createPointsSource(cfg);
     case "plyReader":
-      return createReaderSource(cfg, "IO.Geometry.vtkPLYReader", "parseAsArrayBuffer");
     case "stlReader":
-      return createReaderSource(cfg, "IO.Geometry.vtkSTLReader", "parseAsArrayBuffer");
     case "objReader":
-      return createReaderSource(cfg, "IO.Misc.vtkOBJReader", "parseAsText");
     case "vtkReader":
-      return createReaderSource(cfg, "IO.Legacy.vtkPolyDataReader", "parseAsText");
+      return createReaderSource(cfg);
     default:
       console.error("Unknown source type:", cfg.type);
       return null;
@@ -192,19 +227,22 @@ function createCylinderSource(cfg: SourceConfig): SourceResult {
 }
 
 function createDiskSource(cfg: SourceConfig): SourceResult {
-  const source = vtk.Filters.Sources.vtkDiskSource
-    ? vtk.Filters.Sources.vtkDiskSource.newInstance({
+  const diskFactory = vtk.Filters.Sources.vtkDiskSource;
+  const source = diskFactory
+    ? diskFactory.newInstance({
         innerRadius: cfg.innerRadius,
         outerRadius: cfg.outerRadius,
         radialResolution: 1,
         circumferentialResolution: cfg.resolution,
       })
     : null;
-  return { output: source as VtkAlgorithm, isFilter: true };
+  return {
+    output: source ?? vtk.Common.DataModel.vtkPolyData.newInstance(),
+    isFilter: true,
+  };
 }
 
 function createCircleSource(cfg: SourceConfig): SourceResult {
-  // Circle is a disk with innerRadius=0
   return createDiskSource({
     type: "disk",
     innerRadius: 0,
@@ -235,21 +273,17 @@ function createPlaneSource(cfg: SourceConfig): SourceResult {
     origin: cfg.origin,
   });
   if (cfg.normal) {
-    (source as unknown as { setNormal(x: number, y: number, z: number): void }).setNormal(
-      cfg.normal[0],
-      cfg.normal[1],
-      cfg.normal[2],
-    );
+    source.setNormal?.(cfg.normal[0], cfg.normal[1], cfg.normal[2]);
   }
   return { output: source, isFilter: true };
 }
 
 function createMeshSource(cfg: SourceConfig): SourceResult {
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-  const pointsArray = Float32Array.from(cfg.points!);
-  const vtkPoints = vtk.Common.Core.vtkPoints.newInstance();
-  vtkPoints.setData(pointsArray, 3);
-  polydata.setPoints(vtkPoints);
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, 3);
+  polydata.setPoints(vtkPts);
   if (cfg.polys) {
     const polysArray = Uint32Array.from(cfg.polys);
     polydata.getPolys().setData(polysArray);
@@ -259,55 +293,55 @@ function createMeshSource(cfg: SourceConfig): SourceResult {
 
 function createPointsSource(cfg: SourceConfig): SourceResult {
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-  const pointsArray = Float32Array.from(cfg.points!);
-  const vtkPoints = vtk.Common.Core.vtkPoints.newInstance();
-  vtkPoints.setData(pointsArray, 3);
-  polydata.setPoints(vtkPoints);
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, 3);
+  polydata.setPoints(vtkPts);
   return { output: polydata, isFilter: false };
 }
 
-function createReaderSource(
-  cfg: SourceConfig,
-  readerPath: string,
-  parseMethod: string,
-): SourceResult {
-  // Decode base64 data and parse with vtk.js reader
-  const binary = atob(cfg.data!);
+function createReaderSource(cfg: SourceConfig): SourceResult {
+  const entry = readerMap[cfg.type] as
+    | { factory: VtkReaderFactory; parseMethod: "parseAsArrayBuffer" | "parseAsText" }
+    | undefined;
+  if (!entry) {
+    throw new Error(`Unknown reader type: ${cfg.type}`);
+  }
+  const binary = atob(cfg.data ?? "");
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
-  // Navigate to the correct vtk.js namespace
-  const parts = readerPath.split(".");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let ns: any = vtk;
-  for (let j = 0; j < parts.length; j++) {
-    ns = ns[parts[j]];
-  }
-  const reader: VtkReader = ns.newInstance();
-  if (parseMethod === "parseAsText") {
+  const reader = entry.factory.newInstance();
+  if (entry.parseMethod === "parseAsText") {
     reader.parseAsText(new TextDecoder().decode(bytes));
   } else {
-    reader.parseAsArrayBuffer(bytes.buffer);
+    reader.parseAsArrayBuffer(new Uint8Array(bytes).buffer);
   }
-  return { output: reader as unknown as VtkAlgorithm, isFilter: true };
+  return {
+    output: reader as unknown as VtkAlgorithm,
+    isFilter: true,
+  };
 }
 
-function injectPointData(polydata: VtkPolyData, pointDataArrays: PointDataArray[]): void {
+function injectPointData(
+  polydata: VtkPolyData,
+  pointDataArrays: PointDataArray[] | undefined,
+): void {
   if (!pointDataArrays) {
     return;
   }
-  pointDataArrays.forEach((arr: PointDataArray) => {
+  for (const arr of pointDataArrays) {
     const dataArray = vtk.Common.Core.vtkDataArray.newInstance({
       numberOfComponents: arr.numberOfComponents,
       values: Float32Array.from(arr.values),
       name: arr.name,
     });
     polydata.getPointData().addArray(dataArray);
-  });
+  }
 }
 
-function injectTCoords(polydata: VtkPolyData, tCoords: number[]): void {
+function injectTCoords(polydata: VtkPolyData, tCoords: number[] | undefined): void {
   if (!tCoords) {
     return;
   }
@@ -327,17 +361,9 @@ function setupNormals(
     return sourceResult;
   }
   const normals = vtk.Filters.Core.vtkPolyDataNormals.newInstance();
-  (normals as unknown as { setComputePointNormals(v: boolean): void }).setComputePointNormals(
-    normalsConfig.computePointNormals,
-  );
-  (normals as unknown as { setComputeCellNormals(v: boolean): void }).setComputeCellNormals(
-    normalsConfig.computeCellNormals,
-  );
-  if (sourceResult.isFilter) {
-    normals.setInputConnection((sourceResult.output as VtkAlgorithm).getOutputPort());
-  } else {
-    normals.setInputData(sourceResult.output as VtkPolyData);
-  }
+  normals.setComputePointNormals?.(normalsConfig.computePointNormals);
+  normals.setComputeCellNormals?.(normalsConfig.computeCellNormals);
+  connectInput(normals, sourceResult);
   return { output: normals, isFilter: true };
 }
 
@@ -348,21 +374,15 @@ function setupActor(
   renWin: VtkRenderWindow,
 ): void {
   const sourceResult = createSource(cfg.source);
-  if (!sourceResult || !sourceResult.output) {
+  if (!sourceResult?.output) {
     return;
   }
 
   // Inject point data and texture coordinates if needed
-  if (cfg.source.pointData || cfg.source.tCoords) {
-    let pd: VtkPolyData;
-    if (sourceResult.isFilter) {
-      (sourceResult.output as VtkAlgorithm).update();
-      pd = (sourceResult.output as VtkAlgorithm).getOutputData();
-    } else {
-      pd = sourceResult.output as VtkPolyData;
-    }
-    injectPointData(pd, cfg.source.pointData!);
-    injectTCoords(pd, cfg.source.tCoords!);
+  if (cfg.source.pointData ?? cfg.source.tCoords) {
+    const pd = getPolyData(sourceResult);
+    injectPointData(pd, cfg.source.pointData);
+    injectTCoords(pd, cfg.source.tCoords);
   }
 
   // Apply filters (shrink, clip, tube, contour)
@@ -398,7 +418,7 @@ function setupActor(
     wireframe: 1,
     points: 0,
   };
-  const rep = styleMap[cfg.style];
+  const rep = styleMap[cfg.style] as number | undefined;
   if (rep !== undefined) {
     actor.getProperty().setRepresentation(rep);
   }
@@ -432,9 +452,9 @@ function setupActor(
   // Point cloud specific
   if (cfg.actorType === "points") {
     if (cfg.renderPointsAsSpheres && mapper.setRadius) {
-      mapper.setRadius((cfg.pointSize || 5) * 0.01);
+      mapper.setRadius((cfg.pointSize ?? 5) * 0.01);
     } else {
-      actor.getProperty().setPointSize(cfg.pointSize || 5);
+      actor.getProperty().setPointSize(cfg.pointSize ?? 5);
       actor.getProperty().setRepresentationToPoints();
     }
   }
@@ -476,9 +496,9 @@ function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
   if (camConfig.parallelProjection) {
     cam.setParallelProjection(true);
   }
-  if (camConfig.viewVector) {
+  if (camConfig.viewVector && camConfig.viewUp) {
     cam.setPosition(camConfig.viewVector[0], camConfig.viewVector[1], camConfig.viewVector[2]);
-    cam.setViewUp(camConfig.viewUp![0], camConfig.viewUp![1], camConfig.viewUp![2]);
+    cam.setViewUp(camConfig.viewUp[0], camConfig.viewUp[1], camConfig.viewUp[2]);
     cam.setFocalPoint(0, 0, 0);
     ren.resetCamera();
     ren.resetCameraClippingRange();
@@ -504,13 +524,13 @@ function setupTextActor(cfg: TextActorConfig, containerEl: HTMLElement): void {
   const div = document.createElement("div");
   div.innerText = cfg.text;
   div.style.position = "absolute";
-  div.style.left = cfg.position[0] * 100 + "%";
-  div.style.bottom = cfg.position[1] * 100 + "%";
+  div.style.left = `${String(cfg.position[0] * 100)}%`;
+  div.style.bottom = `${String(cfg.position[1] * 100)}%`;
   const r = Math.round(cfg.color[0] * 255);
   const g = Math.round(cfg.color[1] * 255);
   const b = Math.round(cfg.color[2] * 255);
-  div.style.color = "rgba(" + r + "," + g + "," + b + "," + cfg.opacity + ")";
-  div.style.fontSize = cfg.fontSize + "px";
+  div.style.color = `rgba(${String(r)},${String(g)},${String(b)},${String(cfg.opacity)})`;
+  div.style.fontSize = `${String(cfg.fontSize)}px`;
   div.style.fontWeight = cfg.bold ? "bold" : "normal";
   div.style.fontStyle = cfg.italic ? "italic" : "normal";
   div.style.pointerEvents = "none";
@@ -522,37 +542,30 @@ function setupTextActor(cfg: TextActorConfig, containerEl: HTMLElement): void {
 
 function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): SourceResult {
   let current = sourceResult;
-  filters.forEach((f: FilterConfig) => {
-    if (f.type === "shrink") {
-      current = applyShrinkFilter(current, f.shrinkFactor!);
-    } else if (f.type === "tube") {
-      current = applyTubeFilter(current, f.radius!, f.numberOfSides!);
-    } else if (f.type === "clip") {
-      current = applyClipFilter(current, f.normal!, f.origin!, f.invert!);
-    } else if (f.type === "contour") {
-      current = applyContourFilter(current, f.values!, f.scalarName!, f.scalarData!);
+  for (const f of filters) {
+    if (f.type === "shrink" && f.shrinkFactor !== undefined) {
+      current = applyShrinkFilter(current, f.shrinkFactor);
+    } else if (f.type === "tube" && f.radius !== undefined && f.numberOfSides !== undefined) {
+      current = applyTubeFilter(current, f.radius, f.numberOfSides);
+    } else if (f.type === "clip" && f.normal && f.origin && f.invert !== undefined) {
+      current = applyClipFilter(current, f.normal, f.origin, f.invert);
+    } else if (f.type === "contour" && f.values && f.scalarName && f.scalarData) {
+      current = applyContourFilter(current, f.values, f.scalarName, f.scalarData);
     }
-  });
+  }
   return current;
 }
 
 function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): SourceResult {
   // vtk.js does not have vtkShrinkFilter, so implement manually:
   // For each cell, move vertices toward the cell centroid.
-  let inputPD: VtkPolyData;
-  if (sourceResult.isFilter) {
-    (sourceResult.output as VtkAlgorithm).update();
-    inputPD = (sourceResult.output as VtkAlgorithm).getOutputData();
-  } else {
-    inputPD = sourceResult.output as VtkPolyData;
-  }
+  const inputPD = getPolyData(sourceResult);
   const inPoints = inputPD.getPoints().getData();
-  const polys = inputPD.getPolys() ? inputPD.getPolys().getData() : null;
-  if (!polys || polys.length === 0) {
+  const polys = inputPD.getPolys().getData();
+  if (polys.length === 0) {
     return sourceResult;
   }
 
-  // Build new points: each cell gets its own copy of vertices
   const newPoints: number[] = [];
   const newPolys: number[] = [];
   let offset = 0;
@@ -560,7 +573,6 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
   while (i < polys.length) {
     const nVerts = polys[i];
     i++;
-    // Compute centroid
     let cx = 0,
       cy = 0,
       cz = 0;
@@ -575,7 +587,6 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     cx /= nVerts;
     cy /= nVerts;
     cz /= nVerts;
-    // Shrink vertices toward centroid
     newPolys.push(nVerts);
     for (let k = 0; k < nVerts; k++) {
       const pi = indices[k];
@@ -605,14 +616,10 @@ function applyTubeFilter(
   numberOfSides: number,
 ): SourceResult {
   const tubeFilter = vtk.Filters.General.vtkTubeFilter.newInstance({
-    radius: radius,
-    numberOfSides: numberOfSides,
+    radius,
+    numberOfSides,
   });
-  if (sourceResult.isFilter) {
-    tubeFilter.setInputConnection((sourceResult.output as VtkAlgorithm).getOutputPort());
-  } else {
-    tubeFilter.setInputData(sourceResult.output as VtkPolyData);
-  }
+  connectInput(tubeFilter, sourceResult);
   return { output: tubeFilter, isFilter: true };
 }
 
@@ -626,21 +633,13 @@ function applyClipFilter(
   plane.setOrigin(origin[0], origin[1], origin[2]);
   plane.setNormal(normal[0], normal[1], normal[2]);
 
-  const clipper = vtk.Filters.General.vtkClipClosedSurface
-    ? vtk.Filters.General.vtkClipClosedSurface.newInstance()
-    : null;
-  if (clipper) {
-    (clipper as unknown as { setClippingPlanes(planes: VtkPlane[]): void }).setClippingPlanes([
-      plane,
-    ]);
-    if (sourceResult.isFilter) {
-      clipper.setInputConnection((sourceResult.output as VtkAlgorithm).getOutputPort());
-    } else {
-      clipper.setInputData(sourceResult.output as VtkPolyData);
-    }
+  const clipFactory = vtk.Filters.General.vtkClipClosedSurface;
+  if (clipFactory) {
+    const clipper = clipFactory.newInstance();
+    clipper.setClippingPlanes?.([plane]);
+    connectInput(clipper, sourceResult);
     return { output: clipper, isFilter: true };
   }
-  // Fallback: manual clip by discarding cells on one side of the plane
   return applyClipManual(sourceResult, normal, origin, invert);
 }
 
@@ -650,35 +649,23 @@ function applyClipManual(
   origin: [number, number, number],
   invert: boolean,
 ): SourceResult {
-  let inputPD: VtkPolyData;
-  if (sourceResult.isFilter) {
-    (sourceResult.output as VtkAlgorithm).update();
-    inputPD = (sourceResult.output as VtkAlgorithm).getOutputData();
-  } else {
-    inputPD = sourceResult.output as VtkPolyData;
-  }
+  const inputPD = getPolyData(sourceResult);
   const inPoints = inputPD.getPoints().getData();
-  const polys = inputPD.getPolys() ? inputPD.getPolys().getData() : null;
-  if (!polys || polys.length === 0) {
+  const polys = inputPD.getPolys().getData();
+  if (polys.length === 0) {
     return sourceResult;
   }
-  const nx = normal[0],
-    ny = normal[1],
-    nz = normal[2];
-  const ox = origin[0],
-    oy = origin[1],
-    oz = origin[2];
+  const [nx, ny, nz] = normal;
+  const [ox, oy, oz] = origin;
 
-  // Keep cells whose centroid is on the correct side of the plane
   const newPoints: number[] = [];
   const newPolys: number[] = [];
-  const pointMap: Record<number, number> = {};
+  const pointMap = new Map<number, number>();
   let nextIdx = 0;
   let i = 0;
   while (i < polys.length) {
     const nVerts = polys[i];
     i++;
-    // Compute centroid
     let cx = 0,
       cy = 0,
       cz = 0;
@@ -699,11 +686,11 @@ function applyClipManual(
       newPolys.push(nVerts);
       for (let k = 0; k < nVerts; k++) {
         const pi = cellIndices[k];
-        if (pointMap[pi] === undefined) {
-          pointMap[pi] = nextIdx++;
+        if (!pointMap.has(pi)) {
+          pointMap.set(pi, nextIdx++);
           newPoints.push(inPoints[pi * 3], inPoints[pi * 3 + 1], inPoints[pi * 3 + 2]);
         }
-        newPolys.push(pointMap[pi]);
+        newPolys.push(pointMap.get(pi) ?? 0);
       }
     }
     i += nVerts;
@@ -721,16 +708,8 @@ function applyContourFilter(
   scalarName: string,
   scalarData: number[],
 ): SourceResult {
-  // Inject scalar data, then use vtk.js contour filter if available
-  let inputPD: VtkPolyData;
-  if (sourceResult.isFilter) {
-    (sourceResult.output as VtkAlgorithm).update();
-    inputPD = (sourceResult.output as VtkAlgorithm).getOutputData();
-  } else {
-    inputPD = sourceResult.output as VtkPolyData;
-  }
+  const inputPD = getPolyData(sourceResult);
 
-  // Add scalar array to polydata
   const scalars = vtk.Common.Core.vtkDataArray.newInstance({
     numberOfComponents: 1,
     values: Float32Array.from(scalarData),
@@ -739,14 +718,6 @@ function applyContourFilter(
   inputPD.getPointData().addArray(scalars);
   inputPD.getPointData().setActiveScalars(scalarName);
 
-  // Try vtk.js built-in contour filter
-  if (vtk.Filters.General && vtk.Filters.General.vtkContourTriangulator) {
-    // vtk.js doesn't have a standard marching-cubes contour for polydata,
-    // fall back to manual isocontour extraction
-  }
-
-  // Manual contour: for each contour value, extract iso-lines from triangles
-  // using marching triangles (linear interpolation on edges)
   return applyContourManual(inputPD, values, scalarName);
 }
 
@@ -756,9 +727,9 @@ function applyContourManual(
   scalarName: string,
 ): SourceResult {
   const inPoints = inputPD.getPoints().getData();
-  const polys = inputPD.getPolys() ? inputPD.getPolys().getData() : null;
+  const polys = inputPD.getPolys().getData();
   const scalarsArr = inputPD.getPointData().getArrayByName(scalarName);
-  if (!polys || !scalarsArr) {
+  if (polys.length === 0 || !scalarsArr) {
     return { output: inputPD, isFilter: false };
   }
   const scalarValues = scalarsArr.getData();
@@ -767,7 +738,6 @@ function applyContourManual(
   const outPolys: number[] = [];
   let pointIdx = 0;
 
-  // For each triangle, for each contour value, extract intersection edges
   let i = 0;
   while (i < polys.length) {
     const nVerts = polys[i];
@@ -784,30 +754,26 @@ function applyContourManual(
         [i1, i2, s1, s2],
         [i2, i0, s2, s0],
       ];
-      values.forEach((val: number) => {
+      for (const val of values) {
         const edgePoints: number[] = [];
-        tri.forEach((edge: [number, number, number, number]) => {
-          const sa = edge[2],
-            sb = edge[3];
+        for (const edge of tri) {
+          const [ai, bi, sa, sb] = edge;
           if ((sa <= val && val < sb) || (sb <= val && val < sa)) {
             const t = (val - sa) / (sb - sa);
-            const ai = edge[0],
-              bi = edge[1];
             edgePoints.push(
               inPoints[ai * 3] + t * (inPoints[bi * 3] - inPoints[ai * 3]),
               inPoints[ai * 3 + 1] + t * (inPoints[bi * 3 + 1] - inPoints[ai * 3 + 1]),
               inPoints[ai * 3 + 2] + t * (inPoints[bi * 3 + 2] - inPoints[ai * 3 + 2]),
             );
           }
-        });
-        // If we found exactly 2 intersection points, create a line segment
+        }
         if (edgePoints.length === 6) {
           outPoints.push(edgePoints[0], edgePoints[1], edgePoints[2]);
           outPoints.push(edgePoints[3], edgePoints[4], edgePoints[5]);
           outPolys.push(2, pointIdx, pointIdx + 1);
           pointIdx += 2;
         }
-      });
+      }
     }
     i += nVerts;
   }

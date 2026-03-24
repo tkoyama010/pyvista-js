@@ -3,18 +3,13 @@
  * Only the APIs actually used by pyvista-renderer.ts are declared here.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface VtkInstance {
-  // Generic vtk.js instance — specific methods added per class below
-}
-
-interface VtkNewInstanceFactory<T = VtkInstance> {
+interface VtkNewInstanceFactory<T> {
   newInstance(options?: Record<string, unknown>): T;
 }
 
 // --- Common types ---
 
-interface VtkDataArray extends VtkInstance {
+interface VtkDataArray {
   getData(): Float32Array;
 }
 
@@ -33,16 +28,16 @@ interface VtkPointData {
   getArrayByName(name: string): VtkDataArray | null;
 }
 
-interface VtkPoints extends VtkInstance {
+interface VtkPoints {
   setData(data: Float32Array, numberOfComponents: number): void;
 }
 
-interface VtkCellArray extends VtkInstance {
+interface VtkCellArray {
   setData(data: Uint32Array): void;
   getData(): Uint32Array;
 }
 
-interface VtkPolyData extends VtkInstance {
+interface VtkPolyData {
   getPoints(): VtkPoints & {
     getData(): Float32Array;
     setData(data: Float32Array, n: number): void;
@@ -53,23 +48,28 @@ interface VtkPolyData extends VtkInstance {
   getPointData(): VtkPointData;
 }
 
-interface VtkPlane extends VtkInstance {
+interface VtkPlane {
   setOrigin(x: number, y: number, z: number): void;
   setNormal(x: number, y: number, z: number): void;
 }
 
 // --- Filter/Source with output port ---
 
-interface VtkAlgorithm extends VtkInstance {
+interface VtkOutputPort {
+  /** Opaque handle — brand field prevents structural compatibility with `object` */
+  readonly __brand: "VtkOutputPort";
+}
+
+interface VtkAlgorithm {
   getOutputPort(): VtkOutputPort;
   getOutputData(): VtkPolyData;
   update(): void;
   setInputConnection(port: VtkOutputPort): void;
   setInputData(data: VtkPolyData): void;
-}
-
-interface VtkOutputPort {
-  // Opaque handle
+  setComputePointNormals?(v: boolean): void;
+  setComputeCellNormals?(v: boolean): void;
+  setNormal?(x: number, y: number, z: number): void;
+  setClippingPlanes?(planes: VtkPlane[]): void;
 }
 
 // --- Rendering ---
@@ -93,19 +93,19 @@ interface VtkProperty {
   setPointSize(size: number): void;
 }
 
-interface VtkActor extends VtkInstance {
+interface VtkActor {
   setMapper(mapper: VtkMapper): void;
   getProperty(): VtkProperty;
   addTexture(texture: VtkTexture): void;
 }
 
-interface VtkMapper extends VtkInstance {
+interface VtkMapper {
   setInputConnection(port: VtkOutputPort): void;
   setInputData(data: VtkPolyData): void;
   setRadius?(radius: number): void;
 }
 
-interface VtkTexture extends VtkInstance {
+interface VtkTexture {
   setInterpolate(value: boolean): void;
   setImage(img: HTMLImageElement): void;
 }
@@ -119,7 +119,7 @@ interface VtkCamera {
   setParallelProjection(value: boolean): void;
 }
 
-interface VtkLight extends VtkInstance {
+interface VtkLight {
   setPosition(x: number, y: number, z: number): void;
   setFocalPoint(x: number, y: number, z: number): void;
   setColor(r: number, g: number, b: number): void;
@@ -131,10 +131,10 @@ interface VtkLight extends VtkInstance {
   setLightTypeToSceneLight(): void;
   setLightTypeToCameraLight(): void;
   setLightTypeToHeadLight(): void;
-  [key: string]: unknown;
+  [key: string]: ((...args: number[]) => void) | undefined;
 }
 
-interface VtkRenderer extends VtkInstance {
+interface VtkRenderer {
   setBackground(r: number, g: number, b: number): void;
   addActor(actor: VtkActor): void;
   addLight(light: VtkLight): void;
@@ -145,25 +145,30 @@ interface VtkRenderer extends VtkInstance {
   getActiveCamera(): VtkCamera;
 }
 
-interface VtkRenderWindow extends VtkInstance {
+interface VtkRenderWindow {
   addRenderer(renderer: VtkRenderer): void;
   addView(view: VtkOpenGLRenderWindow): void;
   render(): void;
 }
 
-interface VtkOpenGLRenderWindow extends VtkInstance {
+interface VtkOpenGLRenderWindow {
   setContainer(container: HTMLElement): void;
   setSize(width: number, height: number): void;
 }
 
-interface VtkInteractor extends VtkInstance {
-  setInteractorStyle(style: VtkInstance): void;
+interface VtkInteractor {
+  setInteractorStyle(style: VtkInteractorStyle): void;
   setView(view: VtkOpenGLRenderWindow): void;
   initialize(): void;
   bindEvents(container: HTMLElement): void;
 }
 
-interface VtkOrientationMarkerWidget extends VtkInstance {
+interface VtkInteractorStyle {
+  /** Marker interface for interactor styles */
+  readonly __brand: "VtkInteractorStyle";
+}
+
+interface VtkOrientationMarkerWidget {
   setEnabled(value: boolean): void;
   setViewportCorner(corner: number): void;
   setViewportSize(size: number): void;
@@ -171,9 +176,14 @@ interface VtkOrientationMarkerWidget extends VtkInstance {
   setMaxPixelSize(size: number): void;
 }
 
+interface VtkAxesActor {
+  /** Marker for axes actor used by orientation widget */
+  readonly __brand: "VtkAxesActor";
+}
+
 interface VtkOrientationMarkerWidgetFactory {
   newInstance(options: {
-    actor: VtkInstance;
+    actor: VtkAxesActor;
     interactor: VtkInteractor;
   }): VtkOrientationMarkerWidget;
   Corners: { BOTTOM_LEFT: number };
@@ -181,12 +191,16 @@ interface VtkOrientationMarkerWidgetFactory {
 
 // --- Reader interfaces ---
 
-interface VtkReader extends VtkInstance {
+interface VtkReader {
   getOutputPort(): VtkOutputPort;
   getOutputData(): VtkPolyData;
   update(): void;
   parseAsArrayBuffer(buffer: ArrayBuffer): void;
   parseAsText(text: string): void;
+}
+
+interface VtkReaderFactory {
+  newInstance(): VtkReader;
 }
 
 // --- Global vtk namespace ---
@@ -202,7 +216,7 @@ interface VtkGlobal {
       vtkMapper: VtkNewInstanceFactory<VtkMapper>;
       vtkSphereMapper: VtkNewInstanceFactory<VtkMapper>;
       vtkTexture: VtkNewInstanceFactory<VtkTexture>;
-      vtkAxesActor: VtkNewInstanceFactory<VtkInstance>;
+      vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
     };
     OpenGL: {
       vtkRenderWindow: VtkNewInstanceFactory<VtkOpenGLRenderWindow>;
@@ -243,7 +257,7 @@ interface VtkGlobal {
   };
   Interaction: {
     Style: {
-      vtkInteractorStyleTrackballCamera: VtkNewInstanceFactory<VtkInstance>;
+      vtkInteractorStyleTrackballCamera: VtkNewInstanceFactory<VtkInteractorStyle>;
     };
     Widgets: {
       vtkOrientationMarkerWidget: VtkOrientationMarkerWidgetFactory;
@@ -251,21 +265,21 @@ interface VtkGlobal {
   };
   IO: {
     Geometry: {
-      vtkPLYReader: VtkNewInstanceFactory<VtkReader>;
-      vtkSTLReader: VtkNewInstanceFactory<VtkReader>;
+      vtkPLYReader: VtkReaderFactory;
+      vtkSTLReader: VtkReaderFactory;
     };
     Misc: {
-      vtkOBJReader: VtkNewInstanceFactory<VtkReader>;
+      vtkOBJReader: VtkReaderFactory;
     };
     Legacy: {
-      vtkPolyDataReader: VtkNewInstanceFactory<VtkReader>;
+      vtkPolyDataReader: VtkReaderFactory;
     };
   };
 }
 
 declare const vtk: VtkGlobal;
-declare let __pvjsSceneData: SceneData | undefined;
-declare let __pvjsContainer: HTMLElement | undefined;
+declare const __pvjsSceneData: SceneData | undefined;
+declare const __pvjsContainer: HTMLElement | undefined;
 
 // --- Scene data interfaces (JSON schema) ---
 
@@ -307,40 +321,29 @@ interface FilterConfig {
 
 interface SourceConfig {
   type: string;
-  // Sphere
   center?: [number, number, number];
   radius?: number;
   thetaResolution?: number;
   phiResolution?: number;
-  // Cone / Cylinder
   height?: number;
   resolution?: number;
-  // Cube
   xLength?: number;
   yLength?: number;
   zLength?: number;
-  // Disk
   innerRadius?: number;
   outerRadius?: number;
-  // Arrow
   tipLength?: number;
   tipRadius?: number;
   shaftRadius?: number;
-  // Line
   point1?: [number, number, number];
   point2?: [number, number, number];
-  // Plane
   origin?: [number, number, number];
   normal?: [number, number, number];
-  // Mesh
   points?: number[];
   polys?: number[];
-  // Reader
   data?: string;
-  // Point data
   pointData?: PointDataArray[];
   tCoords?: number[];
-  // Filters
   filters?: FilterConfig[];
 }
 
@@ -410,3 +413,9 @@ interface Window {
   openGLRenderWindow: VtkOpenGLRenderWindow;
   interactor: VtkInteractor;
 }
+
+// Reader factory lookup map
+type ReaderFactoryMap = Record<
+  string,
+  { factory: VtkReaderFactory; parseMethod: "parseAsArrayBuffer" | "parseAsText" }
+>;
