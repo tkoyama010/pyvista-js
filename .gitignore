@@ -68,4 +68,4 @@ assets/*.gif
 
 # Node.js (TypeScript build)
 node_modules/
-src/pyvista_js/templates/pyvista-renderer.js
+src/pyvista_js/templates/renderer.js

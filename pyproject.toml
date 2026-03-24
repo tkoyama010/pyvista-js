@@ -119,9 +119,9 @@ test = [
 
 [tool.hatch]
 build.targets.wheel.packages = [ "src/pyvista_js" ]
-build.artifacts = [ "src/pyvista_js/templates/pyvista-renderer.js" ]
+build.artifacts = [ "src/pyvista_js/templates/renderer.js" ]
 build.hooks.build-scripts.scripts = [
-  { commands = [ "npm ci", "npm run build" ], artifacts = [ "src/pyvista_js/templates/pyvista-renderer.js" ] }
+  { commands = [ "npm ci", "npm run build" ], artifacts = [ "src/pyvista_js/templates/renderer.js" ] }
 ]
 
 [tool.ruff]

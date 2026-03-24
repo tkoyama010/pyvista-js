@@ -166,7 +166,7 @@ The project uses pre-commit hooks to ensure code quality.
 
 ## TypeScript Development
 
-The JavaScript renderer (`src/pyvista_js/templates/pyvista-renderer.js`) is generated from TypeScript source at `ts/renderer.ts`. Node.js is only required when editing TypeScript files.
+The JavaScript renderer (`src/pyvista_js/templates/renderer.js`) is generated from TypeScript source at `ts/renderer.ts`. Node.js is only required when editing TypeScript files.
 
 ### Setup
 
@@ -187,7 +187,7 @@ npm run watch
 npm run typecheck
 ```
 
-The built `pyvista-renderer.js` is not committed to git. It is generated automatically during `python -m build` via `hatch-build-scripts`. For local development, run `npm run build` after editing TypeScript files.
+The built `renderer.js` is not committed to git. It is generated automatically during `python -m build` via `hatch-build-scripts`. For local development, run `npm run build` after editing TypeScript files.
 
 ## Testing
 
