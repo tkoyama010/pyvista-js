@@ -7,45 +7,47 @@
  */
 
 /** Generic factory that creates vtk.js instances via `newInstance()`. */
-interface VtkNewInstanceFactory<T> {
+type VtkNewInstanceFactory<T> = {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance(options?: Record<string, unknown>): T;
-}
+};
 
 /** A vtk.js data array holding typed numeric values. */
-interface VtkDataArray {
+type VtkDataArray = {
   getData(): Float32Array;
-}
+};
 
 /** Factory for creating {@link VtkDataArray} instances. */
-interface VtkDataArrayFactory {
+type VtkDataArrayFactory = {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance(options: {
     numberOfComponents: number;
     values: Float32Array;
     name: string;
   }): VtkDataArray;
-}
+};
 
 /** Manages per-point data arrays (scalars, vectors, texture coordinates). */
-interface VtkPointData {
+type VtkPointData = {
   addArray(array: VtkDataArray): void;
-  setTCoords(array: VtkDataArray): void;
+  setTcoords(array: VtkDataArray): void;
   setActiveScalars(name: string): void;
-  getArrayByName(name: string): VtkDataArray | null;
-}
+  getArrayByName(name: string): VtkDataArray | undefined;
+};
 
 /** A set of 3D points. */
-interface VtkPoints {
+type VtkPoints = {
   setData(data: Float32Array, numberOfComponents: number): void;
-}
+};
 
 /** A vtk.js cell array (polygons, lines, etc.). */
-interface VtkCellArray {
+type VtkCellArray = {
   setData(data: Uint32Array): void;
   getData(): Uint32Array;
-}
+};
 
 /** Polygonal mesh data structure — the core vtk.js data object. */
-interface VtkPolyData {
+type VtkPolyData = {
   getPoints(): VtkPoints & {
     getData(): Float32Array;
     setData(data: Float32Array, n: number): void;
@@ -54,21 +56,21 @@ interface VtkPolyData {
   getPolys(): VtkCellArray;
   getLines(): VtkCellArray;
   getPointData(): VtkPointData;
-}
+};
 
 /** An implicit plane defined by origin and normal. */
-interface VtkPlane {
+type VtkPlane = {
   setOrigin(x: number, y: number, z: number): void;
   setNormal(x: number, y: number, z: number): void;
-}
+};
 
 /** Opaque handle representing a vtk.js output port. */
-interface VtkOutputPort {
+type VtkOutputPort = {
   readonly __brand: "VtkOutputPort";
-}
+};
 
 /** A vtk.js algorithm (filter or source) with input/output pipeline. */
-interface VtkAlgorithm {
+type VtkAlgorithm = {
   getOutputPort(): VtkOutputPort;
   getOutputData(): VtkPolyData;
   update(): void;
@@ -78,10 +80,10 @@ interface VtkAlgorithm {
   setComputeCellNormals?(v: boolean): void;
   setNormal?(x: number, y: number, z: number): void;
   setClippingPlanes?(planes: VtkPlane[]): void;
-}
+};
 
 /** Controls surface appearance (color, opacity, shading, edges, PBR). */
-interface VtkProperty {
+type VtkProperty = {
   setColor(r: number, g: number, b: number): void;
   setOpacity(opacity: number): void;
   setRepresentation(mode: number): void;
@@ -98,40 +100,41 @@ interface VtkProperty {
   setSpecularPower(value: number): void;
   setDiffuse(value: number): void;
   setPointSize(size: number): void;
-}
+};
 
 /** A renderable entity in the scene that maps data through a mapper. */
-interface VtkActor {
+type VtkActor = {
   setMapper(mapper: VtkMapper): void;
   getProperty(): VtkProperty;
   addTexture(texture: VtkTexture): void;
-}
+};
 
 /** Maps data to graphics primitives for rendering. */
-interface VtkMapper {
+type VtkMapper = {
   setInputConnection(port: VtkOutputPort): void;
   setInputData(data: VtkPolyData): void;
   setRadius?(radius: number): void;
-}
+};
 
 /** An image-based texture applied to actor surfaces. */
-interface VtkTexture {
+type VtkTexture = {
   setInterpolate(value: boolean): void;
   setImage(img: HTMLImageElement): void;
-}
+};
 
 /** A virtual camera controlling the viewpoint. */
-interface VtkCamera {
+type VtkCamera = {
   setPosition(x: number, y: number, z: number): void;
   setFocalPoint(x: number, y: number, z: number): void;
   setViewUp(x: number, y: number, z: number): void;
   setViewAngle(angle: number): void;
   setClippingRange(near: number, far: number): void;
   setParallelProjection(value: boolean): void;
-}
+};
 
 /** A scene light with position, color, and cone parameters. */
-interface VtkLight {
+type VtkLight = {
+  [key: string]: ((...arguments_: number[]) => void) | undefined;
   setPosition(x: number, y: number, z: number): void;
   setFocalPoint(x: number, y: number, z: number): void;
   setColor(r: number, g: number, b: number): void;
@@ -143,11 +146,10 @@ interface VtkLight {
   setLightTypeToSceneLight(): void;
   setLightTypeToCameraLight(): void;
   setLightTypeToHeadLight(): void;
-  [key: string]: ((...arguments_: number[]) => void) | undefined;
-}
+};
 
 /** The vtk.js renderer that holds actors, lights, and a camera. */
-interface VtkRenderer {
+type VtkRenderer = {
   setBackground(r: number, g: number, b: number): void;
   addActor(actor: VtkActor): void;
   addLight(light: VtkLight): void;
@@ -156,73 +158,75 @@ interface VtkRenderer {
   resetCamera(): void;
   resetCameraClippingRange(): void;
   getActiveCamera(): VtkCamera;
-}
+};
 
 /** The abstract render window managing renderers and views. */
-interface VtkRenderWindow {
+type VtkRenderWindow = {
   addRenderer(renderer: VtkRenderer): void;
-  addView(view: VtkOpenGLRenderWindow): void;
+  addView(view: VtkOpenGlRenderWindow): void;
   render(): void;
-}
+};
 
 /** The WebGL-backed render window that owns the canvas. */
-interface VtkOpenGLRenderWindow {
+type VtkOpenGlRenderWindow = {
   setContainer(container: HTMLElement): void;
   setSize(width: number, height: number): void;
-}
+};
 
 /** Handles user interaction events (mouse, keyboard, touch). */
-interface VtkInteractor {
+type VtkInteractor = {
   setInteractorStyle(style: VtkInteractorStyle): void;
-  setView(view: VtkOpenGLRenderWindow): void;
+  setView(view: VtkOpenGlRenderWindow): void;
   initialize(): void;
   bindEvents(container: HTMLElement): void;
-}
+};
 
 /** A trackball camera interaction style. */
-interface VtkInteractorStyle {
+type VtkInteractorStyle = {
   readonly __brand: "VtkInteractorStyle";
-}
+};
 
 /** A 3D orientation marker widget (axes glyph in corner). */
-interface VtkOrientationMarkerWidget {
+type VtkOrientationMarkerWidget = {
   setEnabled(value: boolean): void;
   setViewportCorner(corner: number): void;
   setViewportSize(size: number): void;
   setMinPixelSize(size: number): void;
   setMaxPixelSize(size: number): void;
-}
+};
 
 /** A 3D axes actor used by the orientation marker widget. */
-interface VtkAxesActor {
+type VtkAxesActor = {
   readonly __brand: "VtkAxesActor";
-}
+};
 
 /** Factory for {@link VtkOrientationMarkerWidget} with corner constants. */
-interface VtkOrientationMarkerWidgetFactory {
+type VtkOrientationMarkerWidgetFactory = {
+  Corners: { BOTTOM_LEFT: number };
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance(options: {
     actor: VtkAxesActor;
     interactor: VtkInteractor;
   }): VtkOrientationMarkerWidget;
-  Corners: { BOTTOM_LEFT: number };
-}
+};
 
 /** A vtk.js file reader that parses binary or text data into PolyData. */
-interface VtkReader {
+type VtkReader = {
   getOutputPort(): VtkOutputPort;
   getOutputData(): VtkPolyData;
   update(): void;
   parseAsArrayBuffer(buffer: ArrayBuffer): void;
   parseAsText(text: string): void;
-}
+};
 
 /** Factory for creating {@link VtkReader} instances. */
-interface VtkReaderFactory {
+type VtkReaderFactory = {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance(): VtkReader;
-}
+};
 
 /** The top-level `vtk` global namespace loaded from the CDN. */
-interface VtkGlobal {
+type VtkGlobal = {
   Rendering: {
     Core: {
       vtkRenderer: VtkNewInstanceFactory<VtkRenderer>;
@@ -236,7 +240,7 @@ interface VtkGlobal {
       vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
     };
     OpenGL: {
-      vtkRenderWindow: VtkNewInstanceFactory<VtkOpenGLRenderWindow>;
+      vtkRenderWindow: VtkNewInstanceFactory<VtkOpenGlRenderWindow>;
     };
   };
   Filters: {
@@ -292,14 +296,14 @@ interface VtkGlobal {
       vtkPolyDataReader: VtkReaderFactory;
     };
   };
-}
+};
 
 declare const vtk: VtkGlobal;
 declare const __pvjsSceneData: SceneData | undefined;
 declare const __pvjsContainer: HTMLElement | undefined;
 
 /** Configuration for a single light in the scene. */
-interface LightConfig {
+type LightConfig = {
   type: string;
   position: [number, number, number];
   focalPoint: [number, number, number];
@@ -309,23 +313,23 @@ interface LightConfig {
   coneAngle: number;
   coneFalloff: number;
   attenuationValues: [number, number, number];
-}
+};
 
 /** Configuration for surface normal computation. */
-interface NormalsConfig {
+type NormalsConfig = {
   computePointNormals: boolean;
   computeCellNormals: boolean;
-}
+};
 
 /** A named array of per-point data values. */
-interface PointDataArray {
+type PointDataArray = {
   numberOfComponents: number;
   values: number[];
   name: string;
-}
+};
 
 /** Configuration for a geometry filter (shrink, tube, clip, or contour). */
-interface FilterConfig {
+type FilterConfig = {
   type: string;
   shrinkFactor?: number;
   radius?: number;
@@ -336,10 +340,10 @@ interface FilterConfig {
   values?: number[];
   scalarName?: string;
   scalarData?: number[];
-}
+};
 
 /** Configuration for a geometry source (primitive, mesh, or file reader). */
-interface SourceConfig {
+type SourceConfig = {
   type: string;
   center?: [number, number, number];
   radius?: number;
@@ -365,42 +369,42 @@ interface SourceConfig {
   pointData?: PointDataArray[];
   tCoords?: number[];
   filters?: FilterConfig[];
-}
+};
 
 /** Edge rendering configuration. */
-interface EdgesConfig {
+type EdgesConfig = {
   color: [number, number, number];
-}
+};
 
 /** Physically-based rendering parameters. */
-interface PBRConfig {
+type PbrConfig = {
   metallic: number;
   roughness: number;
-}
+};
 
 /** Configuration for an image texture loaded from a URL. */
-interface TextureConfig {
+type TextureConfig = {
   url: string;
-}
+};
 
 /** Full configuration for a single actor in the scene. */
-interface ActorConfig {
+type ActorConfig = {
   source: SourceConfig;
   color: [number, number, number];
   opacity: number;
   style: string;
   shading?: string;
   edges?: EdgesConfig;
-  pbr?: PBRConfig;
+  pbr?: PbrConfig;
   normals?: NormalsConfig;
   actorType?: string;
   renderPointsAsSpheres?: boolean;
   pointSize?: number;
   texture?: TextureConfig;
-}
+};
 
 /** Camera position and projection settings. */
-interface CameraConfig {
+type CameraConfig = {
   position?: [number, number, number];
   focalPoint?: [number, number, number];
   viewUp?: [number, number, number];
@@ -408,10 +412,10 @@ interface CameraConfig {
   clippingRange?: [number, number];
   parallelProjection?: boolean;
   viewVector?: [number, number, number];
-}
+};
 
 /** Configuration for a 2D text overlay. */
-interface TextActorConfig {
+type TextActorConfig = {
   text: string;
   position: [number, number];
   color: [number, number, number];
@@ -419,27 +423,27 @@ interface TextActorConfig {
   fontSize: number;
   bold: boolean;
   italic: boolean;
-}
+};
 
 /** Top-level scene description passed from Python as JSON. */
-interface SceneData {
+type SceneData = {
   containerId: string;
   background: [number, number, number];
-  lightingMode: string | null;
+  lightingMode: string | undefined;
   lights: LightConfig[];
   actors: ActorConfig[];
   textActors?: TextActorConfig[];
   axes: boolean;
   camera?: CameraConfig;
-}
+};
 
 /** Extends the global Window with vtk.js renderer references. */
-interface Window {
+type Window = {
   renderer: VtkRenderer;
   renderWindow: VtkRenderWindow;
-  openGLRenderWindow: VtkOpenGLRenderWindow;
+  openGlRenderWindow: VtkOpenGlRenderWindow;
   interactor: VtkInteractor;
-}
+};
 
 /** Maps reader type names to their vtk.js factory and parse method. */
 type ReaderFactoryMap = Record<
