@@ -517,7 +517,7 @@ class PolyData:
             {
                 "type": "shrink",
                 "shrinkFactor": shrink_factor,
-            }
+            },
         )
 
         return PolyData(
@@ -668,7 +668,7 @@ class PolyData:
                 "normal": list(normal_vec),
                 "origin": list(origin),
                 "invert": invert,
-            }
+            },
         )
 
         return PolyData(
@@ -767,7 +767,7 @@ class PolyData:
                 "type": "tube",
                 "radius": radius,
                 "numberOfSides": n_sides,
-            }
+            },
         )
 
         return PolyData(
@@ -877,7 +877,7 @@ class PolyData:
                 "values": contour_values,
                 "scalarName": scalar_name_final,
                 "scalarData": scalar_data.flatten().tolist(),
-            }
+            },
         )
 
         # Return new PolyData with contour filter applied
@@ -1054,7 +1054,7 @@ class PolyData:
                         "name": name,
                         "numberOfComponents": n_components,
                         "values": array.flatten().tolist(),
-                    }
+                    },
                 )
             data["pointData"] = point_data_arrays
 
