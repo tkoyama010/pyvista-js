@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from pyvista_js import Plotter, Sphere
+from pyvista_js import Line, Plotter, Sphere
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -308,3 +308,82 @@ def test_shrink_filter_renders_in_browser(page: Page) -> None:
 
     # Verify no JS errors (catches missing filter implementations)
     assert len(js_errors) == 0, f"JavaScript errors during shrink rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_tube_filter_renders_in_browser(page: Page) -> None:
+    """Test that the tube filter renders correctly in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    line = Line()
+    tube = line.tube(radius=0.1)
+
+    plotter = Plotter()
+    plotter.add_mesh(tube, color="blue")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for tube mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during tube rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_clip_filter_renders_in_browser(page: Page) -> None:
+    """Test that the clip filter renders correctly in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x")
+
+    plotter = Plotter()
+    plotter.add_mesh(clipped, color="red")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for clipped mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during clip rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_contour_filter_renders_in_browser(page: Page) -> None:
+    """Test that the contour filter renders correctly in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    sphere = Sphere()
+    elevation = sphere.points[:, 2]
+    contours = sphere.contour(scalars=elevation, isosurfaces=5)
+
+    plotter = Plotter()
+    plotter.add_mesh(contours, color="green")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for contour mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during contour rendering: {js_errors}"
