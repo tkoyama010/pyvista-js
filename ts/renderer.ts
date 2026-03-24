@@ -7,6 +7,11 @@
  * the scene data is read from the DOM.
  */
 
+/** Access a typed array element, returning 0 for out-of-bounds. */
+function at(arr: Float32Array | Uint32Array, i: number): number {
+  return arr[i] ?? 0;
+}
+
 /** Wraps either a vtk.js algorithm (filter/source) or raw PolyData. */
 interface SourceResult {
   output: VtkAlgorithm | VtkPolyData;
@@ -250,8 +255,8 @@ function createCircleSource(cfg: SourceConfig): SourceResult {
   return createDiskSource({
     type: "disk",
     innerRadius: 0,
-    outerRadius: cfg.radius,
-    resolution: cfg.resolution,
+    outerRadius: cfg.radius ?? 1,
+    resolution: cfg.resolution ?? 50,
   });
 }
 
@@ -426,7 +431,7 @@ function setupActor(
     wireframe: 1,
     points: 0,
   };
-  const rep = styleMap[cfg.style] as number | undefined;
+  const rep = styleMap[cfg.style];
   if (rep !== undefined) {
     actor.getProperty().setRepresentation(rep);
   }
@@ -582,28 +587,28 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
   let offset = 0;
   let i = 0;
   while (i < polys.length) {
-    const nVerts = polys[i];
+    const nVerts = at(polys, i);
     i++;
     let cx = 0,
       cy = 0,
       cz = 0;
     const indices: number[] = [];
     for (let j = 0; j < nVerts; j++) {
-      const vi = polys[i + j];
+      const vi = at(polys, i + j);
       indices.push(vi);
-      cx += inPoints[vi * 3];
-      cy += inPoints[vi * 3 + 1];
-      cz += inPoints[vi * 3 + 2];
+      cx += at(inPoints, vi * 3);
+      cy += at(inPoints, vi * 3 + 1);
+      cz += at(inPoints, vi * 3 + 2);
     }
     cx /= nVerts;
     cy /= nVerts;
     cz /= nVerts;
     newPolys.push(nVerts);
     for (let k = 0; k < nVerts; k++) {
-      const pi = indices[k];
-      const px = inPoints[pi * 3];
-      const py = inPoints[pi * 3 + 1];
-      const pz = inPoints[pi * 3 + 2];
+      const pi = indices[k] ?? 0;
+      const px = at(inPoints, pi * 3);
+      const py = at(inPoints, pi * 3 + 1);
+      const pz = at(inPoints, pi * 3 + 2);
       newPoints.push(
         cx + (px - cx) * shrinkFactor,
         cy + (py - cy) * shrinkFactor,
@@ -681,18 +686,18 @@ function applyClipManual(
   let nextIdx = 0;
   let i = 0;
   while (i < polys.length) {
-    const nVerts = polys[i];
+    const nVerts = at(polys, i);
     i++;
     let cx = 0,
       cy = 0,
       cz = 0;
     const cellIndices: number[] = [];
     for (let j = 0; j < nVerts; j++) {
-      const vi = polys[i + j];
+      const vi = at(polys, i + j);
       cellIndices.push(vi);
-      cx += inPoints[vi * 3];
-      cy += inPoints[vi * 3 + 1];
-      cz += inPoints[vi * 3 + 2];
+      cx += at(inPoints, vi * 3);
+      cy += at(inPoints, vi * 3 + 1);
+      cz += at(inPoints, vi * 3 + 2);
     }
     cx /= nVerts;
     cy /= nVerts;
@@ -702,10 +707,10 @@ function applyClipManual(
     if (keep) {
       newPolys.push(nVerts);
       for (let k = 0; k < nVerts; k++) {
-        const pi = cellIndices[k];
+        const pi = cellIndices[k] ?? 0;
         if (!pointMap.has(pi)) {
           pointMap.set(pi, nextIdx++);
-          newPoints.push(inPoints[pi * 3], inPoints[pi * 3 + 1], inPoints[pi * 3 + 2]);
+          newPoints.push(at(inPoints, pi * 3), at(inPoints, pi * 3 + 1), at(inPoints, pi * 3 + 2));
         }
         newPolys.push(pointMap.get(pi) ?? 0);
       }
@@ -764,15 +769,15 @@ function applyContourManual(
 
   let i = 0;
   while (i < polys.length) {
-    const nVerts = polys[i];
+    const nVerts = at(polys, i);
     i++;
     if (nVerts === 3) {
-      const i0 = polys[i],
-        i1 = polys[i + 1],
-        i2 = polys[i + 2];
-      const s0 = scalarValues[i0],
-        s1 = scalarValues[i1],
-        s2 = scalarValues[i2];
+      const i0 = at(polys, i),
+        i1 = at(polys, i + 1),
+        i2 = at(polys, i + 2);
+      const s0 = at(scalarValues, i0),
+        s1 = at(scalarValues, i1),
+        s2 = at(scalarValues, i2);
       const tri: [number, number, number, number][] = [
         [i0, i1, s0, s1],
         [i1, i2, s1, s2],
@@ -785,15 +790,15 @@ function applyContourManual(
           if ((sa <= val && val < sb) || (sb <= val && val < sa)) {
             const t = (val - sa) / (sb - sa);
             edgePoints.push(
-              inPoints[ai * 3] + t * (inPoints[bi * 3] - inPoints[ai * 3]),
-              inPoints[ai * 3 + 1] + t * (inPoints[bi * 3 + 1] - inPoints[ai * 3 + 1]),
-              inPoints[ai * 3 + 2] + t * (inPoints[bi * 3 + 2] - inPoints[ai * 3 + 2]),
+              at(inPoints, ai * 3) + t * (at(inPoints, bi * 3) - at(inPoints, ai * 3)),
+              at(inPoints, ai * 3 + 1) + t * (at(inPoints, bi * 3 + 1) - at(inPoints, ai * 3 + 1)),
+              at(inPoints, ai * 3 + 2) + t * (at(inPoints, bi * 3 + 2) - at(inPoints, ai * 3 + 2)),
             );
           }
         }
         if (edgePoints.length === 6) {
-          outPoints.push(edgePoints[0], edgePoints[1], edgePoints[2]);
-          outPoints.push(edgePoints[3], edgePoints[4], edgePoints[5]);
+          outPoints.push(edgePoints[0] ?? 0, edgePoints[1] ?? 0, edgePoints[2] ?? 0);
+          outPoints.push(edgePoints[3] ?? 0, edgePoints[4] ?? 0, edgePoints[5] ?? 0);
           outPolys.push(2, pointIdx, pointIdx + 1);
           pointIdx += 2;
         }

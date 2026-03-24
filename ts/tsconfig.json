@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
     "target": "ES2017",
     "lib": ["ES2017", "DOM"],
     "noEmit": true,
