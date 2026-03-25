@@ -1,0 +1,43 @@
+name: Deploy Notebook.link branch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'jupyterlite/content/*.py'
+      - '.nblink/**'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: '3.11'
+
+      - name: Install jupytext
+        run: pip install jupytext
+
+      - name: Convert py to ipynb
+        run: jupytext --to notebook jupyterlite/content/intro.py --output intro.ipynb
+
+      - name: Commit and push to notebook-link branch
+        run: |
+          git config user.email "53544751+pyvista-bot@users.noreply.github.com"
+          git config user.name "pyvista-bot"
+          git add intro.ipynb
+          git commit -m "chore: auto-generate intro.ipynb for Notebook.link [skip ci]"
+          git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          git push origin HEAD:notebook-link --force
