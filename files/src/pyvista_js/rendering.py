@@ -96,7 +96,7 @@ from .examples import CubeMap
 
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
-_RENDERING_TEMPLATE = (_TEMPLATES_DIR / "renderer.html").read_text()
+_RENDERING_TEMPLATE = (_TEMPLATES_DIR / "standalone.html").read_text()
 _RENDERER_JS = (_TEMPLATES_DIR / "renderer.js").read_text()
 
 _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
@@ -774,7 +774,7 @@ class _BaseHTMLRenderer:
             RENDERER_JS=_RENDERER_JS,
         )
 
-    def _generate_standalone_html(self) -> str:
+    def generate_standalone_html(self) -> str:
         """Generate a complete standalone HTML page with vtk.js.
 
         Wraps the HTML fragment from _generate_html() in a full HTML document.
@@ -1080,7 +1080,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
 
     def render(self) -> None:
         """Write the visualization to a temp HTML file and open it in the browser."""
-        html = self._generate_standalone_html()
+        html = self.generate_standalone_html()
         with tempfile.NamedTemporaryFile(
             suffix=".html",
             delete=False,
@@ -1094,7 +1094,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
         webbrowser.open(url)
         logger.info("Opened visualization in browser: %s", url)
 
-    def _generate_standalone_html(self) -> str:
+    def generate_standalone_html(self) -> str:
         """Wrap the HTML fragment in a complete standalone HTML page."""
         fragment = self._generate_html()
         container_id = self.container_id
@@ -1162,7 +1162,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
 
         try:
             # Generate HTML
-            html = self._generate_standalone_html()
+            html = self.generate_standalone_html()
 
             # Create temp HTML file
             with tempfile.NamedTemporaryFile(
@@ -1429,6 +1429,23 @@ class MockRenderer:
         Logs the number of actors that would be rendered.
         """
         logger.info("Rendering %d actors", len(self.actors))
+
+    def generate_standalone_html(self) -> str:
+        """Return a minimal HTML string for mock rendering.
+
+        Returns
+        -------
+        str
+            A placeholder HTML document.
+
+        """
+        return (
+            "<!DOCTYPE html>\n"
+            "<html>\n"
+            "<head><meta charset='utf-8'></head>\n"
+            "<body><!-- mock renderer --></body>\n"
+            "</html>\n"
+        )
 
     def add_light(self, light: Light) -> None:
         """Mock add_light.
