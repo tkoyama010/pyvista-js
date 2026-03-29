@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"POT-Creation-Date: 2026-03-29 00:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,75 +21,95 @@ msgid "pyvista\\_js.Light"
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:1
-msgid "A light source for 3D rendering."
-msgstr ""
-
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:3
-msgid "Wraps ``vtk.Rendering.Core.vtkLight`` and supports three placement modes:"
-msgstr ""
-
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:5
-msgid "**SceneLight** - fixed in world space (default)."
-msgstr ""
-
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:6
-msgid "**CameraLight** - moves with the camera."
-msgstr ""
-
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:7
-msgid "**Headlight** - always at the camera position, shining toward the focal point."
+msgid "Light class."
 msgstr ""
 
 #: ../api/_autosummary/pyvista_js.Light.rst:0
 msgid "Parameters"
 msgstr ""
 
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:9
-msgid "(x, y, z) position in world space. Default is ``(0, 0, 1)``."
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:3
+msgid "The position of the light. The interpretation of the position depends on the type of the light and whether the light has a transformation matrix."
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:7
+msgid "The focal point of the light. The interpretation of the focal point depends on the type of the light and whether the light has a transformation matrix."
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:11
-msgid "(x, y, z) point the light shines toward. Default is ``(0, 0, 0)``."
+msgid "The color of the light. The ambient, diffuse and specular colors will all be set to this color on creation."
 msgstr ""
 
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:13
-msgid "RGB color with values between 0 and 1, or a color name. Default is white."
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:14
+msgid "The type of the light. One of ``'Headlight'``, ``'CameraLight'`` or ``'SceneLight'``.      - A headlight is attached to the camera, looking at its       focal point along the axis of the camera.      - A camera light also moves with the camera, but it can       occupy a general position with respect to it.      - A scene light is stationary with respect to the scene,       as it does not follow the camera. This is the default."
 msgstr ""
 
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:15
-msgid "Brightness of the light. Default is ``1.0``."
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:14
+msgid "The type of the light. One of ``'Headlight'``, ``'CameraLight'`` or ``'SceneLight'``."
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:17
-msgid "One of ``'SceneLight'``, ``'CameraLight'``, or ``'Headlight'``. Default is ``'SceneLight'``."
+msgid "A headlight is attached to the camera, looking at its focal point along the axis of the camera."
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:20
-msgid "If ``True``, the light acts as a spotlight using ``cone_angle`` and ``cone_falloff``. Default is ``False``."
+msgid "A camera light also moves with the camera, but it can occupy a general position with respect to it."
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:23
-msgid "Half-angle (degrees) of the spotlight cone. Values >= 90 disable spot-lighting. Default is ``30.0``."
+msgid "A scene light is stationary with respect to the scene, as it does not follow the camera. This is the default."
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:26
-msgid "Exponent controlling how sharply the light falls off at the cone edge. Default is ``5.0``."
+msgid "The brightness of the light (between 0 and 1)."
 msgstr ""
 
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:29
-msgid "``(constant, linear, quadratic)`` attenuation coefficients. Default is ``(1.0, 0.0, 0.0)``."
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:28
+msgid "Set if the light is positional.  The default is a directional light, i.e. an infinitely distant point source. A positional light with a cone angle of at least 90 degrees acts like a spherical point source. A positional light with a cone angle that is less than 90 degrees is known as a spotlight."
 msgstr ""
 
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:34
-msgid "Examples"
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:28
+msgid "Set if the light is positional."
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:30
+msgid "The default is a directional light, i.e. an infinitely distant point source. A positional light with a cone angle of at least 90 degrees acts like a spherical point source. A positional light with a cone angle that is less than 90 degrees is known as a spotlight."
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:36
+msgid "Cone angle of a positional light in degrees."
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:38
-msgid "Add a white scene light:"
+msgid "The exponent of the cosine used for spotlights."
 msgstr ""
 
-#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:47
-msgid "Spotlight example:"
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:40
+msgid "Quadratic attenuation constants.  The values are a 3-length sequence which specifies the constant, linear and quadratic constants in this order. These parameters only have an effect for positional lights."
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:40
+msgid "Quadratic attenuation constants."
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:42
+msgid "The values are a 3-length sequence which specifies the constant, linear and quadratic constants in this order. These parameters only have an effect for positional lights."
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:48
+msgid "Examples"
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:52
+msgid "Headlight. For headlights the position and focal point properties are meaningless. No matter where you move the camera, the light always emanates from the view point:"
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:68
+msgid "Camera light. Camera lights move together with the camera, but can occupy any fixed relative position with respect to the camera:"
+msgstr ""
+
+#: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light:78
+msgid "Scene light. Scene lights are attached to the scene, their position and focal point are interpreted as global coordinates:"
 msgstr ""
 
 #: ../../src/pyvista_js/light.py:docstring of pyvista_js.light.Light.__init__:1

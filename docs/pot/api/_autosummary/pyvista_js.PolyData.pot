@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-21 08:59+0000\n"
+"POT-Creation-Date: 2026-03-29 00:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,7 @@ msgstr ""
 msgid "Cell connectivity information."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.__init__:1
 msgid "Initialize a PolyData mesh."
 msgstr ""
@@ -45,92 +45,83 @@ msgstr ""
 msgid "Methods"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`__init__ <pyvista_js.PolyData.__init__>`\\ \\(points\\[\\, faces\\, t\\_coords\\, scalars\\, ...\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`clip <pyvista_js.PolyData.clip>`\\ \\(\\[normal\\, origin\\, invert\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clip:1
 msgid "Clip the mesh with a plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`contour <pyvista_js.PolyData.contour>`\\ \\(\\[isosurfaces\\, scalars\\, scalar\\_name\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.contour:1
 msgid "Generate contour lines at constant scalar values."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
-msgid ":py:obj:`generate_vtk_js_source <pyvista_js.PolyData.generate_vtk_js_source>`\\ \\(idx\\)"
-msgstr ""
-
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.generate_vtk_js_source:1
-msgid "Generate vtk.js source code for this mesh."
-msgstr ""
-
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
-msgid ":py:obj:`get_mapper_setup <pyvista_js.PolyData.get_mapper_setup>`\\ \\(idx\\)"
-msgstr ""
-
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.get_mapper_setup:1
-msgid "Get the mapper setup code for this mesh."
-msgstr ""
-
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`plot <pyvista_js.PolyData.plot>`\\ \\(\\[color\\, opacity\\, pbr\\, metallic\\, roughness\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.plot:1
 msgid "Plot this mesh."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`save <pyvista_js.PolyData.save>`\\ \\(filename\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.save:1
 msgid "Write this mesh to disk using meshio."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`shrink <pyvista_js.PolyData.shrink>`\\ \\(\\[shrink\\_factor\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.shrink:1
 msgid "Shrink the cells of a mesh towards their centroid."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`texture_map_to_plane <pyvista_js.PolyData.texture_map_to_plane>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_plane:1
 msgid "Generate texture coordinates by projecting points onto the XY plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+msgid ":py:obj:`to_scene_data <pyvista_js.PolyData.to_scene_data>`\\ \\(\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.to_scene_data:1
+msgid "Return a JSON-serializable dict describing this mesh source."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 msgid ":py:obj:`tube <pyvista_js.PolyData.tube>`\\ \\(\\*\\[\\, radius\\, n\\_sides\\, capping\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.tube:1
 msgid "Generate a tube around a line polydata."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:32
+#: ../api/_autosummary/pyvista_js.PolyData.rst:31
 msgid "Attributes"
 msgstr ""
 
@@ -141,15 +132,6 @@ msgstr ""
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.PolyData.bounding_sphere:1
 #: ../:1:<autosummary>:1
 msgid "Compute the radius and center of a bounding sphere."
-msgstr ""
-
-#: ../:1:<autosummary>:1
-msgid ":py:obj:`is_primitive <pyvista_js.PolyData.is_primitive>`"
-msgstr ""
-
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.PolyData.is_primitive:1
-#: ../:1:<autosummary>:1
-msgid "Return whether this mesh is backed by a vtk.js source primitive."
 msgstr ""
 
 #: ../:1:<autosummary>:1
@@ -283,23 +265,6 @@ msgstr ""
 msgid "Render the contours:"
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.generate_vtk_js_source:3
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.get_mapper_setup:3
-msgid "Index of this mesh in the rendering pipeline."
-msgstr ""
-
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.generate_vtk_js_source:6
-msgid "JavaScript code to create the vtk.js source for this mesh."
-msgstr ""
-
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.get_mapper_setup:6
-msgid "JavaScript code to set up the mapper for this mesh."
-msgstr ""
-
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.PolyData.is_primitive:3
-msgid "``True`` if the mesh was created from a primitive factory (e.g. :func:`Sphere`, :func:`Cube`), ``False`` otherwise."
-msgstr ""
-
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.plot:3
 msgid "This is a convenience method that creates a :class:`~pyvista_js.Plotter`, adds this mesh, and calls :func:`~pyvista_js.Plotter.show`."
 msgstr ""
@@ -378,6 +343,10 @@ msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_plane:6
 msgid "A new mesh with texture coordinates (``t_coords``) set."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.to_scene_data:3
+msgid "Source configuration with ``\"type\"`` key and type-specific parameters."
 msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.tube:3
