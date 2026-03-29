@@ -7,6 +7,22 @@
  * the scene data is read from the DOM.
  */
 
+// Import Python algorithm interfaces
+import {
+  initializePythonAlgorithms,
+  isPythonAlgorithmsReady,
+  createSphereSourcePython,
+  createConeSourcePython,
+  createCubeSourcePython,
+  createCylinderSourcePython,
+  applyShrinkFilterPython,
+  applyClipFilterPython,
+  applyContourFilterPython
+} from "./python-algorithms.js";
+
+// Configuration flag to enable Python algorithms
+const USE_PYTHON_ALGORITHMS = true; // Set to false to use original TypeScript implementation
+
 /**
  * Access a typed array element, returning 0 for out-of-bounds.
  * @param array
@@ -255,7 +271,17 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the texture-mapped sphere filter.
  */
-function createSphereSource(cfg: SourceConfig): SourceResult {
+async function createSphereSource(cfg: SourceConfig): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await createSphereSourcePython(cfg);
+    } catch (error) {
+      console.warn('Python sphere algorithm failed, falling back to vtk.js:', error);
+    }
+  }
+  
+  // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
     center: cfg.center,
     radius: cfg.radius,
@@ -272,7 +298,17 @@ function createSphereSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the cone source filter.
  */
-function createConeSource(cfg: SourceConfig): SourceResult {
+async function createConeSource(cfg: SourceConfig): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await createConeSourcePython(cfg);
+    } catch (error) {
+      console.warn('Python cone algorithm failed, falling back to vtk.js:', error);
+    }
+  }
+  
+  // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkConeSource.newInstance({
     height: cfg.height,
     radius: cfg.radius,
@@ -286,7 +322,17 @@ function createConeSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the cube source.
  */
-function createCubeSource(cfg: SourceConfig): SourceResult {
+async function createCubeSource(cfg: SourceConfig): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await createCubeSourcePython(cfg);
+    } catch (error) {
+      console.warn('Python cube algorithm failed, falling back to vtk.js:', error);
+    }
+  }
+  
+  // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkCubeSource.newInstance({
     xLength: cfg.xLength,
     yLength: cfg.yLength,
@@ -300,7 +346,17 @@ function createCubeSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the cylinder source filter.
  */
-function createCylinderSource(cfg: SourceConfig): SourceResult {
+async function createCylinderSource(cfg: SourceConfig): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await createCylinderSourcePython(cfg);
+    } catch (error) {
+      console.warn('Python cylinder algorithm failed, falling back to vtk.js:', error);
+    }
+  }
+  
+  // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({
     height: cfg.height,
     radius: cfg.radius,
@@ -722,23 +778,27 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
 }
 
 /**
- * Apply a chain of filters (shrink, tube, clip, contour) to a source.
+ * Apply a sequence of filters to a source.
  * @param sourceResult
  * @param filters
- * @returns The final {@link SourceResult} after all filters have been applied in sequence.
+ * @returns A {@link SourceResult} with all filters applied.
  */
-function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): SourceResult {
+async function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): Promise<SourceResult> {
   let current = sourceResult;
   for (const f of filters) {
     if (f.type === "shrink" && f.shrinkFactor !== undefined) {
-      current = applyShrinkFilter(current, f.shrinkFactor);
+      current = await applyShrinkFilter(current, f.shrinkFactor);
     } else if (f.type === "tube" && f.radius !== undefined && f.numberOfSides !== undefined) {
       current = applyTubeFilter(current, f.radius, f.numberOfSides);
     } else if (f.type === "clip" && f.normal && f.origin && f.invert !== undefined) {
-      current = applyClipFilter(current, f.normal, f.origin, f.invert);
+      current = await applyClipFilter(current, f.normal, f.origin, f.invert);
     } else if (f.type === "contour" && f.values && f.scalarName && f.scalarData) {
-      current = applyContourFilter(current, f.values, f.scalarName, f.scalarData);
+      current = await applyContourFilter(current, f.values, f.scalarName, f.scalarData);
     }
+  }
+
+  return current;
+}
   }
 
   return current;
@@ -753,7 +813,17 @@ function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): Sour
  * @param shrinkFactor
  * @returns A {@link SourceResult} with each cell shrunk toward its centroid.
  */
-function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): SourceResult {
+async function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await applyShrinkFilterPython(sourceResult, shrinkFactor);
+    } catch (error) {
+      console.warn('Python shrink filter failed, falling back to manual implementation:', error);
+    }
+  }
+  
+  // Fallback to original manual implementation
   const inputPd = getPolyData(sourceResult);
   const inPoints = inputPd.getPoints().getData();
   const polys = inputPd.getPolys().getData();
@@ -835,12 +905,22 @@ function applyTubeFilter(
  * @param invert
  * @returns A {@link SourceResult} with the clipped geometry.
  */
-function applyClipFilter(
+async function applyClipFilter(
   sourceResult: SourceResult,
   normal: [number, number, number],
   origin: [number, number, number],
   invert: boolean,
-): SourceResult {
+): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await applyClipFilterPython(sourceResult, normal, origin, invert);
+    } catch (error) {
+      console.warn('Python clip filter failed, falling back to vtk.js/manual implementation:', error);
+    }
+  }
+  
+  // Fallback to original vtk.js implementation
   const plane = vtk.Common.DataModel.vtkPlane.newInstance();
   plane.setOrigin(origin[0], origin[1], origin[2]);
   plane.setNormal(normal[0], normal[1], normal[2]);
@@ -940,12 +1020,22 @@ function applyClipManual(
  * @param scalarData
  * @returns A {@link SourceResult} containing the extracted isocontour lines.
  */
-function applyContourFilter(
+async function applyContourFilter(
   sourceResult: SourceResult,
   values: number[],
   scalarName: string,
   scalarData: number[],
-): SourceResult {
+): Promise<SourceResult> {
+  // Use Python algorithm if available
+  if (USE_PYTHON_ALGORITHMS && isPythonAlgorithmsReady()) {
+    try {
+      return await applyContourFilterPython(sourceResult, values, scalarName, scalarData);
+    } catch (error) {
+      console.warn('Python contour filter failed, falling back to manual implementation:', error);
+    }
+  }
+  
+  // Fallback to original manual implementation
   const inputPd = getPolyData(sourceResult);
 
   const scalars = vtk.Common.Core.vtkDataArray.newInstance({
