@@ -2,15 +2,17 @@
 """Benchmark Python algorithms vs TypeScript implementations."""
 
 import time
+
 import numpy as np
+
 from pyvista_js.algorithms import (
-    create_sphere,
+    clip_mesh,
+    compute_contour,
     create_cone,
     create_cube,
     create_cylinder,
+    create_sphere,
     shrink_mesh,
-    clip_mesh,
-    compute_contour,
 )
 
 
@@ -30,7 +32,7 @@ def benchmark_sphere():
         elapsed = end_time - start_time
         times.append(elapsed)
         print(
-            f"  Resolution {res}x{res}: {elapsed:.4f}s ({len(points)} points, {len(faces)} face elements)"
+            f"  Resolution {res}x{res}: {elapsed:.4f}s ({len(points)} points, {len(faces)} face elements)",
         )
 
     return times
@@ -51,7 +53,7 @@ def benchmark_cone():
         elapsed = end_time - start_time
         times.append(elapsed)
         print(
-            f"  Resolution {res}: {elapsed:.4f}s ({len(points)} points, {len(faces)} face elements)"
+            f"  Resolution {res}: {elapsed:.4f}s ({len(points)} points, {len(faces)} face elements)",
         )
 
     return times
@@ -91,7 +93,7 @@ def benchmark_cylinder():
         elapsed = end_time - start_time
         times.append(elapsed)
         print(
-            f"  Resolution {res}: {elapsed:.4f}s ({len(points)} points, {len(faces)} face elements)"
+            f"  Resolution {res}: {elapsed:.4f}s ({len(points)} points, {len(faces)} face elements)",
         )
 
     return times
@@ -137,7 +139,10 @@ def benchmark_clip():
 
         start_time = time.time()
         result_points, result_faces = clip_mesh(
-            points, faces, plane_origin=[0, 0, 0], plane_normal=[0, 0, 1]
+            points,
+            faces,
+            plane_origin=[0, 0, 0],
+            plane_normal=[0, 0, 1],
         )
         end_time = time.time()
 

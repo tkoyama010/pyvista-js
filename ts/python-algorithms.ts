@@ -21,12 +21,12 @@ export async function initializePyodide(): Promise<void> {
     if (typeof (window as any).loadPyodide === 'undefined') {
       throw new Error('Pyodide is not available. Please ensure Pyodide is loaded.');
     }
-    
+
     (window as any).pyodide = await (window as any).loadPyodide();
-    
+
     // Load NumPy
     await (window as any).pyodide.loadPackage('numpy');
-    
+
     // Load our algorithms module
     const algorithmsCode = `
 import numpy as np
@@ -36,13 +36,13 @@ def create_sphere(radius=1.0, theta_resolution=32, phi_resolution=32):
     theta = np.linspace(0, 2 * np.pi, theta_resolution)
     phi = np.linspace(0, np.pi, phi_resolution)
     theta_grid, phi_grid = np.meshgrid(theta, phi)
-    
+
     x = radius * np.sin(phi_grid) * np.cos(theta_grid)
     y = radius * np.sin(phi_grid) * np.sin(theta_grid)
     z = radius * np.cos(phi_grid)
-    
+
     points = np.column_stack([x.ravel(), y.ravel(), z.ravel()])
-    
+
     # Create face connectivity
     faces = []
     for i in range(phi_resolution - 1):
@@ -51,32 +51,32 @@ def create_sphere(radius=1.0, theta_resolution=32, phi_resolution=32):
             p2 = i * theta_resolution + (j + 1)
             p3 = (i + 1) * theta_resolution + (j + 1)
             p4 = (i + 1) * theta_resolution + j
-            
+
             faces.extend([[3, p1, p2, p4], [3, p2, p3, p4]])
-    
+
     return points.tolist(), [item for sublist in faces for item in sublist]
 
 def create_cone(radius=1.0, height=2.0, resolution=32):
     """Create a cone mesh with optimized NumPy operations."""
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
-    
+
     # Base circle points
     base_points = np.column_stack([
         radius * np.cos(theta),
         radius * np.sin(theta),
         np.zeros(resolution)
     ])
-    
+
     # Apex point
     apex = np.array([[0.0, 0.0, height]])
     points = np.vstack([base_points, apex])
-    
+
     # Create triangular faces
     faces = []
     for i in range(resolution):
         next_i = (i + 1) % resolution
         faces.append([3, i, next_i, resolution])  # Side triangles
-    
+
     return points.tolist(), [item for sublist in faces for item in sublist]
 
 def create_cube(size=2.0):
@@ -86,7 +86,7 @@ def create_cube(size=2.0):
         [-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s],  # Bottom face
         [-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s]      # Top face
     ])
-    
+
     # Define faces (triangles)
     faces = [
         [3, 0, 1, 2], [3, 0, 2, 3],  # Bottom
@@ -96,28 +96,28 @@ def create_cube(size=2.0):
         [3, 1, 5, 6], [3, 1, 6, 2],  # Right
         [3, 4, 0, 3], [3, 4, 3, 7]   # Left
     ]
-    
+
     return points.tolist(), [item for sublist in faces for item in sublist]
 
 def create_cylinder(radius=1.0, height=2.0, resolution=32):
     """Create a cylinder mesh with NumPy vectorization."""
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
-    
+
     # Bottom and top circles
     bottom_points = np.column_stack([
         radius * np.cos(theta),
         radius * np.sin(theta),
         np.zeros(resolution)
     ])
-    
+
     top_points = np.column_stack([
         radius * np.cos(theta),
         radius * np.sin(theta),
         np.full(resolution, height)
     ])
-    
+
     points = np.vstack([bottom_points, top_points])
-    
+
     # Create faces
     faces = []
     for i in range(resolution):
@@ -127,7 +127,7 @@ def create_cylinder(radius=1.0, height=2.0, resolution=32):
             [3, i, next_i, i + resolution],
             [3, next_i, next_i + resolution, i + resolution]
         ])
-    
+
     return points.tolist(), [item for sublist in faces for item in sublist]
 
 def shrink_mesh(points, shrink_factor=0.8):
@@ -142,26 +142,26 @@ def clip_mesh(points, faces, plane_origin, plane_normal):
     points_array = np.array(points)
     plane_origin_array = np.array(plane_origin)
     plane_normal_array = np.array(plane_normal)
-    
+
     # Simple plane clipping implementation
     plane_normal_normalized = plane_normal_array / np.linalg.norm(plane_normal_array)
     distances = np.dot(points_array - plane_origin_array, plane_normal_normalized)
-    
+
     # Keep points on the positive side of the plane
     keep_mask = distances >= 0
-    
+
     # Filter points and faces
     new_points = points_array[keep_mask].tolist()
     point_map = np.full(len(points_array), -1)
     point_map[keep_mask] = np.arange(np.sum(keep_mask))
-    
+
     # Filter faces that have all vertices kept
     valid_faces = []
     for face in faces:
         if all(point_map[face[1:]] >= 0):
             new_face = [face[0]] + [int(point_map[idx]) for idx in face[1:]]
             valid_faces.append(new_face)
-    
+
     return new_points, [item for sublist in valid_faces for item in sublist]
 
 def compute_contour(points, values, isovalue):
@@ -171,7 +171,7 @@ def compute_contour(points, values, isovalue):
     mask = values_array >= isovalue
     return points_array[mask].tolist()
 `;
-    
+
     (window as any).pyodide.runPython(algorithmsCode);
   }
 }

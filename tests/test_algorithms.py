@@ -1,15 +1,15 @@
 """ "Tests for Python algorithms module."""
 
 import numpy as np
-import pytest
+
 from pyvista_js.algorithms import (
-    create_sphere,
+    clip_mesh,
+    compute_contour,
     create_cone,
     create_cube,
     create_cylinder,
+    create_sphere,
     shrink_mesh,
-    clip_mesh,
-    compute_contour,
 )
 
 

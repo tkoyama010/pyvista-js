@@ -1,12 +1,13 @@
 """Geometric algorithms migrated from TypeScript to Python for performance."""
 
 import numpy as np
-from typing import Tuple, Optional
 
 
 def create_sphere(
-    radius: float = 1.0, theta_resolution: int = 32, phi_resolution: int = 32
-) -> Tuple[np.ndarray, np.ndarray]:
+    radius: float = 1.0,
+    theta_resolution: int = 32,
+    phi_resolution: int = 32,
+) -> tuple[np.ndarray, np.ndarray]:
     """Create a sphere mesh using NumPy vectorization for improved performance."""
     theta = np.linspace(0, 2 * np.pi, theta_resolution)
     phi = np.linspace(0, np.pi, phi_resolution)
@@ -38,14 +39,16 @@ def create_sphere(
 
 
 def create_cone(
-    radius: float = 1.0, height: float = 2.0, resolution: int = 32
-) -> Tuple[np.ndarray, np.ndarray]:
+    radius: float = 1.0,
+    height: float = 2.0,
+    resolution: int = 32,
+) -> tuple[np.ndarray, np.ndarray]:
     """Create a cone mesh with optimized NumPy operations."""
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
 
     # Base circle points
     base_points = np.column_stack(
-        [radius * np.cos(theta), radius * np.sin(theta), np.zeros(resolution)]
+        [radius * np.cos(theta), radius * np.sin(theta), np.zeros(resolution)],
     )
 
     # Apex point
@@ -66,7 +69,7 @@ def create_cone(
     return points.tolist(), flattened_faces
 
 
-def create_cube(size: float = 2.0) -> Tuple[np.ndarray, np.ndarray]:
+def create_cube(size: float = 2.0) -> tuple[np.ndarray, np.ndarray]:
     """Create a cube mesh with NumPy optimization."""
     s = size / 2
     points = np.array(
@@ -79,7 +82,7 @@ def create_cube(size: float = 2.0) -> Tuple[np.ndarray, np.ndarray]:
             [s, -s, s],
             [s, s, s],
             [-s, s, s],  # Top face
-        ]
+        ],
     )
 
     # Define faces (triangles)
@@ -107,18 +110,20 @@ def create_cube(size: float = 2.0) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def create_cylinder(
-    radius: float = 1.0, height: float = 2.0, resolution: int = 32
-) -> Tuple[np.ndarray, np.ndarray]:
+    radius: float = 1.0,
+    height: float = 2.0,
+    resolution: int = 32,
+) -> tuple[np.ndarray, np.ndarray]:
     """Create a cylinder mesh with NumPy vectorization."""
     theta = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
 
     # Bottom and top circles
     bottom_points = np.column_stack(
-        [radius * np.cos(theta), radius * np.sin(theta), np.zeros(resolution)]
+        [radius * np.cos(theta), radius * np.sin(theta), np.zeros(resolution)],
     )
 
     top_points = np.column_stack(
-        [radius * np.cos(theta), radius * np.sin(theta), np.full(resolution, height)]
+        [radius * np.cos(theta), radius * np.sin(theta), np.full(resolution, height)],
     )
 
     points = np.vstack([bottom_points, top_points])
@@ -129,7 +134,7 @@ def create_cylinder(
         next_i = (i + 1) % resolution
         # Side quads (as triangles)
         faces.extend(
-            [[3, i, next_i, i + resolution], [3, next_i, next_i + resolution, i + resolution]]
+            [[3, i, next_i, i + resolution], [3, next_i, next_i + resolution, i + resolution]],
         )
 
     # Flatten faces list properly
@@ -147,8 +152,11 @@ def shrink_mesh(points: np.ndarray, shrink_factor: float = 0.8) -> np.ndarray:
 
 
 def clip_mesh(
-    points: np.ndarray, faces: np.ndarray, plane_origin: np.ndarray, plane_normal: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
+    points: np.ndarray,
+    faces: np.ndarray,
+    plane_origin: np.ndarray,
+    plane_normal: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
     """Clip mesh with a plane using NumPy operations."""
     # Convert inputs to numpy arrays if they aren't already
     points_array = np.array(points)
