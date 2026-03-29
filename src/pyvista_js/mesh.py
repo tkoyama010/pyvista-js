@@ -146,13 +146,54 @@ class CellType:
     Provides named constants for the most common VTK cell types,
     matching the :class:`pyvista.CellType` API.
 
+    These constants are used to define the type of cells in an
+    :class:`UnstructuredGrid`. Each cell type corresponds to a specific
+    VTK cell type identifier.
+
     Examples
     --------
+    Basic usage:
+
     >>> import pyvista_js as pv
     >>> pv.CellType.TETRA
     10
     >>> pv.CellType.HEXAHEDRON
     12
+    >>> pv.CellType.TRIANGLE
+    5
+    >>> pv.CellType.QUAD
+    9
+
+    Use with UnstructuredGrid:
+
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+    >>> cells = [4, 0, 1, 2, 3]
+    >>> celltypes = [pv.CellType.TETRA]  # Use the constant
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+
+    Available cell types:
+
+    >>> # 0-D cells
+    >>> pv.CellType.VERTEX  # Single point
+    1
+    >>> # 1-D cells
+    >>> pv.CellType.LINE  # Line segment
+    3
+    >>> # 2-D cells
+    >>> pv.CellType.TRIANGLE  # 3-point triangle
+    5
+    >>> pv.CellType.QUAD  # 4-point quadrilateral
+    9
+    >>> # 3-D cells
+    >>> pv.CellType.TETRA  # 4-point tetrahedron
+    10
+    >>> pv.CellType.HEXAHEDRON  # 8-point hexahedron (cube)
+    12
+    >>> pv.CellType.WEDGE  # 6-point triangular prism
+    13
+    >>> pv.CellType.PYRAMID  # 5-point pyramid
+    14
 
     """
 
@@ -995,6 +1036,44 @@ class UnstructuredGrid:
     >>> grid.n_cells
     1
 
+    Create a hexahedron (cube):
+
+    >>> points = np.array([
+    ...     [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],  # bottom face
+    ...     [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1],  # top face
+    ... ], dtype=float)
+    >>> cells = [8, 0, 1, 2, 3, 4, 5, 6, 7]
+    >>> celltypes = [pv.CellType.HEXAHEDRON]
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+    >>> grid.n_points
+    8
+    >>> grid.n_cells
+    1
+
+    Create a mixed mesh with multiple cell types:
+
+    >>> # Triangle and quad cells
+    >>> points = np.array([
+    ...     [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],  # vertices
+    ... ], dtype=float)
+    >>> cells = [3, 0, 1, 2, 4, 1, 2, 3, 0]  # triangle, quad
+    >>> celltypes = [pv.CellType.TRIANGLE, pv.CellType.QUAD]
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+    >>> grid.n_cells
+    2
+
+    Access point data:
+
+    >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+    >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
+    >>> grid['temperature']
+    array([20., 25., 22., 24.])
+
+    Plot the grid:
+
+    >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+    >>> grid.plot()  # doctest: +SKIP
+
     """
 
     def __init__(
@@ -1032,6 +1111,18 @@ class UnstructuredGrid:
         array : array-like
             Data array to store.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> # Set temperature data
+        >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
+        >>> # Set vector data
+        >>> grid['velocity'] = np.array(
+        ...     [[0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
+        ... )
+
         """
         self._point_data[name] = array
 
@@ -1048,17 +1139,67 @@ class UnstructuredGrid:
         np.ndarray
             The requested array.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
+        >>> grid['temperature']
+        array([20., 25., 22., 24.])
+        >>> # Get vector data
+        >>> grid['velocity'] = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid['velocity'].shape
+        (4, 3)
+
         """
         return self._point_data[name]
 
     @property
     def n_points(self) -> int:
-        """Return the number of points."""
+        """Return the number of points.
+
+        Returns
+        -------
+        int
+            Number of points in the grid.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid.n_points
+        4
+
+        """
         return len(self.points)
 
     @property
     def n_cells(self) -> int:
-        """Return the number of cells."""
+        """Return the number of cells.
+
+        Returns
+        -------
+        int
+            Number of cells in the grid.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid.n_cells
+        1
+
+        >>> # Multiple cells
+        >>> cells = [3, 0, 1, 2, 4, 1, 2, 3, 0]  # triangle + quad
+        >>> celltypes = [pv.CellType.TRIANGLE, pv.CellType.QUAD]
+        >>> grid = pv.UnstructuredGrid(cells, celltypes, points[:4])
+        >>> grid.n_cells
+        2
+
+        """
         return len(self.celltypes)
 
     @property
