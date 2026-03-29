@@ -39,6 +39,10 @@ export default [
       "jsdoc/require-asterisk-prefix": "error",
       "jsdoc/require-param-description": "error",
       "jsdoc/require-returns-description": "error",
+      // Disable no-await-in-loop to allow sequential actor processing
+      "no-await-in-loop": "off",
+      // Disable prefer-top-level-await to allow IIFE pattern
+      "unicorn/prefer-top-level-await": "off",
       "complexity": ["error", 20],
       "max-depth": ["error", 4],
     },
