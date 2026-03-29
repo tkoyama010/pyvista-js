@@ -960,12 +960,12 @@ class TestUnstructuredGrid:
         assert "points" in data
         assert "polys" in data
 
-    # A tetrahedron has 4 triangular faces, each [3, a, b, c] → 4 * 4 = 16 entries
-    polys = data["polys"]
-    assert len(polys) == 16
-    # Every face starts with 3 (triangle)
-    face_starts = [polys[i] for i in range(0, len(polys), 4)]
-    assert all(n == 3 for n in face_starts)
+        # A tetrahedron has 4 triangular faces, each [3, a, b, c] → 4 * 4 = 16 entries
+        polys = data["polys"]
+        assert len(polys) == 16
+        # Every face starts with 3 (triangle)
+        face_starts = [polys[i] for i in range(0, len(polys), 4)]
+        assert all(n == 3 for n in face_starts)
 
     def test_unstructured_grid_to_scene_data_hex(self) -> None:
         """Test to_scene_data for hexahedron produces correct polys."""
@@ -1047,11 +1047,11 @@ class TestUnstructuredGrid:
             dtype=float,
         )
 
-    cells = [4, 0, 1, 2, 3, 3, 4, 5, 6]
-    celltypes = [CellType.TETRA, CellType.TRIANGLE]
-    grid = UnstructuredGrid(cells, celltypes, points)
-    assert grid.n_cells == 2
-    data = grid.to_scene_data()
-    polys = data["polys"]
-    # tetra: 4 tri faces (16 entries) + 1 triangle (4 entries) = 20
-    assert len(polys) == 20
+        cells = [4, 0, 1, 2, 3, 3, 4, 5, 6]
+        celltypes = [CellType.TETRA, CellType.TRIANGLE]
+        grid = UnstructuredGrid(cells, celltypes, points)
+        assert grid.n_cells == 2
+        data = grid.to_scene_data()
+        polys = data["polys"]
+        # tetra: 4 tri faces (16 entries) + 1 triangle (4 entries) = 20
+        assert len(polys) == 20
