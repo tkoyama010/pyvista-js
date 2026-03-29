@@ -754,7 +754,7 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
 }
 
 /**
- * Apply a chain of filters (shrink, tube, clip, contour) to a source.
+ * Apply a chain of filters to a source.
  * @param sourceResult
  * @param filters
  * @returns The final {@link SourceResult} after all filters have been applied in sequence.
@@ -770,6 +770,8 @@ function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): Sour
       current = applyClipFilter(current, f.normal, f.origin, f.invert);
     } else if (f.type === "contour" && f.values && f.scalarName && f.scalarData) {
       current = applyContourFilter(current, f.values, f.scalarName, f.scalarData);
+    } else if (f.type === "fillHoles" && f.holeSize !== undefined) {
+      current = applyFillHolesFilter(current, f.holeSize);
     }
   }
 
@@ -1090,5 +1092,153 @@ function applyContourManual(
     outputPd.getLines().setData(new Uint32Array(outPolys));
   }
 
+  return { output: outputPd, isFilter: false };
+}
+
+/**
+ * Build an adjacency map of boundary edges (edges shared by exactly one cell).
+ * @param polys - The polygon connectivity array.
+ * @returns A map from vertex index to its boundary-adjacent vertex indices.
+ */
+function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
+  const edgeCount = new Map<string, number>();
+  let index = 0;
+  while (index < polys.length) {
+    const nVerts = at(polys, index);
+    index++;
+    for (let k = 0; k < nVerts; k++) {
+      const a = at(polys, index + k);
+      const b = at(polys, index + ((k + 1) % nVerts));
+      const key = `${String(Math.min(a, b))}_${String(Math.max(a, b))}`;
+      edgeCount.set(key, (edgeCount.get(key) ?? 0) + 1);
+    }
+
+    index += nVerts;
+  }
+
+  const boundaryAdj = new Map<number, number[]>();
+  for (const [key, count] of edgeCount) {
+    if (count !== 1) continue;
+    const parts = key.split("_");
+    const a = Number(parts[0]);
+    const b = Number(parts[1]);
+    const adjA = boundaryAdj.get(a);
+    if (adjA) {
+      adjA.push(b);
+    } else {
+      boundaryAdj.set(a, [b]);
+    }
+
+    const adjB = boundaryAdj.get(b);
+    if (adjB) {
+      adjB.push(a);
+    } else {
+      boundaryAdj.set(b, [a]);
+    }
+  }
+
+  return boundaryAdj;
+}
+
+/**
+ * Trace closed loops from boundary adjacency.
+ * @param boundaryAdj - Boundary adjacency map from {@link buildBoundaryAdjacency}.
+ * @returns An array of loops, each being an array of vertex indices.
+ */
+function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
+  const visited = new Set<number>();
+  const loops: number[][] = [];
+  for (const startNode of boundaryAdj.keys()) {
+    if (visited.has(startNode)) continue;
+    const loop: number[] = [];
+    let current = startNode;
+    let previous = -1;
+    let stuck = false;
+    while (!stuck) {
+      visited.add(current);
+      loop.push(current);
+      const neighbors = boundaryAdj.get(current) ?? [];
+      let next = -1;
+      for (const n of neighbors) {
+        if (n !== previous && !visited.has(n)) {
+          next = n;
+          break;
+        }
+      }
+
+      if (next === -1) {
+        stuck = true;
+      } else {
+        previous = current;
+        current = next;
+      }
+    }
+
+    if (loop.length > 2) {
+      loops.push(loop);
+    }
+  }
+
+  return loops;
+}
+
+/**
+ * Fill holes in a polygonal mesh by finding boundary edges, linking them
+ * into loops, and fan-triangulating each loop whose perimeter is within
+ * the given size threshold.
+ *
+ * This replicates the behaviour of the vtk.js FillHolesFilter example.
+ * @param sourceResult
+ * @param holeSize
+ * @returns A {@link SourceResult} with holes filled.
+ */
+function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {
+  const inputPd = getPolyData(sourceResult);
+  const inPoints = inputPd.getPoints().getData();
+  const polys = inputPd.getPolys().getData();
+  if (polys.length === 0) {
+    return sourceResult;
+  }
+
+  const boundaryAdj = buildBoundaryAdjacency(polys);
+  if (boundaryAdj.size === 0) {
+    return sourceResult;
+  }
+
+  const loops = traceBoundaryLoops(boundaryAdj);
+
+  // Compute perimeter of each loop and fan-triangulate if within holeSize
+  const newPolys: number[] = [];
+  for (const loop of loops) {
+    let perimeter = 0;
+    for (let k = 0; k < loop.length; k++) {
+      const a = loop[k] ?? 0;
+      const b = loop[(k + 1) % loop.length] ?? 0;
+      const dx = at(inPoints, b * 3) - at(inPoints, a * 3);
+      const dy = at(inPoints, b * 3 + 1) - at(inPoints, a * 3 + 1);
+      const dz = at(inPoints, b * 3 + 2) - at(inPoints, a * 3 + 2);
+      perimeter += Math.hypot(dx, dy, dz);
+    }
+
+    if (perimeter <= holeSize) {
+      const v0 = loop[0] ?? 0;
+      for (let k = 1; k < loop.length - 1; k++) {
+        const v1 = loop[k] ?? 0;
+        const v2 = loop[k + 1] ?? 0;
+        newPolys.push(3, v0, v1, v2);
+      }
+    }
+  }
+
+  if (newPolys.length === 0) {
+    return sourceResult;
+  }
+
+  // Merge original polys with new fill polys
+  const mergedPolys = new Uint32Array([...polys, ...newPolys]);
+
+  const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
+  outputPd.getPoints().setData(new Float32Array(inPoints), 3);
+  outputPd.getPolys().setData(mergedPolys);
   return { output: outputPd, isFilter: false };
 }
