@@ -1124,6 +1124,8 @@ class UnstructuredGrid:
 
     Create a hexahedron (cube):
 
+    >>> import pyvista_js as pv
+    >>> import numpy as np
     >>> points = np.array([
     ...     [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],  # bottom face
     ...     [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1],  # top face
@@ -1138,6 +1140,8 @@ class UnstructuredGrid:
 
     Create a mixed mesh with multiple cell types:
 
+    >>> import pyvista_js as pv
+    >>> import numpy as np
     >>> # Triangle and quad cells
     >>> points = np.array([
     ...     [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],  # vertices
@@ -1150,6 +1154,9 @@ class UnstructuredGrid:
 
     Access point data:
 
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
     >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
     >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
     >>> grid['temperature']
@@ -1157,6 +1164,9 @@ class UnstructuredGrid:
 
     Plot the grid:
 
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
     >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
     >>> grid.plot()  # doctest: +SKIP
 
@@ -1200,6 +1210,7 @@ class UnstructuredGrid:
         Examples
         --------
         >>> import numpy as np
+        >>> import pyvista_js as pv
         >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
         >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
         >>> # Set temperature data
@@ -1228,6 +1239,7 @@ class UnstructuredGrid:
         Examples
         --------
         >>> import numpy as np
+        >>> import pyvista_js as pv
         >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
         >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
         >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
@@ -1253,6 +1265,7 @@ class UnstructuredGrid:
         Examples
         --------
         >>> import numpy as np
+        >>> import pyvista_js as pv
         >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
         >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
         >>> grid.n_points
@@ -1273,12 +1286,16 @@ class UnstructuredGrid:
         Examples
         --------
         >>> import numpy as np
+        >>> import pyvista_js as pv
         >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
         >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
         >>> grid.n_cells
         1
 
         >>> # Multiple cells
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
         >>> cells = [3, 0, 1, 2, 4, 1, 2, 3, 0]  # triangle + quad
         >>> celltypes = [pv.CellType.TRIANGLE, pv.CellType.QUAD]
         >>> grid = pv.UnstructuredGrid(cells, celltypes, points[:4])
