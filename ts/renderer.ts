@@ -9,8 +9,8 @@
 
 /**
  * Access a typed array element, returning 0 for out-of-bounds.
- * @param array
- * @param index
+ * @param array The typed array to access
+ * @param index The index to access
  * @returns The element at `index`, or 0 if out of bounds.
  */
 function at(array: Float32Array | Uint32Array, index: number): number {
@@ -25,8 +25,8 @@ type SourceResult = {
 
 /**
  * Resolve a {@link SourceResult} to its underlying PolyData.
- * @param sourceResult
- * @returns The underlying {@link VtkPolyData} from the source or filter output.
+ * @param sourceResult The source result to resolve
+ * @returns The underlying VtkPolyData from the source or filter output.
  */
 function getPolyData(sourceResult: SourceResult): VtkPolyData {
   if (sourceResult.isFilter) {
@@ -39,8 +39,8 @@ function getPolyData(sourceResult: SourceResult): VtkPolyData {
 
 /**
  * Wire `filter`'s input to the output of `sourceResult`.
- * @param filter
- * @param sourceResult
+ * @param filter The filter to connect
+ * @param sourceResult The source result to connect to
  */
 function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
   if (sourceResult.isFilter) {
@@ -120,8 +120,8 @@ renderWindow.render();
 
 /**
  * Add custom lights to the renderer, replacing the defaults.
- * @param lightsConfig
- * @param ren
+ * @param lightsConfig Array of light configurations
+ * @param ren The renderer to add lights to
  * @returns Nothing; mutates the renderer in place.
  */
 function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
@@ -187,7 +187,7 @@ function getReaderMap(): ReaderFactoryMap {
 
 /**
  * Dispatch to the appropriate source factory based on `cfg.type`.
- * @param cfg
+ * @param cfg The source configuration
  * @returns A {@link SourceResult} for the configured source type, or `undefined` if the type is unknown.
  */
 async function createSource(cfg: SourceConfig): Promise<SourceResult | undefined> {
@@ -252,7 +252,7 @@ async function createSource(cfg: SourceConfig): Promise<SourceResult | undefined
 
 /**
  * Create a sphere source with texture-map-to-sphere applied.
- * @param cfg
+ * @param cfg The sphere source configuration
  * @returns A {@link SourceResult} wrapping the texture-mapped sphere filter.
  */
 function createSphereSource(cfg: SourceConfig): SourceResult {
@@ -269,7 +269,7 @@ function createSphereSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a cone source.
- * @param cfg
+ * @param cfg The cone source configuration
  * @returns A {@link SourceResult} wrapping the cone source filter.
  */
 function createConeSource(cfg: SourceConfig): SourceResult {
@@ -283,7 +283,7 @@ function createConeSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a cube source.
- * @param cfg
+ * @param cfg The cube source configuration
  * @returns A {@link SourceResult} wrapping the cube source.
  */
 function createCubeSource(cfg: SourceConfig): SourceResult {
@@ -297,7 +297,7 @@ function createCubeSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a cylinder source.
- * @param cfg
+ * @param cfg The cylinder source configuration
  * @returns A {@link SourceResult} wrapping the cylinder source filter.
  */
 function createCylinderSource(cfg: SourceConfig): SourceResult {
@@ -311,7 +311,7 @@ function createCylinderSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a disk source, falling back to empty PolyData if unavailable.
- * @param cfg
+ * @param cfg The disk source configuration
  * @returns A {@link SourceResult} wrapping the disk source or empty PolyData fallback.
  */
 function createDiskSource(cfg: SourceConfig): SourceResult {
@@ -332,7 +332,7 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a circle source (disk with `innerRadius=0`).
- * @param cfg
+ * @param cfg The circle source configuration
  * @returns A {@link SourceResult} wrapping the disk source configured as a circle.
  */
 function createCircleSource(cfg: SourceConfig): SourceResult {
@@ -346,7 +346,7 @@ function createCircleSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create an arrow source.
- * @param cfg
+ * @param cfg The arrow source configuration
  * @returns A {@link SourceResult} wrapping the arrow source filter.
  */
 function createArrowSource(cfg: SourceConfig): SourceResult {
@@ -360,7 +360,7 @@ function createArrowSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a line source between two points.
- * @param cfg
+ * @param cfg The line source configuration
  * @returns A {@link SourceResult} wrapping the line source filter.
  */
 function createLineSource(cfg: SourceConfig): SourceResult {
@@ -373,7 +373,7 @@ function createLineSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a plane source with optional normal.
- * @param cfg
+ * @param cfg The plane source configuration
  * @returns A {@link SourceResult} wrapping the plane source filter.
  */
 function createPlaneSource(cfg: SourceConfig): SourceResult {
@@ -389,7 +389,7 @@ function createPlaneSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create PolyData from raw point and polygon arrays.
- * @param cfg
+ * @param cfg The mesh source configuration
  * @returns A {@link SourceResult} wrapping the constructed mesh PolyData.
  */
 function createMeshSource(cfg: SourceConfig): SourceResult {
@@ -408,7 +408,7 @@ function createMeshSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Create a point cloud PolyData from raw point arrays.
- * @param cfg
+ * @param cfg The points source configuration
  * @returns A {@link SourceResult} wrapping the point cloud PolyData.
  */
 function createPointsSource(cfg: SourceConfig): SourceResult {
@@ -422,7 +422,7 @@ function createPointsSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Decode base64-encoded file data and parse it with the appropriate vtk.js reader.
- * @param cfg
+ * @param cfg The reader source configuration
  * @returns A {@link SourceResult} wrapping the parsed reader as a filter.
  */
 function createReaderSource(cfg: SourceConfig): SourceResult {
@@ -451,8 +451,8 @@ function createReaderSource(cfg: SourceConfig): SourceResult {
 
 /**
  * Inject per-point scalar/vector data arrays into PolyData.
- * @param polydata
- * @param pointDataArrays
+ * @param polydata The PolyData to inject data into
+ * @param pointDataArrays Array of point data arrays to inject
  */
 function injectPointData(
   polydata: VtkPolyData,
@@ -474,8 +474,8 @@ function injectPointData(
 
 /**
  * Inject 2-component texture coordinates into PolyData.
- * @param polydata
- * @param tCoords
+ * @param polydata The PolyData to inject texture coordinates into
+ * @param tCoords The texture coordinates to inject
  */
 function injectTcoords(polydata: VtkPolyData, tCoords: number[] | undefined): void {
   if (!tCoords) {
@@ -492,8 +492,8 @@ function injectTcoords(polydata: VtkPolyData, tCoords: number[] | undefined): vo
 
 /**
  * Optionally insert a normals-computation filter between source and mapper.
- * @param sourceResult
- * @param normalsConfig
+ * @param sourceResult The source result to process
+ * @param normalsConfig The normals configuration
  * @returns The original {@link SourceResult} if no normals config, otherwise a new one with the normals filter applied.
  */
 function setupNormals(
@@ -513,8 +513,8 @@ function setupNormals(
 
 /**
  * Apply physically-based rendering properties to an actor.
- * @param actor
- * @param pbr
+ * @param actor The actor to apply PBR properties to
+ * @param pbr The PBR configuration
  */
 function applyPbr(actor: VtkActor, pbr: PbrConfig | undefined): void {
   if (!pbr) return;
@@ -531,9 +531,9 @@ function applyPbr(actor: VtkActor, pbr: PbrConfig | undefined): void {
 
 /**
  * Load and attach a URL-based texture to an actor.
- * @param actor
- * @param renWin
- * @param textureCfg
+ * @param actor The actor to apply texture to
+ * @param renWin The render window
+ * @param textureCfg The texture configuration
  */
 function applyTexture(
   actor: VtkActor,
@@ -555,10 +555,10 @@ function applyTexture(
 
 /**
  * Set up a single actor (geometry + appearance) from the scene configuration.
- * @param cfg
- * @param _index
- * @param ren
- * @param renWin
+ * @param cfg The actor configuration
+ * @param _index The actor index (unused)
+ * @param ren The renderer to add the actor to
+ * @param renWin The render window
  * @returns Nothing; mutates the renderer in place.
  */
 async function setupActor(
@@ -640,8 +640,8 @@ async function setupActor(
 
 /**
  * Apply camera settings from the scene configuration.
- * @param ren
- * @param camConfig
+ * @param ren The renderer to apply camera settings to
+ * @param camConfig The camera configuration
  */
 function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
   const cam = ren.getActiveCamera();
@@ -680,7 +680,7 @@ function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
 
 /**
  * Add an orientation-marker axes widget to the bottom-left corner.
- * @param interactorObject
+ * @param interactorObject The interactor object to add axes to
  */
 function setupAxes(interactorObject: VtkInteractor): void {
   const axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
@@ -699,8 +699,8 @@ function setupAxes(interactorObject: VtkInteractor): void {
 
 /**
  * Create an absolutely-positioned HTML overlay for 2D text.
- * @param cfg
- * @param containerElement
+ * @param cfg The text actor configuration
+ * @param containerElement The container element to add the text to
  */
 function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): void {
   const div = document.createElement("div");
@@ -724,8 +724,8 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
 
 /**
  * Apply a chain of filters (shrink, tube, clip, contour) to a source.
- * @param sourceResult
- * @param filters
+ * @param sourceResult The source result to apply filters to
+ * @param filters Array of filter configurations
  * @returns The final {@link SourceResult} after all filters have been applied in sequence.
  */
 function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): SourceResult {
@@ -750,8 +750,8 @@ function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): Sour
  *
  * For each cell, duplicate its vertices and move them toward the cell centroid
  * by `shrinkFactor` (0 = collapse to centroid, 1 = no change).
- * @param sourceResult
- * @param shrinkFactor
+ * @param sourceResult The source result to apply shrink filter to
+ * @param shrinkFactor The shrink factor (0-1)
  * @returns A {@link SourceResult} with each cell shrunk toward its centroid.
  */
 function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): SourceResult {
@@ -810,9 +810,9 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
 
 /**
  * Apply a tube filter to thicken line geometry.
- * @param sourceResult
- * @param radius
- * @param numberOfSides
+ * @param sourceResult The source result to apply tube filter to
+ * @param radius The tube radius
+ * @param numberOfSides The number of sides for the tube
  * @returns A {@link SourceResult} with a tube filter applied to the line geometry.
  */
 function applyTubeFilter(
@@ -830,10 +830,10 @@ function applyTubeFilter(
 
 /**
  * Clip geometry by a plane, using vtk.js if available or falling back to manual clipping.
- * @param sourceResult
- * @param normal
- * @param origin
- * @param invert
+ * @param sourceResult The source result to clip
+ * @param normal The clipping plane normal vector
+ * @param origin The clipping plane origin point
+ * @param invert Whether to invert the clipping
  * @returns A {@link SourceResult} with the clipped geometry.
  */
 function applyClipFilter(
@@ -860,10 +860,10 @@ function applyClipFilter(
 /**
  * Manual clip fallback — discard cells whose centroid lies on the
  * wrong side of the clipping plane.
- * @param sourceResult
- * @param normal
- * @param origin
- * @param invert
+ * @param sourceResult The source result to clip
+ * @param normal The clipping plane normal vector
+ * @param origin The clipping plane origin point
+ * @param invert Whether to invert the clipping
  * @returns A {@link SourceResult} containing only the cells on the kept side of the plane.
  */
 function applyClipManual(
@@ -935,10 +935,10 @@ function applyClipManual(
 
 /**
  * Inject scalar data into PolyData and extract isocontour lines.
- * @param sourceResult
- * @param values
- * @param scalarName
- * @param scalarData
+ * @param sourceResult The source result to process
+ * @param values The contour values to extract
+ * @param scalarName The name of the scalar array
+ * @param scalarData The scalar data values
  * @returns A {@link SourceResult} containing the extracted isocontour lines.
  */
 function applyContourFilter(
@@ -962,9 +962,9 @@ function applyContourFilter(
 
 /**
  * Collect the intersection points of a contour value along the edges of a triangle.
- * @param tri
- * @param value
- * @param inPoints
+ * @param tri Triangle edges with vertex indices and scalar values
+ * @param value The contour value to find intersections for
+ * @param inPoints The input points array
  * @returns Flat array of intersection coordinates (0 or 6 elements).
  */
 function collectEdgeIntersections(
@@ -993,9 +993,9 @@ function collectEdgeIntersections(
  *
  * For each triangle, linearly interpolate along edges to find intersection
  * points at each contour value and emit line segments.
- * @param inputPd
- * @param values
- * @param scalarName
+ * @param inputPd The input PolyData
+ * @param values The contour values to extract
+ * @param scalarName The name of the scalar array
  * @returns A {@link SourceResult} containing the marching-triangles contour line segments.
  */
 function applyContourManual(
