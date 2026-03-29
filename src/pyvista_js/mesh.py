@@ -975,7 +975,7 @@ class UnstructuredGrid:
         Cell connectivity in VTK format:
         ``[n_pts0, p0, p1, ..., n_pts1, p0, p1, ...]``.
     celltypes : array-like
-        Array of VTK cell type constants (see :class:`CellType`) – one
+        Array of VTK cell type constants (see :class:`CellType`) - one
         value per cell.
     points : array-like
         Vertex coordinates as an ``(n, 3)`` array.
@@ -1145,6 +1145,7 @@ class UnstructuredGrid:
             pts = cells[idx + 1 : idx + 1 + n_pts]
             idx += n_pts + 1
 
+            face_defs: tuple[tuple[int, ...], ...]
             if cell_type == _CELL_TYPE_TETRA:
                 face_defs = _TETRA_FACES
             elif cell_type == _CELL_TYPE_HEXAHEDRON:
