@@ -722,7 +722,7 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
 }
 
 /**
- * Apply a chain of filters (shrink, tube, clip, contour) to a source.
+ * Apply a chain of filters to a source.
  * @param sourceResult
  * @param filters
  * @returns The final {@link SourceResult} after all filters have been applied in sequence.
