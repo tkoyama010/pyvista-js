@@ -1,6 +1,7 @@
 __all__ = [
     "Arrow",
     "Camera",
+    "CellType",
     "Circle",
     "Cone",
     "Cube",
@@ -21,6 +22,7 @@ __all__ = [
     "Text",
     "TextProperty",
     "Texture",
+    "UnstructuredGrid",
     "__version__",
     "examples",
     "pyvista_chart",
@@ -36,6 +38,7 @@ from .camera import Camera
 from .light import Light
 from .mesh import (
     Arrow,
+    CellType,
     Circle,
     Cone,
     Cube,
@@ -46,6 +49,7 @@ from .mesh import (
     PointData,
     PolyData,
     Sphere,
+    UnstructuredGrid,
 )
 from .plotter import Plotter
 from .readers import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader
