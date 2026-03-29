@@ -280,7 +280,7 @@ async function createSphereSource(cfg: SourceConfig): Promise<SourceResult> {
       console.warn('Python sphere algorithm failed, falling back to vtk.js:', error);
     }
   }
-  
+
   // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
     center: cfg.center,
@@ -307,7 +307,7 @@ async function createConeSource(cfg: SourceConfig): Promise<SourceResult> {
       console.warn('Python cone algorithm failed, falling back to vtk.js:', error);
     }
   }
-  
+
   // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkConeSource.newInstance({
     height: cfg.height,
@@ -331,7 +331,7 @@ async function createCubeSource(cfg: SourceConfig): Promise<SourceResult> {
       console.warn('Python cube algorithm failed, falling back to vtk.js:', error);
     }
   }
-  
+
   // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkCubeSource.newInstance({
     xLength: cfg.xLength,
@@ -355,7 +355,7 @@ async function createCylinderSource(cfg: SourceConfig): Promise<SourceResult> {
       console.warn('Python cylinder algorithm failed, falling back to vtk.js:', error);
     }
   }
-  
+
   // Fallback to original vtk.js implementation
   const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({
     height: cfg.height,
@@ -822,7 +822,7 @@ async function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: numbe
       console.warn('Python shrink filter failed, falling back to manual implementation:', error);
     }
   }
-  
+
   // Fallback to original manual implementation
   const inputPd = getPolyData(sourceResult);
   const inPoints = inputPd.getPoints().getData();
@@ -919,7 +919,7 @@ async function applyClipFilter(
       console.warn('Python clip filter failed, falling back to vtk.js/manual implementation:', error);
     }
   }
-  
+
   // Fallback to original vtk.js implementation
   const plane = vtk.Common.DataModel.vtkPlane.newInstance();
   plane.setOrigin(origin[0], origin[1], origin[2]);
@@ -1034,7 +1034,7 @@ async function applyContourFilter(
       console.warn('Python contour filter failed, falling back to manual implementation:', error);
     }
   }
-  
+
   // Fallback to original manual implementation
   const inputPd = getPolyData(sourceResult);
 
