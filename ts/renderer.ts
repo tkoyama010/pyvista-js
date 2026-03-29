@@ -190,7 +190,7 @@ function getReaderMap(): ReaderFactoryMap {
  * @param cfg
  * @returns A {@link SourceResult} for the configured source type, or `undefined` if the type is unknown.
  */
-function createSource(cfg: SourceConfig): SourceResult | undefined {
+async function createSource(cfg: SourceConfig): Promise<SourceResult | undefined> {
   switch (cfg.type) {
     case "sphere": {
       return createSphereSource(cfg);
@@ -554,21 +554,22 @@ function applyTexture(
 }
 
 /**
- * Build a complete vtk.js actor from an {@link ActorConfig} and add it to the renderer.
+ * Set up a single actor (geometry + appearance) from the scene configuration.
  * @param cfg
  * @param _index
  * @param ren
  * @param renWin
+ * @returns Nothing; mutates the renderer in place.
  */
-function setupActor(
+async function setupActor(
   cfg: ActorConfig,
   _index: number,
   ren: VtkRenderer,
   renWin: VtkRenderWindow,
-): void {
-  const sourceResult = createSource(cfg.source);
+): Promise<void | undefined> {
+  const sourceResult = await createSource(cfg.source);
   if (!sourceResult?.output) {
-    return;
+    return undefined;
   }
 
   if (cfg.source.pointData ?? cfg.source.tCoords) {
@@ -579,7 +580,7 @@ function setupActor(
 
   let currentResult = sourceResult;
   if (cfg.source.filters && cfg.source.filters.length > 0) {
-    currentResult = applyFilters(sourceResult, cfg.source.filters);
+    currentResult = await applyFilters(sourceResult, cfg.source.filters);
   }
 
   const mapperInput = setupNormals(currentResult, cfg.normals);
