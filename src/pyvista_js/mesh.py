@@ -1029,6 +1029,17 @@ def Sphere(  # noqa: N802
     >>> sphere.n_points
     842
 
+    Create a sphere with a hole and fill it:
+
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> # Create a sphere with a hole by clipping
+    >>> sphere = pv.Sphere(radius=1.0)
+    >>> clipped_sphere = sphere.clip(normal='z', origin=(0, 0, 0.5))
+    >>> # Fill the hole
+    >>> filled_sphere = clipped_sphere.fill_holes(hole_size=10.0)
+    >>> filled_sphere.plot()  # doctest: +SKIP
+
     """
     # Generate points matching vtk.js vtkSphereSource ordering exactly:
     #   index 0: north pole
