@@ -837,11 +837,9 @@ def test_plane_scene_data_is_not_none() -> None:
     assert scene["type"] == "plane"
 
 
-meshio = pytest.importorskip("meshio")
-
-
 def test_save_obj(tmp_path) -> None:
     """Test that save writes a valid OBJ file via meshio."""
+    meshio = pytest.importorskip("meshio")
     cube = Cube()
     out = tmp_path / "cube.obj"
     cube.save(out)
@@ -853,6 +851,7 @@ def test_save_obj(tmp_path) -> None:
 
 def test_save_obj_vertex_coords(tmp_path) -> None:
     """Test that saved vertex coordinates match original points."""
+    meshio = pytest.importorskip("meshio")
     points = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
     mesh = PolyData(points)
     out = tmp_path / "mesh.obj"
@@ -863,6 +862,7 @@ def test_save_obj_vertex_coords(tmp_path) -> None:
 
 def test_save_vtk(tmp_path) -> None:
     """Test that save can write VTK format via meshio."""
+    meshio = pytest.importorskip("meshio")
     cube = Cube()
     out = tmp_path / "cube.vtk"
     cube.save(out)
@@ -888,6 +888,7 @@ def test_save_no_meshio(tmp_path, monkeypatch) -> None:
 
 def test_save_string_path(tmp_path) -> None:
     """Test that save accepts a string path."""
+    pytest.importorskip("meshio")  # Skip if meshio not available
     cube = Cube()
     out = str(tmp_path / "cube.obj")
     cube.save(out)
