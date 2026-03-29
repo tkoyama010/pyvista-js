@@ -809,6 +809,81 @@ class PolyData:
             raise ValueError(msg)
         return contour_values
 
+    def fill_holes(self, hole_size: float = 1000.0) -> PolyData:
+        """Fill holes in a polygonal mesh.
+
+        This filter identifies and fills holes in the mesh by locating
+        boundary edges, linking them together into loops, and then
+        triangulating the resulting loops. A hole size threshold controls
+        which holes are filled.
+
+        It mirrors the PyVista ``fill_holes`` filter API and replicates
+        the behavior of the vtk.js FillHolesFilter example.
+
+        .. note::
+
+            The hole filling is computed in JavaScript at render time by
+            finding boundary edges (edges belonging to only one polygon),
+            linking them into loops, and fan-triangulating each loop whose
+            perimeter is smaller than ``hole_size``.
+
+        Parameters
+        ----------
+        hole_size : float, optional
+            The maximum hole size to fill, specified as the length of the
+            perimeter of the hole. Holes with a perimeter larger than this
+            value will not be filled. Default is 1000.0.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with holes filled.
+
+        Raises
+        ------
+        ValueError
+            If ``hole_size`` is not positive.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> filled = sphere.fill_holes(hole_size=100.0)
+        >>> isinstance(filled, pv.PolyData)
+        True
+
+        Render the filled mesh:
+
+        >>> filled.plot()  # doctest: +SKIP
+
+        """
+        if hole_size <= 0:
+            msg = f"hole_size must be positive, got {hole_size}"
+            raise ValueError(msg)
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "fillHoles",
+                "holeSize": hole_size,
+            },
+        )
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _scene_data=base_scene,
+        )
+
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.
 

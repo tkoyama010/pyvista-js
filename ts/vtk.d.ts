@@ -328,7 +328,7 @@ type PointDataArray = {
   name: string;
 };
 
-/** Configuration for a geometry filter (shrink, tube, clip, or contour). */
+/** Configuration for a geometry filter (shrink, tube, clip, contour, or fillHoles). */
 type FilterConfig = {
   type: string;
   shrinkFactor?: number;
@@ -340,6 +340,7 @@ type FilterConfig = {
   values?: number[];
   scalarName?: string;
   scalarData?: number[];
+  holeSize?: number;
 };
 
 /** Configuration for a geometry source (primitive, mesh, or file reader). */
