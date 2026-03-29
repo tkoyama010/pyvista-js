@@ -494,6 +494,67 @@ def test_contour_custom_scalar_name() -> None:
     assert scene["filters"][-1]["scalarName"] == "custom_field"
 
 
+def test_fill_holes_returns_polydata() -> None:
+    """Test that fill_holes returns a PolyData instance."""
+    sphere = Sphere()
+    filled = sphere.fill_holes(hole_size=100.0)
+    assert isinstance(filled, PolyData)
+    assert filled.n_points == sphere.n_points
+
+
+def test_fill_holes_default_hole_size() -> None:
+    """Test that fill_holes works with default hole_size."""
+    cube = Cube()
+    filled = cube.fill_holes()
+    assert isinstance(filled, PolyData)
+
+
+def test_fill_holes_scene_data_contains_filter() -> None:
+    """Test that filled mesh scene data includes a fillHoles filter."""
+    sphere = Sphere()
+    filled = sphere.fill_holes(hole_size=50.0)
+    scene = filled.to_scene_data()
+    assert "filters" in scene
+    filters = scene["filters"]
+    assert len(filters) >= 1
+    assert filters[-1]["type"] == "fillHoles"
+    assert filters[-1]["holeSize"] == 50.0
+
+
+def test_fill_holes_scene_data_has_source_type() -> None:
+    """Test that filled mesh scene data preserves the source type."""
+    sphere = Sphere()
+    filled = sphere.fill_holes(hole_size=100.0)
+    scene = filled.to_scene_data()
+    assert scene["type"] == "sphere"
+
+
+def test_fill_holes_invalid_size() -> None:
+    """Test that an invalid hole_size raises ValueError."""
+    sphere = Sphere()
+    with pytest.raises(ValueError, match="hole_size must be positive"):
+        sphere.fill_holes(hole_size=0)
+    with pytest.raises(ValueError, match="hole_size must be positive"):
+        sphere.fill_holes(hole_size=-1.0)
+
+
+def test_fill_holes_preserves_faces() -> None:
+    """Test that fill_holes preserves face information."""
+    cube = Cube()
+    filled = cube.fill_holes(hole_size=100.0)
+    assert filled.n_faces == cube.n_faces
+
+
+def test_fill_holes_chained_with_shrink() -> None:
+    """Test that fill_holes can be chained with other filters."""
+    sphere = Sphere()
+    result = sphere.shrink(shrink_factor=0.8).fill_holes(hole_size=100.0)
+    scene = result.to_scene_data()
+    assert len(scene["filters"]) == 2
+    assert scene["filters"][0]["type"] == "shrink"
+    assert scene["filters"][1]["type"] == "fillHoles"
+
+
 def test_circle_creation() -> None:
     """Test circle primitive creation."""
     circle = Circle()
