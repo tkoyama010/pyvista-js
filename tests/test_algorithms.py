@@ -1,17 +1,12 @@
 """Tests for pyvista-js algorithms module."""
 
 import numpy as np
-import pytest
+
 from pyvista_js.algorithms import (
     GeometricAlgorithms,
     MeshProcessingAlgorithms,
-    create_sphere_source,
-    create_cone_source,
-    create_cube_source,
-    create_cylinder_source,
     apply_shrink_filter_source,
-    apply_clip_filter_source,
-    apply_contour_filter_source,
+    create_sphere_source,
 )
 
 
@@ -127,7 +122,11 @@ class TestMeshProcessingAlgorithms:
 
         # Clip with plane at z=0, normal pointing up
         result = MeshProcessingAlgorithms.apply_clip_filter(
-            points, polys, normal=(0.0, 0.0, 1.0), origin=(0.0, 0.0, 0.0), invert=False
+            points,
+            polys,
+            normal=(0.0, 0.0, 1.0),
+            origin=(0.0, 0.0, 0.0),
+            invert=False,
         )
 
         assert "points" in result
@@ -193,7 +192,10 @@ class TestEdgeCases:
         polys = np.array([], dtype=np.uint32)
 
         result = MeshProcessingAlgorithms.apply_clip_filter(
-            points, polys, (0.0, 0.0, 1.0), (0.0, 0.0, 0.0)
+            points,
+            polys,
+            (0.0, 0.0, 1.0),
+            (0.0, 0.0, 0.0),
         )
 
         assert result["points"].shape[0] == 0

@@ -276,12 +276,12 @@ async function createSphereSource(cfg: SourceConfig): Promise<SourceResult> {
     const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
     vtkPts.setData(pointsArray, 3);
     polydata.setPoints(vtkPts);
-    
+
     if (result.faces) {
       const facesArray = Uint32Array.from(result.faces);
       polydata.getPolys().setData(facesArray);
     }
-    
+
     const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
     texMap.setInputData(polydata);
     return { output: texMap, isFilter: true };

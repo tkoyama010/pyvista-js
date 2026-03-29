@@ -7,7 +7,6 @@ for consumption by the vtk.js rendering pipeline.
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Union
 
 
 class GeometricAlgorithms:
@@ -15,11 +14,11 @@ class GeometricAlgorithms:
 
     @staticmethod
     def create_sphere(
-        center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+        center: tuple[float, float, float] = (0.0, 0.0, 0.0),
         radius: float = 1.0,
         theta_resolution: int = 32,
         phi_resolution: int = 32,
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """Create a sphere mesh with texture coordinates."""
         # Generate spherical coordinates
         theta = np.linspace(0, 2 * np.pi, theta_resolution, endpoint=False)
@@ -90,8 +89,8 @@ class GeometricAlgorithms:
         height: float = 1.0,
         radius: float = 0.5,
         resolution: int = 32,
-        center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    ) -> Dict[str, np.ndarray]:
+        center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    ) -> dict[str, np.ndarray]:
         """Create a cone mesh."""
         points = []
         polys = []
@@ -132,8 +131,8 @@ class GeometricAlgorithms:
         x_length: float = 1.0,
         y_length: float = 1.0,
         z_length: float = 1.0,
-        center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    ) -> Dict[str, np.ndarray]:
+        center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    ) -> dict[str, np.ndarray]:
         """Create a cube mesh."""
         # Half dimensions
         hx, hy, hz = x_length / 2, y_length / 2, z_length / 2
@@ -194,8 +193,8 @@ class GeometricAlgorithms:
         height: float = 1.0,
         radius: float = 0.5,
         resolution: int = 32,
-        center: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    ) -> Dict[str, np.ndarray]:
+        center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    ) -> dict[str, np.ndarray]:
         """Create a cylinder mesh."""
         points = []
         polys = []
@@ -248,8 +247,10 @@ class MeshProcessingAlgorithms:
 
     @staticmethod
     def apply_shrink_filter(
-        points: np.ndarray, polys: np.ndarray, shrink_factor: float = 0.8
-    ) -> Dict[str, np.ndarray]:
+        points: np.ndarray,
+        polys: np.ndarray,
+        shrink_factor: float = 0.8,
+    ) -> dict[str, np.ndarray]:
         """Apply shrink filter to mesh - move vertices toward cell centroids."""
         if len(polys) == 0:
             return {"points": points.copy(), "polys": polys.copy()}
@@ -299,10 +300,10 @@ class MeshProcessingAlgorithms:
     def apply_clip_filter(
         points: np.ndarray,
         polys: np.ndarray,
-        normal: Tuple[float, float, float],
-        origin: Tuple[float, float, float],
+        normal: tuple[float, float, float],
+        origin: tuple[float, float, float],
         invert: bool = False,
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """Clip mesh by plane using centroid-based cell culling."""
         if len(polys) == 0:
             return {"points": points.copy(), "polys": polys.copy()}
@@ -354,8 +355,11 @@ class MeshProcessingAlgorithms:
 
     @staticmethod
     def apply_contour_filter(
-        points: np.ndarray, polys: np.ndarray, scalar_data: np.ndarray, values: List[float]
-    ) -> Dict[str, np.ndarray]:
+        points: np.ndarray,
+        polys: np.ndarray,
+        scalar_data: np.ndarray,
+        values: list[float],
+    ) -> dict[str, np.ndarray]:
         """Extract contour lines using marching triangles algorithm."""
         if len(polys) == 0 or len(scalar_data) == 0:
             return {
@@ -418,7 +422,7 @@ class MeshProcessingAlgorithms:
         }
 
 
-def mesh_to_vtkjs_dict(mesh_data: Dict[str, np.ndarray]) -> Dict[str, List]:
+def mesh_to_vtkjs_dict(mesh_data: dict[str, np.ndarray]) -> dict[str, list]:
     """Convert mesh data to JSON-serializable format for vtk.js."""
     result = {}
     for key, array in mesh_data.items():
@@ -430,33 +434,35 @@ def mesh_to_vtkjs_dict(mesh_data: Dict[str, np.ndarray]) -> Dict[str, List]:
 
 
 # Convenience functions for direct use
-def create_sphere_source(**kwargs) -> Dict[str, List]:
+def create_sphere_source(**kwargs) -> dict[str, list]:
     """Create sphere source with vtk.js compatible output."""
     mesh = GeometricAlgorithms.create_sphere(**kwargs)
     return mesh_to_vtkjs_dict(mesh)
 
 
-def create_cone_source(**kwargs) -> Dict[str, List]:
+def create_cone_source(**kwargs) -> dict[str, list]:
     """Create cone source with vtk.js compatible output."""
     mesh = GeometricAlgorithms.create_cone(**kwargs)
     return mesh_to_vtkjs_dict(mesh)
 
 
-def create_cube_source(**kwargs) -> Dict[str, List]:
+def create_cube_source(**kwargs) -> dict[str, list]:
     """Create cube source with vtk.js compatible output."""
     mesh = GeometricAlgorithms.create_cube(**kwargs)
     return mesh_to_vtkjs_dict(mesh)
 
 
-def create_cylinder_source(**kwargs) -> Dict[str, List]:
+def create_cylinder_source(**kwargs) -> dict[str, list]:
     """Create cylinder source with vtk.js compatible output."""
     mesh = GeometricAlgorithms.create_cylinder(**kwargs)
     return mesh_to_vtkjs_dict(mesh)
 
 
 def apply_shrink_filter_source(
-    points: List, polys: List, shrink_factor: float = 0.8
-) -> Dict[str, List]:
+    points: list,
+    polys: list,
+    shrink_factor: float = 0.8,
+) -> dict[str, list]:
     """Apply shrink filter with vtk.js compatible output."""
     points_array = np.array(points, dtype=np.float32).reshape(-1, 3)
     polys_array = np.array(polys, dtype=np.uint32)
@@ -465,29 +471,39 @@ def apply_shrink_filter_source(
 
 
 def apply_clip_filter_source(
-    points: List,
-    polys: List,
-    normal: Tuple[float, float, float],
-    origin: Tuple[float, float, float],
+    points: list,
+    polys: list,
+    normal: tuple[float, float, float],
+    origin: tuple[float, float, float],
     invert: bool = False,
-) -> Dict[str, List]:
+) -> dict[str, list]:
     """Apply clip filter with vtk.js compatible output."""
     points_array = np.array(points, dtype=np.float32).reshape(-1, 3)
     polys_array = np.array(polys, dtype=np.uint32)
     mesh = MeshProcessingAlgorithms.apply_clip_filter(
-        points_array, polys_array, normal, origin, invert
+        points_array,
+        polys_array,
+        normal,
+        origin,
+        invert,
     )
     return mesh_to_vtkjs_dict(mesh)
 
 
 def apply_contour_filter_source(
-    points: List, polys: List, scalar_data: List, values: List[float]
-) -> Dict[str, List]:
+    points: list,
+    polys: list,
+    scalar_data: list,
+    values: list[float],
+) -> dict[str, list]:
     """Apply contour filter with vtk.js compatible output."""
     points_array = np.array(points, dtype=np.float32).reshape(-1, 3)
     polys_array = np.array(polys, dtype=np.uint32)
     scalar_array = np.array(scalar_data, dtype=np.float32)
     mesh = MeshProcessingAlgorithms.apply_contour_filter(
-        points_array, polys_array, scalar_array, values
+        points_array,
+        polys_array,
+        scalar_array,
+        values,
     )
     return mesh_to_vtkjs_dict(mesh)
