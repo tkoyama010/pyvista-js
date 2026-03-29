@@ -1,0 +1,77 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-29 14:55+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../api/_autosummary/pyvista_js.PolyData.fill_holes.rst:2
+msgid "pyvista\\_js.PolyData.fill\\_holes"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:1
+msgid "Fill holes in a polygonal mesh."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:3
+msgid "This filter identifies and fills holes in the mesh by locating boundary edges, linking them together into loops, and then triangulating the resulting loops. A hole size threshold controls which holes are filled."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:8
+msgid "It mirrors the PyVista ``fill_holes`` filter API and replicates the behavior of the vtk.js FillHolesFilter example."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:13
+msgid "The hole filling is computed in JavaScript at render time by finding boundary edges (edges belonging to only one polygon), linking them into loops, and fan-triangulating each loop whose perimeter is smaller than ``hole_size``."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.fill_holes.rst:0
+msgid "Parameters"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:18
+msgid "The maximum hole size to fill, specified as the length of the perimeter of the hole. Holes with a perimeter larger than this value will not be filled. Default is 1000.0."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.fill_holes.rst:0
+msgid "Returns"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:23
+msgid "A new mesh with holes filled."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.fill_holes.rst:0
+msgid "Return type"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.fill_holes.rst:0
+msgid "Raises"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:26
+msgid "If ``hole_size`` is not positive."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:29
+msgid "Examples"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:39
+msgid "Create a sphere with a hole and fill it:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:50
+msgid "Render the filled mesh:"
+msgstr ""
