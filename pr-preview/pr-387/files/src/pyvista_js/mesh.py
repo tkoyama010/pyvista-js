@@ -129,6 +129,83 @@ _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3
 
+# VTK cell type constants
+_CELL_TYPE_VERTEX = 1
+_CELL_TYPE_LINE = 3
+_CELL_TYPE_TRIANGLE = 5
+_CELL_TYPE_QUAD = 9
+_CELL_TYPE_TETRA = 10
+_CELL_TYPE_HEXAHEDRON = 12
+_CELL_TYPE_WEDGE = 13
+_CELL_TYPE_PYRAMID = 14
+
+
+class CellType:
+    """VTK cell type constants.
+
+    Provides named constants for the most common VTK cell types,
+    matching the :class:`pyvista.CellType` API.
+
+    These constants are used to define the type of cells in an
+    :class:`UnstructuredGrid`. Each cell type corresponds to a specific
+    VTK cell type identifier.
+
+    Examples
+    --------
+    Basic usage:
+
+    >>> import pyvista_js as pv
+    >>> pv.CellType.TETRA
+    10
+    >>> pv.CellType.HEXAHEDRON
+    12
+    >>> pv.CellType.TRIANGLE
+    5
+    >>> pv.CellType.QUAD
+    9
+
+    Use with UnstructuredGrid:
+
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+    >>> cells = [4, 0, 1, 2, 3]
+    >>> celltypes = [pv.CellType.TETRA]  # Use the constant
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+
+    Available cell types:
+
+    >>> # 0-D cells
+    >>> pv.CellType.VERTEX  # Single point
+    1
+    >>> # 1-D cells
+    >>> pv.CellType.LINE  # Line segment
+    3
+    >>> # 2-D cells
+    >>> pv.CellType.TRIANGLE  # 3-point triangle
+    5
+    >>> pv.CellType.QUAD  # 4-point quadrilateral
+    9
+    >>> # 3-D cells
+    >>> pv.CellType.TETRA  # 4-point tetrahedron
+    10
+    >>> pv.CellType.HEXAHEDRON  # 8-point hexahedron (cube)
+    12
+    >>> pv.CellType.WEDGE  # 6-point triangular prism
+    13
+    >>> pv.CellType.PYRAMID  # 5-point pyramid
+    14
+
+    """
+
+    VERTEX: int = _CELL_TYPE_VERTEX
+    LINE: int = _CELL_TYPE_LINE
+    TRIANGLE: int = _CELL_TYPE_TRIANGLE
+    QUAD: int = _CELL_TYPE_QUAD
+    TETRA: int = _CELL_TYPE_TETRA
+    HEXAHEDRON: int = _CELL_TYPE_HEXAHEDRON
+    WEDGE: int = _CELL_TYPE_WEDGE
+    PYRAMID: int = _CELL_TYPE_PYRAMID
+
 
 class PolyData:
     """Base polygonal mesh class.
@@ -1007,6 +1084,418 @@ class PolyData:
         self.t_coords = state["t_coords"]  # type: ignore[assignment]
         self._point_data = state["_point_data"]  # type: ignore[assignment]
         self._scene_data = state.get("_scene_data")  # type: ignore[assignment]
+
+
+class UnstructuredGrid:
+    """Unstructured grid dataset.
+
+    An unstructured grid can hold cells of arbitrary type (tetrahedra,
+    hexahedra, wedges, pyramids, triangles, quads, etc.).  This class
+    mirrors the :class:`pyvista.UnstructuredGrid` constructor API.
+
+    For rendering in vtk.js the 3-D cells are decomposed into their
+    surface faces so that they can be displayed as polygonal geometry.
+
+    Parameters
+    ----------
+    cells : array-like
+        Cell connectivity in VTK format:
+        ``[n_pts0, p0, p1, ..., n_pts1, p0, p1, ...]``.
+    celltypes : array-like
+        Array of VTK cell type constants (see :class:`CellType`) - one
+        value per cell.
+    points : array-like
+        Vertex coordinates as an ``(n, 3)`` array.
+
+    Examples
+    --------
+    Create a single tetrahedron:
+
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+    >>> cells = [4, 0, 1, 2, 3]
+    >>> celltypes = [pv.CellType.TETRA]
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+    >>> grid.n_points
+    4
+    >>> grid.n_cells
+    1
+
+    Create a hexahedron (cube):
+
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> points = np.array([
+    ...     [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],  # bottom face
+    ...     [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1],  # top face
+    ... ], dtype=float)
+    >>> cells = [8, 0, 1, 2, 3, 4, 5, 6, 7]
+    >>> celltypes = [pv.CellType.HEXAHEDRON]
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+    >>> grid.n_points
+    8
+    >>> grid.n_cells
+    1
+
+    Create a mixed mesh with multiple cell types:
+
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> # Triangle and quad cells
+    >>> points = np.array([
+    ...     [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],  # vertices
+    ... ], dtype=float)
+    >>> cells = [3, 0, 1, 2, 4, 1, 2, 3, 0]  # triangle, quad
+    >>> celltypes = [pv.CellType.TRIANGLE, pv.CellType.QUAD]
+    >>> grid = pv.UnstructuredGrid(cells, celltypes, points)
+    >>> grid.n_cells
+    2
+
+    Access point data:
+
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+    >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+    >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
+    >>> grid['temperature']
+    array([20., 25., 22., 24.])
+
+    Plot the grid:
+
+    >>> import pyvista_js as pv
+    >>> import numpy as np
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+    >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+    >>> grid.plot()  # doctest: +SKIP
+
+    """
+
+    def __init__(
+        self,
+        cells: ArrayLike,
+        celltypes: ArrayLike,
+        points: ArrayLike,
+    ) -> None:
+        """Initialize an UnstructuredGrid."""
+        self.points = np.asarray(points, dtype=float)
+        self.cells = np.asarray(cells)
+        self.celltypes = np.asarray(celltypes)
+        self._point_data = PointData()
+        self._scene_data: dict[str, object] | None = None
+
+    @property
+    def point_data(self) -> PointData:
+        """Access point data arrays.
+
+        Returns
+        -------
+        PointData
+            Dict-like container for point data arrays.
+
+        """
+        return self._point_data
+
+    def __setitem__(self, name: str, array: ArrayLike) -> None:
+        """Set a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+        array : array-like
+            Data array to store.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> # Set temperature data
+        >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
+        >>> # Set vector data
+        >>> grid['velocity'] = np.array(
+        ...     [[0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
+        ... )
+
+        """
+        self._point_data[name] = array
+
+    def __getitem__(self, name: str) -> np.ndarray:
+        """Get a point data array using dictionary-style access.
+
+        Parameters
+        ----------
+        name : str
+            Name of the array.
+
+        Returns
+        -------
+        np.ndarray
+            The requested array.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid['temperature'] = np.array([20.0, 25.0, 22.0, 24.0])
+        >>> grid['temperature']
+        array([20., 25., 22., 24.])
+        >>> # Get vector data
+        >>> grid['velocity'] = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid['velocity'].shape
+        (4, 3)
+
+        """
+        return self._point_data[name]
+
+    @property
+    def n_points(self) -> int:
+        """Return the number of points.
+
+        Returns
+        -------
+        int
+            Number of points in the grid.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid.n_points
+        4
+
+        """
+        return len(self.points)
+
+    @property
+    def n_cells(self) -> int:
+        """Return the number of cells.
+
+        Returns
+        -------
+        int
+            Number of cells in the grid.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid.n_cells
+        1
+
+        >>> # Multiple cells
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> cells = [3, 0, 1, 2, 4, 1, 2, 3, 0]  # triangle + quad
+        >>> celltypes = [pv.CellType.TRIANGLE, pv.CellType.QUAD]
+        >>> grid = pv.UnstructuredGrid(cells, celltypes, points[:4])
+        >>> grid.n_cells
+        2
+
+        """
+        return len(self.celltypes)
+
+    @property
+    def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
+        """Compute the radius and center of a bounding sphere.
+
+        Uses Ritter's algorithm to approximate the minimum bounding sphere.
+        Returns NaN values if there are no points.
+
+        Returns
+        -------
+        float, tuple
+            Sphere radius as a float and center as a tuple of floats ``(x, y, z)``.
+
+        """
+        if self.n_points == 0:
+            nan = float("nan")
+            return nan, (nan, nan, nan)
+
+        pts = self.points.astype(float)
+
+        p = pts[0]
+        dists = np.linalg.norm(pts - p, axis=1)
+        q = pts[np.argmax(dists)]
+        dists = np.linalg.norm(pts - q, axis=1)
+        r = pts[np.argmax(dists)]
+
+        center = (q + r) / 2.0
+        radius = float(np.linalg.norm(r - q) / 2.0)
+
+        for pt in pts:
+            d = float(np.linalg.norm(pt - center))
+            if d > radius:
+                radius = (radius + d) / 2.0
+                center = center + (d - radius) / d * (pt - center)
+
+        return radius, (float(center[0]), float(center[1]), float(center[2]))
+
+    def _extract_surface_polys(self) -> list[int]:
+        """Extract surface faces from cells as a flat VTK polys array.
+
+        Returns
+        -------
+        list[int]
+            Flat list in VTK cell-array format:
+            ``[n0, p0, p1, ..., n1, p0, p1, ...]``.
+
+        """
+        # Face definitions per cell type (local point indices)
+        _TETRA_FACES = (  # noqa: N806
+            (0, 1, 2),
+            (0, 3, 1),
+            (1, 3, 2),
+            (0, 2, 3),
+        )
+        _HEX_FACES = (  # noqa: N806
+            (0, 3, 2, 1),
+            (4, 5, 6, 7),
+            (0, 1, 5, 4),
+            (2, 3, 7, 6),
+            (0, 4, 7, 3),
+            (1, 2, 6, 5),
+        )
+        _WEDGE_FACES = (  # noqa: N806
+            (0, 1, 2),
+            (3, 5, 4),
+            (0, 3, 4, 1),
+            (1, 4, 5, 2),
+            (0, 2, 5, 3),
+        )
+        _PYRAMID_FACES = (  # noqa: N806
+            (0, 3, 2, 1),
+            (0, 1, 4),
+            (1, 2, 4),
+            (2, 3, 4),
+            (3, 0, 4),
+        )
+
+        polys: list[int] = []
+        idx = 0
+        cells = self.cells
+        for cell_type in self.celltypes:
+            n_pts = int(cells[idx])
+            pts = cells[idx + 1 : idx + 1 + n_pts]
+            idx += n_pts + 1
+
+            face_defs: tuple[tuple[int, ...], ...]
+            if cell_type == _CELL_TYPE_TETRA:
+                face_defs = _TETRA_FACES
+            elif cell_type == _CELL_TYPE_HEXAHEDRON:
+                face_defs = _HEX_FACES
+            elif cell_type == _CELL_TYPE_WEDGE:
+                face_defs = _WEDGE_FACES
+            elif cell_type == _CELL_TYPE_PYRAMID:
+                face_defs = _PYRAMID_FACES
+            elif cell_type == _CELL_TYPE_TRIANGLE:
+                face_defs = ((0, 1, 2),)
+            elif cell_type == _CELL_TYPE_QUAD:
+                face_defs = ((0, 1, 2, 3),)
+            else:
+                continue
+
+            for face in face_defs:
+                polys.append(len(face))
+                polys.extend(int(pts[i]) for i in face)
+
+        return polys
+
+    def plot(
+        self,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        pbr: bool = False,  # noqa: FBT001 FBT002
+        metallic: float = 0.0,
+        roughness: float = 0.5,
+    ) -> None:
+        """Plot this grid.
+
+        This is a convenience method that creates a :class:`~pyvista_js.Plotter`,
+        adds this grid, and calls :func:`~pyvista_js.Plotter.show`.
+
+        Parameters
+        ----------
+        color : str or tuple, optional
+            Color of the mesh.
+        opacity : float, optional
+            Opacity, between 0 and 1. Default is 1.
+        pbr : bool, optional
+            Enable physically based rendering. Default is False.
+        metallic : float, optional
+            Metallic factor for PBR. Default is 0.0.
+        roughness : float, optional
+            Roughness factor for PBR. Default is 0.5.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+        >>> grid = pv.UnstructuredGrid([4, 0, 1, 2, 3], [pv.CellType.TETRA], points)
+        >>> grid.plot()  # doctest: +SKIP
+
+        """
+        from .plotter import Plotter  # noqa: PLC0415
+
+        plotter = Plotter()
+        plotter.add_mesh(
+            self,
+            color=color,
+            opacity=opacity,
+            pbr=pbr,
+            metallic=metallic,
+            roughness=roughness,
+        )
+        plotter.show()
+
+    def to_scene_data(self) -> dict[str, object]:
+        """Return a JSON-serializable dict describing this grid.
+
+        The 3-D cells are decomposed into their surface polygons so that
+        they can be rendered as a ``"mesh"`` source in vtk.js.
+
+        Returns
+        -------
+        dict
+            Source configuration with ``"type": "mesh"``.
+
+        """
+        if self._scene_data is not None:
+            data: dict[str, object] = dict(self._scene_data)
+        else:
+            polys = self._extract_surface_polys()
+            data = {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+                "polys": polys,
+            }
+
+        # Inject point data arrays
+        if len(self._point_data) > 0:
+            point_data_arrays: list[dict[str, object]] = []
+            for name, array in self._point_data.items():
+                n_components = 1 if array.ndim == 1 else array.shape[1]
+                point_data_arrays.append(
+                    {
+                        "name": name,
+                        "numberOfComponents": n_components,
+                        "values": array.flatten().tolist(),
+                    },
+                )
+            data["pointData"] = point_data_arrays
+
+        return data
 
 
 def Sphere(  # noqa: N802
