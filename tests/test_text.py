@@ -176,6 +176,47 @@ def test_plotter_clear_removes_texts() -> None:
     assert len(plotter.actors) == 0
 
 
+def test_text_in_scene_data() -> None:
+    """Test that text actors are included in the scene data JSON."""
+    plotter = pv.Plotter()
+    plotter.add_mesh(pv.Sphere(), color="white")
+    plotter.add_text(pv.Text("Hello", position=(0.5, 0.9)))
+    plotter.add_text(
+        pv.Text(
+            "Red Bold",
+            position=(0.1, 0.1),
+            prop=TextProperty(font_size=24, color="red", bold=True, italic=True),
+        ),
+    )
+
+    scene = plotter._renderer._build_scene_data()
+    text_actors = scene["textActors"]
+    assert len(text_actors) == 2
+
+    t0 = text_actors[0]
+    assert t0["text"] == "Hello"
+    assert t0["position"] == [0.5, 0.9]
+    assert t0["fontSize"] == 18
+    assert t0["color"] == [1.0, 1.0, 1.0]
+    assert t0["bold"] is False
+
+    t1 = text_actors[1]
+    assert t1["text"] == "Red Bold"
+    assert t1["position"] == [0.1, 0.1]
+    assert t1["fontSize"] == 24
+    assert t1["color"] == [1.0, 0.0, 0.0]
+    assert t1["bold"] is True
+    assert t1["italic"] is True
+
+
+def test_text_scene_data_empty() -> None:
+    """Test that scene data has empty textActors when none are added."""
+    plotter = pv.Plotter()
+    plotter.add_mesh(pv.Sphere())
+    scene = plotter._renderer._build_scene_data()
+    assert scene["textActors"] == []
+
+
 def test_text_exported_from_package() -> None:
     """Test that Text is accessible from the top-level package."""
     assert hasattr(pv, "Text")

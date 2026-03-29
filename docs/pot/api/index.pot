@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-23 06:23+0000\n"
+"POT-Creation-Date: 2026-03-29 14:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,7 +57,7 @@ msgid ":py:obj:`pyvista_js.Light <pyvista_js.Light>`"
 msgstr ""
 
 #: ../api/index.md:32:<autosummary>:1
-msgid "A light source for 3D rendering."
+msgid "Light class."
 msgstr ""
 
 #: ../api/index.md:35
@@ -192,162 +192,170 @@ msgstr ""
 msgid "Filters"
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.clip <pyvista_js.PolyData.clip>`"
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid "Clip the mesh with a plane."
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.contour <pyvista_js.PolyData.contour>`"
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid "Generate contour lines at constant scalar values."
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
+msgid ":py:obj:`pyvista_js.PolyData.fill_holes <pyvista_js.PolyData.fill_holes>`"
+msgstr ""
+
+#: ../api/index.md:98:<autosummary>:1
+msgid "Fill holes in a polygonal mesh."
+msgstr ""
+
+#: ../api/index.md:98:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.shrink <pyvista_js.PolyData.shrink>`"
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid "Shrink the cells of a mesh towards their centroid."
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.texture_map_to_plane <pyvista_js.PolyData.texture_map_to_plane>`"
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid "Generate texture coordinates by projecting points onto the XY plane."
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.tube <pyvista_js.PolyData.tube>`"
 msgstr ""
 
-#: ../api/index.md:97:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid "Generate a tube around a line polydata."
 msgstr ""
 
-#: ../api/index.md:100
+#: ../api/index.md:101
 msgid "Readers"
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid ":py:obj:`pyvista_js.GLTFReader <pyvista_js.GLTFReader>`"
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid "Reader for glTF (GL Transmission Format) files (``.gltf`` or ``.glb``)."
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid ":py:obj:`pyvista_js.OBJReader <pyvista_js.OBJReader>`"
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid "Reader for Wavefront OBJ files (``.obj``)."
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PLYReader <pyvista_js.PLYReader>`"
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid "Reader for PLY (Polygon File Format) files (``.ply``)."
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyDataReader <pyvista_js.PolyDataReader>`"
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid "Reader for legacy VTK PolyData files (``.vtk``)."
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid ":py:obj:`pyvista_js.STLReader <pyvista_js.STLReader>`"
 msgstr ""
 
-#: ../api/index.md:111:<autosummary>:1
+#: ../api/index.md:112:<autosummary>:1
 msgid "Reader for STL (STereoLithography) files (``.stl``)."
 msgstr ""
 
-#: ../api/index.md:114
+#: ../api/index.md:115
 msgid "Examples"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.CubeMap <pyvista_js.examples.CubeMap>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Cubemap texture holding six face image URLs."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_bunny <pyvista_js.examples.download_bunny>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the Stanford Bunny dataset."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_lucy <pyvista_js.examples.download_lucy>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the Lucy Angel dataset."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_cad_model <pyvista_js.examples.download_cad_model>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the CAD model dataset."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_damaged_helmet <pyvista_js.examples.download_damaged_helmet>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the damaged helmet glTF example."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_masonry_texture <pyvista_js.examples.download_masonry_texture>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the masonry texture dataset."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_sky_box_cube_map <pyvista_js.examples.download_sky_box_cube_map>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the skybox cube map dataset."
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.download_trumpet <pyvista_js.examples.download_trumpet>`"
 msgstr ""
 
-#: ../api/index.md:128:<autosummary>:1
+#: ../api/index.md:129:<autosummary>:1
 msgid "Download the trumpet dataset."
 msgstr ""
 
-#: ../api/index.md:131
+#: ../api/index.md:132
 msgid "CLI"
 msgstr ""
 
-#: ../api/index.md:133
+#: ../api/index.md:134
 msgid "See the {doc}`CLI reference </cli/index>` for command-line usage documentation."
 msgstr ""

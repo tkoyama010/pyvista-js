@@ -19,7 +19,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from pyvista_js import Plotter, Sphere
+from pyvista_js import Line, Plotter, Sphere, Text
+from pyvista_js.examples import download_bunny, download_trumpet
+from pyvista_js.readers import OBJReader, PLYReader, PolyDataReader, STLReader
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -65,7 +67,7 @@ def _load_plotter_html(page: Page, plotter: Plotter) -> None:
     """
     # Simulate what show() does
     plotter._renderer.create_container(plotter._container_id)
-    html = plotter._renderer._generate_standalone_html()
+    html = plotter.generate_standalone_html()
 
     # Write to temp file and navigate to it
     with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as f:
@@ -274,3 +276,298 @@ def test_headless_browser_execution(page: Page) -> None:
     # Verify canvas is visible (not hidden)
     is_visible = canvas.is_visible()
     assert is_visible, "Canvas is not visible in headless mode"
+
+
+@pytest.mark.playwright
+def test_shrink_filter_renders_in_browser(page: Page) -> None:
+    """Test that the shrink filter renders correctly in a browser.
+
+    This test verifies that meshes with the shrink filter applied
+    produce a canvas without JavaScript errors, catching regressions
+    where the JS-side filter implementation is missing or broken.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    sphere = Sphere()
+    shrunk = sphere.shrink(shrink_factor=0.5)
+
+    plotter = Plotter()
+    plotter.add_mesh(shrunk, color="red")
+
+    # Collect JS errors
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    # Verify canvas exists
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for shrunk mesh"
+
+    # Verify no JS errors (catches missing filter implementations)
+    assert len(js_errors) == 0, f"JavaScript errors during shrink rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_tube_filter_renders_in_browser(page: Page) -> None:
+    """Test that the tube filter renders correctly in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    line = Line()
+    tube = line.tube(radius=0.1)
+
+    plotter = Plotter()
+    plotter.add_mesh(tube, color="blue")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for tube mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during tube rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_clip_filter_renders_in_browser(page: Page) -> None:
+    """Test that the clip filter renders correctly in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    sphere = Sphere()
+    clipped = sphere.clip(normal="x")
+
+    plotter = Plotter()
+    plotter.add_mesh(clipped, color="red")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for clipped mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during clip rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_contour_filter_renders_in_browser(page: Page) -> None:
+    """Test that the contour filter renders correctly in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    sphere = Sphere()
+    elevation = sphere.points[:, 2]
+    contours = sphere.contour(scalars=elevation, isosurfaces=5)
+
+    plotter = Plotter()
+    plotter.add_mesh(contours, color="green")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for contour mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during contour rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_text_actor_renders_in_browser(page: Page) -> None:
+    """Test that text actors render as HTML overlays in a browser.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), color="white")
+    plotter.add_text(Text("Hello World", position=(0.5, 0.9)))
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found"
+    assert len(js_errors) == 0, f"JavaScript errors during text rendering: {js_errors}"
+
+    # Verify the text overlay div exists with correct content
+    text_el = page.query_selector(f"#{plotter._container_id} div")
+    assert text_el is not None, "Text overlay div not found"
+    assert text_el.inner_text() == "Hello World"
+
+
+@pytest.mark.playwright
+def test_ply_reader_renders_in_browser(page: Page) -> None:
+    """Test that PLY file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = download_bunny()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="lightblue")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for PLY reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during PLY rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_obj_reader_renders_in_browser(page: Page) -> None:
+    """Test that OBJ file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = download_trumpet()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="gold")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for OBJ reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during OBJ rendering: {js_errors}"
+
+
+_TEST_DATA_DIR = Path(__file__).parent / "data"
+
+
+@pytest.mark.playwright
+def test_stl_reader_renders_in_browser(page: Page) -> None:
+    """Test that STL file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = STLReader(_TEST_DATA_DIR / "triangle.stl").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="red")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for STL reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during STL rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_vtk_reader_renders_in_browser(page: Page) -> None:
+    """Test that VTK legacy file meshes render correctly via vtk.js reader.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = PolyDataReader(_TEST_DATA_DIR / "triangle.vtk").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="green")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for VTK reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during VTK rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_obj_reader_from_file_renders_in_browser(page: Page) -> None:
+    """Test that OBJ file meshes from local file render correctly.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = OBJReader(_TEST_DATA_DIR / "triangle.obj").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="blue")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for OBJ reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during OBJ rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_ply_reader_from_file_renders_in_browser(page: Page) -> None:
+    """Test that PLY file meshes from local file render correctly.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = PLYReader(_TEST_DATA_DIR / "triangle.ply").read()
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, color="yellow")
+
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for PLY reader mesh"
+    assert len(js_errors) == 0, f"JavaScript errors during PLY rendering: {js_errors}"

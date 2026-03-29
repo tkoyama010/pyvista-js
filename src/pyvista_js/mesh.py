@@ -5,31 +5,14 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
-import re
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from pathlib import Path
 
     from numpy.typing import ArrayLike
-
-_TEMPLATES_DIR_FOR_LOADER = Path(__file__).parent / "templates"
-_jinja_env = Environment(
-    loader=FileSystemLoader(_TEMPLATES_DIR_FOR_LOADER),
-    undefined=StrictUndefined,
-    autoescape=False,  # noqa: S701
-)
-
-
-def _render(template_str: str, **kwargs: object) -> str:
-    rendered = _jinja_env.from_string(template_str).render(**kwargs)
-    # Strip <script> wrapper added for prettier formatting
-    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
 
 class PointData:
@@ -142,22 +125,6 @@ class PointData:
         return list(self._arrays.values())
 
 
-# Load JavaScript templates relative to this file
-_TEMPLATES_DIR = Path(__file__).parent / "templates"
-_MESH_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "mesh_source.html").read_text()
-_SPHERE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "sphere_source.html").read_text()
-_CUBE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cube_source.html").read_text()
-_CYLINDER_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cylinder_source.html").read_text()
-_SHRINK_FILTER_TEMPLATE = (_TEMPLATES_DIR / "shrink_filter.html").read_text()
-_CLIP_FILTER_TEMPLATE = (_TEMPLATES_DIR / "clip_filter.html").read_text()
-_TUBE_FILTER_TEMPLATE = (_TEMPLATES_DIR / "tube_filter.html").read_text()
-_CONTOUR_FILTER_TEMPLATE = (_TEMPLATES_DIR / "contour_filter.html").read_text()
-_CIRCLE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "circle_source.html").read_text()
-_DISK_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "disk_source.html").read_text()
-_ARROW_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "arrow_source.html").read_text()
-_CONE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "cone_source.html").read_text()
-_LINE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "line_source.html").read_text()
-_PLANE_SOURCE_TEMPLATE = (_TEMPLATES_DIR / "plane_source.html").read_text()
 _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3
@@ -183,9 +150,7 @@ class PolyData:
         t_coords: ArrayLike | None = None,
         scalars: ArrayLike | None = None,
         scalar_name: str = "scalars",
-        _vtk_js_source_fn: Callable[[int], str] | None = None,
-        _mapper_setup_fn: Callable[[int], str] | None = None,
-        _vtk_js_source_is_filter: bool = True,
+        _scene_data: dict[str, object] | None = None,
     ) -> None:
         """Initialize a PolyData mesh."""
         self.points = np.asarray(points)
@@ -193,9 +158,7 @@ class PolyData:
         self.t_coords = np.asarray(t_coords) if t_coords is not None else None
         self.scalars = np.asarray(scalars) if scalars is not None else None
         self.scalar_name = scalar_name
-        self._vtk_js_source_fn = _vtk_js_source_fn
-        self._mapper_setup_fn = _mapper_setup_fn
-        self._vtk_js_source_is_filter = _vtk_js_source_is_filter
+        self._scene_data = _scene_data
         self._point_data = PointData()
 
     @property
@@ -268,19 +231,6 @@ class PolyData:
     def n_points(self) -> int:
         """Return the number of points."""
         return len(self.points)
-
-    @property
-    def is_primitive(self) -> bool:
-        """Return whether this mesh is backed by a vtk.js source primitive.
-
-        Returns
-        -------
-        bool
-            ``True`` if the mesh was created from a primitive factory
-            (e.g. :func:`Sphere`, :func:`Cube`), ``False`` otherwise.
-
-        """
-        return self._vtk_js_source_fn is not None
 
     @property
     def bounding_sphere(self) -> tuple[float, tuple[float, float, float]]:
@@ -492,26 +442,27 @@ class PolyData:
             msg = f"shrink_factor must be between 0 and 1, got {shrink_factor}"
             raise ValueError(msg)
 
-        orig_vtk_js_source_fn = self._vtk_js_source_fn
-
-        def _vtk_js_source_with_shrink(idx: int) -> str:
-            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
-            shrink_code = _render(
-                _SHRINK_FILTER_TEMPLATE,
-                SOURCE=f"source{idx}",
-                SHRUNK_PD=f"shrunkPD{idx}",
-                SHRINK_FACTOR=str(shrink_factor),
-            )
-            return base + "\n" + shrink_code
-
-        def _mapper_setup_shrink(idx: int) -> str:
-            return f"mapper{idx}.setInputData(shrunkPD{idx});"
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "shrink",
+                "shrinkFactor": shrink_factor,
+            },
+        )
 
         return PolyData(
             points=self.points,
             faces=self.faces,
-            _vtk_js_source_fn=_vtk_js_source_with_shrink,
-            _mapper_setup_fn=_mapper_setup_shrink,
+            _scene_data=base_scene,
         )
 
     def clip(
@@ -618,32 +569,29 @@ class PolyData:
             o = [float(x) for x in origin]
             origin = (o[0], o[1], o[2])
 
-        orig_vtk_js_source_fn = self._vtk_js_source_fn
-
-        def _vtk_js_source_with_clip(idx: int) -> str:
-            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
-            clip_code = _render(
-                _CLIP_FILTER_TEMPLATE,
-                SOURCE=f"source{idx}",
-                CLIPPED_PD=f"clippedPD{idx}",
-                NORMAL_X=str(normal_vec[0]),
-                NORMAL_Y=str(normal_vec[1]),
-                NORMAL_Z=str(normal_vec[2]),
-                ORIGIN_X=str(origin[0]),
-                ORIGIN_Y=str(origin[1]),
-                ORIGIN_Z=str(origin[2]),
-                INVERT="true" if invert else "false",
-            )
-            return base + "\n" + clip_code
-
-        def _mapper_setup_clip(idx: int) -> str:
-            return f"mapper{idx}.setInputData(clippedPD{idx});"
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "clip",
+                "normal": list(normal_vec),
+                "origin": list(origin),
+                "invert": invert,
+            },
+        )
 
         return PolyData(
             points=self.points,
             faces=self.faces,
-            _vtk_js_source_fn=_vtk_js_source_with_clip,
-            _mapper_setup_fn=_mapper_setup_clip,
+            _scene_data=base_scene,
         )
 
     def tube(
@@ -651,7 +599,7 @@ class PolyData:
         *,
         radius: float = 0.5,
         n_sides: int = 20,
-        capping: bool = True,
+        capping: bool = True,  # noqa: ARG002
     ) -> PolyData:
         """Generate a tube around a line polydata.
 
@@ -702,29 +650,28 @@ class PolyData:
             msg = f"n_sides must be at least {_TUBE_MIN_SIDES}, got {n_sides}"
             raise ValueError(msg)
 
-        orig_vtk_js_source_fn = self._vtk_js_source_fn
-
-        def _vtk_js_source_with_tube(idx: int) -> str:
-            base = orig_vtk_js_source_fn(idx) if orig_vtk_js_source_fn is not None else ""
-            tube_code = _render(
-                _TUBE_FILTER_TEMPLATE,
-                SOURCE=f"source{idx}",
-                TUBED_PD=f"tubedPD{idx}",
-                TUBE_FILTER=f"tubeFilter{idx}",
-                RADIUS=str(radius),
-                N_SIDES=str(n_sides),
-                CAPPING="true" if capping else "false",
-            )
-            return base + "\n" + tube_code
-
-        def _mapper_setup_tube(idx: int) -> str:
-            return f"mapper{idx}.setInputData(tubedPD{idx});"
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "tube",
+                "radius": radius,
+                "numberOfSides": n_sides,
+            },
+        )
 
         return PolyData(
             points=self.points,
             faces=self.faces,
-            _vtk_js_source_fn=_vtk_js_source_with_tube,
-            _mapper_setup_fn=_mapper_setup_tube,
+            _scene_data=base_scene,
         )
 
     def contour(
@@ -799,17 +746,24 @@ class PolyData:
         # Generate contour values
         contour_values = self._get_contour_values(isosurfaces, scalar_data)
 
-        # Build the vtk.js source function
-        orig_vtk_js_source_fn = self._vtk_js_source_fn
-
-        def _vtk_js_source_with_contour(idx: int) -> str:
-            base = self._get_base_source(idx, orig_vtk_js_source_fn)
-            scalar_injection = self._build_scalar_injection(idx, scalar_data, scalar_name_final)
-            contour_code = self._build_contour_code(idx, contour_values)
-            return base + "\n" + scalar_injection + "\n" + contour_code
-
-        def _mapper_setup_contour(idx: int) -> str:
-            return f"mapper{idx}.setInputData(contourPD{idx});"
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "contour",
+                "values": contour_values,
+                "scalarName": scalar_name_final,
+                "scalarData": scalar_data.flatten().tolist(),
+            },
+        )
 
         # Return new PolyData with contour filter applied
         return PolyData(
@@ -817,8 +771,7 @@ class PolyData:
             faces=self.faces,
             scalars=scalar_data,
             scalar_name=scalar_name_final,
-            _vtk_js_source_fn=_vtk_js_source_with_contour,
-            _mapper_setup_fn=_mapper_setup_contour,
+            _scene_data=base_scene,
         )
 
     def _get_contour_scalars(self, scalars: ArrayLike | None) -> np.ndarray:
@@ -856,57 +809,90 @@ class PolyData:
             raise ValueError(msg)
         return contour_values
 
-    def _get_base_source(
-        self,
-        idx: int,
-        orig_vtk_js_source_fn: Callable[[int], str] | None,
-    ) -> str:
-        """Generate base vtk.js source code."""
-        if orig_vtk_js_source_fn is not None:
-            return orig_vtk_js_source_fn(idx)
+    def fill_holes(self, hole_size: float = 1000.0) -> PolyData:
+        """Fill holes in a polygonal mesh.
 
-        # Default implementation for generic meshes
-        points_flat = self.points.flatten().tolist()
-        points_str = ",".join(map(str, points_flat))
-        return _MESH_SOURCE_TEMPLATE.replace("{{INDEX}}", str(idx)).replace(
-            "{{POINTS_DATA}}",
-            points_str,
+        This filter identifies and fills holes in the mesh by locating
+        boundary edges, linking them together into loops, and then
+        triangulating the resulting loops. A hole size threshold controls
+        which holes are filled.
+
+        It mirrors the PyVista ``fill_holes`` filter API and replicates
+        the behavior of the vtk.js FillHolesFilter example.
+
+        .. note::
+
+            The hole filling is computed in JavaScript at render time by
+            finding boundary edges (edges belonging to only one polygon),
+            linking them into loops, and fan-triangulating each loop whose
+            perimeter is smaller than ``hole_size``.
+
+        Parameters
+        ----------
+        hole_size : float, optional
+            The maximum hole size to fill, specified as the length of the
+            perimeter of the hole. Holes with a perimeter larger than this
+            value will not be filled. Default is 1000.0.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with holes filled.
+
+        Raises
+        ------
+        ValueError
+            If ``hole_size`` is not positive.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> filled = sphere.fill_holes(hole_size=100.0)
+        >>> isinstance(filled, pv.PolyData)
+        True
+
+        Create a sphere with a hole and fill it:
+
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> # Create a sphere with a hole by clipping
+        >>> sphere = pv.Sphere(radius=1.0)
+        >>> clipped_sphere = sphere.clip(normal='z', origin=(0, 0, 0.5))
+        >>> # Fill the hole
+        >>> filled_sphere = clipped_sphere.fill_holes(hole_size=10.0)
+        >>> filled_sphere.plot()  # doctest: +SKIP
+
+        Render the filled mesh:
+
+        >>> filled.plot()  # doctest: +SKIP
+
+        """
+        if hole_size <= 0:
+            msg = f"hole_size must be positive, got {hole_size}"
+            raise ValueError(msg)
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "fillHoles",
+                "holeSize": hole_size,
+            },
         )
 
-    def _build_scalar_injection(
-        self,
-        idx: int,
-        scalar_data: np.ndarray,
-        scalar_name: str,
-    ) -> str:
-        """Build JavaScript code to inject scalar data."""
-        scalars_flat = scalar_data.flatten().tolist()
-        scalars_str = ",".join(map(str, scalars_flat))
-        return (
-            f"\n// Inject scalar data for contouring\n"
-            f"(function() {{\n"
-            f"  var pd = (typeof source{idx}.getOutputData === 'function') ? "
-            f"source{idx}.getOutputData(0) : source{idx};\n"
-            f"  var scalars{idx} = vtk.Common.Core.vtkDataArray.newInstance({{\n"
-            f"    numberOfComponents: 1,\n"
-            f"    values: Float32Array.from([{scalars_str}]),\n"
-            f"    name: '{scalar_name}'\n"
-            f"  }});\n"
-            f"  pd.getPointData().setScalars(scalars{idx});\n"
-            f"}})();\n"
-        )
-
-    def _build_contour_code(
-        self,
-        idx: int,
-        contour_values: list[float],
-    ) -> str:
-        """Build JavaScript code for contour filter."""
-        values_str = ",".join(map(str, contour_values))
-        return _render(
-            _CONTOUR_FILTER_TEMPLATE,
-            INDEX=str(idx),
-            CONTOUR_VALUES=values_str,
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _scene_data=base_scene,
         )
 
     def texture_map_to_plane(self) -> PolyData:
@@ -947,126 +933,56 @@ class PolyData:
             t_coords=t_coords,
             scalars=self.scalars,
             scalar_name=self.scalar_name,
-            _vtk_js_source_fn=self._vtk_js_source_fn,
-            _mapper_setup_fn=self._mapper_setup_fn,
+            _scene_data=self._scene_data,
         )
 
-    def generate_vtk_js_source(self, idx: int) -> str:
-        """Generate vtk.js source code for this mesh.
-
-        Parameters
-        ----------
-        idx : int
-            Index of this mesh in the rendering pipeline.
+    def to_scene_data(self) -> dict[str, object]:
+        """Return a JSON-serializable dict describing this mesh source.
 
         Returns
         -------
-        str
-            JavaScript code to create the vtk.js source for this mesh.
+        dict
+            Source configuration with ``"type"`` key and type-specific parameters.
 
         """
-        if self._vtk_js_source_fn is not None:
-            source_code = self._vtk_js_source_fn(idx)
+        if self._scene_data is not None:
+            data: dict[str, object] = dict(self._scene_data)
         else:
-            # Default implementation for generic meshes using polydata
-            points_flat = self.points.flatten().tolist()
-            points_str = ",".join(map(str, points_flat))
-            source_code = _render(
-                _MESH_SOURCE_TEMPLATE,
-                SOURCE=f"source{idx}",
-                POINTS_DATA=points_str,
-            )
+            data = {
+                "type": "mesh",
+                "points": self.points.flatten().tolist(),
+            }
+            if self.faces is not None:
+                data["polys"] = self.faces.tolist()
 
-        # Inject texture coordinates into the generic polydata (not primitives).
-        # Primitive sources (Sphere, Cube, Cylinder) auto-generate TCoords via vtk.js.
-        if self.t_coords is not None and self._vtk_js_source_fn is None:
-            tcoords_flat = self.t_coords.flatten().tolist()
-            tcoords_str = ",".join(map(str, tcoords_flat))
-            source_code += (
-                f"\n// Inject texture coordinates\n"
-                f"const tcoords{idx} = vtk.Common.Core.vtkDataArray.newInstance({{\n"
-                f"  numberOfComponents: 2,\n"
-                f"  values: Float32Array.from([{tcoords_str}]),\n"
-                f"  name: 'TextureCoordinates'\n"
-                f"}});\n"
-                f"polydata{idx}.getPointData().setTCoords(tcoords{idx});\n"
-            )
+        # Inject texture coordinates
+        if self.t_coords is not None:
+            data["tCoords"] = self.t_coords.flatten().tolist()
 
-        # Inject point data scalar arrays
+        # Inject point data arrays
         if len(self._point_data) > 0:
-            # For primitives (source-based), make polydata{idx} available.
-            # For generic meshes, polydata{idx} already exists (from mesh_source.js).
-            if self._vtk_js_source_fn is not None:
-                if self._vtk_js_source_is_filter:
-                    # source{idx} is a vtk.js filter - extract its output polydata
-                    source_code += (
-                        f"\n// Extract output polydata from source for scalar injection\n"
-                        f"source{idx}.update();\n"
-                        f"const polydata{idx} = source{idx}.getOutputData();\n"
-                    )
-                else:
-                    # source{idx} is already a vtkPolyData - alias it directly
-                    source_code += (
-                        f"\n// source{idx} is already a vtkPolyData\n"
-                        f"const polydata{idx} = source{idx};\n"
-                    )
-
+            point_data_arrays: list[dict[str, object]] = []
             for name, array in self._point_data.items():
-                array_flat = array.flatten().tolist()
-                array_str = ",".join(map(str, array_flat))
-                # Determine number of components based on array shape
-                if array.ndim == 1:
-                    n_components = 1
-                elif array.ndim == 2:  # noqa: PLR2004
-                    n_components = array.shape[1]
-                else:
-                    msg = f"Point data array '{name}' must be 1D or 2D, got shape {array.shape}"
-                    raise ValueError(msg)
-
-                safe_name = name.replace(" ", "_")
-                source_code += (
-                    f"\n// Inject point data array '{name}'\n"
-                    f"const pointArray{idx}_{safe_name} = "
-                    f"vtk.Common.Core.vtkDataArray.newInstance({{\n"
-                    f"  numberOfComponents: {n_components},\n"
-                    f"  values: Float32Array.from([{array_str}]),\n"
-                    f"  name: '{name}'\n"
-                    f"}});\n"
-                    f"polydata{idx}.getPointData().addArray("
-                    f"pointArray{idx}_{safe_name});\n"
+                n_components = 1 if array.ndim == 1 else array.shape[1]
+                point_data_arrays.append(
+                    {
+                        "name": name,
+                        "numberOfComponents": n_components,
+                        "values": array.flatten().tolist(),
+                    },
                 )
+            data["pointData"] = point_data_arrays
 
-        return source_code
-
-    def get_mapper_setup(self, idx: int) -> str:
-        """Get the mapper setup code for this mesh.
-
-        Parameters
-        ----------
-        idx : int
-            Index of this mesh in the rendering pipeline.
-
-        Returns
-        -------
-        str
-            JavaScript code to set up the mapper for this mesh.
-
-        """
-        if self._mapper_setup_fn is not None:
-            return self._mapper_setup_fn(idx)
-        return f"mapper{idx}.setInputData(source{idx});"
+        return data
 
     def __getstate__(self) -> dict[str, object]:
         """Return state for pickling.
-
-        Excludes the unpicklable callable functions (_vtk_js_source_fn and
-        _mapper_setup_fn), keeping only the serializable mesh data.
 
         Returns
         -------
         dict
             State dictionary containing points, faces, texture coordinates,
-            point data, and source type flag.
+            point data, and scene data.
 
         """
         return {
@@ -1074,15 +990,11 @@ class PolyData:
             "faces": self.faces,
             "t_coords": self.t_coords,
             "_point_data": self._point_data,
-            "_vtk_js_source_is_filter": self._vtk_js_source_is_filter,
+            "_scene_data": self._scene_data,
         }
 
     def __setstate__(self, state: dict[str, object]) -> None:
         """Restore state from pickle.
-
-        Reconstructs the mesh from pickled state. Note that primitive
-        meshes will lose their vtk.js source functions and will be
-        treated as generic PolyData after unpickling.
 
         Parameters
         ----------
@@ -1094,10 +1006,7 @@ class PolyData:
         self.faces = state["faces"]  # type: ignore[assignment]
         self.t_coords = state["t_coords"]  # type: ignore[assignment]
         self._point_data = state["_point_data"]  # type: ignore[assignment]
-        self._vtk_js_source_is_filter = state["_vtk_js_source_is_filter"]  # type: ignore[assignment]
-        # Set unpicklable callables to None
-        self._vtk_js_source_fn = None
-        self._mapper_setup_fn = None
+        self._scene_data = state.get("_scene_data")  # type: ignore[assignment]
 
 
 def Sphere(  # noqa: N802
@@ -1156,26 +1065,15 @@ def Sphere(  # noqa: N802
             z = radius * np.cos(phi) + center[2]
             points.append([x, y, z])
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _SPHERE_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            TEX_MAP_SPHERE=f"texMapSphere{idx}",
-            CENTER_X=str(center[0]),
-            CENTER_Y=str(center[1]),
-            CENTER_Z=str(center[2]),
-            RADIUS=str(radius),
-            THETA_RESOLUTION=str(theta_resolution),
-            PHI_RESOLUTION=str(phi_resolution),
-        )
-
-    def _mapper_setup_sphere(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(texMapSphere{idx}.getOutputPort());"
-
     return PolyData(
         points=np.array(points),
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_sphere,
+        _scene_data={
+            "type": "sphere",
+            "center": list(center),
+            "radius": radius,
+            "thetaResolution": theta_resolution,
+            "phiResolution": phi_resolution,
+        },
     )
 
 
@@ -1265,26 +1163,15 @@ def Cube(  # noqa: N802
         ],
     )
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _CUBE_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            CENTER_X=str(center[0]),
-            CENTER_Y=str(center[1]),
-            CENTER_Z=str(center[2]),
-            X_LENGTH=str(x_length),
-            Y_LENGTH=str(y_length),
-            Z_LENGTH=str(z_length),
-        )
-
-    def _mapper_setup_cube(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
     return PolyData(
         points=points,
         faces=faces,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_cube,
+        _scene_data={
+            "type": "cube",
+            "xLength": x_length,
+            "yLength": y_length,
+            "zLength": z_length,
+        },
     )
 
 
@@ -1352,25 +1239,14 @@ def Cylinder(  # noqa: N802
     )
     points = np.array(points_list)
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _CYLINDER_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            CENTER_X=str(center[0]),
-            CENTER_Y=str(center[1]),
-            CENTER_Z=str(center[2]),
-            RADIUS=str(radius),
-            HEIGHT=str(height),
-            RESOLUTION=str(resolution),
-        )
-
-    def _mapper_setup_cylinder(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
     return PolyData(
         points=points,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_cylinder,
+        _scene_data={
+            "type": "cylinder",
+            "height": height,
+            "radius": radius,
+            "resolution": resolution,
+        },
     )
 
 
@@ -1471,25 +1347,15 @@ def Disc(  # noqa: N802, PLR0913
 
     pts += np.asarray(center, dtype=float)
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _DISK_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            R_RES=str(r_res),
-            C_RES=str(c_res),
-            INNER=str(inner),
-            OUTER=str(outer),
-        )
-
-    def _mapper_setup_disc(idx: int) -> str:
-        return f"mapper{idx}.setInputData(source{idx});"
-
     return PolyData(
         points=pts,
         faces=np.array(faces) if faces else None,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_disc,
-        _vtk_js_source_is_filter=False,
+        _scene_data={
+            "type": "disk",
+            "innerRadius": inner,
+            "outerRadius": outer,
+            "resolution": c_res,
+        },
     )
 
 
@@ -1533,27 +1399,13 @@ def Circle(  # noqa: N802
     # Close the loop by appending the first point
     points = np.vstack([points, points[0]])
 
-    center = (0.0, 0.0, 0.0)
-
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _CIRCLE_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            RESOLUTION=str(resolution),
-            RADIUS=str(radius),
-            CENTER_X=str(center[0]),
-            CENTER_Y=str(center[1]),
-            CENTER_Z=str(center[2]),
-        )
-
-    def _mapper_setup_circle(idx: int) -> str:
-        return f"mapper{idx}.setInputData(source{idx});"
-
     return PolyData(
         points=points,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_circle,
-        _vtk_js_source_is_filter=False,
+        _scene_data={
+            "type": "circle",
+            "radius": radius,
+            "resolution": resolution,
+        },
     )
 
 
@@ -1562,9 +1414,9 @@ def Arrow(  # noqa: N802, PLR0913
     direction: tuple[float, float, float] = (1.0, 0.0, 0.0),
     tip_length: float = 0.25,
     tip_radius: float = 0.1,
-    tip_resolution: int = 20,
+    tip_resolution: int = 20,  # noqa: ARG001
     shaft_radius: float = 0.05,
-    shaft_resolution: int = 20,
+    shaft_resolution: int = 20,  # noqa: ARG001
     scale: float | None = None,
 ) -> PolyData:
     """Create an arrow mesh.
@@ -1630,27 +1482,14 @@ def Arrow(  # noqa: N802, PLR0913
     end = start_arr + unit_dir * length
     points = np.array([start_arr, end])
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _ARROW_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            TIP_LENGTH=str(tip_length),
-            TIP_RADIUS=str(tip_radius),
-            TIP_RESOLUTION=str(tip_resolution),
-            SHAFT_RADIUS=str(shaft_radius),
-            SHAFT_RESOLUTION=str(shaft_resolution),
-            DIR_X=str(float(unit_dir[0])),
-            DIR_Y=str(float(unit_dir[1])),
-            DIR_Z=str(float(unit_dir[2])),
-        )
-
-    def _mapper_setup_arrow(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
     return PolyData(
         points=points,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_arrow,
+        _scene_data={
+            "type": "arrow",
+            "tipLength": tip_length,
+            "tipRadius": tip_radius,
+            "shaftRadius": shaft_radius,
+        },
     )
 
 
@@ -1712,29 +1551,14 @@ def Cone(  # noqa: N802 PLR0913
     if capping:
         points = np.vstack([points, base_center[np.newaxis, :]])
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _CONE_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            CENTER_X=str(center[0]),
-            CENTER_Y=str(center[1]),
-            CENTER_Z=str(center[2]),
-            DIRECTION_X=str(d[0]),
-            DIRECTION_Y=str(d[1]),
-            DIRECTION_Z=str(d[2]),
-            HEIGHT=str(height),
-            RADIUS=str(radius),
-            RESOLUTION=str(resolution),
-            CAPPING="true" if capping else "false",
-        )
-
-    def _mapper_setup_cone(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
     return PolyData(
         points=points,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_cone,
+        _scene_data={
+            "type": "cone",
+            "height": height,
+            "radius": radius,
+            "resolution": resolution,
+        },
     )
 
 
@@ -1783,26 +1607,13 @@ def Line(  # noqa: N802
 
     points = np.linspace(pointa, pointb, resolution + 1)
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _LINE_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            POINT_A_X=str(float(pointa[0])),
-            POINT_A_Y=str(float(pointa[1])),
-            POINT_A_Z=str(float(pointa[2])),
-            POINT_B_X=str(float(pointb[0])),
-            POINT_B_Y=str(float(pointb[1])),
-            POINT_B_Z=str(float(pointb[2])),
-            RESOLUTION=str(resolution),
-        )
-
-    def _mapper_setup_line(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
     return PolyData(
         points=points,
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_line,
+        _scene_data={
+            "type": "line",
+            "point1": list(pointa),
+            "point2": list(pointb),
+        },
     )
 
 
@@ -1864,8 +1675,6 @@ def Plane(  # noqa: N802 PLR0913
 
     c = np.array(center, dtype=float)
     origin = c - (i_size / 2) * i_hat - (j_size / 2) * j_hat
-    point1 = c + (i_size / 2) * i_hat - (j_size / 2) * j_hat
-    point2 = c - (i_size / 2) * i_hat + (j_size / 2) * j_hat
 
     # Build Python points grid for PolyData
     points = []
@@ -1884,29 +1693,12 @@ def Plane(  # noqa: N802 PLR0913
             idx3 = idx0 + i_resolution + 1
             faces.append([idx0, idx1, idx2, idx3])
 
-    def _vtk_js_source(idx: int) -> str:
-        return _render(
-            _PLANE_SOURCE_TEMPLATE,
-            SOURCE=f"source{idx}",
-            ORIGIN_X=str(float(origin[0])),
-            ORIGIN_Y=str(float(origin[1])),
-            ORIGIN_Z=str(float(origin[2])),
-            POINT1_X=str(float(point1[0])),
-            POINT1_Y=str(float(point1[1])),
-            POINT1_Z=str(float(point1[2])),
-            POINT2_X=str(float(point2[0])),
-            POINT2_Y=str(float(point2[1])),
-            POINT2_Z=str(float(point2[2])),
-            I_RESOLUTION=str(i_resolution),
-            J_RESOLUTION=str(j_resolution),
-        )
-
-    def _mapper_setup_plane(idx: int) -> str:
-        return f"mapper{idx}.setInputConnection(source{idx}.getOutputPort());"
-
     return PolyData(
         points=np.array(points),
         faces=np.array(faces),
-        _vtk_js_source_fn=_vtk_js_source,
-        _mapper_setup_fn=_mapper_setup_plane,
+        _scene_data={
+            "type": "plane",
+            "origin": [float(origin[0]), float(origin[1]), float(origin[2])],
+            "normal": [float(n[0]), float(n[1]), float(n[2])],
+        },
     )

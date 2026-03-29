@@ -17,6 +17,9 @@ Thank you for your interest in contributing to pyvista-js! This document provide
   - [Making Changes](#making-changes)
   - [Committing Changes](#committing-changes)
 - [Code Quality Standards](#code-quality-standards)
+- [TypeScript Development](#typescript-development)
+  - [Setup](#setup)
+  - [Building](#building)
 - [Testing](#testing)
   - [Running Tests](#running-tests)
   - [Writing Tests](#writing-tests)
@@ -157,14 +160,35 @@ git commit -m "feat(plotter): add support for physically based rendering"
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/tkoyama010/pyvista-js/main.svg)](https://results.pre-commit.ci/latest/github/tkoyama010/pyvista-js/main)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![djlint](https://img.shields.io/badge/html%20templates-djLint-blueviolet.svg)](https://www.djlint.com)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
+[![xo](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/xojs/xo)
 
 The project uses pre-commit hooks to ensure code quality.
 
+## TypeScript Development
+
+The JavaScript renderer (`src/pyvista_js/templates/renderer.js`) is generated from TypeScript source at `ts/renderer.ts`. Node.js is only required when editing TypeScript files.
+
+### Setup
+
 ```bash
-# Run all pre-commit hooks
-uv run pre-commit run --all-files
+npm install
 ```
+
+### Building
+
+```bash
+# One-time build
+npm run build
+
+# Watch mode (auto-rebuild on save)
+npm run watch
+
+# Type check only (no output)
+npm run typecheck
+```
+
+The built `renderer.js` is not committed to git. It is generated automatically during `python -m build` via `hatch-build-scripts`. For local development, run `npm run build` after editing TypeScript files.
 
 ## Testing
 

@@ -2,7 +2,8 @@
 
 [![Documentation Status](https://readthedocs.org/projects/pyvista-js/badge/?version=latest)](https://pyvista-js.readthedocs.io/en/latest/?badge=latest)
 [![JupyterLite](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://tkoyama010.github.io/pyvista-js/)
-[![stlite](https://img.shields.io/badge/stlite-lite_now-FF4B4B?logo=streamlit&logoColor=white)](https://tkoyama010.github.io/pyvista-js/stlite)
+[![stlite](https://img.shields.io/badge/stlite-lite_now-FF4B4B?logo=streamlit&logoColor=white)](https://edit.share.stlite.net/#!CgZhcHAucHkS3AQKBmFwcC5weRLRBArOBCIiIlN0cmVhbWxpdCBhcHAgZm9yIHRoZSBweXZpc3RhLWpzIHN0bGl0ZSBkZW1vLiIiIgoKaW1wb3J0IHN0cmVhbWxpdCBhcyBzdAppbXBvcnQgc3RyZWFtbGl0LmNvbXBvbmVudHMudjEgYXMgY29tcG9uZW50cwoKaW1wb3J0IHB5dmlzdGFfanMgYXMgcHYKZnJvbSBweXZpc3RhX2pzIGltcG9ydCBleGFtcGxlcwoKY29sb3IgPSBzdC5zZWxlY3Rib3goCiAgICAiQ29sb3IiLAogICAgWyJncmF5IiwgIndoaXRlIiwgInJlZCIsICJncmVlbiIsICJibHVlIiwgInllbGxvdyIsICJjeWFuIiwgIm1hZ2VudGEiXSwKKQoKb3BhY2l0eSA9IHN0LnNsaWRlcigiT3BhY2l0eSIsIG1pbl92YWx1ZT0wLjAsIG1heF92YWx1ZT0xLjAsIHZhbHVlPTAuOCwgc3RlcD0wLjEpCgpwbG90dGVyID0gcHYuUGxvdHRlcigpCgptZXNoID0gZXhhbXBsZXMuZG93bmxvYWRfYnVubnkoKQoKcGxvdHRlci5hZGRfbWVzaChtZXNoLCBjb2xvcj1jb2xvciwgb3BhY2l0eT1vcGFjaXR5KQoKaHRtbCA9IHBsb3R0ZXIuX3JlbmRlcmVyLl9nZW5lcmF0ZV9zdGFuZGFsb25lX2h0bWwoKSAgIyBub3FhOiBTTEYwMDEKY29tcG9uZW50cy5odG1sKGh0bWwsIGhlaWdodD02MDApGgpweXZpc3RhLWpz)
+[![notebook-link](https://img.shields.io/badge/notebook-link-e2d610?logo=jupyter&logoColor=white)](https://notebook.link/github/tkoyama010/pyvista-js/blob/notebook-link/intro.ipynb)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/RichardLitt/standard-readme)
 
 [PyVista](https://github.com/pyvista/pyvista)-like API for [vtk.js](https://github.com/Kitware/vtk-js) — bring intuitive 3D visualization to the browser.
@@ -117,7 +118,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 [BSD 3-Clause](LICENSE) © Tetsuo Koyama
 
-[jupyterlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/preview.gif
-[stlite-preview]: https://raw.githubusercontent.com/tkoyama010/pyvista-js/main/assets/stlite-preview.gif
+[jupyterlite-preview]: https://github.com/tkoyama010/pyvista-js/releases/latest/download/preview.gif
+[stlite-preview]: https://github.com/tkoyama010/pyvista-js/releases/latest/download/stlite-preview.gif
 [try it with jupyterlite]: https://tkoyama010.github.io/pyvista-js/
-[try it with stlite]: https://tkoyama010.github.io/pyvista-js/stlite
+[try it with stlite]: https://edit.share.stlite.net/#!CgZhcHAucHkS3AQKBmFwcC5weRLRBArOBCIiIlN0cmVhbWxpdCBhcHAgZm9yIHRoZSBweXZpc3RhLWpzIHN0bGl0ZSBkZW1vLiIiIgoKaW1wb3J0IHN0cmVhbWxpdCBhcyBzdAppbXBvcnQgc3RyZWFtbGl0LmNvbXBvbmVudHMudjEgYXMgY29tcG9uZW50cwoKaW1wb3J0IHB5dmlzdGFfanMgYXMgcHYKZnJvbSBweXZpc3RhX2pzIGltcG9ydCBleGFtcGxlcwoKY29sb3IgPSBzdC5zZWxlY3Rib3goCiAgICAiQ29sb3IiLAogICAgWyJncmF5IiwgIndoaXRlIiwgInJlZCIsICJncmVlbiIsICJibHVlIiwgInllbGxvdyIsICJjeWFuIiwgIm1hZ2VudGEiXSwKKQoKb3BhY2l0eSA9IHN0LnNsaWRlcigiT3BhY2l0eSIsIG1pbl92YWx1ZT0wLjAsIG1heF92YWx1ZT0xLjAsIHZhbHVlPTAuOCwgc3RlcD0wLjEpCgpwbG90dGVyID0gcHYuUGxvdHRlcigpCgptZXNoID0gZXhhbXBsZXMuZG93bmxvYWRfYnVubnkoKQoKcGxvdHRlci5hZGRfbWVzaChtZXNoLCBjb2xvcj1jb2xvciwgb3BhY2l0eT1vcGFjaXR5KQoKaHRtbCA9IHBsb3R0ZXIuX3JlbmRlcmVyLl9nZW5lcmF0ZV9zdGFuZGFsb25lX2h0bWwoKSAgIyBub3FhOiBTTEYwMDEKY29tcG9uZW50cy5odG1sKGh0bWwsIGhlaWdodD02MDApGgpweXZpc3RhLWpz
