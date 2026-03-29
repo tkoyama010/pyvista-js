@@ -215,14 +215,26 @@ function getReaderMap(): ReaderFactoryMap {
 }
 
 /**
- * Dispatch to the appropriate source factory based on `cfg.type`.
+ * Create a source (vtk.js algorithm or PolyData) from a configuration.
  * @param cfg
  * @returns A {@link SourceResult} for the configured source type, or `undefined` if the type is unknown.
  */
-function createSource(cfg: SourceConfig): SourceResult | undefined {
+async function createSource(cfg: SourceConfig): Promise<SourceResult | undefined> {
   switch (cfg.type) {
     case "sphere": {
-      return createSphereSource(cfg);
+      return await createSphereSource(cfg);
+    }
+
+    case "cone": {
+      return await createConeSource(cfg);
+    }
+
+    case "cube": {
+      return await createCubeSource(cfg);
+    }
+
+    case "cylinder": {
+      return await createCylinderSource(cfg);
     }
 
     case "cone": {
@@ -629,13 +641,13 @@ function applyTexture(
  * @param ren
  * @param renWin
  */
-function setupActor(
+async function setupActor(
   cfg: ActorConfig,
   _index: number,
   ren: VtkRenderer,
   renWin: VtkRenderWindow,
-): void {
-  const sourceResult = createSource(cfg.source);
+): Promise<void> {
+  const sourceResult = await createSource(cfg.source);
   if (!sourceResult?.output) {
     return;
   }
