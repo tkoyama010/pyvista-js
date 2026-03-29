@@ -13,59 +13,99 @@ _LIGHT_TYPES = (SCENE_LIGHT, CAMERA_LIGHT, HEADLIGHT)
 
 
 class Light:
-    """A light source for 3D rendering.
-
-    Wraps ``vtk.Rendering.Core.vtkLight`` and supports three placement modes:
-
-    - **SceneLight** - fixed in world space (default).
-    - **CameraLight** - moves with the camera.
-    - **Headlight** - always at the camera position, shining toward the focal point.
+    """Light class.
 
     Parameters
     ----------
-    position : tuple of float, optional
-        (x, y, z) position in world space. Default is ``(0, 0, 1)``.
-    focal_point : tuple of float, optional
-        (x, y, z) point the light shines toward. Default is ``(0, 0, 0)``.
-    color : tuple of float or str, optional
-        RGB color with values between 0 and 1, or a color name. Default is white.
+    position : sequence[float], optional
+        The position of the light. The interpretation of the position
+        depends on the type of the light and whether the light has a
+        transformation matrix.
+
+    focal_point : sequence[float], optional
+        The focal point of the light. The interpretation of the focal
+        point depends on the type of the light and whether the light
+        has a transformation matrix.
+
+    color : sequence[float] | str, optional
+        The color of the light. The ambient, diffuse and specular
+        colors will all be set to this color on creation.
+
+    light_type : str, default: ``'SceneLight'``
+        The type of the light. One of ``'Headlight'``,
+        ``'CameraLight'`` or ``'SceneLight'``.
+
+            - A headlight is attached to the camera, looking at its
+              focal point along the axis of the camera.
+
+            - A camera light also moves with the camera, but it can
+              occupy a general position with respect to it.
+
+            - A scene light is stationary with respect to the scene,
+              as it does not follow the camera. This is the default.
+
     intensity : float, optional
-        Brightness of the light. Default is ``1.0``.
-    light_type : str, optional
-        One of ``'SceneLight'``, ``'CameraLight'``, or ``'Headlight'``.
-        Default is ``'SceneLight'``.
+        The brightness of the light (between 0 and 1).
+
     positional : bool, optional
-        If ``True``, the light acts as a spotlight using ``cone_angle`` and
-        ``cone_falloff``. Default is ``False``.
+        Set if the light is positional.
+
+        The default is a directional light, i.e. an infinitely distant
+        point source. A positional light with a cone angle of at least
+        90 degrees acts like a spherical point source. A positional
+        light with a cone angle that is less than 90 degrees is known
+        as a spotlight.
+
     cone_angle : float, optional
-        Half-angle (degrees) of the spotlight cone. Values >= 90 disable
-        spot-lighting. Default is ``30.0``.
+        Cone angle of a positional light in degrees.
+
     cone_falloff : float, optional
-        Exponent controlling how sharply the light falls off at the cone edge.
-        Default is ``5.0``.
-    attenuation_values : tuple of float, optional
-        ``(constant, linear, quadratic)`` attenuation coefficients.
-        Default is ``(1.0, 0.0, 0.0)``.
+        The exponent of the cosine used for spotlights.
+
+    attenuation_values : sequence[float], optional
+        Quadratic attenuation constants.
+
+        The values are a 3-length sequence which specifies the constant,
+        linear and quadratic constants in this order. These parameters
+        only have an effect for positional lights.
 
     Examples
     --------
-    Add a white scene light:
+    Headlight. For headlights the position and focal point properties
+    are meaningless. No matter where you move the camera, the light
+    always emanates from the view point:
 
     >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_bunny()
     >>> plotter = pv.Plotter()
-    >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
-    >>> light = pv.Light(position=(1, 1, 1), color='white', intensity=1.5)
+    >>> _ = plotter.add_mesh(mesh, color='lightblue')
+    >>> light = pv.Light(light_type='Headlight')
+    >>> # these don't do anything for a headlight:
+    >>> light.position = (1, 2, 3)
+    >>> light.focal_point = (4, 5, 6)
     >>> plotter.add_light(light)
     >>> plotter.show()  # doctest: +SKIP
 
-    Spotlight example:
+    Camera light. Camera lights move together with the camera, but
+    can occupy any fixed relative position with respect to the camera:
 
-    >>> light = pv.Light(
-    ...     position=(0, 5, 0),
-    ...     focal_point=(0, 0, 0),
-    ...     positional=True,
-    ...     cone_angle=20.0,
-    ... )
+    >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(mesh, color='lightblue')
+    >>> # a light that always shines from the right of the camera
+    >>> light = pv.Light(position=(1, 0, 0), light_type='CameraLight')
+    >>> plotter.add_light(light)
+    >>> plotter.show()  # doctest: +SKIP
+
+    Scene light. Scene lights are attached to the scene, their position
+    and focal point are interpreted as global coordinates:
+
+    >>> plotter = pv.Plotter()
+    >>> _ = plotter.add_mesh(mesh, color='lightblue')
+    >>> # a light that always shines on the left side of the bunny
+    >>> light = pv.Light(position=(0, 1, 0), light_type='SceneLight')
+    >>> plotter.add_light(light)
+    >>> plotter.show()  # doctest: +SKIP
 
     """
 
