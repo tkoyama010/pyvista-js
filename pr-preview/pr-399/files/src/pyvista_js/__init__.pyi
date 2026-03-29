@@ -22,9 +22,9 @@ __all__ = [
     "TextProperty",
     "Texture",
     "__version__",
+    "algorithms",
     "examples",
     "pyvista_chart",
-    "algorithms",
 ]
 
 # Module metadata
@@ -32,8 +32,7 @@ __version__: str
 __author__: str
 __license__: str
 
-from . import algorithms
-from . import examples
+from . import algorithms, examples
 from .camera import Camera
 from .light import Light
 from .mesh import (
