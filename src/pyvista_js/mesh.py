@@ -1,4 +1,8 @@
-# ... (previous content) ...
+"""Mesh classes and utilities for pyvista-js.
+
+This module provides classes for working with meshes, including
+UnstructuredGrid and CellType.
+"""
 
 # CellType constants
 class CellType:
@@ -35,7 +39,6 @@ class CellType:
     QUADRATIC_TRIANGLE = 10
     BIQUADRATIC_TRIANGLE = 11
     QUADRATIC_QUAD = 12
-    BIQUADRATIC_QUAD = 13
     CONVEX_POLYGON = 14
 
     # 3D cells
@@ -50,7 +53,6 @@ class CellType:
     QUADRATIC_HEXAHEDRON = 18
     QUADRATIC_WEDGE = 19
     QUADRATIC_PYRAMID = 20
-    BIQUADRATIC_QUAD = 21
     TRIQUADRATIC_HEXAHEDRON = 22
     QUADRATIC_LINEAR_QUAD = 23
     QUADRATIC_LINEAR_WEDGE = 24
@@ -66,14 +68,9 @@ class CellType:
     HIGHER_ORDER_PYRAMID = 34
     HIGHER_ORDER_QUADRATIC_QUAD = 35
     HIGHER_ORDER_QUADRATIC_LINEAR_QUAD = 36
-    HIGHER_ORDER_BIQUADRATIC_QUAD = 37
     HIGHER_ORDER_QUADRATIC_TETRAHEDRON = 38
     HIGHER_ORDER_BIQUADRATIC_QUAD = 39
     HIGHER_ORDER_TRIQUADRATIC_HEXAHEDRON = 40
     HIGHER_ORDER_QUADRATIC_LINEAR_WEDGE = 41
     HIGHER_ORDER_BIQUADRATIC_QUADRATIC_WEDGE = 42
-    HIGHER_ORDER_TRIQUADRATIC_HEXAHEDRON = 43
     PARAMETRIC_REGION = 44
-
-
-# ... (rest of the file content) ...
