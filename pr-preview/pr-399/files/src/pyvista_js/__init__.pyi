@@ -24,6 +24,7 @@ __all__ = [
     "__version__",
     "examples",
     "pyvista_chart",
+    "algorithms",
 ]
 
 # Module metadata
@@ -31,6 +32,7 @@ __version__: str
 __author__: str
 __license__: str
 
+from . import algorithms
 from . import examples
 from .camera import Camera
 from .light import Light
