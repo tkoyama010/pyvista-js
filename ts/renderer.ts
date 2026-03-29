@@ -123,12 +123,10 @@ async function main(): Promise<void> {
   renderWindow.render();
 }
 
-// Execute main function with top-level await
-try {
-  await main();
-} catch (error) {
+// Execute main function
+main().catch((error) => {
   console.error("Failed to initialize rendering:", error);
-}
+});
 
 /**
  * Add custom lights to the renderer, replacing the defaults.
@@ -267,36 +265,16 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the texture-mapped sphere filter.
  */
-async function createSphereSource(cfg: SourceConfig): Promise<SourceResult> {
-  try {
-    // Use Python algorithm if available
-    const result = await callPythonSphere(cfg.radius, cfg.thetaResolution, cfg.phiResolution);
-    const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-    const pointsArray = Float32Array.from(result.points);
-    const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
-    vtkPts.setData(pointsArray, 3);
-    polydata.setPoints(vtkPts);
-    
-    if (result.faces) {
-      const facesArray = Uint32Array.from(result.faces);
-      polydata.getPolys().setData(facesArray);
-    }
-    
-    const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
-    texMap.setInputData(polydata);
-    return { output: texMap, isFilter: true };
-  } catch (error) {
-    console.warn('Python sphere algorithm failed, falling back to vtk.js:', error);
-    const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
-      center: cfg.center,
-      radius: cfg.radius,
-      thetaResolution: cfg.thetaResolution,
-      phiResolution: cfg.phiResolution,
-    });
-    const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
-    texMap.setInputConnection(source.getOutputPort());
-    return { output: texMap, isFilter: true };
-  }
+function createSphereSource(cfg: SourceConfig): SourceResult {
+  const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
+    center: cfg.center,
+    radius: cfg.radius,
+    thetaResolution: cfg.thetaResolution,
+    phiResolution: cfg.phiResolution,
+  });
+  const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
+  texMap.setInputConnection(source.getOutputPort());
+  return { output: texMap, isFilter: true };
 }
 
 /**
