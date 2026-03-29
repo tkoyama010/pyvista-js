@@ -66,73 +66,86 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
   }
 }
 
-const sceneData: SceneData =
-  typeof __pvjsSceneData === "undefined"
-    ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
-    : __pvjsSceneData;
-const container: HTMLElement =
-  typeof __pvjsContainer === "undefined"
-    ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
-      document.createElement("div"))
-    : __pvjsContainer;
-const bg = sceneData.background;
+/**
+ * Main async rendering function
+ */
+async function main(): Promise<void> {
+  // Initialize Python algorithms first
+  await initializePythonAlgorithms();
 
-const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
-renderer.setBackground(bg[0], bg[1], bg[2]);
+  const sceneData: SceneData =
+    typeof __pvjsSceneData === "undefined"
+      ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
+      : __pvjsSceneData;
+  const container: HTMLElement =
+    typeof __pvjsContainer === "undefined"
+      ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
+        document.createElement("div"))
+      : __pvjsContainer;
+  const bg = sceneData.background;
 
-const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
-renderWindow.addRenderer(renderer);
+  const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+  renderer.setBackground(bg[0], bg[1], bg[2]);
 
-const openGlRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
-renderWindow.addView(openGlRenderWindow);
-openGlRenderWindow.setContainer(container);
+  const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+  renderWindow.addRenderer(renderer);
 
-const bbox = container.getBoundingClientRect();
-openGlRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
+  const openGlRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+  renderWindow.addView(openGlRenderWindow);
+  openGlRenderWindow.setContainer(container);
 
-const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
-const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
-interactor.setInteractorStyle(interactorStyle);
-interactor.setView(openGlRenderWindow);
-interactor.initialize();
-interactor.bindEvents(container);
+  const bbox = container.getBoundingClientRect();
+  openGlRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
 
-// eslint-disable-next-line unicorn/prefer-global-this -- Window augmentation requires window
-window.renderer = renderer;
-// eslint-disable-next-line unicorn/prefer-global-this
-window.renderWindow = renderWindow;
-// eslint-disable-next-line unicorn/prefer-global-this
-window.openGlRenderWindow = openGlRenderWindow;
-// eslint-disable-next-line unicorn/prefer-global-this
-window.interactor = interactor;
+  const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+  const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
+  interactor.setInteractorStyle(interactorStyle);
+  interactor.setView(openGlRenderWindow);
+  interactor.initialize();
+  interactor.bindEvents(container);
 
-if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
-  renderer.removeAllLights();
-  renderer.setAutomaticLightCreation(false);
-} else {
-  setupLights(sceneData.lights, renderer);
-}
+  // eslint-disable-next-line unicorn/prefer-global-this -- Window augmentation requires window
+  window.renderer = renderer;
+  // eslint-disable-next-line unicorn/prefer-global-this
+  window.renderWindow = renderWindow;
+  // eslint-disable-next-line unicorn/prefer-global-this
+  window.openGlRenderWindow = openGlRenderWindow;
+  // eslint-disable-next-line unicorn/prefer-global-this
+  window.interactor = interactor;
 
-for (const [index, actorConfig] of sceneData.actors.entries()) {
-  setupActor(actorConfig, index, renderer, renderWindow);
-}
-
-if (sceneData.textActors) {
-  for (const textConfig of sceneData.textActors) {
-    setupTextActor(textConfig, container);
+  if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
+    renderer.removeAllLights();
+    renderer.setAutomaticLightCreation(false);
+  } else {
+    setupLights(sceneData.lights, renderer);
   }
+
+  for (const [index, actorConfig] of sceneData.actors.entries()) {
+    await setupActor(actorConfig, index, renderer, renderWindow);
+  }
+
+  if (sceneData.textActors) {
+    for (const textConfig of sceneData.textActors) {
+      setupTextActor(textConfig, container);
+    }
+  }
+
+  if (sceneData.axes) {
+    setupAxes(interactor);
+  }
+
+  renderer.resetCamera();
+  if (sceneData.camera) {
+    setupCamera(renderer, sceneData.camera);
+  }
+
+  renderWindow.render();
 }
 
-if (sceneData.axes) {
-  setupAxes(interactor);
-}
-
-renderer.resetCamera();
-if (sceneData.camera) {
-  setupCamera(renderer, sceneData.camera);
-}
-
-renderWindow.render();
+// Execute main function
+main().catch(error => {
+  console.error('Failed to initialize rendering:', error);
+});
 
 /**
  * Add custom lights to the renderer, replacing the defaults.
@@ -635,7 +648,7 @@ function setupActor(
 
   let currentResult = sourceResult;
   if (cfg.source.filters && cfg.source.filters.length > 0) {
-    currentResult = applyFilters(sourceResult, cfg.source.filters);
+    currentResult = await applyFilters(sourceResult, cfg.source.filters);
   }
 
   const mapperInput = setupNormals(currentResult, cfg.normals);
@@ -795,10 +808,6 @@ async function applyFilters(sourceResult: SourceResult, filters: FilterConfig[])
     } else if (f.type === "contour" && f.values && f.scalarName && f.scalarData) {
       current = await applyContourFilter(current, f.values, f.scalarName, f.scalarData);
     }
-  }
-
-  return current;
-}
   }
 
   return current;

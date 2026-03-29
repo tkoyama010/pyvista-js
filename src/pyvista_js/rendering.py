@@ -85,7 +85,7 @@ if TYPE_CHECKING:
 
     from .camera import Camera
     from .light import Light
-    from .mesh import PolyData, UnstructuredGrid
+    from .mesh import PolyData
     from .text import Text
     from .texture import Texture
 
@@ -257,7 +257,7 @@ class _BaseHTMLRenderer:
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
-        mesh: PolyData | UnstructuredGrid,
+        mesh: PolyData,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
@@ -1298,7 +1298,7 @@ class MockRenderer:
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
-        mesh: PolyData | UnstructuredGrid,
+        mesh: PolyData,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002

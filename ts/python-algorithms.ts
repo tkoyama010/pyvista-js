@@ -6,7 +6,7 @@
  * Uses the Pyodide runtime to execute Python code in the browser.
  */
 
-import type { SourceConfig, SourceResult, FilterConfig } from "./types.js";
+import type { SourceConfig, SourceResult } from "./types.js";
 
 // Global Pyodide instance
 let pyodide: any = null;
@@ -502,7 +502,7 @@ MeshProcessingAlgorithms.apply_clip_filter(
 export async function applyContourFilterPython(
   sourceResult: SourceResult,
   values: number[],
-  scalarName: string,
+  _scalarName: string,
   scalarData: number[]
 ): Promise<SourceResult> {
   if (!pyodideReady) {
