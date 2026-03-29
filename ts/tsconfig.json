@@ -13,6 +13,7 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "target": "ES2017",
+    "module": "ES2022",
     "lib": ["ES2017", "DOM"],
     "noEmit": true,
     "skipLibCheck": true,

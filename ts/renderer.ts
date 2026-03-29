@@ -50,73 +50,85 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
   }
 }
 
-const sceneData: SceneData =
-  typeof __pvjsSceneData === "undefined"
-    ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
-    : __pvjsSceneData;
-const container: HTMLElement =
-  typeof __pvjsContainer === "undefined"
-    ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
-      document.createElement("div"))
-    : __pvjsContainer;
-const bg = sceneData.background;
+/**
+ * Main async rendering function
+ */
+async function main(): Promise<void> {
+  const sceneData: SceneData =
+    typeof __pvjsSceneData === "undefined"
+      ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
+      : __pvjsSceneData;
+  const container: HTMLElement =
+    typeof __pvjsContainer === "undefined"
+      ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
+        document.createElement("div"))
+      : __pvjsContainer;
+  const bg = sceneData.background;
 
-const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
-renderer.setBackground(bg[0], bg[1], bg[2]);
+  const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
+  renderer.setBackground(bg[0], bg[1], bg[2]);
 
-const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
-renderWindow.addRenderer(renderer);
+  const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
+  renderWindow.addRenderer(renderer);
 
-const openGlRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
-renderWindow.addView(openGlRenderWindow);
-openGlRenderWindow.setContainer(container);
+  const openGlRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
+  renderWindow.addView(openGlRenderWindow);
+  openGlRenderWindow.setContainer(container);
 
-const bbox = container.getBoundingClientRect();
-openGlRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
+  const bbox = container.getBoundingClientRect();
+  openGlRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
 
-const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
-const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
-interactor.setInteractorStyle(interactorStyle);
-interactor.setView(openGlRenderWindow);
-interactor.initialize();
-interactor.bindEvents(container);
+  const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+  const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
+  interactor.setInteractorStyle(interactorStyle);
+  interactor.setView(openGlRenderWindow);
+  interactor.initialize();
+  interactor.bindEvents(container);
 
-// eslint-disable-next-line unicorn/prefer-global-this -- Window augmentation requires window
-window.renderer = renderer;
-// eslint-disable-next-line unicorn/prefer-global-this
-window.renderWindow = renderWindow;
-// eslint-disable-next-line unicorn/prefer-global-this
-window.openGlRenderWindow = openGlRenderWindow;
-// eslint-disable-next-line unicorn/prefer-global-this
-window.interactor = interactor;
+  // eslint-disable-next-line unicorn/prefer-global-this -- Window augmentation requires window
+  window.renderer = renderer;
+  // eslint-disable-next-line unicorn/prefer-global-this
+  window.renderWindow = renderWindow;
+  // eslint-disable-next-line unicorn/prefer-global-this
+  window.openGlRenderWindow = openGlRenderWindow;
+  // eslint-disable-next-line unicorn/prefer-global-this
+  window.interactor = interactor;
 
-if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
-  renderer.removeAllLights();
-  renderer.setAutomaticLightCreation(false);
-} else {
-  setupLights(sceneData.lights, renderer);
-}
-
-for (const [index, actorConfig] of sceneData.actors.entries()) {
-  setupActor(actorConfig, index, renderer, renderWindow);
-}
-
-if (sceneData.textActors) {
-  for (const textConfig of sceneData.textActors) {
-    setupTextActor(textConfig, container);
+  if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
+    renderer.removeAllLights();
+    renderer.setAutomaticLightCreation(false);
+  } else {
+    setupLights(sceneData.lights, renderer);
   }
+
+  for (const [index, actorConfig] of sceneData.actors.entries()) {
+    setupActor(actorConfig, index, renderer, renderWindow);
+  }
+
+  if (sceneData.textActors) {
+    for (const textConfig of sceneData.textActors) {
+      setupTextActor(textConfig, container);
+    }
+  }
+
+  if (sceneData.axes) {
+    setupAxes(interactor);
+  }
+
+  renderer.resetCamera();
+  if (sceneData.camera) {
+    setupCamera(renderer, sceneData.camera);
+  }
+
+  renderWindow.render();
 }
 
-if (sceneData.axes) {
-  setupAxes(interactor);
+// Execute main function with top-level await
+try {
+  await main();
+} catch (error) {
+  console.error("Failed to initialize rendering:", error);
 }
-
-renderer.resetCamera();
-if (sceneData.camera) {
-  setupCamera(renderer, sceneData.camera);
-}
-
-renderWindow.render();
 
 /**
  * Add custom lights to the renderer, replacing the defaults.
@@ -255,16 +267,36 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the texture-mapped sphere filter.
  */
-function createSphereSource(cfg: SourceConfig): SourceResult {
-  const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
-    center: cfg.center,
-    radius: cfg.radius,
-    thetaResolution: cfg.thetaResolution,
-    phiResolution: cfg.phiResolution,
-  });
-  const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
-  texMap.setInputConnection(source.getOutputPort());
-  return { output: texMap, isFilter: true };
+async function createSphereSource(cfg: SourceConfig): Promise<SourceResult> {
+  try {
+    // Use Python algorithm if available
+    const result = await callPythonSphere(cfg.radius, cfg.thetaResolution, cfg.phiResolution);
+    const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+    const pointsArray = Float32Array.from(result.points);
+    const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+    vtkPts.setData(pointsArray, 3);
+    polydata.setPoints(vtkPts);
+    
+    if (result.faces) {
+      const facesArray = Uint32Array.from(result.faces);
+      polydata.getPolys().setData(facesArray);
+    }
+    
+    const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
+    texMap.setInputData(polydata);
+    return { output: texMap, isFilter: true };
+  } catch (error) {
+    console.warn('Python sphere algorithm failed, falling back to vtk.js:', error);
+    const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
+      center: cfg.center,
+      radius: cfg.radius,
+      thetaResolution: cfg.thetaResolution,
+      phiResolution: cfg.phiResolution,
+    });
+    const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
+    texMap.setInputConnection(source.getOutputPort());
+    return { output: texMap, isFilter: true };
+  }
 }
 
 /**
