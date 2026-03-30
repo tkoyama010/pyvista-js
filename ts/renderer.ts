@@ -186,68 +186,39 @@ function getReaderMap(): ReaderFactoryMap {
 }
 
 /**
+ * Map from source type names to their factory functions.
+ */
+const sourceFactoryMap: Record<string, (cfg: SourceConfig) => SourceResult> = {
+  sphere: createSphereSource,
+  cone: createConeSource,
+  cube: createCubeSource,
+  cylinder: createCylinderSource,
+  disk: createDiskSource,
+  circle: createCircleSource,
+  arrow: createArrowSource,
+  line: createLineSource,
+  plane: createPlaneSource,
+  mesh: createMeshSource,
+  points: createPointsSource,
+  plyReader: createReaderSource,
+  stlReader: createReaderSource,
+  objReader: createReaderSource,
+  vtkReader: createReaderSource,
+};
+
+/**
  * Dispatch to the appropriate source factory based on `cfg.type`.
  * @param cfg
  * @returns A {@link SourceResult} for the configured source type, or `undefined` if the type is unknown.
  */
 function createSource(cfg: SourceConfig): SourceResult | undefined {
-  switch (cfg.type) {
-    case "sphere": {
-      return createSphereSource(cfg);
-    }
-
-    case "cone": {
-      return createConeSource(cfg);
-    }
-
-    case "cube": {
-      return createCubeSource(cfg);
-    }
-
-    case "cylinder": {
-      return createCylinderSource(cfg);
-    }
-
-    case "disk": {
-      return createDiskSource(cfg);
-    }
-
-    case "circle": {
-      return createCircleSource(cfg);
-    }
-
-    case "arrow": {
-      return createArrowSource(cfg);
-    }
-
-    case "line": {
-      return createLineSource(cfg);
-    }
-
-    case "plane": {
-      return createPlaneSource(cfg);
-    }
-
-    case "mesh": {
-      return createMeshSource(cfg);
-    }
-
-    case "points": {
-      return createPointsSource(cfg);
-    }
-
-    case "plyReader":
-    case "stlReader":
-    case "objReader":
-    case "vtkReader": {
-      return createReaderSource(cfg);
-    }
-
-    default: {
-      console.error("Unknown source type:", cfg.type);
-      return undefined;
-    }
+  const factory = sourceFactoryMap[cfg.type];
+  if (!factory) {
+    console.error("Unknown source type:", cfg.type);
+    return undefined;
   }
+
+  return factory(cfg);
 }
 
 /**
@@ -554,6 +525,74 @@ function applyTexture(
 }
 
 /**
+ * Apply representation style and shading to an actor.
+ * @param actor
+ * @param cfg
+ */
+function applyActorStyle(actor: VtkActor, cfg: ActorConfig): void {
+  const styleMap: Record<string, number> = {
+    surface: 2,
+    wireframe: 1,
+    points: 0,
+  };
+  const rep = styleMap[cfg.style];
+  if (rep !== undefined) {
+    actor.getProperty().setRepresentation(rep);
+  }
+
+  if (cfg.shading === "gouraud") {
+    actor.getProperty().setInterpolationToGouraud();
+  } else if (cfg.shading === "flat") {
+    actor.getProperty().setInterpolationToFlat();
+  }
+
+  if (cfg.edges) {
+    actor.getProperty().setEdgeVisibility(true);
+    actor.getProperty().setEdgeColor(cfg.edges.color[0], cfg.edges.color[1], cfg.edges.color[2]);
+  }
+}
+
+/**
+ * Configure point-specific rendering on the actor and mapper.
+ * @param actor
+ * @param mapper
+ * @param cfg
+ */
+function applyPointStyle(actor: VtkActor, mapper: VtkMapper, cfg: ActorConfig): void {
+  if (cfg.actorType !== "points") {
+    return;
+  }
+
+  if (cfg.renderPointsAsSpheres && mapper.setRadius) {
+    mapper.setRadius((cfg.pointSize ?? 5) * 0.01);
+  } else {
+    actor.getProperty().setPointSize(cfg.pointSize ?? 5);
+    actor.getProperty().setRepresentationToPoints();
+  }
+}
+
+/**
+ * Create a mapper and connect it to the source pipeline.
+ * @param mapperInput
+ * @param cfg
+ * @returns The configured mapper.
+ */
+function createMapper(mapperInput: SourceResult, cfg: ActorConfig): VtkMapper {
+  const mapperClass =
+    cfg.actorType === "points" && cfg.renderPointsAsSpheres
+      ? vtk.Rendering.Core.vtkSphereMapper
+      : vtk.Rendering.Core.vtkMapper;
+  const mapper = mapperClass.newInstance();
+  if (mapperInput.isFilter) {
+    mapper.setInputConnection((mapperInput.output as VtkAlgorithm).getOutputPort());
+  } else {
+    mapper.setInputData(mapperInput.output as VtkPolyData);
+  }
+
+  return mapper;
+}
+
+/**
  * Build a complete vtk.js actor from an {@link ActorConfig} and add it to the renderer.
  * @param cfg
  * @param _index
@@ -583,55 +622,16 @@ function setupActor(
   }
 
   const mapperInput = setupNormals(currentResult, cfg.normals);
-
-  const mapperClass =
-    cfg.actorType === "points" && cfg.renderPointsAsSpheres
-      ? vtk.Rendering.Core.vtkSphereMapper
-      : vtk.Rendering.Core.vtkMapper;
-  const mapper = mapperClass.newInstance();
-  if (mapperInput.isFilter) {
-    mapper.setInputConnection((mapperInput.output as VtkAlgorithm).getOutputPort());
-  } else {
-    mapper.setInputData(mapperInput.output as VtkPolyData);
-  }
+  const mapper = createMapper(mapperInput, cfg);
 
   const actor = vtk.Rendering.Core.vtkActor.newInstance();
   actor.setMapper(mapper);
   actor.getProperty().setColor(cfg.color[0], cfg.color[1], cfg.color[2]);
   actor.getProperty().setOpacity(cfg.opacity);
 
-  const styleMap: Record<string, number> = {
-    surface: 2,
-    wireframe: 1,
-    points: 0,
-  };
-  const rep = styleMap[cfg.style];
-  if (rep !== undefined) {
-    actor.getProperty().setRepresentation(rep);
-  }
-
-  if (cfg.shading === "gouraud") {
-    actor.getProperty().setInterpolationToGouraud();
-  } else if (cfg.shading === "flat") {
-    actor.getProperty().setInterpolationToFlat();
-  }
-
-  if (cfg.edges) {
-    actor.getProperty().setEdgeVisibility(true);
-    actor.getProperty().setEdgeColor(cfg.edges.color[0], cfg.edges.color[1], cfg.edges.color[2]);
-  }
-
+  applyActorStyle(actor, cfg);
   applyPbr(actor, cfg.pbr);
-
-  if (cfg.actorType === "points") {
-    if (cfg.renderPointsAsSpheres && mapper.setRadius) {
-      mapper.setRadius((cfg.pointSize ?? 5) * 0.01);
-    } else {
-      actor.getProperty().setPointSize(cfg.pointSize ?? 5);
-      actor.getProperty().setRepresentationToPoints();
-    }
-  }
-
+  applyPointStyle(actor, mapper, cfg);
   applyTexture(actor, renWin, cfg.texture);
 
   ren.addActor(actor);
@@ -722,6 +722,74 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
 }
 
 /**
+ * Try to apply a shrink filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryShrinkFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  return f.shrinkFactor === undefined ? current : applyShrinkFilter(current, f.shrinkFactor);
+}
+
+/**
+ * Try to apply a tube filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryTubeFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  return f.radius === undefined || f.numberOfSides === undefined
+    ? current
+    : applyTubeFilter(current, f.radius, f.numberOfSides);
+}
+
+/**
+ * Try to apply a clip filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  return !f.normal || !f.origin || f.invert === undefined
+    ? current
+    : applyClipFilter(current, f.normal, f.origin, f.invert);
+}
+
+/**
+ * Try to apply a contour filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryContourFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  return !f.values || !f.scalarName || !f.scalarData
+    ? current
+    : applyContourFilter(current, f.values, f.scalarName, f.scalarData);
+}
+
+/**
+ * Try to apply a fill-holes filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  return f.holeSize === undefined ? current : applyFillHolesFilter(current, f.holeSize);
+}
+
+/**
+ * Map from filter type to its dispatcher function.
+ */
+const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
+  {
+    shrink: tryShrinkFilter,
+    tube: tryTubeFilter,
+    clip: tryClipFilter,
+    contour: tryContourFilter,
+    fillHoles: tryFillHolesFilter,
+  };
+
+/**
  * Apply a chain of filters to a source.
  * @param sourceResult
  * @param filters
@@ -730,16 +798,9 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
 function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): SourceResult {
   let current = sourceResult;
   for (const f of filters) {
-    if (f.type === "shrink" && f.shrinkFactor !== undefined) {
-      current = applyShrinkFilter(current, f.shrinkFactor);
-    } else if (f.type === "tube" && f.radius !== undefined && f.numberOfSides !== undefined) {
-      current = applyTubeFilter(current, f.radius, f.numberOfSides);
-    } else if (f.type === "clip" && f.normal && f.origin && f.invert !== undefined) {
-      current = applyClipFilter(current, f.normal, f.origin, f.invert);
-    } else if (f.type === "contour" && f.values && f.scalarName && f.scalarData) {
-      current = applyContourFilter(current, f.values, f.scalarName, f.scalarData);
-    } else if (f.type === "fillHoles" && f.holeSize !== undefined) {
-      current = applyFillHolesFilter(current, f.holeSize);
+    const dispatch = filterDispatchMap[f.type];
+    if (dispatch) {
+      current = dispatch(current, f);
     }
   }
 
@@ -1109,6 +1170,45 @@ function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
 }
 
 /**
+ * Walk a single boundary loop starting from a given node.
+ * @param startNode
+ * @param boundaryAdj
+ * @param visited
+ * @returns The loop as an array of vertex indices.
+ */
+function walkLoop(
+  startNode: number,
+  boundaryAdj: Map<number, number[]>,
+  visited: Set<number>,
+): number[] {
+  const loop: number[] = [];
+  let current = startNode;
+  let previous = -1;
+  let stuck = false;
+  while (!stuck) {
+    visited.add(current);
+    loop.push(current);
+    const neighbors = boundaryAdj.get(current) ?? [];
+    let next = -1;
+    for (const n of neighbors) {
+      if (n !== previous && !visited.has(n)) {
+        next = n;
+        break;
+      }
+    }
+
+    if (next === -1) {
+      stuck = true;
+    } else {
+      previous = current;
+      current = next;
+    }
+  }
+
+  return loop;
+}
+
+/**
  * Trace closed loops from boundary adjacency.
  * @param boundaryAdj - Boundary adjacency map from {@link buildBoundaryAdjacency}.
  * @returns An array of loops, each being an array of vertex indices.
@@ -1118,30 +1218,7 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
   const loops: number[][] = [];
   for (const startNode of boundaryAdj.keys()) {
     if (visited.has(startNode)) continue;
-    const loop: number[] = [];
-    let current = startNode;
-    let previous = -1;
-    let stuck = false;
-    while (!stuck) {
-      visited.add(current);
-      loop.push(current);
-      const neighbors = boundaryAdj.get(current) ?? [];
-      let next = -1;
-      for (const n of neighbors) {
-        if (n !== previous && !visited.has(n)) {
-          next = n;
-          break;
-        }
-      }
-
-      if (next === -1) {
-        stuck = true;
-      } else {
-        previous = current;
-        current = next;
-      }
-    }
-
+    const loop = walkLoop(startNode, boundaryAdj, visited);
     if (loop.length > 2) {
       loops.push(loop);
     }
