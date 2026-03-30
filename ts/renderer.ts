@@ -18,10 +18,10 @@ function at(array: Float32Array | Uint32Array, index: number): number {
 }
 
 /** Wraps either a vtk.js algorithm (filter/source) or raw PolyData. */
-type SourceResult = {
+interface SourceResult {
   output: VtkAlgorithm | VtkPolyData;
   isFilter: boolean;
-};
+}
 
 /**
  * Resolve a {@link SourceResult} to its underlying PolyData.
@@ -214,7 +214,7 @@ const sourceFactoryMap: Record<string, (cfg: SourceConfig) => SourceResult> = {
 function createSource(cfg: SourceConfig): SourceResult | undefined {
   const factory = sourceFactoryMap[cfg.type];
   if (!factory) {
-    return undefined;
+    return;
   }
 
   return factory(cfg);
@@ -487,7 +487,9 @@ function setupNormals(
  * @param pbr
  */
 function applyPbr(actor: VtkActor, pbr: PbrConfig | undefined): void {
-  if (!pbr) return;
+  if (!pbr) {
+    return;
+  }
   actor.getProperty().setInterpolationToPhong();
   const m = pbr.metallic;
   const r = pbr.roughness;
@@ -510,7 +512,9 @@ function applyTexture(
   renWin: VtkRenderWindow,
   textureCfg: TextureConfig | undefined,
 ): void {
-  if (!textureCfg) return;
+  if (!textureCfg) {
+    return;
+  }
   const texture = vtk.Rendering.Core.vtkTexture.newInstance();
   texture.setInterpolate(true);
   actor.addTexture(texture);
@@ -927,22 +931,21 @@ function applyClipFilter(
  * @param invert
  * @returns A {@link SourceResult} containing only the cells on the kept side of the plane.
  */
+/** Clip plane definition for {@link applyClipManual}. */
+interface ClipPlane {
+  normal: [number, number, number];
+  origin: [number, number, number];
+  invert: boolean;
+}
+
 /**
  * Determine whether a cell centroid is on the kept side of a clip plane.
  * @param cellIndices
  * @param inPoints
- * @param normal
- * @param origin
- * @param invert
+ * @param plane
  * @returns True if the cell should be kept.
  */
-function shouldKeepCell(
-  cellIndices: number[],
-  inPoints: Float32Array,
-  normal: [number, number, number],
-  origin: [number, number, number],
-  invert: boolean,
-): boolean {
+function shouldKeepCell(cellIndices: number[], inPoints: Float32Array, plane: ClipPlane): boolean {
   const nVerts = cellIndices.length;
   let cx = 0;
   let cy = 0;
@@ -957,40 +960,40 @@ function shouldKeepCell(
   cy /= nVerts;
   cz /= nVerts;
   const dot =
-    (cx - origin[0]) * normal[0] + (cy - origin[1]) * normal[1] + (cz - origin[2]) * normal[2];
-  return invert ? dot >= 0 : dot <= 0;
+    (cx - plane.origin[0]) * plane.normal[0] +
+    (cy - plane.origin[1]) * plane.normal[1] +
+    (cz - plane.origin[2]) * plane.normal[2];
+  return plane.invert ? dot >= 0 : dot <= 0;
+}
+
+/** Mutable state for collecting clipped geometry in {@link applyClipManual}. */
+interface ClipState {
+  inPoints: Float32Array;
+  resultPoints: number[];
+  resultPolys: number[];
+  pointMap: Map<number, number>;
+  nextIndex: number;
 }
 
 /**
- * Emit a kept cell into the result arrays, deduplicating points via pointMap.
+ * Emit a kept cell into the clip state, deduplicating points via pointMap.
  * @param cellIndices
- * @param inPoints
- * @param resultPoints
- * @param resultPolys
- * @param pointMap
- * @param nextIndex
- * @returns The updated nextIndex.
+ * @param state
  */
-function emitClippedCell(
-  cellIndices: number[],
-  inPoints: Float32Array,
-  resultPoints: number[],
-  resultPolys: number[],
-  pointMap: Map<number, number>,
-  nextIndex: number,
-): number {
-  let idx = nextIndex;
-  resultPolys.push(cellIndices.length);
+function emitClippedCell(cellIndices: number[], state: ClipState): void {
+  state.resultPolys.push(cellIndices.length);
   for (const pi of cellIndices) {
-    if (!pointMap.has(pi)) {
-      pointMap.set(pi, idx++);
-      resultPoints.push(at(inPoints, pi * 3), at(inPoints, pi * 3 + 1), at(inPoints, pi * 3 + 2));
+    if (!state.pointMap.has(pi)) {
+      state.pointMap.set(pi, state.nextIndex++);
+      state.resultPoints.push(
+        at(state.inPoints, pi * 3),
+        at(state.inPoints, pi * 3 + 1),
+        at(state.inPoints, pi * 3 + 2),
+      );
     }
 
-    resultPolys.push(pointMap.get(pi) ?? 0);
+    state.resultPolys.push(state.pointMap.get(pi) ?? 0);
   }
-
-  return idx;
 }
 
 /**
@@ -1014,10 +1017,14 @@ function applyClipManual(
     return sourceResult;
   }
 
-  const resultPoints: number[] = [];
-  const resultPolys: number[] = [];
-  const pointMap = new Map<number, number>();
-  let nextIndex = 0;
+  const plane: ClipPlane = { normal, origin, invert };
+  const state: ClipState = {
+    inPoints,
+    resultPoints: [],
+    resultPolys: [],
+    pointMap: new Map<number, number>(),
+    nextIndex: 0,
+  };
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
@@ -1027,23 +1034,16 @@ function applyClipManual(
       cellIndices.push(at(polys, index + index_));
     }
 
-    if (shouldKeepCell(cellIndices, inPoints, normal, origin, invert)) {
-      nextIndex = emitClippedCell(
-        cellIndices,
-        inPoints,
-        resultPoints,
-        resultPolys,
-        pointMap,
-        nextIndex,
-      );
+    if (shouldKeepCell(cellIndices, inPoints, plane)) {
+      emitClippedCell(cellIndices, state);
     }
 
     index += nVerts;
   }
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
-  outputPd.getPoints().setData(new Float32Array(resultPoints), 3);
-  outputPd.getPolys().setData(new Uint32Array(resultPolys));
+  outputPd.getPoints().setData(new Float32Array(state.resultPoints), 3);
+  outputPd.getPolys().setData(new Uint32Array(state.resultPolys));
   return { output: outputPd, isFilter: false };
 }
 
@@ -1112,45 +1112,39 @@ function collectEdgeIntersections(
  * @param scalarName
  * @returns A {@link SourceResult} containing the marching-triangles contour line segments.
  */
+/** Mutable state for collecting contour line segments. */
+interface ContourState {
+  polys: Uint32Array;
+  scalarValues: Float32Array;
+  inPoints: Float32Array;
+  values: number[];
+  outPoints: number[];
+  outPolys: number[];
+  pointIndex: number;
+}
+
 /**
  * Process a single triangle for contour extraction at all given values.
- * @param polys
+ * @param state
  * @param index
- * @param scalarValues
- * @param inPoints
- * @param values
- * @param outPoints
- * @param outPolys
- * @param pointIndex
- * @returns The updated pointIndex.
  */
-function processContourTriangle(
-  polys: Uint32Array,
-  index: number,
-  scalarValues: Float32Array,
-  inPoints: Float32Array,
-  values: number[],
-  outPoints: number[],
-  outPolys: number[],
-  pointIndex: number,
-): number {
-  const index0 = at(polys, index);
-  const index1 = at(polys, index + 1);
-  const index2 = at(polys, index + 2);
-  const s0 = at(scalarValues, index0);
-  const s1 = at(scalarValues, index1);
-  const s2 = at(scalarValues, index2);
+function processContourTriangle(state: ContourState, index: number): void {
+  const index0 = at(state.polys, index);
+  const index1 = at(state.polys, index + 1);
+  const index2 = at(state.polys, index + 2);
+  const s0 = at(state.scalarValues, index0);
+  const s1 = at(state.scalarValues, index1);
+  const s2 = at(state.scalarValues, index2);
   const tri: [number, number, number, number][] = [
     [index0, index1, s0, s1],
     [index1, index2, s1, s2],
     [index2, index0, s2, s0],
   ];
-  let idx = pointIndex;
-  for (const value of values) {
-    const edgePoints = collectEdgeIntersections(tri, value, inPoints);
+  for (const value of state.values) {
+    const edgePoints = collectEdgeIntersections(tri, value, state.inPoints);
 
     if (edgePoints.length === 6) {
-      outPoints.push(
+      state.outPoints.push(
         edgePoints[0] ?? 0,
         edgePoints[1] ?? 0,
         edgePoints[2] ?? 0,
@@ -1158,12 +1152,10 @@ function processContourTriangle(
         edgePoints[4] ?? 0,
         edgePoints[5] ?? 0,
       );
-      outPolys.push(2, idx, idx + 1);
-      idx += 2;
+      state.outPolys.push(2, state.pointIndex, state.pointIndex + 1);
+      state.pointIndex += 2;
     }
   }
-
-  return idx;
 }
 
 /**
@@ -1190,34 +1182,31 @@ function applyContourManual(
 
   const scalarValues = scalarsArray.getData();
 
-  const outPoints: number[] = [];
-  const outPolys: number[] = [];
-  let pointIndex = 0;
+  const state: ContourState = {
+    polys,
+    scalarValues,
+    inPoints,
+    values,
+    outPoints: [],
+    outPolys: [],
+    pointIndex: 0,
+  };
 
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
     index++;
     if (nVerts === 3) {
-      pointIndex = processContourTriangle(
-        polys,
-        index,
-        scalarValues,
-        inPoints,
-        values,
-        outPoints,
-        outPolys,
-        pointIndex,
-      );
+      processContourTriangle(state, index);
     }
 
     index += nVerts;
   }
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
-  if (outPoints.length > 0) {
-    outputPd.getPoints().setData(new Float32Array(outPoints), 3);
-    outputPd.getLines().setData(new Uint32Array(outPolys));
+  if (state.outPoints.length > 0) {
+    outputPd.getPoints().setData(new Float32Array(state.outPoints), 3);
+    outputPd.getLines().setData(new Uint32Array(state.outPolys));
   }
 
   return { output: outputPd, isFilter: false };
@@ -1246,7 +1235,9 @@ function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
 
   const boundaryAdj = new Map<number, number[]>();
   for (const [key, count] of edgeCount) {
-    if (count !== 1) continue;
+    if (count !== 1) {
+      continue;
+    }
     const parts = key.split("_");
     const a = Number(parts[0]);
     const b = Number(parts[1]);
@@ -1316,7 +1307,9 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
   const visited = new Set<number>();
   const loops: number[][] = [];
   for (const startNode of boundaryAdj.keys()) {
-    if (visited.has(startNode)) continue;
+    if (visited.has(startNode)) {
+      continue;
+    }
     const loop = walkLoop(startNode, boundaryAdj, visited);
     if (loop.length > 2) {
       loops.push(loop);
