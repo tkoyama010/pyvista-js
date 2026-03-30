@@ -186,32 +186,29 @@ function getReaderMap(): ReaderFactoryMap {
 }
 
 /**
- * Map from source type names to their factory functions.
- */
-const sourceFactoryMap: Record<string, (cfg: SourceConfig) => SourceResult> = {
-  sphere: createSphereSource,
-  cone: createConeSource,
-  cube: createCubeSource,
-  cylinder: createCylinderSource,
-  disk: createDiskSource,
-  circle: createCircleSource,
-  arrow: createArrowSource,
-  line: createLineSource,
-  plane: createPlaneSource,
-  mesh: createMeshSource,
-  points: createPointsSource,
-  plyReader: createReaderSource,
-  stlReader: createReaderSource,
-  objReader: createReaderSource,
-  vtkReader: createReaderSource,
-};
-
-/**
  * Dispatch to the appropriate source factory based on `cfg.type`.
  * @param cfg
  * @returns A {@link SourceResult} for the configured source type, or `undefined` if the type is unknown.
  */
 function createSource(cfg: SourceConfig): SourceResult | undefined {
+  const sourceFactoryMap: Record<string, (sourceCfg: SourceConfig) => SourceResult> = {
+    sphere: createSphereSource,
+    cone: createConeSource,
+    cube: createCubeSource,
+    cylinder: createCylinderSource,
+    disk: createDiskSource,
+    circle: createCircleSource,
+    arrow: createArrowSource,
+    line: createLineSource,
+    plane: createPlaneSource,
+    mesh: createMeshSource,
+    points: createPointsSource,
+    plyReader: createReaderSource,
+    stlReader: createReaderSource,
+    objReader: createReaderSource,
+    vtkReader: createReaderSource,
+  };
+
   const factory = sourceFactoryMap[cfg.type];
   if (!factory) {
     return;
