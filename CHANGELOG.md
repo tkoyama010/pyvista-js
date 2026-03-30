@@ -2,27 +2,23 @@
 
 ## [0.13.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.12.0...pyvista-js-v0.13.0) (2026-03-30)
 
-
 ### Features
 
-* add fill_holes filter to PolyData ([#394](https://github.com/tkoyama010/pyvista-js/issues/394)) ([cfeb115](https://github.com/tkoyama010/pyvista-js/commit/cfeb1156683cf209fa83be2ac532d9543a625224))
-* add Notebook.link configuration ([#385](https://github.com/tkoyama010/pyvista-js/issues/385)) ([1d09838](https://github.com/tkoyama010/pyvista-js/commit/1d09838f651e7bae02f79425e777394fca60088e))
-* add UnstructuredGrid and CellType for 3D cell support ([#396](https://github.com/tkoyama010/pyvista-js/issues/396)) ([320c289](https://github.com/tkoyama010/pyvista-js/commit/320c2898d7c4cf4cfce2a2fd77937fef55cca24d))
-
+- add fill_holes filter to PolyData ([#394](https://github.com/tkoyama010/pyvista-js/issues/394)) ([cfeb115](https://github.com/tkoyama010/pyvista-js/commit/cfeb1156683cf209fa83be2ac532d9543a625224))
+- add Notebook.link configuration ([#385](https://github.com/tkoyama010/pyvista-js/issues/385)) ([1d09838](https://github.com/tkoyama010/pyvista-js/commit/1d09838f651e7bae02f79425e777394fca60088e))
+- add UnstructuredGrid and CellType for 3D cell support ([#396](https://github.com/tkoyama010/pyvista-js/issues/396)) ([320c289](https://github.com/tkoyama010/pyvista-js/commit/320c2898d7c4cf4cfce2a2fd77937fef55cca24d))
 
 ### Bug Fixes
 
-* migrate xo config to xo.config.js for xo 2.x compatibility (fixes [#381](https://github.com/tkoyama010/pyvista-js/issues/381)) ([#384](https://github.com/tkoyama010/pyvista-js/issues/384)) ([43c5e5f](https://github.com/tkoyama010/pyvista-js/commit/43c5e5f9fd0e6ff6e4c0e6b56ca1202207f536b6))
-
+- migrate xo config to xo.config.js for xo 2.x compatibility (fixes [#381](https://github.com/tkoyama010/pyvista-js/issues/381)) ([#384](https://github.com/tkoyama010/pyvista-js/issues/384)) ([43c5e5f](https://github.com/tkoyama010/pyvista-js/commit/43c5e5f9fd0e6ff6e4c0e6b56ca1202207f536b6))
 
 ### Documentation
 
-* replace stlite GitHub Pages URL with edit.share.stlite.net share URL ([#386](https://github.com/tkoyama010/pyvista-js/issues/386)) ([1f3d6f1](https://github.com/tkoyama010/pyvista-js/commit/1f3d6f107446379b80bfb872a684ee4107df8905))
-
+- replace stlite GitHub Pages URL with edit.share.stlite.net share URL ([#386](https://github.com/tkoyama010/pyvista-js/issues/386)) ([1f3d6f1](https://github.com/tkoyama010/pyvista-js/commit/1f3d6f107446379b80bfb872a684ee4107df8905))
 
 ### Continuous Integration
 
-* use PAT for Release Please to set PR author ([#388](https://github.com/tkoyama010/pyvista-js/issues/388)) ([7e65a00](https://github.com/tkoyama010/pyvista-js/commit/7e65a00b81bca085e9fff1ee7a830d3b87a13639))
+- use PAT for Release Please to set PR author ([#388](https://github.com/tkoyama010/pyvista-js/issues/388)) ([7e65a00](https://github.com/tkoyama010/pyvista-js/commit/7e65a00b81bca085e9fff1ee7a830d3b87a13639))
 
 ## [0.12.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.11.0...pyvista-js-v0.12.0) (2026-03-24)
 
