@@ -214,7 +214,6 @@ const sourceFactoryMap: Record<string, (cfg: SourceConfig) => SourceResult> = {
 function createSource(cfg: SourceConfig): SourceResult | undefined {
   const factory = sourceFactoryMap[cfg.type];
   if (!factory) {
-    console.error("Unknown source type:", cfg.type);
     return undefined;
   }
 
@@ -750,7 +749,7 @@ function tryTubeFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  return !f.normal || !f.origin || f.invert === undefined
+  return !(f.normal && f.origin) || f.invert === undefined
     ? current
     : applyClipFilter(current, f.normal, f.origin, f.invert);
 }
@@ -762,9 +761,9 @@ function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryContourFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  return !f.values || !f.scalarName || !f.scalarData
-    ? current
-    : applyContourFilter(current, f.values, f.scalarName, f.scalarData);
+  return f.values && f.scalarName && f.scalarData
+    ? applyContourFilter(current, f.values, f.scalarName, f.scalarData)
+    : current;
 }
 
 /**
@@ -928,6 +927,80 @@ function applyClipFilter(
  * @param invert
  * @returns A {@link SourceResult} containing only the cells on the kept side of the plane.
  */
+/**
+ * Determine whether a cell centroid is on the kept side of a clip plane.
+ * @param cellIndices
+ * @param inPoints
+ * @param normal
+ * @param origin
+ * @param invert
+ * @returns True if the cell should be kept.
+ */
+function shouldKeepCell(
+  cellIndices: number[],
+  inPoints: Float32Array,
+  normal: [number, number, number],
+  origin: [number, number, number],
+  invert: boolean,
+): boolean {
+  const nVerts = cellIndices.length;
+  let cx = 0;
+  let cy = 0;
+  let cz = 0;
+  for (const vi of cellIndices) {
+    cx += at(inPoints, vi * 3);
+    cy += at(inPoints, vi * 3 + 1);
+    cz += at(inPoints, vi * 3 + 2);
+  }
+
+  cx /= nVerts;
+  cy /= nVerts;
+  cz /= nVerts;
+  const dot =
+    (cx - origin[0]) * normal[0] + (cy - origin[1]) * normal[1] + (cz - origin[2]) * normal[2];
+  return invert ? dot >= 0 : dot <= 0;
+}
+
+/**
+ * Emit a kept cell into the result arrays, deduplicating points via pointMap.
+ * @param cellIndices
+ * @param inPoints
+ * @param resultPoints
+ * @param resultPolys
+ * @param pointMap
+ * @param nextIndex
+ * @returns The updated nextIndex.
+ */
+function emitClippedCell(
+  cellIndices: number[],
+  inPoints: Float32Array,
+  resultPoints: number[],
+  resultPolys: number[],
+  pointMap: Map<number, number>,
+  nextIndex: number,
+): number {
+  let idx = nextIndex;
+  resultPolys.push(cellIndices.length);
+  for (const pi of cellIndices) {
+    if (!pointMap.has(pi)) {
+      pointMap.set(pi, idx++);
+      resultPoints.push(at(inPoints, pi * 3), at(inPoints, pi * 3 + 1), at(inPoints, pi * 3 + 2));
+    }
+
+    resultPolys.push(pointMap.get(pi) ?? 0);
+  }
+
+  return idx;
+}
+
+/**
+ * Manual clip filter — keep only cells whose centroid is on one side of a plane.
+ * @param sourceResult
+ * @param normal
+ * @param origin
+ * @param invert
+ * @returns A {@link SourceResult} containing only the cells on the kept side of the plane.
+ */
 function applyClipManual(
   sourceResult: SourceResult,
   normal: [number, number, number],
@@ -941,9 +1014,6 @@ function applyClipManual(
     return sourceResult;
   }
 
-  const [nx, ny, nz] = normal;
-  const [ox, oy, oz] = origin;
-
   const resultPoints: number[] = [];
   const resultPolys: number[] = [];
   const pointMap = new Map<number, number>();
@@ -952,38 +1022,20 @@ function applyClipManual(
   while (index < polys.length) {
     const nVerts = at(polys, index);
     index++;
-    let cx = 0;
-    let cy = 0;
-    let cz = 0;
     const cellIndices: number[] = [];
     for (let index_ = 0; index_ < nVerts; index_++) {
-      const vi = at(polys, index + index_);
-      cellIndices.push(vi);
-      cx += at(inPoints, vi * 3);
-      cy += at(inPoints, vi * 3 + 1);
-      cz += at(inPoints, vi * 3 + 2);
+      cellIndices.push(at(polys, index + index_));
     }
 
-    cx /= nVerts;
-    cy /= nVerts;
-    cz /= nVerts;
-    const dot = (cx - ox) * nx + (cy - oy) * ny + (cz - oz) * nz;
-    const keep = invert ? dot >= 0 : dot <= 0;
-    if (keep) {
-      resultPolys.push(nVerts);
-      for (let k = 0; k < nVerts; k++) {
-        const pi = cellIndices[k] ?? 0;
-        if (!pointMap.has(pi)) {
-          pointMap.set(pi, nextIndex++);
-          resultPoints.push(
-            at(inPoints, pi * 3),
-            at(inPoints, pi * 3 + 1),
-            at(inPoints, pi * 3 + 2),
-          );
-        }
-
-        resultPolys.push(pointMap.get(pi) ?? 0);
-      }
+    if (shouldKeepCell(cellIndices, inPoints, normal, origin, invert)) {
+      nextIndex = emitClippedCell(
+        cellIndices,
+        inPoints,
+        resultPoints,
+        resultPolys,
+        pointMap,
+        nextIndex,
+      );
     }
 
     index += nVerts;
@@ -1030,7 +1082,7 @@ function applyContourFilter(
  * @returns Flat array of intersection coordinates (0 or 6 elements).
  */
 function collectEdgeIntersections(
-  tri: Array<[number, number, number, number]>,
+  tri: [number, number, number, number][],
   value: number,
   inPoints: Float32Array | Uint32Array,
 ): number[] {
@@ -1052,6 +1104,70 @@ function collectEdgeIntersections(
 
 /**
  * Manual marching-triangles contour extraction.
+ *
+ * For each triangle, linearly interpolate along edges to find intersection
+ * points at each contour value and emit line segments.
+ * @param inputPd
+ * @param values
+ * @param scalarName
+ * @returns A {@link SourceResult} containing the marching-triangles contour line segments.
+ */
+/**
+ * Process a single triangle for contour extraction at all given values.
+ * @param polys
+ * @param index
+ * @param scalarValues
+ * @param inPoints
+ * @param values
+ * @param outPoints
+ * @param outPolys
+ * @param pointIndex
+ * @returns The updated pointIndex.
+ */
+function processContourTriangle(
+  polys: Uint32Array,
+  index: number,
+  scalarValues: Float32Array,
+  inPoints: Float32Array,
+  values: number[],
+  outPoints: number[],
+  outPolys: number[],
+  pointIndex: number,
+): number {
+  const index0 = at(polys, index);
+  const index1 = at(polys, index + 1);
+  const index2 = at(polys, index + 2);
+  const s0 = at(scalarValues, index0);
+  const s1 = at(scalarValues, index1);
+  const s2 = at(scalarValues, index2);
+  const tri: [number, number, number, number][] = [
+    [index0, index1, s0, s1],
+    [index1, index2, s1, s2],
+    [index2, index0, s2, s0],
+  ];
+  let idx = pointIndex;
+  for (const value of values) {
+    const edgePoints = collectEdgeIntersections(tri, value, inPoints);
+
+    if (edgePoints.length === 6) {
+      outPoints.push(
+        edgePoints[0] ?? 0,
+        edgePoints[1] ?? 0,
+        edgePoints[2] ?? 0,
+        edgePoints[3] ?? 0,
+        edgePoints[4] ?? 0,
+        edgePoints[5] ?? 0,
+      );
+      outPolys.push(2, idx, idx + 1);
+      idx += 2;
+    }
+  }
+
+  return idx;
+}
+
+/**
+ * Marching-triangles contour extraction.
  *
  * For each triangle, linearly interpolate along edges to find intersection
  * points at each contour value and emit line segments.
@@ -1083,33 +1199,16 @@ function applyContourManual(
     const nVerts = at(polys, index);
     index++;
     if (nVerts === 3) {
-      const index0 = at(polys, index);
-      const index1 = at(polys, index + 1);
-      const index2 = at(polys, index + 2);
-      const s0 = at(scalarValues, index0);
-      const s1 = at(scalarValues, index1);
-      const s2 = at(scalarValues, index2);
-      const tri: Array<[number, number, number, number]> = [
-        [index0, index1, s0, s1],
-        [index1, index2, s1, s2],
-        [index2, index0, s2, s0],
-      ];
-      for (const value of values) {
-        const edgePoints = collectEdgeIntersections(tri, value, inPoints);
-
-        if (edgePoints.length === 6) {
-          outPoints.push(
-            edgePoints[0] ?? 0,
-            edgePoints[1] ?? 0,
-            edgePoints[2] ?? 0,
-            edgePoints[3] ?? 0,
-            edgePoints[4] ?? 0,
-            edgePoints[5] ?? 0,
-          );
-          outPolys.push(2, pointIndex, pointIndex + 1);
-          pointIndex += 2;
-        }
-      }
+      pointIndex = processContourTriangle(
+        polys,
+        index,
+        scalarValues,
+        inPoints,
+        values,
+        outPoints,
+        outPolys,
+        pointIndex,
+      );
     }
 
     index += nVerts;
@@ -1237,6 +1336,48 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
  * @param holeSize
  * @returns A {@link SourceResult} with holes filled.
  */
+/**
+ * Compute the perimeter of a boundary loop.
+ * @param loop
+ * @param inPoints
+ * @returns The perimeter length.
+ */
+function computeLoopPerimeter(loop: number[], inPoints: Float32Array): number {
+  let perimeter = 0;
+  for (let k = 0; k < loop.length; k++) {
+    const a = loop[k] ?? 0;
+    const b = loop[(k + 1) % loop.length] ?? 0;
+    const dx = at(inPoints, b * 3) - at(inPoints, a * 3);
+    const dy = at(inPoints, b * 3 + 1) - at(inPoints, a * 3 + 1);
+    const dz = at(inPoints, b * 3 + 2) - at(inPoints, a * 3 + 2);
+    perimeter += Math.hypot(dx, dy, dz);
+  }
+
+  return perimeter;
+}
+
+/**
+ * Fan-triangulate a boundary loop into triangle polygons.
+ * @param loop
+ * @param newPolys
+ */
+function triangulateLoop(loop: number[], newPolys: number[]): void {
+  const v0 = loop[0] ?? 0;
+  for (let k = 1; k < loop.length - 1; k++) {
+    const v1 = loop[k] ?? 0;
+    const v2 = loop[k + 1] ?? 0;
+    newPolys.push(3, v0, v1, v2);
+  }
+}
+
+/**
+ * Fill holes in a polygonal mesh by finding boundary edges, linking them
+ * into loops, and fan-triangulating each loop whose perimeter is within
+ * the given size threshold.
+ * @param sourceResult
+ * @param holeSize
+ * @returns A {@link SourceResult} with holes filled.
+ */
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {
   const inputPd = getPolyData(sourceResult);
   const inPoints = inputPd.getPoints().getData();
@@ -1252,26 +1393,10 @@ function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): Sou
 
   const loops = traceBoundaryLoops(boundaryAdj);
 
-  // Compute perimeter of each loop and fan-triangulate if within holeSize
   const newPolys: number[] = [];
   for (const loop of loops) {
-    let perimeter = 0;
-    for (let k = 0; k < loop.length; k++) {
-      const a = loop[k] ?? 0;
-      const b = loop[(k + 1) % loop.length] ?? 0;
-      const dx = at(inPoints, b * 3) - at(inPoints, a * 3);
-      const dy = at(inPoints, b * 3 + 1) - at(inPoints, a * 3 + 1);
-      const dz = at(inPoints, b * 3 + 2) - at(inPoints, a * 3 + 2);
-      perimeter += Math.hypot(dx, dy, dz);
-    }
-
-    if (perimeter <= holeSize) {
-      const v0 = loop[0] ?? 0;
-      for (let k = 1; k < loop.length - 1; k++) {
-        const v1 = loop[k] ?? 0;
-        const v2 = loop[k + 1] ?? 0;
-        newPolys.push(3, v0, v1, v2);
-      }
+    if (computeLoopPerimeter(loop, inPoints) <= holeSize) {
+      triangulateLoop(loop, newPolys);
     }
   }
 
@@ -1279,7 +1404,6 @@ function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): Sou
     return sourceResult;
   }
 
-  // Merge original polys with new fill polys
   const mergedPolys = new Uint32Array([...polys, ...newPolys]);
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
