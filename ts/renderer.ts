@@ -7,10 +7,6 @@
  * the scene data is read from the DOM.
  */
 
-// ---------------------------------------------------------------------------
-// Constants — named values for numbers that would otherwise be "magic".
-// ---------------------------------------------------------------------------
-
 /** Number of components in a 3-D coordinate (x, y, z). */
 const XYZ_COMPONENTS = 3;
 
