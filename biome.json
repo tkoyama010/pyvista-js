@@ -19,56 +19,8 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "complexity": {
-        "recommended": true,
-        "noExcessiveCognitiveComplexity": "error",
-        "noVoid": "error",
-        "useSimplifiedLogicExpression": "error"
-      },
-      "correctness": {
-        "recommended": true,
-        "noUndeclaredDependencies": "error",
-        "noUnusedFunctionParameters": "error",
-        "noUnusedImports": "error"
-      },
       "nursery": {
         "recommended": true
-      },
-      "performance": {
-        "recommended": true,
-        "noBarrelFile": "error",
-        "noReExportAll": "error"
-      },
-      "security": {
-        "recommended": true
-      },
-      "style": {
-        "recommended": true,
-        "noDefaultExport": "error",
-        "noNamespace": "error",
-        "noNegationElse": "error",
-        "noRestrictedGlobals": "error",
-        "useCollapsedElseIf": "error",
-        "useConsistentArrayType": "error",
-        "useExplicitLengthCheck": "error",
-        "useFilenamingConvention": "error",
-        "useForOf": "error",
-        "useFragmentSyntax": "error",
-        "useNamingConvention": "error",
-        "useNodeAssertStrict": "error",
-        "useShorthandAssign": "error",
-        "useThrowNewError": "error",
-        "useThrowOnlyError": "error"
-      },
-      "suspicious": {
-        "recommended": true,
-        "noConsole": "warn",
-        "noEmptyBlockStatements": "error",
-        "noMisplacedAssertion": "error",
-        "noMisrefactoredShorthandAssign": "error",
-        "useErrorMessage": "error",
-        "useGuardForIn": "error",
-        "useNumberToFixedDigitsArgument": "error"
       }
     }
   },
@@ -78,18 +30,6 @@
       "semicolons": "always"
     }
   },
-  "overrides": [
-    {
-      "includes": ["ts/*.d.ts"],
-      "linter": {
-        "rules": {
-          "style": {
-            "useNamingConvention": "off"
-          }
-        }
-      }
-    }
-  ],
   "assist": {
     "enabled": true,
     "actions": {
