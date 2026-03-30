@@ -7,6 +7,67 @@
  * the scene data is read from the DOM.
  */
 
+// ---------------------------------------------------------------------------
+// Constants — named values for numbers that would otherwise be "magic".
+// ---------------------------------------------------------------------------
+
+/** Number of components in a 3-D coordinate (x, y, z). */
+const XYZ_COMPONENTS = 3;
+
+/** Number of components in a 2-D texture coordinate (u, v). */
+const UV_COMPONENTS = 2;
+
+/** Default fallback width (px) when the container has no intrinsic size. */
+const DEFAULT_WIDTH = 600;
+
+/** Default fallback height (px) when the container has no intrinsic size. */
+const DEFAULT_HEIGHT = 400;
+
+/** Scale factor to convert a [0-1] float colour channel to [0-255] integer. */
+const COLOR_BYTE_SCALE = 255;
+
+/** Multiplier to convert a normalised fraction to a CSS percentage. */
+const PERCENT = 100;
+
+/** Default outer radius for a circle/disk source. */
+const DEFAULT_RADIUS = 1;
+
+/** Default circumferential resolution for a circle/disk source. */
+const DEFAULT_RESOLUTION = 50;
+
+/** Multiplier applied to pointSize when rendering points as spheres. */
+const POINT_SPHERE_RADIUS_SCALE = 0.01;
+
+/** Default point size (px) when none is specified. */
+const DEFAULT_POINT_SIZE = 5;
+
+// PBR material constants — hand-tuned for a plausible metallic/roughness look.
+const PBR_AMBIENT = 0.1;
+const PBR_SPECULAR_METALLIC_WEIGHT = 0.75;
+const PBR_SPECULAR_BASE = 0.25;
+const PBR_SPECULAR_POWER_SCALE = 100;
+const PBR_DIFFUSE_BASE = 0.65;
+const PBR_DIFFUSE_METALLIC_WEIGHT = 0.35;
+
+// Orientation-marker widget layout.
+const AXES_VIEWPORT_SIZE = 0.15;
+const AXES_MIN_PIXEL_SIZE = 100;
+const AXES_MAX_PIXEL_SIZE = 300;
+
+// vtk.js representation enum values.
+const VTK_REPRESENTATION_SURFACE = 2;
+const VTK_REPRESENTATION_WIREFRAME = 1;
+const VTK_REPRESENTATION_POINTS = 0;
+
+// Disk source uses a single radial ring.
+const DISK_RADIAL_RESOLUTION = 1;
+
+/** Number of vertices in a triangle. */
+const TRIANGLE_VERTS = 3;
+
+/** Number of coordinates produced by two edge intersections (2 points × 3 components). */
+const TWO_POINTS_XYZ = 6;
+
 /**
  * Access a typed array element, returning 0 for out-of-bounds.
  * @param array
@@ -72,7 +133,7 @@ renderWindow.addView(openGlRenderWindow);
 openGlRenderWindow.setContainer(container);
 
 const bbox = container.getBoundingClientRect();
-openGlRenderWindow.setSize(bbox.width || 600, bbox.height || 400);
+openGlRenderWindow.setSize(bbox.width || DEFAULT_WIDTH, bbox.height || DEFAULT_HEIGHT);
 
 const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
 const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
@@ -287,7 +348,7 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
     ? diskFactory.newInstance({
         innerRadius: cfg.innerRadius,
         outerRadius: cfg.outerRadius,
-        radialResolution: 1,
+        radialResolution: DISK_RADIAL_RESOLUTION,
         circumferentialResolution: cfg.resolution,
       })
     : undefined;
@@ -306,8 +367,8 @@ function createCircleSource(cfg: SourceConfig): SourceResult {
   return createDiskSource({
     type: "disk",
     innerRadius: 0,
-    outerRadius: cfg.radius ?? 1,
-    resolution: cfg.resolution ?? 50,
+    outerRadius: cfg.radius ?? DEFAULT_RADIUS,
+    resolution: cfg.resolution ?? DEFAULT_RESOLUTION,
   });
 }
 
@@ -363,7 +424,7 @@ function createMeshSource(cfg: SourceConfig): SourceResult {
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
   const pointsArray = Float32Array.from(cfg.points ?? []);
   const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
-  vtkPts.setData(pointsArray, 3);
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
   polydata.setPoints(vtkPts);
   if (cfg.polys) {
     const polysArray = Uint32Array.from(cfg.polys);
@@ -382,7 +443,7 @@ function createPointsSource(cfg: SourceConfig): SourceResult {
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
   const pointsArray = Float32Array.from(cfg.points ?? []);
   const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
-  vtkPts.setData(pointsArray, 3);
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
   polydata.setPoints(vtkPts);
   return { output: polydata, isFilter: false };
 }
@@ -450,7 +511,7 @@ function injectTcoords(polydata: VtkPolyData, tCoords: number[] | undefined): vo
   }
 
   const tcArray = vtk.Common.Core.vtkDataArray.newInstance({
-    numberOfComponents: 2,
+    numberOfComponents: UV_COMPONENTS,
     values: Float32Array.from(tCoords),
     name: "TextureCoordinates",
   });
@@ -492,10 +553,10 @@ function applyPbr(actor: VtkActor, pbr: PbrConfig | undefined): void {
   const r = pbr.roughness;
   actor.getProperty().setMetallic(m);
   actor.getProperty().setRoughness(r);
-  actor.getProperty().setAmbient(0.1);
-  actor.getProperty().setSpecular(0.75 * m + 0.25);
-  actor.getProperty().setSpecularPower(Math.max(1, 100 * (1 - r)));
-  actor.getProperty().setDiffuse(0.65 + 0.35 * (1 - m));
+  actor.getProperty().setAmbient(PBR_AMBIENT);
+  actor.getProperty().setSpecular(PBR_SPECULAR_METALLIC_WEIGHT * m + PBR_SPECULAR_BASE);
+  actor.getProperty().setSpecularPower(Math.max(1, PBR_SPECULAR_POWER_SCALE * (1 - r)));
+  actor.getProperty().setDiffuse(PBR_DIFFUSE_BASE + PBR_DIFFUSE_METALLIC_WEIGHT * (1 - m));
 }
 
 /**
@@ -531,9 +592,9 @@ function applyTexture(
  */
 function applyActorStyle(actor: VtkActor, cfg: ActorConfig): void {
   const styleMap: Record<string, number> = {
-    surface: 2,
-    wireframe: 1,
-    points: 0,
+    surface: VTK_REPRESENTATION_SURFACE,
+    wireframe: VTK_REPRESENTATION_WIREFRAME,
+    points: VTK_REPRESENTATION_POINTS,
   };
   const rep = styleMap[cfg.style];
   if (rep !== undefined) {
@@ -564,9 +625,9 @@ function applyPointStyle(actor: VtkActor, mapper: VtkMapper, cfg: ActorConfig): 
   }
 
   if (cfg.renderPointsAsSpheres && mapper.setRadius) {
-    mapper.setRadius((cfg.pointSize ?? 5) * 0.01);
+    mapper.setRadius((cfg.pointSize ?? DEFAULT_POINT_SIZE) * POINT_SPHERE_RADIUS_SCALE);
   } else {
-    actor.getProperty().setPointSize(cfg.pointSize ?? 5);
+    actor.getProperty().setPointSize(cfg.pointSize ?? DEFAULT_POINT_SIZE);
     actor.getProperty().setRepresentationToPoints();
   }
 }
@@ -691,9 +752,9 @@ function setupAxes(interactorObject: VtkInteractor): void {
   orientationWidget.setViewportCorner(
     vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
   );
-  orientationWidget.setViewportSize(0.15);
-  orientationWidget.setMinPixelSize(100);
-  orientationWidget.setMaxPixelSize(300);
+  orientationWidget.setViewportSize(AXES_VIEWPORT_SIZE);
+  orientationWidget.setMinPixelSize(AXES_MIN_PIXEL_SIZE);
+  orientationWidget.setMaxPixelSize(AXES_MAX_PIXEL_SIZE);
 }
 
 /**
@@ -705,11 +766,11 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
   const div = document.createElement("div");
   div.textContent = cfg.text;
   div.style.position = "absolute";
-  div.style.left = `${String(cfg.position[0] * 100)}%`;
-  div.style.bottom = `${String(cfg.position[1] * 100)}%`;
-  const r = Math.round(cfg.color[0] * 255);
-  const g = Math.round(cfg.color[1] * 255);
-  const b = Math.round(cfg.color[2] * 255);
+  div.style.left = `${String(cfg.position[0] * PERCENT)}%`;
+  div.style.bottom = `${String(cfg.position[1] * PERCENT)}%`;
+  const r = Math.round(cfg.color[0] * COLOR_BYTE_SCALE);
+  const g = Math.round(cfg.color[1] * COLOR_BYTE_SCALE);
+  const b = Math.round(cfg.color[2] * COLOR_BYTE_SCALE);
   div.style.color = `rgba(${String(r)},${String(g)},${String(b)},${String(cfg.opacity)})`;
   div.style.fontSize = `${String(cfg.fontSize)}px`;
   div.style.fontWeight = cfg.bold ? "bold" : "normal";
@@ -838,9 +899,9 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     for (let index_ = 0; index_ < nVerts; index_++) {
       const vi = at(polys, index + index_);
       indices.push(vi);
-      cx += at(inPoints, vi * 3);
-      cy += at(inPoints, vi * 3 + 1);
-      cz += at(inPoints, vi * 3 + 2);
+      cx += at(inPoints, vi * XYZ_COMPONENTS);
+      cy += at(inPoints, vi * XYZ_COMPONENTS + 1);
+      cz += at(inPoints, vi * XYZ_COMPONENTS + 2);
     }
 
     cx /= nVerts;
@@ -849,9 +910,9 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     resultPolys.push(nVerts);
     for (let k = 0; k < nVerts; k++) {
       const pi = indices[k] ?? 0;
-      const px = at(inPoints, pi * 3);
-      const py = at(inPoints, pi * 3 + 1);
-      const pz = at(inPoints, pi * 3 + 2);
+      const px = at(inPoints, pi * XYZ_COMPONENTS);
+      const py = at(inPoints, pi * XYZ_COMPONENTS + 1);
+      const pz = at(inPoints, pi * XYZ_COMPONENTS + 2);
       resultPoints.push(
         cx + (px - cx) * shrinkFactor,
         cy + (py - cy) * shrinkFactor,
@@ -865,7 +926,7 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
   }
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
-  outputPd.getPoints().setData(new Float32Array(resultPoints), 3);
+  outputPd.getPoints().setData(new Float32Array(resultPoints), XYZ_COMPONENTS);
   outputPd.getPolys().setData(new Uint32Array(resultPolys));
   return { output: outputPd, isFilter: false };
 }
@@ -948,9 +1009,9 @@ function shouldKeepCell(cellIndices: number[], inPoints: Float32Array, plane: Cl
   let cy = 0;
   let cz = 0;
   for (const vi of cellIndices) {
-    cx += at(inPoints, vi * 3);
-    cy += at(inPoints, vi * 3 + 1);
-    cz += at(inPoints, vi * 3 + 2);
+    cx += at(inPoints, vi * XYZ_COMPONENTS);
+    cy += at(inPoints, vi * XYZ_COMPONENTS + 1);
+    cz += at(inPoints, vi * XYZ_COMPONENTS + 2);
   }
 
   cx /= nVerts;
@@ -983,9 +1044,9 @@ function emitClippedCell(cellIndices: number[], state: ClipState): void {
     if (!state.pointMap.has(pi)) {
       state.pointMap.set(pi, state.nextIndex++);
       state.resultPoints.push(
-        at(state.inPoints, pi * 3),
-        at(state.inPoints, pi * 3 + 1),
-        at(state.inPoints, pi * 3 + 2),
+        at(state.inPoints, pi * XYZ_COMPONENTS),
+        at(state.inPoints, pi * XYZ_COMPONENTS + 1),
+        at(state.inPoints, pi * XYZ_COMPONENTS + 2),
       );
     }
 
@@ -1039,7 +1100,7 @@ function applyClipManual(
   }
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
-  outputPd.getPoints().setData(new Float32Array(state.resultPoints), 3);
+  outputPd.getPoints().setData(new Float32Array(state.resultPoints), XYZ_COMPONENTS);
   outputPd.getPolys().setData(new Uint32Array(state.resultPolys));
   return { output: outputPd, isFilter: false };
 }
@@ -1089,9 +1150,12 @@ function collectEdgeIntersections(
     if ((sa <= value && value < sb) || (sb <= value && value < sa)) {
       const t = (value - sa) / (sb - sa);
       edgePoints.push(
-        at(inPoints, ai * 3) + t * (at(inPoints, bi * 3) - at(inPoints, ai * 3)),
-        at(inPoints, ai * 3 + 1) + t * (at(inPoints, bi * 3 + 1) - at(inPoints, ai * 3 + 1)),
-        at(inPoints, ai * 3 + 2) + t * (at(inPoints, bi * 3 + 2) - at(inPoints, ai * 3 + 2)),
+        at(inPoints, ai * XYZ_COMPONENTS) +
+          t * (at(inPoints, bi * XYZ_COMPONENTS) - at(inPoints, ai * XYZ_COMPONENTS)),
+        at(inPoints, ai * XYZ_COMPONENTS + 1) +
+          t * (at(inPoints, bi * XYZ_COMPONENTS + 1) - at(inPoints, ai * XYZ_COMPONENTS + 1)),
+        at(inPoints, ai * XYZ_COMPONENTS + 2) +
+          t * (at(inPoints, bi * XYZ_COMPONENTS + 2) - at(inPoints, ai * XYZ_COMPONENTS + 2)),
       );
     }
   }
@@ -1140,7 +1204,7 @@ function processContourTriangle(state: ContourState, index: number): void {
   for (const value of state.values) {
     const edgePoints = collectEdgeIntersections(tri, value, state.inPoints);
 
-    if (edgePoints.length === 6) {
+    if (edgePoints.length === TWO_POINTS_XYZ) {
       state.outPoints.push(
         edgePoints[0] ?? 0,
         edgePoints[1] ?? 0,
@@ -1193,7 +1257,7 @@ function applyContourManual(
   while (index < polys.length) {
     const nVerts = at(polys, index);
     index++;
-    if (nVerts === 3) {
+    if (nVerts === TRIANGLE_VERTS) {
       processContourTriangle(state, index);
     }
 
@@ -1202,7 +1266,7 @@ function applyContourManual(
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
   if (state.outPoints.length > 0) {
-    outputPd.getPoints().setData(new Float32Array(state.outPoints), 3);
+    outputPd.getPoints().setData(new Float32Array(state.outPoints), XYZ_COMPONENTS);
     outputPd.getLines().setData(new Uint32Array(state.outPolys));
   }
 
@@ -1337,9 +1401,9 @@ function computeLoopPerimeter(loop: number[], inPoints: Float32Array): number {
   for (let k = 0; k < loop.length; k++) {
     const a = loop[k] ?? 0;
     const b = loop[(k + 1) % loop.length] ?? 0;
-    const dx = at(inPoints, b * 3) - at(inPoints, a * 3);
-    const dy = at(inPoints, b * 3 + 1) - at(inPoints, a * 3 + 1);
-    const dz = at(inPoints, b * 3 + 2) - at(inPoints, a * 3 + 2);
+    const dx = at(inPoints, b * XYZ_COMPONENTS) - at(inPoints, a * XYZ_COMPONENTS);
+    const dy = at(inPoints, b * XYZ_COMPONENTS + 1) - at(inPoints, a * XYZ_COMPONENTS + 1);
+    const dz = at(inPoints, b * XYZ_COMPONENTS + 2) - at(inPoints, a * XYZ_COMPONENTS + 2);
     perimeter += Math.hypot(dx, dy, dz);
   }
 
@@ -1356,7 +1420,7 @@ function triangulateLoop(loop: number[], newPolys: number[]): void {
   for (let k = 1; k < loop.length - 1; k++) {
     const v1 = loop[k] ?? 0;
     const v2 = loop[k + 1] ?? 0;
-    newPolys.push(3, v0, v1, v2);
+    newPolys.push(TRIANGLE_VERTS, v0, v1, v2);
   }
 }
 
@@ -1397,7 +1461,7 @@ function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): Sou
   const mergedPolys = new Uint32Array([...polys, ...newPolys]);
 
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
-  outputPd.getPoints().setData(new Float32Array(inPoints), 3);
+  outputPd.getPoints().setData(new Float32Array(inPoints), XYZ_COMPONENTS);
   outputPd.getPolys().setData(mergedPolys);
   return { output: outputPd, isFilter: false };
 }

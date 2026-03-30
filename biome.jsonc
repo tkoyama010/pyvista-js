@@ -58,8 +58,6 @@
             "noSecrets": "off"
           },
           "style": {
-            // 3D rendering code uses coordinate indices (*3), RGBA (*255), fallback sizes, etc.
-            "noMagicNumbers": "off",
             // vtk.js API uses PascalCase and UPPER_CASE property names
             "useNamingConvention": "off"
           }
