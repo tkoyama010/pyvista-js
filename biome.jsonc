@@ -28,43 +28,6 @@
       "suspicious": "error"
     }
   },
-  "overrides": [
-    {
-      "includes": ["**"],
-      "linter": {
-        "rules": {
-          "correctness": {
-            // vtk, __pvjsSceneData, __pvjsContainer are CDN/runtime globals declared in vtk.d.ts
-            // but Biome does not read TypeScript ambient declarations
-            "noUndeclaredVariables": "off"
-          },
-          "nursery": {
-            // renderer.ts (1120 lines) and vtk.d.ts (447 lines) exceed the 300-line default;
-            // splitting would harm cohesion in a single-file renderer and its type declarations
-            "noExcessiveLinesPerFile": "off",
-            // ternary expressions are idiomatic for concise conditional returns
-            "noTernary": "off",
-            // ++/-- are standard in for-loops and index counters
-            "noIncrementDecrement": "off",
-            // vtk.js factory return types are untyped; explicit annotations would require casting
-            "useExplicitType": "off",
-            // window augmentation requires window, not globalThis
-            "useGlobalThis": "off",
-            // continue is used for early-skip in loops and improves readability
-            "noContinue": "off"
-          },
-          "security": {
-            // vtk.js method names like "setLightTypeToSceneLight" trigger false positives
-            "noSecrets": "off"
-          },
-          "style": {
-            // vtk.js API uses PascalCase and UPPER_CASE property names
-            "useNamingConvention": "off"
-          }
-        }
-      }
-    }
-  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "double",

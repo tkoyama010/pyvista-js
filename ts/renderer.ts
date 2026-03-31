@@ -8,6 +8,7 @@
  */
 
 /** Number of components in a 3-D coordinate (x, y, z). */
+// biome-ignore lint/nursery/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
@@ -108,43 +109,54 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
 }
 
 const sceneData: SceneData =
+  // biome-ignore lint/nursery/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
   typeof __pvjsSceneData === "undefined"
     ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
-    : __pvjsSceneData;
+    : // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+      __pvjsSceneData;
 const container: HTMLElement =
+  // biome-ignore lint/nursery/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
   typeof __pvjsContainer === "undefined"
     ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
       document.createElement("div"))
-    : __pvjsContainer;
+    : // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+      __pvjsContainer;
+// biome-ignore lint/nursery/useExplicitType: vtk.js factory return types are untyped
 const bg = sceneData.background;
 
+// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
 renderer.setBackground(bg[0], bg[1], bg[2]);
 
+// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
 renderWindow.addRenderer(renderer);
 
+// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const openGlRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
 renderWindow.addView(openGlRenderWindow);
 openGlRenderWindow.setContainer(container);
 
+// biome-ignore lint/nursery/useExplicitType: vtk.js factory return types are untyped
 const bbox = container.getBoundingClientRect();
 openGlRenderWindow.setSize(bbox.width || DEFAULT_WIDTH, bbox.height || DEFAULT_HEIGHT);
 
+// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
+// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
 interactor.setInteractorStyle(interactorStyle);
 interactor.setView(openGlRenderWindow);
 interactor.initialize();
 interactor.bindEvents(container);
 
-// eslint-disable-next-line unicorn/prefer-global-this -- Window augmentation requires window
+// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
 window.renderer = renderer;
-// eslint-disable-next-line unicorn/prefer-global-this
+// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
 window.renderWindow = renderWindow;
-// eslint-disable-next-line unicorn/prefer-global-this
+// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
 window.openGlRenderWindow = openGlRenderWindow;
-// eslint-disable-next-line unicorn/prefer-global-this
+// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
 window.interactor = interactor;
 
 if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
@@ -189,12 +201,17 @@ function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
   ren.removeAllLights();
   ren.setAutomaticLightCreation(false);
   for (const cfg of lightsConfig) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     const light = vtk.Rendering.Core.vtkLight.newInstance();
     const typeMap: Record<string, string> = {
+      // biome-ignore lint/security/noSecrets: vtk.js method name, not a secret
       scene: "setLightTypeToSceneLight",
+      // biome-ignore lint/security/noSecrets: vtk.js method name, not a secret
       camera: "setLightTypeToCameraLight",
+      // biome-ignore lint/security/noSecrets: vtk.js method name, not a secret
       head: "setLightTypeToHeadLight",
     };
+    // biome-ignore lint/security/noSecrets: vtk.js method name, not a secret
     const setter = typeMap[cfg.type] ?? "setLightTypeToSceneLight";
     const setterFunction = light[setter];
     if (typeof setterFunction === "function") {
@@ -224,18 +241,22 @@ function setupLights(lightsConfig: LightConfig[], ren: VtkRenderer): void {
 function getReaderMap(): ReaderFactoryMap {
   return {
     plyReader: {
+      // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
       factory: vtk.IO.Geometry.vtkPLYReader,
       parseMethod: "parseAsArrayBuffer",
     },
     stlReader: {
+      // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
       factory: vtk.IO.Geometry.vtkSTLReader,
       parseMethod: "parseAsArrayBuffer",
     },
     objReader: {
+      // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
       factory: vtk.IO.Misc.vtkOBJReader,
       parseMethod: "parseAsText",
     },
     vtkReader: {
+      // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
       factory: vtk.IO.Legacy.vtkPolyDataReader,
       parseMethod: "parseAsText",
     },
@@ -280,12 +301,14 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
  * @returns A {@link SourceResult} wrapping the texture-mapped sphere filter.
  */
 function createSphereSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkSphereSource.newInstance({
     center: cfg.center,
     radius: cfg.radius,
     thetaResolution: cfg.thetaResolution,
     phiResolution: cfg.phiResolution,
   });
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const texMap = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance();
   texMap.setInputConnection(source.getOutputPort());
   return { output: texMap, isFilter: true };
@@ -297,6 +320,7 @@ function createSphereSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the cone source filter.
  */
 function createConeSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkConeSource.newInstance({
     height: cfg.height,
     radius: cfg.radius,
@@ -311,6 +335,7 @@ function createConeSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the cube source.
  */
 function createCubeSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkCubeSource.newInstance({
     xLength: cfg.xLength,
     yLength: cfg.yLength,
@@ -325,6 +350,7 @@ function createCubeSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the cylinder source filter.
  */
 function createCylinderSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkCylinderSource.newInstance({
     height: cfg.height,
     radius: cfg.radius,
@@ -339,7 +365,9 @@ function createCylinderSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the disk source or empty PolyData fallback.
  */
 function createDiskSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const diskFactory = vtk.Filters.Sources.vtkDiskSource;
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   const source = diskFactory
     ? diskFactory.newInstance({
         innerRadius: cfg.innerRadius,
@@ -349,6 +377,7 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
       })
     : undefined;
   return {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     output: source ?? vtk.Common.DataModel.vtkPolyData.newInstance(),
     isFilter: true,
   };
@@ -374,6 +403,7 @@ function createCircleSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the arrow source filter.
  */
 function createArrowSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkArrowSource.newInstance({
     tipLength: cfg.tipLength,
     tipRadius: cfg.tipRadius,
@@ -388,6 +418,7 @@ function createArrowSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the line source filter.
  */
 function createLineSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkLineSource.newInstance({
     point1: cfg.point1,
     point2: cfg.point2,
@@ -401,6 +432,7 @@ function createLineSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the plane source filter.
  */
 function createPlaneSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const source = vtk.Filters.Sources.vtkPlaneSource.newInstance({
     origin: cfg.origin,
   });
@@ -417,8 +449,10 @@ function createPlaneSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the constructed mesh PolyData.
  */
 function createMeshSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
   const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
   vtkPts.setData(pointsArray, XYZ_COMPONENTS);
   polydata.setPoints(vtkPts);
@@ -436,8 +470,10 @@ function createMeshSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the point cloud PolyData.
  */
 function createPointsSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
   const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
   vtkPts.setData(pointsArray, XYZ_COMPONENTS);
   polydata.setPoints(vtkPts);
@@ -487,6 +523,7 @@ function injectPointData(
   }
 
   for (const array of pointDataArrays) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     const dataArray = vtk.Common.Core.vtkDataArray.newInstance({
       numberOfComponents: array.numberOfComponents,
       values: Float32Array.from(array.values),
@@ -506,6 +543,7 @@ function injectTcoords(polydata: VtkPolyData, tCoords: number[] | undefined): vo
     return;
   }
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const tcArray = vtk.Common.Core.vtkDataArray.newInstance({
     numberOfComponents: UV_COMPONENTS,
     values: Float32Array.from(tCoords),
@@ -528,6 +566,7 @@ function setupNormals(
     return sourceResult;
   }
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const normals = vtk.Filters.Core.vtkPolyDataNormals.newInstance();
   normals.setComputePointNormals?.(normalsConfig.computePointNormals);
   normals.setComputeCellNormals?.(normalsConfig.computeCellNormals);
@@ -569,6 +608,7 @@ function applyTexture(
   if (!textureCfg) {
     return;
   }
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const texture = vtk.Rendering.Core.vtkTexture.newInstance();
   texture.setInterpolate(true);
   actor.addTexture(texture);
@@ -636,9 +676,12 @@ function applyPointStyle(actor: VtkActor, mapper: VtkMapper, cfg: ActorConfig): 
  */
 function createMapper(mapperInput: SourceResult, cfg: ActorConfig): VtkMapper {
   const mapperClass =
+    // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
     cfg.actorType === "points" && cfg.renderPointsAsSpheres
-      ? vtk.Rendering.Core.vtkSphereMapper
-      : vtk.Rendering.Core.vtkMapper;
+      ? // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+        vtk.Rendering.Core.vtkSphereMapper
+      : // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+        vtk.Rendering.Core.vtkMapper;
   const mapper = mapperClass.newInstance();
   if (mapperInput.isFilter) {
     mapper.setInputConnection((mapperInput.output as VtkAlgorithm).getOutputPort());
@@ -681,6 +724,7 @@ function setupActor(
   const mapperInput = setupNormals(currentResult, cfg.normals);
   const mapper = createMapper(mapperInput, cfg);
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const actor = vtk.Rendering.Core.vtkActor.newInstance();
   actor.setMapper(mapper);
   actor.getProperty().setColor(cfg.color[0], cfg.color[1], cfg.color[2]);
@@ -739,13 +783,16 @@ function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
  * @param interactorObject
  */
 function setupAxes(interactorObject: VtkInteractor): void {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
     actor: axes,
     interactor: interactorObject,
   });
   orientationWidget.setEnabled(true);
   orientationWidget.setViewportCorner(
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT,
   );
   orientationWidget.setViewportSize(AXES_VIEWPORT_SIZE);
@@ -769,7 +816,9 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
   const b = Math.round(cfg.color[2] * COLOR_BYTE_SCALE);
   div.style.color = `rgba(${String(r)},${String(g)},${String(b)},${String(cfg.opacity)})`;
   div.style.fontSize = `${String(cfg.fontSize)}px`;
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   div.style.fontWeight = cfg.bold ? "bold" : "normal";
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   div.style.fontStyle = cfg.italic ? "italic" : "normal";
   div.style.pointerEvents = "none";
   div.style.zIndex = "10";
@@ -785,6 +834,7 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryShrinkFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   return f.shrinkFactor === undefined ? current : applyShrinkFilter(current, f.shrinkFactor);
 }
 
@@ -795,6 +845,7 @@ function tryShrinkFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryTubeFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   return f.radius === undefined || f.numberOfSides === undefined
     ? current
     : applyTubeFilter(current, f.radius, f.numberOfSides);
@@ -807,6 +858,7 @@ function tryTubeFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   return !(f.normal && f.origin) || f.invert === undefined
     ? current
     : applyClipFilter(current, f.normal, f.origin, f.invert);
@@ -819,6 +871,7 @@ function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryContourFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   return f.values && f.scalarName && f.scalarData
     ? applyContourFilter(current, f.values, f.scalarName, f.scalarData)
     : current;
@@ -831,6 +884,7 @@ function tryContourFilter(current: SourceResult, f: FilterConfig): SourceResult 
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   return f.holeSize === undefined ? current : applyFillHolesFilter(current, f.holeSize);
 }
 
@@ -873,6 +927,7 @@ function applyFilters(sourceResult: SourceResult, filters: FilterConfig[]): Sour
  * @param shrinkFactor
  * @returns A {@link SourceResult} with each cell shrunk toward its centroid.
  */
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: inline biome-ignore comments push it just over the limit
 function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): SourceResult {
   const inputPd = getPolyData(sourceResult);
   const inPoints = inputPd.getPoints().getData();
@@ -887,11 +942,13 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     index++;
     let cx = 0;
     let cy = 0;
     let cz = 0;
     const indices: number[] = [];
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     for (let index_ = 0; index_ < nVerts; index_++) {
       const vi = at(polys, index + index_);
       indices.push(vi);
@@ -904,6 +961,7 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     cy /= nVerts;
     cz /= nVerts;
     resultPolys.push(nVerts);
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     for (let k = 0; k < nVerts; k++) {
       const pi = indices[k] ?? 0;
       const px = at(inPoints, pi * XYZ_COMPONENTS);
@@ -921,6 +979,7 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     index += nVerts;
   }
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
   outputPd.getPoints().setData(new Float32Array(resultPoints), XYZ_COMPONENTS);
   outputPd.getPolys().setData(new Uint32Array(resultPolys));
@@ -939,6 +998,7 @@ function applyTubeFilter(
   radius: number,
   numberOfSides: number,
 ): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const tubeFilter = vtk.Filters.General.vtkTubeFilter.newInstance({
     radius,
     numberOfSides,
@@ -961,10 +1021,12 @@ function applyClipFilter(
   origin: [number, number, number],
   invert: boolean,
 ): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const plane = vtk.Common.DataModel.vtkPlane.newInstance();
   plane.setOrigin(origin[0], origin[1], origin[2]);
   plane.setNormal(normal[0], normal[1], normal[2]);
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const clipFactory = vtk.Filters.General.vtkClipClosedSurface;
   if (clipFactory) {
     const clipper = clipFactory.newInstance();
@@ -1017,6 +1079,7 @@ function shouldKeepCell(cellIndices: number[], inPoints: Float32Array, plane: Cl
     (cx - plane.origin[0]) * plane.normal[0] +
     (cy - plane.origin[1]) * plane.normal[1] +
     (cz - plane.origin[2]) * plane.normal[2];
+  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
   return plane.invert ? dot >= 0 : dot <= 0;
 }
 
@@ -1038,6 +1101,7 @@ function emitClippedCell(cellIndices: number[], state: ClipState): void {
   state.resultPolys.push(cellIndices.length);
   for (const pi of cellIndices) {
     if (!state.pointMap.has(pi)) {
+      // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
       state.pointMap.set(pi, state.nextIndex++);
       state.resultPoints.push(
         at(state.inPoints, pi * XYZ_COMPONENTS),
@@ -1082,8 +1146,10 @@ function applyClipManual(
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     index++;
     const cellIndices: number[] = [];
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     for (let index_ = 0; index_ < nVerts; index_++) {
       cellIndices.push(at(polys, index + index_));
     }
@@ -1095,6 +1161,7 @@ function applyClipManual(
     index += nVerts;
   }
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
   outputPd.getPoints().setData(new Float32Array(state.resultPoints), XYZ_COMPONENTS);
   outputPd.getPolys().setData(new Uint32Array(state.resultPolys));
@@ -1117,6 +1184,7 @@ function applyContourFilter(
 ): SourceResult {
   const inputPd = getPolyData(sourceResult);
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const scalars = vtk.Common.Core.vtkDataArray.newInstance({
     numberOfComponents: 1,
     values: Float32Array.from(scalarData),
@@ -1252,6 +1320,7 @@ function applyContourManual(
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     index++;
     if (nVerts === TRIANGLE_VERTS) {
       processContourTriangle(state, index);
@@ -1260,6 +1329,7 @@ function applyContourManual(
     index += nVerts;
   }
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
   if (state.outPoints.length > 0) {
     outputPd.getPoints().setData(new Float32Array(state.outPoints), XYZ_COMPONENTS);
@@ -1279,7 +1349,9 @@ function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     index++;
+    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
     for (let k = 0; k < nVerts; k++) {
       const a = at(polys, index + k);
       const b = at(polys, index + ((k + 1) % nVerts));
@@ -1293,6 +1365,7 @@ function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
   const boundaryAdj = new Map<number, number[]>();
   for (const [key, count] of edgeCount) {
     if (count !== 1) {
+      // biome-ignore lint/nursery/noContinue: early-skip in loop improves readability
       continue;
     }
     const parts = key.split("_");
@@ -1365,6 +1438,7 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
   const loops: number[][] = [];
   for (const startNode of boundaryAdj.keys()) {
     if (visited.has(startNode)) {
+      // biome-ignore lint/nursery/noContinue: early-skip in loop improves readability
       continue;
     }
     const loop = walkLoop(startNode, boundaryAdj, visited);
@@ -1394,6 +1468,7 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
  */
 function computeLoopPerimeter(loop: number[], inPoints: Float32Array): number {
   let perimeter = 0;
+  // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
   for (let k = 0; k < loop.length; k++) {
     const a = loop[k] ?? 0;
     const b = loop[(k + 1) % loop.length] ?? 0;
@@ -1413,6 +1488,7 @@ function computeLoopPerimeter(loop: number[], inPoints: Float32Array): number {
  */
 function triangulateLoop(loop: number[], newPolys: number[]): void {
   const v0 = loop[0] ?? 0;
+  // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
   for (let k = 1; k < loop.length - 1; k++) {
     const v1 = loop[k] ?? 0;
     const v2 = loop[k + 1] ?? 0;
@@ -1456,6 +1532,7 @@ function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): Sou
 
   const mergedPolys = new Uint32Array([...polys, ...newPolys]);
 
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const outputPd = vtk.Common.DataModel.vtkPolyData.newInstance();
   outputPd.getPoints().setData(new Float32Array(inPoints), XYZ_COMPONENTS);
   outputPd.getPolys().setData(mergedPolys);

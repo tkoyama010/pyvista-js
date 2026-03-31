@@ -7,6 +7,7 @@
  */
 
 /** Generic factory that creates vtk.js instances via `newInstance()`. */
+// biome-ignore lint/nursery/noExcessiveLinesPerFile: vtk.d.ts type declarations are cohesive and should not be split
 interface VtkNewInstanceFactory<T> {
   // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance: (options?: Record<string, unknown>) => T;
@@ -202,6 +203,7 @@ interface VtkAxesActor {
 
 /** Factory for {@link VtkOrientationMarkerWidget} with corner constants. */
 interface VtkOrientationMarkerWidgetFactory {
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
   Corners: { BOTTOM_LEFT: number };
   // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance: (options: {
@@ -227,7 +229,9 @@ interface VtkReaderFactory {
 
 /** The top-level `vtk` global namespace loaded from the CDN. */
 interface VtkGlobal {
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
   Rendering: {
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Core: {
       vtkRenderer: VtkNewInstanceFactory<VtkRenderer>;
       vtkRenderWindow: VtkNewInstanceFactory<VtkRenderWindow>;
@@ -239,11 +243,14 @@ interface VtkGlobal {
       vtkTexture: VtkNewInstanceFactory<VtkTexture>;
       vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     OpenGL: {
       vtkRenderWindow: VtkNewInstanceFactory<VtkOpenGlRenderWindow>;
     };
   };
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
   Filters: {
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Sources: {
       vtkSphereSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkConeSource: VtkNewInstanceFactory<VtkAlgorithm>;
@@ -254,44 +261,60 @@ interface VtkGlobal {
       vtkLineSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPlaneSource: VtkNewInstanceFactory<VtkAlgorithm>;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Core: {
       vtkPolyDataNormals: VtkNewInstanceFactory<VtkAlgorithm>;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
       vtkTubeFilter: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkClipClosedSurface?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkContourTriangulator?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Texture: {
       vtkTextureMapToSphere: VtkNewInstanceFactory<VtkAlgorithm>;
     };
   };
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
   Common: {
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Core: {
       vtkPoints: VtkNewInstanceFactory<VtkPoints>;
       vtkDataArray: VtkDataArrayFactory;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     DataModel: {
       vtkPolyData: VtkNewInstanceFactory<VtkPolyData>;
       vtkPlane: VtkNewInstanceFactory<VtkPlane>;
     };
   };
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
   Interaction: {
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Style: {
       vtkInteractorStyleTrackballCamera: VtkNewInstanceFactory<VtkInteractorStyle>;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Widgets: {
       vtkOrientationMarkerWidget: VtkOrientationMarkerWidgetFactory;
     };
   };
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
   IO: {
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Geometry: {
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js reader names
       vtkPLYReader: VtkReaderFactory;
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js reader names
       vtkSTLReader: VtkReaderFactory;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Misc: {
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
       vtkOBJReader: VtkReaderFactory;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Legacy: {
       vtkPolyDataReader: VtkReaderFactory;
     };
