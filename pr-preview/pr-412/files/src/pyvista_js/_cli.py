@@ -868,7 +868,10 @@ def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN00
 
         page.wait_for_timeout(2000)
 
-    msg = f"Canvas element not found in any frame within {timeout} seconds (checked {check_count} times)"
+    msg = (
+        f"Canvas element not found in any frame within {timeout} seconds "
+        f"(checked {check_count} times)"
+    )
     raise TimeoutError(msg)
 
 
@@ -920,7 +923,7 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
                 try:
                     url = frame.url[:100] if frame.url else "no url"
                     logger.info("Frame %d: %s", i, url)
-                except Exception as e:
+                except Exception as e:  # noqa: BLE001
                     logger.debug("Could not get URL for frame %d: %s", i, e)
 
             logger.info("Waiting for 3D rendering to appear in iframes...")
