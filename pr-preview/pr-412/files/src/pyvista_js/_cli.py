@@ -861,7 +861,9 @@ def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN00
         if check_count % 10 == 0:
             elapsed = int(time.monotonic() - (deadline - timeout))
             logger.info(
-                "Still waiting for canvas... elapsed: %ds, frames: %d", elapsed, len(page.frames)
+                "Still waiting for canvas... elapsed: %ds, frames: %d",
+                elapsed,
+                len(page.frames),
             )
 
         page.wait_for_timeout(2000)
