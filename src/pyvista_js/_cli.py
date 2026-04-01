@@ -858,7 +858,7 @@ def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN00
             return
 
         # Log progress every 10 checks (20 seconds)
-        if check_count % 10 == 0:
+        if check_count % 10 == 0:  # pragma: no cover
             elapsed = int(time.monotonic() - (deadline - timeout))
             logger.info(
                 "Still waiting for canvas... elapsed: %ds, frames: %d",
@@ -923,7 +923,7 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
                 try:
                     url = frame.url[:100] if frame.url else "no url"
                     logger.info("Frame %d: %s", i, url)
-                except Exception as e:  # noqa: BLE001
+                except Exception as e:  # noqa: BLE001  # pragma: no cover
                     logger.debug("Could not get URL for frame %d: %s", i, e)
 
             logger.info("Waiting for 3D rendering to appear in iframes...")
