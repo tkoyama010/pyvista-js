@@ -188,6 +188,56 @@ def test_find_canvas_in_frames_skips_frames_that_raise() -> None:
     assert found_canvas is canvas
 
 
+def test_find_canvas_in_frames_logs_frame_url() -> None:
+    """``_find_canvas_in_frames`` logs frame URL when searching."""
+    canvas = MagicMock()
+    frame = MagicMock()
+    frame.url = "https://example.com/frame"
+    frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [frame]
+
+    found_frame, found_canvas = _find_canvas_in_frames(page)
+
+    assert found_frame is frame
+    assert found_canvas is canvas
+
+
+def test_find_canvas_in_frames_tries_multiple_selectors() -> None:
+    """``_find_canvas_in_frames`` tries multiple selectors to find canvas."""
+    canvas = MagicMock()
+    frame = MagicMock()
+    # First selector returns None, second returns canvas
+    frame.query_selector.side_effect = [None, canvas]
+    page = MagicMock()
+    page.frames = [frame]
+
+    found_frame, found_canvas = _find_canvas_in_frames(page)
+
+    assert found_frame is frame
+    assert found_canvas is canvas
+    # Should have been called twice (first selector failed, second succeeded)
+    assert frame.query_selector.call_count == 2
+
+
+def test_find_canvas_in_frames_handles_url_exception() -> None:
+    """``_find_canvas_in_frames`` handles exception when accessing frame URL."""
+    bad_frame = MagicMock()
+    bad_frame.url.side_effect = Exception("detached")
+    bad_frame.query_selector.return_value = None
+    canvas = MagicMock()
+    good_frame = MagicMock()
+    good_frame.url = "https://example.com/good"
+    good_frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [bad_frame, good_frame]
+
+    found_frame, found_canvas = _find_canvas_in_frames(page)
+
+    assert found_frame is good_frame
+    assert found_canvas is canvas
+
+
 def test_wait_for_canvas_in_frames_succeeds() -> None:
     """``_wait_for_canvas_in_frames`` returns when canvas is found."""
     canvas = MagicMock()
@@ -592,6 +642,7 @@ def _make_mock_playwright():
     mock_canvas.bounding_box.return_value = {"x": 100, "y": 100, "width": 600, "height": 400}
     mock_frame = MagicMock()
     mock_frame.query_selector.return_value = mock_canvas
+    mock_frame.url = "https://example.com/frame"  # Add URL for new logging code
     mock_page = MagicMock()
     # page.frames returns all frames including nested iframes
     mock_page.frames = [mock_frame]
