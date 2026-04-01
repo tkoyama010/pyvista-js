@@ -7,15 +7,20 @@ using vtk.js in browser environments.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from .rendering import get_renderer
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    import numpy as np
+
     from .camera import Camera
     from .examples import CubeMap
     from .light import Light
-    from .mesh import PolyData
+    from .mesh import PolyData, UnstructuredGrid
+    from .text import Text
     from .texture import Texture
 
 
@@ -70,12 +75,13 @@ class Plotter:
 
     def add_mesh(  # noqa: PLR0913
         self,
-        mesh: PolyData,
+        mesh: PolyData | UnstructuredGrid,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -102,6 +108,11 @@ class Plotter:
         roughness : float, optional
             Roughness factor for PBR, between 0 (mirror-like) and 1 (fully
             rough). Only used when ``pbr=True``. Default is 0.5.
+        smooth_shading : bool, optional
+            Enable smooth shading (Gouraud interpolation). When True, the mesh
+            surface appears smooth by interpolating normals across polygons.
+            When False, flat shading is used where each polygon face has a
+            uniform color. Default is True.
         texture : Texture, optional
             Surface texture to apply to the mesh. Create one with
             :class:`~pyvista_js.Texture`. The mesh should have texture
@@ -188,6 +199,17 @@ class Plotter:
         >>> _ = plotter.add_mesh(mesh, scalars='elevation', cmap='viridis')
         >>> plotter.show()  # doctest: +SKIP
 
+        Compare smooth shading (left) and flat shading (right) side by side:
+
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> color = (0.8, 0.6, 0.2)
+        >>> smooth = pv.Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = plotter.add_mesh(smooth, color=color, smooth_shading=True)
+        >>> flat = pv.Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = plotter.add_mesh(flat, color=color, smooth_shading=False)
+        >>> plotter.show()  # doctest: +SKIP
+
         """
         # Add mesh to vtk.js renderer
         actor = self._renderer.add_mesh_actor(
@@ -197,6 +219,7 @@ class Plotter:
             pbr=pbr,
             metallic=metallic,
             roughness=roughness,
+            smooth_shading=smooth_shading,
             texture=texture,
             show_edges=show_edges,
             edge_color=edge_color,
@@ -214,12 +237,89 @@ class Plotter:
                 "pbr": pbr,
                 "metallic": metallic,
                 "roughness": roughness,
+                "smooth_shading": smooth_shading,
                 "texture": texture,
                 "show_edges": show_edges,
                 "edge_color": edge_color,
                 "style": style,
                 "scalars": scalars,
                 "cmap": cmap,
+                "actor": actor,
+                "kwargs": kwargs,
+            },
+        )
+
+        return actor
+
+    def add_points(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+        **kwargs: object,
+    ) -> dict[str, object]:
+        """Add a point cloud to the plotter.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates as an (n, 3) numpy array or PolyData object.
+        color : str or tuple, optional
+            Color of the points. Can be a color name or RGB tuple.
+        opacity : float, optional
+            Opacity of the points, between 0 (transparent) and 1 (opaque).
+        point_size : float, optional
+            Size of the points in pixels. Default is 5.0.
+        render_points_as_spheres : bool, optional
+            Render points as spheres instead of screen-space squares.
+            Default is False.
+        **kwargs
+            Additional rendering options.
+
+        Returns
+        -------
+        actor
+            The vtk.js actor representing the point cloud.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> points = np.random.rand(100, 3)
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_points(points, color='red', point_size=10)
+        >>> plotter.show()  # doctest: +SKIP
+
+        With spheres:
+
+        >>> plotter = pv.Plotter()
+        >>> points = np.random.rand(50, 3)
+        >>> _ = plotter.add_points(
+        ...     points, color='blue', point_size=8, render_points_as_spheres=True
+        ... )
+        >>> plotter.show()  # doctest: +SKIP
+
+        """
+        # Add points to vtk.js renderer
+        actor = self._renderer.add_points_actor(
+            points,
+            color=color,
+            opacity=opacity,
+            point_size=point_size,
+            render_points_as_spheres=render_points_as_spheres,
+        )
+
+        # Store reference
+        self._actors.append(
+            {
+                "type": "points",
+                "points": points,
+                "color": color,
+                "opacity": opacity,
+                "point_size": point_size,
+                "render_points_as_spheres": render_points_as_spheres,
                 "actor": actor,
                 "kwargs": kwargs,
             },
@@ -297,6 +397,26 @@ class Plotter:
 
         # Render the scene
         self._renderer.render()
+
+    def generate_standalone_html(self) -> str:
+        """Generate a complete standalone HTML page with the current scene.
+
+        Returns
+        -------
+        str
+            A full HTML document string containing the visualization.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> html = plotter.generate_standalone_html()
+        >>> '<!DOCTYPE html>' in html
+        True
+
+        """
+        return self._renderer.generate_standalone_html()
 
     def view_vector(
         self,
@@ -572,6 +692,26 @@ class Plotter:
         """
         self._renderer.add_light(light)
 
+    def add_text(self, text: Text) -> None:
+        """Add a text annotation to the scene.
+
+        Parameters
+        ----------
+        text : Text
+            The :class:`~pyvista_js.text.Text` to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='white')
+        >>> text = pv.Text("Hello World", position=(0.5, 0.9))
+        >>> plotter.add_text(text)
+        >>> plotter.show()
+
+        """
+        self._renderer.add_text_actor(text)
+
     def add_axes(self, **kwargs: object) -> None:
         """Add an orientation marker (axes indicator) to the viewport.
 
@@ -746,7 +886,7 @@ class Plotter:
         return None
 
     @camera_position.setter
-    def camera_position(  # noqa: C901
+    def camera_position(
         self,
         cpos: str
         | tuple[float, float, float]
@@ -790,71 +930,75 @@ class Plotter:
         >>> plotter.camera_position = [(2.0, 5.0, 13.0), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)]
 
         """
-        # Handle string shortcuts
         if isinstance(cpos, str):
-            cpos_lower = cpos.lower()
-            if cpos_lower == "xy":
-                self.view_xy()
-            elif cpos_lower == "xz":
-                self.view_xz()
-            elif cpos_lower == "yz":
-                self.view_yz()
-            elif cpos_lower == "yx":
-                self.view_yx()
-            elif cpos_lower == "zx":
-                self.view_zx()
-            elif cpos_lower == "zy":
-                self.view_zy()
-            elif cpos_lower == "iso":
-                self.view_isometric()
-            else:
-                msg = (
-                    f"Unknown camera position string: '{cpos}'. "
-                    "Supported: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', 'iso'"
-                )
-                raise ValueError(msg)
-            return
+            self._set_camera_position_from_str(cpos)
+        elif isinstance(cpos, (tuple, list)):
+            self._set_camera_position_from_sequence(cpos)
+        else:
+            msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
+            raise TypeError(msg)
 
-        # Handle tuple/list input
-        if isinstance(cpos, (tuple, list)):
-            vector_length = 3
-            # Check if it's a direction vector (3 numbers)
-            if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
-                # Direction vector
-                self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))  # type: ignore[arg-type]
-                return
+    #: Maps camera position string shortcuts to the corresponding view method name.
+    _CAMERA_POSITION_SHORTCUTS: ClassVar[dict[str, str]] = {
+        "xy": "view_xy",
+        "xz": "view_xz",
+        "yz": "view_yz",
+        "yx": "view_yx",
+        "zx": "view_zx",
+        "zy": "view_zy",
+        "iso": "view_isometric",
+    }
 
-            # Check if it's full camera specification (3 tuples/lists of 3 numbers each)
-            if len(cpos) == vector_length and all(
-                isinstance(item, (tuple, list))
-                and len(item) == vector_length
-                and all(isinstance(x, (int, float)) for x in item)
-                for item in cpos
-            ):
-                # Full camera specification
-                position = (float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2]))  # type: ignore[index]
-                focal_point = (float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2]))  # type: ignore[index]
-                view_up = (float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2]))  # type: ignore[index]
-
-                # Import Camera here to avoid circular imports
-                from .camera import Camera  # noqa: PLC0415
-
-                camera = Camera(
-                    position=position,
-                    focal_point=focal_point,
-                    view_up=view_up,
-                )
-                self.camera = camera
-                return
-
+    def _set_camera_position_from_str(self, cpos: str) -> None:
+        """Set camera position from a string shortcut."""
+        key = cpos.lower()
+        method = self._CAMERA_POSITION_SHORTCUTS.get(key)
+        if method is None:
             msg = (
-                "Invalid camera position format. Expected: "
-                "3-element direction vector or 3x3 camera specification"
+                f"Unknown camera position string: '{cpos}'. "
+                "Supported: 'xy', 'xz', 'yz', 'yx', 'zx', 'zy', 'iso'"
             )
             raise ValueError(msg)
+        getattr(self, method)()
 
-        msg = f"Invalid camera position type: {type(cpos)}. Expected string, tuple, or list"  # type: ignore[unreachable]
-        raise TypeError(msg)
+    def _set_camera_position_from_sequence(
+        self,
+        cpos: tuple[float, float, float]
+        | tuple[
+            tuple[float, float, float],
+            tuple[float, float, float],
+            tuple[float, float, float],
+        ]
+        | list[float]
+        | list[tuple[float, float, float]]
+        | list[list[float]],
+    ) -> None:
+        """Set camera position from a tuple or list."""
+        vector_length = 3
+        if len(cpos) == vector_length and all(isinstance(x, (int, float)) for x in cpos):
+            self.view_vector((float(cpos[0]), float(cpos[1]), float(cpos[2])))  # type: ignore[arg-type]
+            return
+
+        if len(cpos) == vector_length and all(
+            isinstance(item, (tuple, list))
+            and len(item) == vector_length
+            and all(isinstance(x, (int, float)) for x in item)
+            for item in cpos
+        ):
+            from .camera import Camera  # noqa: PLC0415
+
+            self.camera = Camera(
+                position=(float(cpos[0][0]), float(cpos[0][1]), float(cpos[0][2])),  # type: ignore[index]
+                focal_point=(float(cpos[1][0]), float(cpos[1][1]), float(cpos[1][2])),  # type: ignore[index]
+                view_up=(float(cpos[2][0]), float(cpos[2][1]), float(cpos[2][2])),  # type: ignore[index]
+            )
+            return
+
+        msg = (
+            "Invalid camera position format. Expected: "
+            "3-element direction vector or 3x3 camera specification"
+        )
+        raise ValueError(msg)
 
     @property
     def background_color(self) -> tuple[float, float, float]:
@@ -998,6 +1142,85 @@ class Plotter:
             self._renderer.camera = self._camera
 
         self._camera.disable_parallel_projection()
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot of the current scene.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If ``None``, no file is written.
+            Supported formats: PNG, JPEG. Default is ``None``.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent. If ``None``, uses the
+            current background setting. Default is ``None``.
+        return_img : bool, optional
+            If ``True``, return a numpy array of the image. Default is ``True``.
+        window_size : tuple or list of int, optional
+            Temporarily resize the window to ``(width, height)`` before capturing.
+            If ``None``, uses the current window size. Default is ``None``.
+        scale : int or None, optional
+            Scale factor for the window size to produce a higher-resolution image.
+            For example, ``scale=2`` will double the resolution. Default is ``None``.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            If ``return_img`` is ``True``, returns a numpy array with shape
+            ``(height, width, 3)`` for RGB or ``(height, width, 4)`` for RGBA
+            (when ``transparent_background=True``). Otherwise returns ``None``.
+
+        Examples
+        --------
+        Save a screenshot to a file:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("screenshot.png")  # doctest: +SKIP
+
+        Get image data as numpy array:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> img = pl.screenshot(return_img=True)  # doctest: +SKIP
+        >>> img.shape  # doctest: +SKIP
+        (400, 600, 3)
+
+        High-resolution screenshot with scaling:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("high_res.png", scale=2)  # doctest: +SKIP
+
+        Screenshot with transparent background:
+
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> pl = pv.Plotter()
+        >>> _ = pl.add_mesh(sphere)
+        >>> pl.screenshot("transparent.png", transparent_background=True)  # doctest: +SKIP
+
+        """
+        return self._renderer.screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            return_img=return_img,
+            window_size=window_size,
+            scale=scale,
+        )
 
     def __getstate__(self) -> dict[str, object]:
         """Return state for pickling.

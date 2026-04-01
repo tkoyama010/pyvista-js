@@ -52,6 +52,21 @@ docs/.jupyterlite.doit.db
 docs/content/
 docs/stlite_demo.md
 docs/api/_autosummary/
+docs/locale/**/*.mo
+*.doctree
+.doctrees/
+*.pickle
+*.pkl
+docs/pot/**/*.js
+docs/pot/**/*.css
 
 # JupyterLite - ignore generated notebooks (source is .py)
 jupyterlite/content/*.ipynb
+
+# Preview GIFs (stored in GitHub Releases, not in the repo)
+assets/*.gif
+
+# Node.js (TypeScript build)
+node_modules/
+src/pyvista_js/templates/renderer.js
+.aider*

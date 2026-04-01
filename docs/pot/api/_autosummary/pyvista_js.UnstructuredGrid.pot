@@ -1,0 +1,207 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-29 22:58+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:2
+msgid "pyvista\\_js.UnstructuredGrid"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:1
+msgid "Unstructured grid dataset."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:3
+msgid "An unstructured grid can hold cells of arbitrary type (tetrahedra, hexahedra, wedges, pyramids, triangles, quads, etc.).  This class mirrors the :class:`pyvista.UnstructuredGrid` constructor API."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:7
+msgid "For rendering in vtk.js the 3-D cells are decomposed into their surface faces so that they can be displayed as polygonal geometry."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:0
+msgid "Parameters"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:10
+msgid "Cell connectivity in VTK format: ``[n_pts0, p0, p1, ..., n_pts1, p0, p1, ...]``."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:13
+msgid "Array of VTK cell type constants (see :class:`CellType`) - one value per cell."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:16
+msgid "Vertex coordinates as an ``(n, 3)`` array."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.n_cells:7
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.n_points:7
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:20
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:18
+msgid "Examples"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:24
+msgid "Create a single tetrahedron:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:37
+msgid "Create a hexahedron (cube):"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:53
+msgid "Create a mixed mesh with multiple cell types:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:67
+msgid "Access point data:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid:77
+msgid "Plot the grid:"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:23:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.__init__:1
+msgid "Initialize an UnstructuredGrid."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:13
+msgid "Methods"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:23:<autosummary>:1
+msgid ":py:obj:`__init__ <pyvista_js.UnstructuredGrid.__init__>`\\ \\(cells\\, celltypes\\, points\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:23:<autosummary>:1
+msgid ":py:obj:`plot <pyvista_js.UnstructuredGrid.plot>`\\ \\(\\[color\\, opacity\\, pbr\\, metallic\\, roughness\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:23:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:1
+msgid "Plot this grid."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:23:<autosummary>:1
+msgid ":py:obj:`to_scene_data <pyvista_js.UnstructuredGrid.to_scene_data>`\\ \\(\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:23:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.to_scene_data:1
+msgid "Return a JSON-serializable dict describing this grid."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:25
+msgid "Attributes"
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`bounding_sphere <pyvista_js.UnstructuredGrid.bounding_sphere>`"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.bounding_sphere:1
+#: ../:1:<autosummary>:1
+msgid "Compute the radius and center of a bounding sphere."
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`n_cells <pyvista_js.UnstructuredGrid.n_cells>`"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.n_cells:1
+#: ../:1:<autosummary>:1
+msgid "Return the number of cells."
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`n_points <pyvista_js.UnstructuredGrid.n_points>`"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.n_points:1
+#: ../:1:<autosummary>:1
+msgid "Return the number of points."
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`point_data <pyvista_js.UnstructuredGrid.point_data>`"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.point_data:1
+#: ../:1:<autosummary>:1
+msgid "Access point data arrays."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.bounding_sphere:3
+msgid "Uses Ritter's algorithm to approximate the minimum bounding sphere. Returns NaN values if there are no points."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:0
+msgid "Returns"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.bounding_sphere:6
+msgid "Sphere radius as a float and center as a tuple of floats ``(x, y, z)``."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.UnstructuredGrid.rst:0
+msgid "Return type"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.n_cells:3
+msgid "Number of cells in the grid."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.n_points:3
+msgid "Number of points in the grid."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:3
+msgid "This is a convenience method that creates a :class:`~pyvista_js.Plotter`, adds this grid, and calls :func:`~pyvista_js.Plotter.show`."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:6
+msgid "Color of the mesh."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:8
+msgid "Opacity, between 0 and 1. Default is 1."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:10
+msgid "Enable physically based rendering. Default is False."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:12
+msgid "Metallic factor for PBR. Default is 0.0."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.plot:14
+msgid "Roughness factor for PBR. Default is 0.5."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.UnstructuredGrid.point_data:3
+msgid "Dict-like container for point data arrays."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.to_scene_data:3
+msgid "The 3-D cells are decomposed into their surface polygons so that they can be rendered as a ``\"mesh\"`` source in vtk.js."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.UnstructuredGrid.to_scene_data:6
+msgid "Source configuration with ``\"type\": \"mesh\"``."
+msgstr ""

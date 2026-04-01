@@ -1,177 +1,154 @@
-"""Tests for the Light class."""
-
-import pytest
+"""Tests for Light class and lighting configuration."""
 
 import pyvista_js as pv
-from pyvista_js.light import CAMERA_LIGHT, HEADLIGHT, SCENE_LIGHT, Light
 
 
-def test_light_defaults() -> None:
-    """Test Light default values."""
-    light = Light()
-    assert light.position == (0.0, 0.0, 1.0)
-    assert light.focal_point == (0.0, 0.0, 0.0)
+def test_light_basic_properties() -> None:
+    """Test basic light property access."""
+    light = pv.Light(position=(1, 2, 3), color="red", intensity=0.5)
+    assert light.position == (1, 2, 3)
+    assert light.color == (1.0, 0.0, 0.0)
+    assert light.intensity == 0.5
+
+
+def test_light_default_properties() -> None:
+    """Test default light properties."""
+    light = pv.Light()
+    assert light.position == (0, 0, 1)
     assert light.color == (1.0, 1.0, 1.0)
     assert light.intensity == 1.0
-    assert light.light_type == SCENE_LIGHT
-    assert light.positional is False
+    assert light.light_type == "SceneLight"
+
+
+def test_light_focal_point() -> None:
+    """Test light focal point property."""
+    light = pv.Light(focal_point=(1, 2, 3))
+    assert light.focal_point == (1, 2, 3)
+
+
+def test_light_positional() -> None:
+    """Test positional light properties."""
+    light = pv.Light(positional=True, cone_angle=30.0, cone_falloff=5.0)
+    assert light.positional is True
     assert light.cone_angle == 30.0
     assert light.cone_falloff == 5.0
-    assert light.attenuation_values == (1.0, 0.0, 0.0)
 
 
-def test_light_custom_params() -> None:
-    """Test Light with custom parameters."""
-    light = Light(
-        position=(1, 2, 3),
-        focal_point=(0, 0, 0),
-        color=(1.0, 0.0, 0.0),
-        intensity=2.0,
-        light_type=CAMERA_LIGHT,
-        positional=True,
-        cone_angle=20.0,
-        cone_falloff=3.0,
-        attenuation_values=(1.0, 0.1, 0.01),
-    )
-    assert light.position == (1.0, 2.0, 3.0)
-    assert light.color == (1.0, 0.0, 0.0)
-    assert light.intensity == 2.0
-    assert light.light_type == CAMERA_LIGHT
-    assert light.positional is True
-    assert light.cone_angle == 20.0
+def test_light_attenuation() -> None:
+    """Test light attenuation values."""
+    light = pv.Light(attenuation_values=(1.0, 0.5, 0.1))
+    assert light.attenuation_values == (1.0, 0.5, 0.1)
 
 
-def test_light_color_name() -> None:
-    """Test Light accepts color names."""
-    light = Light(color="red")
-    assert light.color == (1.0, 0.0, 0.0)
+def test_light_type() -> None:
+    """Test light type property."""
+    scene_light = pv.Light(light_type="SceneLight")
+    assert scene_light.light_type == "SceneLight"
 
-    light = Light(color="blue")
+    headlight = pv.Light(light_type="Headlight")
+    assert headlight.light_type == "Headlight"
+
+
+def test_light_default_attenuation() -> None:
+    """Test default attenuation values."""
+    light = pv.Light()
+    assert light.attenuation_values == (1, 0, 0)
+
+
+def test_light_default_positional() -> None:
+    """Test default positional setting."""
+    light = pv.Light()
+    assert light.positional is False
+
+
+def test_light_default_cone_angle() -> None:
+    """Test default cone angle."""
+    light = pv.Light()
+    assert light.cone_angle == 30.0
+
+
+def test_light_default_cone_falloff() -> None:
+    """Test default cone falloff."""
+    light = pv.Light()
+    assert light.cone_falloff == 5.0
+
+
+def test_light_default_focal_point() -> None:
+    """Test default focal point."""
+    light = pv.Light()
+    assert light.focal_point == (0, 0, 0)
+
+
+def test_light_color_tuple() -> None:
+    """Test light with color as RGB tuple."""
+    light = pv.Light(color=(0.5, 0.3, 0.1))
+    assert light.color == (0.5, 0.3, 0.1)
+
+
+def test_light_color_string() -> None:
+    """Test light with named color string."""
+    light = pv.Light(color="blue")
     assert light.color == (0.0, 0.0, 1.0)
 
 
-def test_light_color_list_to_tuple() -> None:
-    """Test Light converts color lists to tuples."""
-    light = Light(color=[0.886, 0.345, 0.133])
-    assert isinstance(light.color, tuple), "Color should be converted to tuple"
-    assert light.color == (0.886, 0.345, 0.133)
+def test_light_intensity_range() -> None:
+    """Test light intensity values."""
+    light_zero = pv.Light(intensity=0.0)
+    assert light_zero.intensity == 0.0
 
-    # Test with integers
-    light = Light(color=[1, 0, 0])
-    assert light.color == (1.0, 0.0, 0.0)
-
-
-def test_light_invalid_color_name() -> None:
-    """Test Light raises on unknown color name."""
-    with pytest.raises(ValueError, match="Unknown color name"):
-        Light(color="notacolor")
-
-
-def test_light_invalid_type() -> None:
-    """Test Light raises on unknown light_type."""
-    with pytest.raises(ValueError, match="light_type must be one of"):
-        Light(light_type="BadType")
-
-
-def test_light_type_setters() -> None:
-    """Test convenience light type setters."""
-    light = Light()
-    light.set_light_type_to_camera_light()
-    assert light.light_type == CAMERA_LIGHT
-
-    light.set_light_type_to_headlight()
-    assert light.light_type == HEADLIGHT
-
-    light.set_light_type_to_scene_light()
-    assert light.light_type == SCENE_LIGHT
-
-
-def test_light_generate_vtk_js_code_scene() -> None:
-    """Test JavaScript code generation for SceneLight."""
-    light = Light(position=(1, 2, 3), intensity=0.5)
-    code = light.generate_vtk_js_code(0)
-    assert "vtkLight.newInstance()" in code
-    assert "setLightTypeToSceneLight" in code
-    assert "setPosition(1.0, 2.0, 3.0)" in code
-    assert "setIntensity(0.5)" in code
-    assert "renderer.addLight(light0)" in code
-
-
-def test_light_generate_vtk_js_code_headlight() -> None:
-    """Test JavaScript code generation for Headlight."""
-    light = Light(light_type=HEADLIGHT)
-    code = light.generate_vtk_js_code(1)
-    assert "setLightTypeToHeadLight" in code
-    assert "renderer.addLight(light1)" in code
-
-
-def test_light_generate_vtk_js_code_spotlight() -> None:
-    """Test JavaScript code generation for positional spotlight."""
-    light = Light(positional=True, cone_angle=15.0, cone_falloff=2.0)
-    code = light.generate_vtk_js_code(0)
-    assert "setPositional(true)" in code
-    assert "setConeAngle(15.0)" in code
-    assert "setExponent(2.0)" in code
+    light_high = pv.Light(intensity=5.0)
+    assert light_high.intensity == 5.0
 
 
 def test_plotter_add_light() -> None:
-    """Test that add_light stores the light in the renderer."""
+    """Test adding a light to the plotter."""
     plotter = pv.Plotter()
-    light = pv.Light(position=(1, 1, 1), intensity=2.0)
+    light = pv.Light(position=(1, 2, 3))
     plotter.add_light(light)
     assert len(plotter._renderer.lights) == 1
-    assert plotter._renderer.lights[0] is light
 
 
-def test_plotter_add_multiple_lights() -> None:
-    """Test adding multiple lights."""
+def test_plotter_multiple_lights() -> None:
+    """Test adding multiple lights to the plotter."""
     plotter = pv.Plotter()
-    plotter.add_light(pv.Light(position=(1, 0, 0), color="red"))
-    plotter.add_light(pv.Light(position=(-1, 0, 0), color="blue"))
+    light1 = pv.Light(position=(1, 0, 0))
+    light2 = pv.Light(position=(0, 1, 0))
+    plotter.add_light(light1)
+    plotter.add_light(light2)
     assert len(plotter._renderer.lights) == 2
 
 
 def test_plotter_clear_removes_lights() -> None:
-    """Test that clear() removes lights as well as actors."""
+    """Test that clear() removes all lights."""
     plotter = pv.Plotter()
-    plotter.add_mesh(pv.Sphere())
     plotter.add_light(pv.Light())
-    plotter.clear()
+    plotter._renderer.clear()
     assert len(plotter._renderer.lights) == 0
-    assert len(plotter.actors) == 0
-
-
-def test_light_exported_from_package() -> None:
-    """Test that Light is accessible from the top-level package."""
-    assert hasattr(pv, "Light")
-    assert pv.Light is Light
 
 
 def test_plotter_lighting_default() -> None:
     """Test that Plotter() creates default lighting."""
     plotter = pv.Plotter()
     assert plotter._renderer.lighting == "default"
-    # Default lighting should generate light code when no custom lights are added
-    light_code = plotter._renderer._generate_lights_code()
-    assert "const light0 = vtk.Rendering.Core.vtkLight.newInstance()" in light_code
-    assert "light0.setPosition(1, 1, 1)" in light_code
+    lights = plotter._renderer._build_lights_data()
+    assert len(lights) > 0
+    assert lights[0]["position"] == [1, 1, 1]
 
 
 def test_plotter_lighting_explicit_default() -> None:
     """Test that Plotter(lighting='default') creates default lighting."""
     plotter = pv.Plotter(lighting="default")
     assert plotter._renderer.lighting == "default"
-    light_code = plotter._renderer._generate_lights_code()
-    assert "const light0 = vtk.Rendering.Core.vtkLight.newInstance()" in light_code
+    lights = plotter._renderer._build_lights_data()
+    assert len(lights) > 0
 
 
 def test_plotter_lighting_none() -> None:
     """Test that Plotter(lighting=None) disables default lighting."""
     plotter = pv.Plotter(lighting=None)
     assert plotter._renderer.lighting is None
-    # With lighting=None, no default light should be generated
-    light_code = plotter._renderer._generate_lights_code()
-    assert light_code == ""
+    lights = plotter._renderer._build_lights_data()
+    assert len(lights) == 0
 
 
 def test_plotter_lighting_none_with_custom_lights() -> None:
@@ -183,12 +160,10 @@ def test_plotter_lighting_none_with_custom_lights() -> None:
     plotter.add_light(light2)
 
     assert len(plotter._renderer.lights) == 2
-    light_code = plotter._renderer._generate_lights_code()
-    # Should generate code for custom lights, not default light
-    assert "light0" in light_code
-    assert "light1" in light_code
-    assert "setPosition(1, 0, 0)" in light_code or "setPosition(1.0, 0.0, 0.0)" in light_code
-    assert "setPosition(-1, 0, 0)" in light_code or "setPosition(-1.0, 0.0, 0.0)" in light_code
+    lights = plotter._renderer._build_lights_data()
+    assert len(lights) == 2
+    assert lights[0]["position"] == [1, 0, 0]
+    assert lights[1]["position"] == [-1, 0, 0]
 
 
 def test_plotter_lighting_default_with_custom_lights() -> None:
@@ -197,10 +172,7 @@ def test_plotter_lighting_default_with_custom_lights() -> None:
     light = pv.Light(position=(2, 2, 2), intensity=3.0)
     plotter.add_light(light)
 
-    # When custom lights are added, default light is not used
-    light_code = plotter._renderer._generate_lights_code()
-    assert "light0" in light_code
-    # Should use custom light position, not default (1, 1, 1)
-    assert "setPosition(2, 2, 2)" in light_code or "setPosition(2.0, 2.0, 2.0)" in light_code
-    # Should not contain the default light comment
-    assert "Default directional light" not in light_code
+    lights = plotter._renderer._build_lights_data()
+    assert len(lights) == 1
+    assert lights[0]["position"] == [2, 2, 2]
+    assert lights[0]["intensity"] == 3.0

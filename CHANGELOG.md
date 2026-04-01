@@ -1,5 +1,134 @@
 # Changelog
 
+## [0.13.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.12.0...pyvista-js-v0.13.0) (2026-03-30)
+
+### Features
+
+- add fill_holes filter to PolyData ([#394](https://github.com/tkoyama010/pyvista-js/issues/394)) ([cfeb115](https://github.com/tkoyama010/pyvista-js/commit/cfeb1156683cf209fa83be2ac532d9543a625224))
+- add Notebook.link configuration ([#385](https://github.com/tkoyama010/pyvista-js/issues/385)) ([1d09838](https://github.com/tkoyama010/pyvista-js/commit/1d09838f651e7bae02f79425e777394fca60088e))
+- add UnstructuredGrid and CellType for 3D cell support ([#396](https://github.com/tkoyama010/pyvista-js/issues/396)) ([320c289](https://github.com/tkoyama010/pyvista-js/commit/320c2898d7c4cf4cfce2a2fd77937fef55cca24d))
+
+### Bug Fixes
+
+- migrate xo config to xo.config.js for xo 2.x compatibility (fixes [#381](https://github.com/tkoyama010/pyvista-js/issues/381)) ([#384](https://github.com/tkoyama010/pyvista-js/issues/384)) ([43c5e5f](https://github.com/tkoyama010/pyvista-js/commit/43c5e5f9fd0e6ff6e4c0e6b56ca1202207f536b6))
+
+### Documentation
+
+- replace stlite GitHub Pages URL with edit.share.stlite.net share URL ([#386](https://github.com/tkoyama010/pyvista-js/issues/386)) ([1f3d6f1](https://github.com/tkoyama010/pyvista-js/commit/1f3d6f107446379b80bfb872a684ee4107df8905))
+
+### Continuous Integration
+
+- use PAT for Release Please to set PR author ([#388](https://github.com/tkoyama010/pyvista-js/issues/388)) ([7e65a00](https://github.com/tkoyama010/pyvista-js/commit/7e65a00b81bca085e9fff1ee7a830d3b87a13639))
+
+## [0.12.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.11.0...pyvista-js-v0.12.0) (2026-03-24)
+
+### Features
+
+- add capture-stlite-preview CLI command and stlite preview to README ([#328](https://github.com/tkoyama010/pyvista-js/issues/328)) ([63e0c27](https://github.com/tkoyama010/pyvista-js/commit/63e0c278142338ce196a072876e79d2ebe4d645c))
+- add CLI options to save screenshot output ([#312](https://github.com/tkoyama010/pyvista-js/issues/312)) ([df65ae9](https://github.com/tkoyama010/pyvista-js/commit/df65ae93a44f03947b45b000976ad3cc77d98644))
+- add Lucy Angel example with custom lighting and binary PLY support ([#324](https://github.com/tkoyama010/pyvista-js/issues/324)) ([fb4f281](https://github.com/tkoyama010/pyvista-js/commit/fb4f2818bffed1f5e510534e6cd95261863668aa))
+- add relative camera movement CLI options ([#347](https://github.com/tkoyama010/pyvista-js/issues/347)) ([217bb04](https://github.com/tkoyama010/pyvista-js/commit/217bb04627c727c3bc5c4b437fe3ac3743859459))
+- move stlite demo from ReadTheDocs to GitHub Pages ([#325](https://github.com/tkoyama010/pyvista-js/issues/325)) ([3cc3c01](https://github.com/tkoyama010/pyvista-js/commit/3cc3c01f02fef6c8074c9dda8aeea2f536633f81))
+- separate HTML templates and TS logic with Prettier formatting ([#338](https://github.com/tkoyama010/pyvista-js/issues/338)) ([36690d8](https://github.com/tkoyama010/pyvista-js/commit/36690d8036860e121181d3ffac35fb4c0e713e48))
+
+### Bug Fixes
+
+- add playwright and pillow dependencies to nightly workflow ([#340](https://github.com/tkoyama010/pyvista-js/issues/340)) ([c1cf78d](https://github.com/tkoyama010/pyvista-js/commit/c1cf78d99af9a3b6f2bf3ded16a8dababaedc51a))
+- align nightly workflow with Python >=3.12 requirement ([#343](https://github.com/tkoyama010/pyvista-js/issues/343)) ([199798d](https://github.com/tkoyama010/pyvista-js/commit/199798d4956b22744e7efce1b4baa5e06bdb76c9))
+- increase timeouts for stlite demo capture to handle slow loading ([#344](https://github.com/tkoyama010/pyvista-js/issues/344)) ([f163af5](https://github.com/tkoyama010/pyvista-js/commit/f163af56c1527746b41de75468de54f307da3f85))
+- increase timeouts for stlite preview capture ([#337](https://github.com/tkoyama010/pyvista-js/issues/337)) ([f42a192](https://github.com/tkoyama010/pyvista-js/commit/f42a19254ef9229c1753dd98280372af2330ac6f))
+- install playwright dependencies in nightly tests ([#341](https://github.com/tkoyama010/pyvista-js/issues/341)) ([8f25f4d](https://github.com/tkoyama010/pyvista-js/commit/8f25f4d6884fc228ec350857d96a27e75bf16d68))
+- search iframes for canvas in stlite demo capture ([#346](https://github.com/tkoyama010/pyvista-js/issues/346)) ([f0b6199](https://github.com/tkoyama010/pyvista-js/commit/f0b619979ebd6183a79fb8ca79a49cf2630403e0))
+- update nightly test workflow to match minimum Python version ([#342](https://github.com/tkoyama010/pyvista-js/issues/342)) ([6d4baa5](https://github.com/tkoyama010/pyvista-js/commit/6d4baa52b787434b3c3b51a066d7352571fc985f))
+
+### Reverts
+
+- separate HTML templates and TS logic with Prettier formatting ([#338](https://github.com/tkoyama010/pyvista-js/issues/338)) ([#365](https://github.com/tkoyama010/pyvista-js/issues/365)) ([27adbcf](https://github.com/tkoyama010/pyvista-js/commit/27adbcf4b928680ad545e60ead3c5f9e8ecd8ac5))
+
+### Documentation
+
+- add tkoyama010 as a contributor for projectManagement ([#345](https://github.com/tkoyama010/pyvista-js/issues/345)) ([0e723b6](https://github.com/tkoyama010/pyvista-js/commit/0e723b682abfa1fb78b1fb8f63fd361058edc041))
+- replace doctoc with mdformat-toc for TOC generation ([#348](https://github.com/tkoyama010/pyvista-js/issues/348)) ([5b4dfcc](https://github.com/tkoyama010/pyvista-js/commit/5b4dfcc3b39931947096d904d9d4f11339ef74af))
+- update Light class docstring to match PyVista style ([#372](https://github.com/tkoyama010/pyvista-js/issues/372)) ([1620f27](https://github.com/tkoyama010/pyvista-js/commit/1620f27b495499068fd5d2c50341f22e13514c8c))
+- update Scientific Python Standards section with badges ([#330](https://github.com/tkoyama010/pyvista-js/issues/330)) ([7321805](https://github.com/tkoyama010/pyvista-js/commit/7321805b1c4b1cf373cf3af1bd68a82d70d79a2e))
+- Updates for project pyvista-js-doc and language ja ([#329](https://github.com/tkoyama010/pyvista-js/issues/329)) ([944eb71](https://github.com/tkoyama010/pyvista-js/commit/944eb71bc0dc5408acec24f5fa9d260339d48519))
+- Updates for project pyvista-js-doc and language ja ([#370](https://github.com/tkoyama010/pyvista-js/issues/370)) ([23faacd](https://github.com/tkoyama010/pyvista-js/commit/23faacd50755fd66dfff347bdc342d33dab68161))
+
+### Continuous Integration
+
+- upload preview GIFs to GitHub Releases instead of storing in repo ([#376](https://github.com/tkoyama010/pyvista-js/issues/376)) ([240ed9e](https://github.com/tkoyama010/pyvista-js/commit/240ed9e6ab7045f2bac1cb66aa16651872e31c94))
+
+## [0.11.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.10.0...pyvista-js-v0.11.0) (2026-03-22)
+
+### Features
+
+- Add Camera.elevation property ([#302](https://github.com/tkoyama010/pyvista-js/issues/302)) ([722f145](https://github.com/tkoyama010/pyvista-js/commit/722f145ef071689bea287baaafa183ddd0bd47b0))
+- add Plotter.add_points() method for point cloud rendering ([#170](https://github.com/tkoyama010/pyvista-js/issues/170)) ([df86e9a](https://github.com/tkoyama010/pyvista-js/commit/df86e9a197a9c6bafbbcf1d9b41a23c9b858077d))
+- add smooth_shading option to add_mesh() ([#245](https://github.com/tkoyama010/pyvista-js/issues/245)) ([e3a312e](https://github.com/tkoyama010/pyvista-js/commit/e3a312e542636a1e2ce4dfe2b0c23653ff2cb181))
+
+### Bug Fixes
+
+- remove unsupported \<path> placeholder from translation_files_expression ([#293](https://github.com/tkoyama010/pyvista-js/issues/293)) ([4571cbb](https://github.com/tkoyama010/pyvista-js/commit/4571cbb601d5c5f153bff3f5ba446878d7a9f4e0))
+- replace source_file with source_file_dir in transifex.yml ([#290](https://github.com/tkoyama010/pyvista-js/issues/290)) ([0a18589](https://github.com/tkoyama010/pyvista-js/commit/0a18589e1ee457f3c0bc53414e0e51a341ee97db))
+
+### Documentation
+
+- add comprehensive CONTRIBUTING.md file ([#315](https://github.com/tkoyama010/pyvista-js/issues/315)) ([8f991e1](https://github.com/tkoyama010/pyvista-js/commit/8f991e1d25c3fa035a2dfd96074693543a45d349))
+- add doctoc to pre-commit hooks ([#319](https://github.com/tkoyama010/pyvista-js/issues/319)) ([7a18a42](https://github.com/tkoyama010/pyvista-js/commit/7a18a42678f97261e3d451eabf0ad18a454ba759))
+- add GitHub issue templates for bug reports, features, and documentation ([#316](https://github.com/tkoyama010/pyvista-js/issues/316)) ([3b74547](https://github.com/tkoyama010/pyvista-js/commit/3b74547c7e94105f72e11a12b13c9d2724b1c214))
+- add GitHub Sponsors link ([#289](https://github.com/tkoyama010/pyvista-js/issues/289)) ([0c146ae](https://github.com/tkoyama010/pyvista-js/commit/0c146ae122fe2d2c097a4676672d477cd6462c1c))
+- add pull request template ([#317](https://github.com/tkoyama010/pyvista-js/issues/317)) ([7ed8180](https://github.com/tkoyama010/pyvista-js/commit/7ed818029ce55a74870175d9bf8d915b880b59b7))
+- add SPEC-0004 (Nightly Tests) badge to README ([#311](https://github.com/tkoyama010/pyvista-js/issues/311)) ([dd6702c](https://github.com/tkoyama010/pyvista-js/commit/dd6702c89c50d951ff8b0edf1788f1fba1a57219))
+- add tkoyama010 as a contributor for platform ([#310](https://github.com/tkoyama010/pyvista-js/issues/310)) ([9bb1ef7](https://github.com/tkoyama010/pyvista-js/commit/9bb1ef77a283ca4902a8324938e4e153e43abc2c))
+- add tkoyama010 as a contributor for translation ([#299](https://github.com/tkoyama010/pyvista-js/issues/299)) ([804028c](https://github.com/tkoyama010/pyvista-js/commit/804028c39da08361c42d9898985fa96026681f82))
+- add transifex as a contributor for doc, and translation ([#300](https://github.com/tkoyama010/pyvista-js/issues/300)) ([05d2e20](https://github.com/tkoyama010/pyvista-js/commit/05d2e202388202fc63c8e2c23bf9bc82c4b735a7))
+- move badges from README.md to corresponding sections ([#320](https://github.com/tkoyama010/pyvista-js/issues/320)) ([65b80a1](https://github.com/tkoyama010/pyvista-js/commit/65b80a175e4c12361804b4ee25966738b3aaafa8))
+- reorganize badges in README.md to related sections ([#314](https://github.com/tkoyama010/pyvista-js/issues/314)) ([1727967](https://github.com/tkoyama010/pyvista-js/commit/1727967dc7d360ca385f8e0fb866a49a07fdbd07))
+- reorganize badges to related documentation files ([#313](https://github.com/tkoyama010/pyvista-js/issues/313)) ([440398a](https://github.com/tkoyama010/pyvista-js/commit/440398a8a5924c6e39b1de9e8c16425fd00c5bf9))
+- Updates for file docs/pot/cli/plot.pot in ja [Manual Sync] ([#294](https://github.com/tkoyama010/pyvista-js/issues/294)) ([4b4b7ed](https://github.com/tkoyama010/pyvista-js/commit/4b4b7ed5891e4d7ae39556ae6502674a5bd26844))
+- Updates for project pyvista-js and language ja ([#298](https://github.com/tkoyama010/pyvista-js/issues/298)) ([93070dc](https://github.com/tkoyama010/pyvista-js/commit/93070dc6a0612b43983e4542a8513b3adbbc70cb))
+- Updates for project pyvista-js-doc and language ja ([#305](https://github.com/tkoyama010/pyvista-js/issues/305)) ([fd05db4](https://github.com/tkoyama010/pyvista-js/commit/fd05db44646adf3402807a526f90d987905d87c0))
+
+### Continuous Integration
+
+- use transifex-integration[bot] as commit author in Transifex workflow ([#304](https://github.com/tkoyama010/pyvista-js/issues/304)) ([d6230e8](https://github.com/tkoyama010/pyvista-js/commit/d6230e81a94d4f1638727398c939780be045aec4))
+
+## [0.10.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.9.1...pyvista-js-v0.10.0) (2026-03-21)
+
+### Features
+
+- add contour filter to PolyData ([#167](https://github.com/tkoyama010/pyvista-js/issues/167)) ([9bdf2ce](https://github.com/tkoyama010/pyvista-js/commit/9bdf2ced8b5fda95f899a41f4c8aff41f4d8e8ec))
+- add i18n documentation support using Sphinx i18n feature ([#213](https://github.com/tkoyama010/pyvista-js/issues/213)) ([af02e6a](https://github.com/tkoyama010/pyvista-js/commit/af02e6a036a4f77a74d6330b22c1e13b094dc11c))
+- add Playwright integration for headless browser testing ([#253](https://github.com/tkoyama010/pyvista-js/issues/253)) ([0a14929](https://github.com/tkoyama010/pyvista-js/commit/0a1492943dbf50e379bffa8ed1794e603ccdcc44))
+- add Plotter.screenshot() method for capturing rendered scenes ([#276](https://github.com/tkoyama010/pyvista-js/issues/276)) ([8135a93](https://github.com/tkoyama010/pyvista-js/commit/8135a933340f89751a39b36c3dccb38ebe7af62e))
+- add SPEC-0008 compliance for secure release process ([#270](https://github.com/tkoyama010/pyvista-js/issues/270)) ([6fbf589](https://github.com/tkoyama010/pyvista-js/commit/6fbf5893296e84a97a5c4f756dd50afedc1ecbdc))
+- Add Text class for 2D text annotations ([#235](https://github.com/tkoyama010/pyvista-js/issues/235)) ([79be237](https://github.com/tkoyama010/pyvista-js/commit/79be237585151d51f834e69c94dd89df906e5778))
+- add transifex.yml for GitHub App integration ([#288](https://github.com/tkoyama010/pyvista-js/issues/288)) ([dc09df6](https://github.com/tkoyama010/pyvista-js/commit/dc09df6834121ecbb505f7a39601f111fdd45fa5))
+- adopt SPEC 0001 for lazy loading of submodules ([#266](https://github.com/tkoyama010/pyvista-js/issues/266)) ([e63dff1](https://github.com/tkoyama010/pyvista-js/commit/e63dff1857dfc2a5b4e5391a96e50d56fe50e844))
+- use Stanford Bunny as default object in stlite demo ([#278](https://github.com/tkoyama010/pyvista-js/issues/278)) ([2f21c40](https://github.com/tkoyama010/pyvista-js/commit/2f21c405f50605bf5b75cf3ce1ac96e2716d7def))
+
+### Bug Fixes
+
+- install lazy-loader in JupyterLite preamble to fix Try it examples ([#272](https://github.com/tkoyama010/pyvista-js/issues/272)) ([f654420](https://github.com/tkoyama010/pyvista-js/commit/f654420cde488f1699ab6286f497ca2e810da255))
+- replace tx add bulk with dynamic config generation and direct push ([#285](https://github.com/tkoyama010/pyvista-js/issues/285)) ([36b1c3e](https://github.com/tkoyama010/pyvista-js/commit/36b1c3ebb3dbef542e28d8d74063040c38ec6d85))
+- use tx add bulk to register Transifex resources dynamically ([#281](https://github.com/tkoyama010/pyvista-js/issues/281)) ([65eaf5a](https://github.com/tkoyama010/pyvista-js/commit/65eaf5a4b47709d0e32f65b35bc4dc75b74684b3))
+
+### Documentation
+
+- add SPEC 6 compliance for upper bound constraints ([#268](https://github.com/tkoyama010/pyvista-js/issues/268)) ([baf47b8](https://github.com/tkoyama010/pyvista-js/commit/baf47b8702b04fe444380cae1a9278aedca09253))
+- add SPEC 7 compliance documentation ([#269](https://github.com/tkoyama010/pyvista-js/issues/269)) ([fdd5a3d](https://github.com/tkoyama010/pyvista-js/commit/fdd5a3d4b46bc19852a6a25a41617ea6064d1b45))
+- add Transifex link badge to README ([#283](https://github.com/tkoyama010/pyvista-js/issues/283)) ([3994ecc](https://github.com/tkoyama010/pyvista-js/commit/3994ecc6b8699318aa7c867e3d19a7c1e386a006))
+- configure sphinxcontrib-typer to use HTML format with monokai theme ([#274](https://github.com/tkoyama010/pyvista-js/issues/274)) ([2aee477](https://github.com/tkoyama010/pyvista-js/commit/2aee477ac4313c65d97e84eee881a5974e09a307))
+- expand typer usage HTML rendering to eliminate scrollbars ([#279](https://github.com/tkoyama010/pyvista-js/issues/279)) ([de3cff1](https://github.com/tkoyama010/pyvista-js/commit/de3cff1c66139e48ce2c88faab4aa1aa6b4b28bd))
+- remove docs/locale/README.md ([#280](https://github.com/tkoyama010/pyvista-js/issues/280)) ([904a3c6](https://github.com/tkoyama010/pyvista-js/commit/904a3c65016c63ddc74e96850e6f33c9b76aecaa))
+- replace Streamlit with stlite and add WASM explanation ([#263](https://github.com/tkoyama010/pyvista-js/issues/263)) ([b876898](https://github.com/tkoyama010/pyvista-js/commit/b876898663d4df05678e09596e84a5b5dfa24d55))
+- update intro.py to install pyvista-js package directly ([#264](https://github.com/tkoyama010/pyvista-js/issues/264)) ([7d1c8c1](https://github.com/tkoyama010/pyvista-js/commit/7d1c8c1e6d85eddb1653aeeed98e49858d2f7346))
+
+### Continuous Integration
+
+- add nightly tests workflow per SPEC-0004 ([#271](https://github.com/tkoyama010/pyvista-js/issues/271)) ([974d531](https://github.com/tkoyama010/pyvista-js/commit/974d531a460462da731e2baacb2812d1be77bc94))
+- add Renovate config for automated vtk.js version updates ([#273](https://github.com/tkoyama010/pyvista-js/issues/273)) ([3e1fcce](https://github.com/tkoyama010/pyvista-js/commit/3e1fccef43ecaa822d4a4728f362a8eb8c4260b8))
+
 ## [0.9.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.9.0...pyvista-js-v0.9.1) (2026-03-20)
 
 ### Bug Fixes

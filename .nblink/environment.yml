@@ -1,0 +1,9 @@
+name: pyvista-js
+channels:
+  - conda-forge
+  - https://repo.mamba.pm/emscripten-forge
+dependencies:
+  - numpy
+  - pip
+  - pip:
+      - pyvista-js

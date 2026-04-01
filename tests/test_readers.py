@@ -5,13 +5,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pyvista_js import OBJReader, PLYReader, PolyDataReader, STLReader, examples
+from pyvista_js import GLTFReader, OBJReader, PLYReader, PolyDataReader, STLReader, examples
 
 DATA_DIR = Path(__file__).parent / "data"
 TRIANGLE_VTK = DATA_DIR / "triangle.vtk"
 TRIANGLE_PLY = DATA_DIR / "triangle.ply"
 TRIANGLE_OBJ = DATA_DIR / "triangle.obj"
 TRIANGLE_STL = DATA_DIR / "triangle.stl"
+TRIANGLE_GLTF = DATA_DIR / "triangle.gltf"
 
 
 # --- PolyDataReader tests ---
@@ -40,20 +41,13 @@ def test_poly_data_reader_string_path() -> None:
     assert mesh.n_points == 3
 
 
-@pytest.mark.parametrize(
-    ("method", "expected"),
-    [
-        ("generate_vtk_js_source", "vtkPolyDataReader"),
-        ("generate_vtk_js_source", "parseAsText"),
-        ("generate_vtk_js_source", "source0"),
-        ("get_mapper_setup", "setInputData"),
-    ],
-)
-def test_poly_data_reader_js_output(method: str, expected: str) -> None:
-    """Test that generated JavaScript contains expected strings."""
+def test_poly_data_reader_scene_data() -> None:
+    """Test that reader mesh returns valid scene data."""
     mesh = PolyDataReader(TRIANGLE_VTK).read()
-    result = getattr(mesh, method)(0)
-    assert expected in result
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "vtkReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -147,20 +141,13 @@ def test_ply_reader_string_path() -> None:
     assert mesh.n_points == 3
 
 
-@pytest.mark.parametrize(
-    ("method", "expected"),
-    [
-        ("generate_vtk_js_source", "vtkPLYReader"),
-        ("generate_vtk_js_source", "parseAsArrayBuffer"),
-        ("generate_vtk_js_source", "source0"),
-        ("get_mapper_setup", "setInputData"),
-    ],
-)
-def test_ply_reader_js_output(method: str, expected: str) -> None:
-    """Test that generated JavaScript contains expected strings."""
+def test_ply_reader_scene_data() -> None:
+    """Test that PLY reader mesh returns valid scene data."""
     mesh = PLYReader(TRIANGLE_PLY).read()
-    result = getattr(mesh, method)(0)
-    assert expected in result
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "plyReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -177,12 +164,6 @@ def test_ply_reader_js_output(method: str, expected: str) -> None:
             "ply\nformat ascii 1.0\nelement vertex 0\n",
             ValueError,
             "missing 'end_header'",
-        ),
-        (
-            "binary.ply",
-            "ply\nformat binary_little_endian 1.0\nelement vertex 0\nend_header\n",
-            ValueError,
-            "Only ASCII",
         ),
         (
             "no_format.ply",
@@ -265,20 +246,13 @@ def test_obj_reader_string_path() -> None:
     assert mesh.n_points == 3
 
 
-@pytest.mark.parametrize(
-    ("method", "expected"),
-    [
-        ("generate_vtk_js_source", "vtkOBJReader"),
-        ("generate_vtk_js_source", "parseAsArrayBuffer"),
-        ("generate_vtk_js_source", "source0"),
-        ("get_mapper_setup", "setInputData"),
-    ],
-)
-def test_obj_reader_js_output(method: str, expected: str) -> None:
-    """Test that generated JavaScript contains expected strings."""
+def test_obj_reader_scene_data() -> None:
+    """Test that OBJ reader mesh returns valid scene data."""
     mesh = OBJReader(TRIANGLE_OBJ).read()
-    result = getattr(mesh, method)(0)
-    assert expected in result
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "objReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -338,20 +312,45 @@ def test_stl_reader_string_path() -> None:
     assert mesh.n_points == 3
 
 
-@pytest.mark.parametrize(
-    ("method", "expected"),
-    [
-        ("generate_vtk_js_source", "vtkSTLReader"),
-        ("generate_vtk_js_source", "parseAsArrayBuffer"),
-        ("generate_vtk_js_source", "source0"),
-        ("get_mapper_setup", "setInputData"),
-    ],
-)
-def test_stl_reader_js_output(method: str, expected: str) -> None:
-    """Test that generated JavaScript contains expected strings."""
+# --- GLTFReader tests ---
+
+
+def test_gltf_reader_path() -> None:
+    """Test that the reader exposes the path property."""
+    reader = GLTFReader(TRIANGLE_GLTF)
+    assert reader.path == TRIANGLE_GLTF
+
+
+def test_gltf_reader_read_points() -> None:
+    """Test reading points from a glTF file."""
+    reader = GLTFReader(TRIANGLE_GLTF)
+    mesh = reader.read()
+
+    # glTF file extracts bounding box corners (8 points)
+    assert mesh.n_points == 8
+    # Verify bounds are correct
+    assert mesh.points[:, 0].min() == 0.0
+    assert mesh.points[:, 0].max() == 1.0
+    assert mesh.points[:, 1].min() == 0.0
+    assert mesh.points[:, 1].max() == 1.0
+    assert mesh.points[:, 2].min() == 0.0
+    assert mesh.points[:, 2].max() == 0.0
+
+
+def test_gltf_reader_string_path() -> None:
+    """Test that string paths are accepted."""
+    reader = GLTFReader(str(TRIANGLE_GLTF))
+    mesh = reader.read()
+    assert mesh.n_points == 8
+
+
+def test_stl_reader_scene_data() -> None:
+    """Test that STL reader mesh returns valid scene data."""
     mesh = STLReader(TRIANGLE_STL).read()
-    result = getattr(mesh, method)(0)
-    assert expected in result
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "stlReader"
+    assert "data" in scene
 
 
 @pytest.mark.parametrize(
@@ -410,6 +409,24 @@ def test_stl_reader_no_vertices(tmp_path: Path) -> None:
     assert mesh.n_points == 0
 
 
+# --- download_damaged_helmet tests ---
+
+
+def test_download_damaged_helmet_returns_gltf_mesh() -> None:
+    """Test that download_damaged_helmet returns a mesh with points."""
+    mesh = examples.download_damaged_helmet()
+    assert mesh.n_points > 0
+
+
+def test_download_damaged_helmet_scene_data() -> None:
+    """Test that download_damaged_helmet mesh generates valid scene data."""
+    mesh = examples.download_damaged_helmet()
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "gltfReader"
+    assert "data" in scene
+
+
 # --- download_cad_model tests ---
 
 
@@ -419,13 +436,61 @@ def test_download_cad_model_returns_stl_mesh() -> None:
     assert mesh.n_points > 0
 
 
-def test_download_cad_model_js_output() -> None:
-    """Test that download_cad_model mesh generates valid vtk.js source."""
+def test_download_cad_model_scene_data() -> None:
+    """Test that download_cad_model mesh generates valid scene data."""
     mesh = examples.download_cad_model()
-    source = mesh.generate_vtk_js_source(0)
-    assert "vtkSTLReader" in source
-    assert "parseAsArrayBuffer" in source
-    assert "source0" in source
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "stlReader"
+    assert "data" in scene
+
+
+def test_gltf_reader_scene_data() -> None:
+    """Test that GLTF reader mesh returns valid scene data."""
+    mesh = GLTFReader(TRIANGLE_GLTF).read()
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "gltfReader"
+    assert "data" in scene
+
+
+@pytest.mark.parametrize(
+    ("fixture_type", "match"),
+    [
+        ("not_found", "File not found"),
+        ("wrong_ext", "Expected a .gltf or .glb file"),
+    ],
+)
+def test_gltf_reader_init_errors(
+    tmp_path: Path,
+    fixture_type: str,
+    match: str,
+) -> None:
+    """Test errors raised during reader initialization."""
+    if fixture_type == "not_found":
+        with pytest.raises(FileNotFoundError, match=match):
+            GLTFReader("nonexistent.gltf")
+    else:
+        bad_file = tmp_path / "data.txt"
+        bad_file.write_text("hello")
+        with pytest.raises(ValueError, match=match):
+            GLTFReader(bad_file)
+
+
+def test_gltf_reader_invalid_json(tmp_path: Path) -> None:
+    """Test reading an invalid JSON file yields empty mesh."""
+    gltf_file = tmp_path / "invalid.gltf"
+    gltf_file.write_text("not valid json")
+    mesh = GLTFReader(gltf_file).read()
+    assert mesh.n_points == 0
+
+
+def test_gltf_reader_no_meshes(tmp_path: Path) -> None:
+    """Test reading a glTF file with no meshes yields empty mesh."""
+    gltf_file = tmp_path / "empty.gltf"
+    gltf_file.write_text('{"asset": {"version": "2.0"}}')
+    mesh = GLTFReader(gltf_file).read()
+    assert mesh.n_points == 0
 
 
 # --- download_bunny tests ---
@@ -437,10 +502,25 @@ def test_download_bunny_returns_ply_mesh() -> None:
     assert mesh.n_points > 0
 
 
-def test_download_bunny_js_output() -> None:
-    """Test that download_bunny mesh generates valid vtk.js source."""
+def test_download_bunny_scene_data() -> None:
+    """Test that download_bunny mesh generates valid scene data."""
     mesh = examples.download_bunny()
-    source = mesh.generate_vtk_js_source(0)
-    assert "vtkPLYReader" in source
-    assert "parseAsArrayBuffer" in source
-    assert "source0" in source
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "plyReader"
+    assert "data" in scene
+
+
+def test_download_lucy_returns_ply_mesh() -> None:
+    """Test that download_lucy returns a _PLYMesh."""
+    mesh = examples.download_lucy()
+    assert mesh.n_points > 0
+
+
+def test_download_lucy_scene_data() -> None:
+    """Test that download_lucy mesh generates valid scene data."""
+    mesh = examples.download_lucy()
+    scene = mesh.to_scene_data()
+    assert scene is not None
+    assert scene["type"] == "plyReader"
+    assert "data" in scene

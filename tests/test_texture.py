@@ -77,23 +77,22 @@ def test_texture_map_to_plane_generic_polydata() -> None:
     assert np.isclose(mapped.t_coords[2, 1], 1.0)
 
 
-def test_generate_vtk_js_source_injects_tcoords() -> None:
-    """Test that t_coords are injected into generic PolyData JS source."""
+def test_scene_data_injects_tcoords() -> None:
+    """Test that t_coords are injected into scene data."""
     points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
     mesh = PolyData(points)
     mapped = mesh.texture_map_to_plane()
-    js_source = mapped.generate_vtk_js_source(0)
-    assert "TextureCoordinates" in js_source
-    assert "tcoords0" in js_source
-    assert "setTCoords" in js_source
+    scene = mapped.to_scene_data()
+    assert "tCoords" in scene
+    assert len(scene["tCoords"]) == 3 * 2  # 3 points x 2 UV components
 
 
-def test_generate_vtk_js_source_no_tcoords_by_default() -> None:
-    """Test that t_coords are NOT injected when not set."""
+def test_scene_data_no_tcoords_by_default() -> None:
+    """Test that t_coords are NOT included in scene data when not set."""
     points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
     mesh = PolyData(points)
-    js_source = mesh.generate_vtk_js_source(0)
-    assert "TextureCoordinates" not in js_source
+    scene = mesh.to_scene_data()
+    assert "tCoords" not in scene
 
 
 def test_add_mesh_with_texture(monkeypatch) -> None:
@@ -124,7 +123,9 @@ def test_generated_html_contains_texture_code(monkeypatch) -> None:
 
 
 def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
-    """Test that HTML output does not contain texture code when no texture set."""
+    """Test that scene data has no texture when no texture is set."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     plotter = pv.Plotter()
@@ -132,7 +133,8 @@ def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
     plotter.add_mesh(sphere)
 
     html = plotter._renderer._generate_html()
-    assert "addTexture" not in html
+    scene = extract_scene_data(html)
+    assert scene["actors"][0]["texture"] is None
 
 
 def test_texture_with_primitive_sphere(monkeypatch) -> None:

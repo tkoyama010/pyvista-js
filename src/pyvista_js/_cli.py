@@ -158,9 +158,199 @@ def _load_plotter_from_pickle(pickle_path: Path):  # type: ignore[return]  # noq
     return plotter
 
 
+def _apply_camera_movement(
+    plotter,  # noqa: ANN001
+    azimuth: float | None,
+    elevation: float | None,
+    zoom: float | None,
+    roll: float | None,
+) -> None:
+    """Apply relative camera movements to an existing plotter camera.
+
+    All movements are relative to the current camera state.  Delegates
+    to :class:`~pyvista_js.Camera` methods.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter whose camera will be modified.
+    azimuth : float or None
+        Horizontal rotation around the focal point in degrees.
+    elevation : float or None
+        Vertical rotation around the focal point in degrees.
+    zoom : float or None
+        Zoom factor (>1 zooms in, <1 zooms out).
+    roll : float or None
+        Roll rotation around the view axis in degrees.
+
+    """
+    from .camera import Camera  # noqa: PLC0415
+
+    if plotter.camera is None:
+        plotter.camera = Camera()
+
+    cam = plotter.camera
+
+    if azimuth is not None:
+        cam.azimuth(azimuth)
+    if elevation is not None:
+        cam.orbit_elevation(elevation)
+    if zoom is not None:
+        if zoom <= 0:
+            logger.error("zoom must be positive, got %s", zoom)
+            sys.exit(1)
+        cam.zoom(zoom)
+    if roll is not None:
+        cam.roll(roll)
+
+
 # ---------------------------------------------------------------------------
 # Subcommand implementations
 # ---------------------------------------------------------------------------
+
+
+def _build_plotter(  # noqa: ANN202
+    files: list[Path] | None,
+    color: str | None,
+    background: str | None,
+    opacity: float,
+    load_pickle: Path | None,
+):  # type: ignore[return]
+    """Build a Plotter from mesh files or a pickle, returning it ready to display.
+
+    Parameters
+    ----------
+    files : list of Path or None
+        Mesh files to load.
+    color : str or None
+        Mesh colour.
+    background : str or None
+        Background colour override.
+    opacity : float
+        Mesh opacity.
+    load_pickle : Path or None
+        Path to a pickled Plotter to load instead.
+
+    Returns
+    -------
+    pyvista_js.Plotter
+        The configured plotter.
+
+    """
+    import pyvista_js as pv  # noqa: PLC0415
+
+    if load_pickle is not None:
+        plotter = _load_plotter_from_pickle(load_pickle)
+
+        if files:
+            for file_path in files:
+                mesh = _read_mesh(file_path)
+                plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+        if background is not None:
+            plotter.background_color = background
+    else:
+        if not files:
+            logger.error(
+                "no mesh files provided. Either provide mesh files or use --load-pickle.",
+            )
+            sys.exit(1)
+
+        plotter = pv.Plotter()
+
+        if background is not None:
+            plotter.background_color = background
+
+        for file_path in files:
+            mesh = _read_mesh(file_path)
+            plotter.add_mesh(mesh, color=color, opacity=opacity)
+
+    return plotter
+
+
+def _save_pickle(plotter, pickle_path: Path) -> None:  # noqa: ANN001
+    """Serialize a Plotter to a pickle file.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter to save.
+    pickle_path : Path
+        Destination file path.
+
+    """
+    import pickle as pickle_module  # noqa: PLC0415
+
+    with pickle_path.open("wb") as f:
+        pickle_module.dump(plotter, f)
+    logger.info("Plotter saved to: %s", pickle_path)
+
+
+def _parse_window_size(size_str: str) -> tuple[int, int]:
+    """Parse a ``'width,height'`` string into an integer pair.
+
+    Parameters
+    ----------
+    size_str : str
+        Window size string, e.g. ``'1920,1080'``.
+
+    Returns
+    -------
+    tuple of int
+        ``(width, height)``.
+
+    Raises
+    ------
+    SystemExit
+        When the format is invalid.
+
+    """
+    try:
+        width_str, height_str = size_str.split(",")
+        return (int(width_str.strip()), int(height_str.strip()))
+    except (ValueError, AttributeError):
+        logger.error(  # noqa: TRY400
+            "Invalid window size format '%s'. Expected 'width,height' (e.g. '1920,1080')",
+            size_str,
+        )
+        sys.exit(1)
+
+
+def _take_screenshot(
+    plotter,  # noqa: ANN001
+    screenshot: Path,
+    screenshot_transparent: bool,  # noqa: FBT001
+    screenshot_scale: int | None,
+    screenshot_window_size: str | None,
+) -> None:
+    """Save a screenshot of the plotter scene.
+
+    Parameters
+    ----------
+    plotter : pyvista_js.Plotter
+        The plotter to capture.
+    screenshot : Path
+        Output file path.
+    screenshot_transparent : bool
+        Whether to use a transparent background.
+    screenshot_scale : int or None
+        Resolution scale factor.
+    screenshot_window_size : str or None
+        Window size as ``'width,height'``.
+
+    """
+    window_size = None
+    if screenshot_window_size is not None:
+        window_size = _parse_window_size(screenshot_window_size)
+
+    plotter.screenshot(
+        filename=screenshot,
+        transparent_background=screenshot_transparent or None,
+        return_img=False,
+        window_size=window_size,
+        scale=screenshot_scale,
+    )
+    logger.info("Screenshot saved to: %s", screenshot)
 
 
 @app.command()
@@ -209,54 +399,90 @@ def plot(  # noqa: PLR0913
             metavar="PATH",
         ),
     ] = None,
+    screenshot: Annotated[
+        Path | None,
+        typer.Option(
+            help="Save a screenshot to the specified file (PNG/JPEG). "
+            "When provided, the browser window will not open.",
+            metavar="PATH",
+        ),
+    ] = None,
+    screenshot_transparent: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            help="Use transparent background for screenshot. Default: False.",
+        ),
+    ] = False,
+    screenshot_scale: Annotated[
+        int | None,
+        typer.Option(
+            help="Scale factor for screenshot resolution (e.g. 2 for double resolution).",
+            metavar="INT",
+        ),
+    ] = None,
+    screenshot_window_size: Annotated[
+        str | None,
+        typer.Option(
+            help="Window size for screenshot as 'width,height' (e.g. '1920,1080').",
+            metavar="SIZE",
+        ),
+    ] = None,
+    azimuth: Annotated[
+        float | None,
+        typer.Option(
+            help="Rotate camera horizontally around the focal point by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
+    elevation: Annotated[
+        float | None,
+        typer.Option(
+            help="Rotate camera vertically around the focal point by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
+    zoom: Annotated[
+        float | None,
+        typer.Option(
+            help="Zoom factor relative to current distance (>1 zooms in, <1 zooms out).",
+            metavar="FLOAT",
+        ),
+    ] = None,
+    roll: Annotated[
+        float | None,
+        typer.Option(
+            help="Roll camera around its view axis by this many degrees.",
+            metavar="DEGREES",
+        ),
+    ] = None,
 ) -> None:
     """Plot one or more mesh files in the browser.
 
     Open one or more mesh files (.vtk, .ply, .obj) and render them
     in the default web browser using vtk.js. Alternatively, load a
     previously saved Plotter object from a pickle file.
+
+    If ``--screenshot`` is provided, a screenshot will be saved to the
+    specified file instead of opening the browser window.
     """
-    import pickle as pickle_module  # noqa: PLC0415
+    plotter = _build_plotter(files, color, background, opacity, load_pickle)
 
-    import pyvista_js as pv  # noqa: PLC0415
+    if any(opt is not None for opt in (azimuth, elevation, zoom, roll)):
+        _apply_camera_movement(plotter, azimuth, elevation, zoom, roll)
 
-    if load_pickle is not None:
-        # Load plotter from pickle file
-        plotter = _load_plotter_from_pickle(load_pickle)
-
-        # If files are also provided with --load-pickle, add them to the loaded plotter
-        if files:
-            for file_path in files:
-                mesh = _read_mesh(file_path)
-                plotter.add_mesh(mesh, color=color, opacity=opacity)
-
-        # If background is specified, override the loaded plotter's background
-        if background is not None:
-            plotter.background_color = background
-    else:
-        # Normal flow: create a new plotter from mesh files
-        if not files:
-            logger.error(
-                "no mesh files provided. Either provide mesh files or use --load-pickle.",
-            )
-            sys.exit(1)
-
-        plotter = pv.Plotter()
-
-        if background is not None:
-            plotter.background_color = background
-
-        for file_path in files:
-            mesh = _read_mesh(file_path)
-            plotter.add_mesh(mesh, color=color, opacity=opacity)
-
-    # Save to pickle file if requested
     if pickle is not None:
-        with pickle.open("wb") as f:
-            pickle_module.dump(plotter, f)
-        logger.info("Plotter saved to: %s", pickle)
+        _save_pickle(plotter, pickle)
 
-    plotter.show()
+    if screenshot is not None:
+        _take_screenshot(
+            plotter,
+            screenshot,
+            screenshot_transparent,
+            screenshot_scale,
+            screenshot_window_size,
+        )
+    else:
+        plotter.show()
 
 
 @app.command()
@@ -333,21 +559,44 @@ def _run_notebook_cells(page) -> None:  # noqa: ANN001
         page.keyboard.press("Shift+Enter")
 
 
-def _rotate_canvas_with_mouse(page, canvas_selector: str = "canvas") -> None:  # noqa: ANN001
+def _find_canvas_in_frames(page) -> tuple:  # noqa: ANN001
+    """Find a canvas element by searching through all frames (including nested iframes).
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+
+    Returns
+    -------
+    tuple
+        A (frame, element_handle) pair, or (None, None) if not found.
+
+    """
+    for frame in page.frames:
+        try:
+            canvas = frame.query_selector("canvas")
+            if canvas is not None:
+                return frame, canvas
+        except Exception:  # noqa: BLE001
+            logger.debug("Failed to query canvas in frame", exc_info=True)
+            continue
+    return None, None
+
+
+def _rotate_canvas_with_mouse(page) -> None:  # noqa: ANN001
     """Rotate the 3D model by dragging the mouse across the canvas.
 
     Parameters
     ----------
     page : playwright.sync_api.Page
         The Playwright page object.
-    canvas_selector : str
-        CSS selector for the canvas element. Default: "canvas".
 
     """
     try:
-        canvas = page.query_selector(canvas_selector)
+        _frame, canvas = _find_canvas_in_frames(page)
         if canvas is None:
-            logger.warning("Canvas element not found, skipping rotation")
+            logger.warning("Canvas element not found in any frame, skipping rotation")
             return
 
         box = canvas.bounding_box()
@@ -567,6 +816,175 @@ def capture_preview(
             sys.exit(1)
 
     logger.info("Preview GIF saved to: %s", output_path)
+
+
+def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN001
+    """Poll all frames until a canvas element appears or *timeout* seconds elapse.
+
+    Parameters
+    ----------
+    page : playwright.sync_api.Page
+        The Playwright page object.
+    timeout : int
+        Maximum seconds to wait.  Default: 120.
+
+    Raises
+    ------
+    TimeoutError
+        If no canvas is found within *timeout* seconds.
+
+    """
+    import time  # noqa: PLC0415
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        _frame, canvas = _find_canvas_in_frames(page)
+        if canvas is not None:
+            logger.info("Found canvas element in iframe")
+            return
+        page.wait_for_timeout(2000)
+
+    msg = f"Canvas element not found in any frame within {timeout} seconds"
+    raise TimeoutError(msg)
+
+
+def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = True) -> Path:
+    """Capture screenshots from the stlite demo using Playwright.
+
+    Parameters
+    ----------
+    output_dir : Path
+        Directory to save temporary screenshots.
+    demo_url : str
+        URL of the stlite demo.
+    rotate : bool
+        If ``True``, rotate the 3D model by mouse drag between
+        screenshots. Default: ``True``.
+
+    Returns
+    -------
+    Path
+        Path to the directory containing screenshots.
+
+    """
+    import contextlib  # noqa: PLC0415
+
+    from playwright.sync_api import sync_playwright  # noqa: PLC0415
+
+    screenshots_dir = output_dir / "screenshots"
+    screenshots_dir.mkdir(parents=True, exist_ok=True)
+
+    logger.info("Capturing stlite demo from: %s", demo_url)
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(viewport={"width": 1200, "height": 800})
+        page = context.new_page()
+
+        try:
+            logger.info("Navigating to stlite demo...")
+            page.goto(demo_url, wait_until="networkidle", timeout=120000)
+
+            logger.info("Waiting for stlite to load and install dependencies...")
+            # Wait for stlite to initialize Python and install pyvista-js
+            page.wait_for_timeout(60000)
+
+            logger.info("Waiting for 3D rendering to appear in iframes...")
+            # stlite renders the Streamlit app in iframes, and
+            # components.html() creates another nested iframe for the
+            # Three.js canvas.  page.wait_for_selector only searches the
+            # top-level document, so we poll all frames instead.
+            _wait_for_canvas_in_frames(page)
+
+            page.wait_for_timeout(5000)
+
+            if rotate:
+                logger.info("Capturing rendering screenshots with rotation...")
+                # Capture first screenshot at initial position
+                page.screenshot(path=str(screenshots_dir / "screenshot_01.png"))
+                page.wait_for_timeout(300)
+
+                # Capture remaining screenshots while rotating
+                for i in range(2, 15):
+                    _rotate_canvas_with_mouse(page)
+                    page.wait_for_timeout(300)
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(300)
+            else:
+                logger.info("Capturing rendering screenshots...")
+                for i in range(1, 15):
+                    page.screenshot(path=str(screenshots_dir / f"screenshot_{i:02d}.png"))
+                    page.wait_for_timeout(500)
+
+            logger.info("Captured 14 screenshots successfully")
+
+        except Exception:
+            logger.exception("Error during stlite demo capture")
+            with contextlib.suppress(Exception):
+                page.screenshot(path=str(screenshots_dir / "error_screenshot.png"))
+        finally:
+            context.close()
+            browser.close()
+
+    return screenshots_dir
+
+
+@app.command(name="capture-stlite-preview")
+def capture_stlite_preview(
+    output: Annotated[
+        Path,
+        typer.Option(
+            help="Output path for the GIF. Default: assets/stlite-preview.gif.",
+            metavar="PATH",
+        ),
+    ] = Path("assets/stlite-preview.gif"),
+    url: Annotated[
+        str,
+        typer.Option(
+            help="URL of the stlite demo.",
+            metavar="URL",
+        ),
+    ] = "https://share.stlite.net/#!CgZhcHAucHkS3AQKBmFwcC5weRLRBArOBCIiIlN0cmVhbWxpdCBhcHAgZm9yIHRoZSBweXZpc3RhLWpzIHN0bGl0ZSBkZW1vLiIiIgoKaW1wb3J0IHN0cmVhbWxpdCBhcyBzdAppbXBvcnQgc3RyZWFtbGl0LmNvbXBvbmVudHMudjEgYXMgY29tcG9uZW50cwoKaW1wb3J0IHB5dmlzdGFfanMgYXMgcHYKZnJvbSBweXZpc3RhX2pzIGltcG9ydCBleGFtcGxlcwoKY29sb3IgPSBzdC5zZWxlY3Rib3goCiAgICAiQ29sb3IiLAogICAgWyJncmF5IiwgIndoaXRlIiwgInJlZCIsICJncmVlbiIsICJibHVlIiwgInllbGxvdyIsICJjeWFuIiwgIm1hZ2VudGEiXSwKKQoKb3BhY2l0eSA9IHN0LnNsaWRlcigiT3BhY2l0eSIsIG1pbl92YWx1ZT0wLjAsIG1heF92YWx1ZT0xLjAsIHZhbHVlPTAuOCwgc3RlcD0wLjEpCgpwbG90dGVyID0gcHYuUGxvdHRlcigpCgptZXNoID0gZXhhbXBsZXMuZG93bmxvYWRfYnVubnkoKQoKcGxvdHRlci5hZGRfbWVzaChtZXNoLCBjb2xvcj1jb2xvciwgb3BhY2l0eT1vcGFjaXR5KQoKaHRtbCA9IHBsb3R0ZXIuX3JlbmRlcmVyLl9nZW5lcmF0ZV9zdGFuZGFsb25lX2h0bWwoKSAgIyBub3FhOiBTTEYwMDEKY29tcG9uZW50cy5odG1sKGh0bWwsIGhlaWdodD02MDApGgpweXZpc3RhLWpz",
+    fps: Annotated[
+        int,
+        typer.Option(
+            help="Frames per second for the GIF. Default: 2.",
+            metavar="INT",
+        ),
+    ] = 2,
+    rotate: Annotated[
+        bool | None,
+        typer.Option(
+            help="Rotate the 3D model by mouse drag while capturing screenshots. Default: True.",
+        ),
+    ] = None,
+) -> None:
+    """Capture a preview GIF of the stlite demo.
+
+    Automate capturing a preview GIF showing pyvista-js rendering in stlite.
+    Requires: playwright, imageio[ffmpeg], pillow.
+    """
+    import tempfile  # noqa: PLC0415
+
+    if rotate is None:
+        rotate = True
+
+    output_path = output
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_dir = Path(tmp)
+        screenshots_dir = _capture_stlite_screenshots(tmp_dir, url, rotate=rotate)
+
+        screenshot_files = list(screenshots_dir.glob("screenshot_*.png"))
+        if not screenshot_files:
+            logger.error("No screenshots were captured")
+            sys.exit(1)
+
+        if not _create_gif(screenshots_dir, output_path, fps=fps):
+            logger.error("Failed to create GIF")
+            sys.exit(1)
+
+    logger.info("stlite preview GIF saved to: %s", output_path)
 
 
 # ---------------------------------------------------------------------------

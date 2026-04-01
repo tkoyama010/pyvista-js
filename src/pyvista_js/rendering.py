@@ -78,14 +78,17 @@ import webbrowser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Self
+
+    import numpy as np
 
     from .camera import Camera
     from .light import Light
-    from .mesh import PolyData
+    from .mesh import PolyData, UnstructuredGrid
+    from .text import Text
     from .texture import Texture
 
-import re
 
 from jinja2 import Environment, StrictUndefined
 
@@ -93,19 +96,10 @@ from .examples import CubeMap
 
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
-_RENDERING_TEMPLATE = (_TEMPLATES_DIR / "rendering.html").read_text()
-_RENDERING_JS_TEMPLATE = (_TEMPLATES_DIR / "rendering_js.html").read_text()
-_ACTOR_TEMPLATE = (_TEMPLATES_DIR / "actor.html").read_text()
-_SCALAR_BAR_TEMPLATE = (_TEMPLATES_DIR / "scalar_bar.html").read_text()
+_RENDERING_TEMPLATE = (_TEMPLATES_DIR / "standalone.html").read_text()
+_RENDERER_JS = (_TEMPLATES_DIR / "renderer.js").read_text()
 
 _jinja_env = Environment(undefined=StrictUndefined, autoescape=False)  # noqa: S701
-
-
-def _render(template_str: str, **kwargs: object) -> str:
-    rendered = _jinja_env.from_string(template_str).render(**kwargs)
-    # Strip <script> wrapper added for prettier formatting
-    rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-    return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
 
 # vtk.js CDN URL used across renderers
@@ -186,6 +180,33 @@ class _VTKJSLoader:
 logger = logging.getLogger(__name__)
 
 
+def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
+    """Convert color name to RGB tuple.
+
+    Parameters
+    ----------
+    color_name : str
+        Color name (e.g., 'red', 'blue').
+
+    Returns
+    -------
+    tuple of float
+        RGB values (0-1). Returns gray (0.5, 0.5, 0.5) for unknown colors.
+
+    """
+    colors = {
+        "red": (1.0, 0.0, 0.0),
+        "green": (0.0, 1.0, 0.0),
+        "blue": (0.0, 0.0, 1.0),
+        "yellow": (1.0, 1.0, 0.0),
+        "cyan": (0.0, 1.0, 1.0),
+        "magenta": (1.0, 0.0, 1.0),
+        "white": (1.0, 1.0, 1.0),
+        "black": (0.0, 0.0, 0.0),
+    }
+    return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
+
+
 class _BaseHTMLRenderer:
     """Base class providing shared state and HTML generation for vtk.js renderers.
 
@@ -206,6 +227,7 @@ class _BaseHTMLRenderer:
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
         self.lighting: str | None = lighting
+        self.text_actors: list[Text] = []
         self.background: tuple[float, float, float] = (1.0, 1.0, 1.0)
         self.container_id: str = "pyvista-container"
         self._environment_texture_url: str | None = None
@@ -235,12 +257,13 @@ class _BaseHTMLRenderer:
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
-        mesh: PolyData,
+        mesh: PolyData | UnstructuredGrid,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -264,6 +287,10 @@ class _BaseHTMLRenderer:
             Metallic factor for PBR.
         roughness : float, default=0.5
             Roughness factor for PBR.
+        smooth_shading : bool, default=True
+            Enable smooth shading (Gouraud interpolation). When True, normals
+            are interpolated across polygons for a smooth appearance. When
+            False, flat shading is used.
         texture : Texture, optional
             Surface texture to apply. The texture image is loaded from the
             URL stored in the :class:`~pyvista_js.Texture` object.
@@ -285,13 +312,27 @@ class _BaseHTMLRenderer:
         dict
             Actor information dictionary.
 
+        Examples
+        --------
+        Compare smooth shading (left) and flat shading (right) side by side:
+
+        >>> from pyvista_js import Sphere
+        >>> from pyvista_js.rendering import get_renderer
+        >>> renderer = get_renderer()
+        >>> color = (0.8, 0.6, 0.2)
+        >>> smooth = Sphere(center=(-1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = renderer.add_mesh_actor(smooth, color=color, smooth_shading=True)
+        >>> flat = Sphere(center=(1.5, 0, 0), theta_resolution=8, phi_resolution=8)
+        >>> _ = renderer.add_mesh_actor(flat, color=color, smooth_shading=False)
+        >>> renderer.render()  # doctest: +SKIP
+
         """
         if isinstance(color, str):
-            color = self._color_name_to_rgb(color)
+            color = _color_name_to_rgb(color)
 
         # Convert edge_color if it's a string
         if isinstance(edge_color, str):
-            edge_color = self._color_name_to_rgb(edge_color)
+            edge_color = _color_name_to_rgb(edge_color)
 
         actor_info: dict[str, object] = {
             "mesh": mesh,
@@ -300,12 +341,68 @@ class _BaseHTMLRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "smooth_shading": smooth_shading,
             "texture": texture,
             "show_edges": show_edges,
             "edge_color": edge_color,
             "style": style,
             "scalars": scalars,
             "cmap": cmap,
+        }
+        self.actors.append(actor_info)
+        return actor_info
+
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Add a point cloud to the renderer.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates as an (n, 3) array or PolyData object.
+        color : tuple or str, optional
+            RGB color tuple (0-1) or color name ('red', 'blue', etc.).
+        opacity : float, default=1.0
+            Opacity value between 0 and 1.
+        point_size : float, default=5.0
+            Size of points in pixels.
+        render_points_as_spheres : bool, default=False
+            Render points as spheres instead of screen-space squares.
+
+        Returns
+        -------
+        dict
+            Actor information dictionary.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = _color_name_to_rgb(color)
+
+        # Convert to PolyData if needed
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor_info: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
         }
         self.actors.append(actor_info)
         return actor_info
@@ -326,6 +423,23 @@ class _BaseHTMLRenderer:
 
         """
         self.lights.append(light)
+
+    def add_text_actor(self, text: Text) -> None:
+        """Add a text actor to the scene.
+
+        Parameters
+        ----------
+        text : Text
+            The :class:`~pyvista_js.text.Text` instance to add.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> renderer = get_renderer()
+        >>> renderer.add_text_actor(pv.Text("Hello", position=(0.5, 0.9)))
+
+        """
+        self.text_actors.append(text)
 
     def add_axes(self, **kwargs: object) -> None:  # noqa: ARG002
         """Add an orientation marker (axes indicator) to the viewport.
@@ -445,628 +559,273 @@ class _BaseHTMLRenderer:
         self._camera = camera
 
     def clear(self) -> None:
-        """Remove all actors and lights from the renderer."""
+        """Remove all actors, lights, and text actors from the renderer."""
         self.actors = []
         self.lights = []
         self._scalar_bar = None
+        self.text_actors = []
 
-    def _generate_texture_code(self, actor_info: dict[str, object], idx: int) -> str:
-        """Generate vtk.js JavaScript to load and bind a surface texture.
-
-        Parameters
-        ----------
-        actor_info : dict
-            Actor dictionary, may contain a ``'texture'`` key.
-        idx : int
-            Actor index used to create unique JS variable names.
-
-        Returns
-        -------
-        str
-            JavaScript code to load the texture image and bind it to the actor,
-            or an empty string when no texture is set.
-
-        """
-        texture = actor_info.get("texture")
-        if texture is None:
-            return ""
-        tex_url = texture.url  # type: ignore[attr-defined]
-        return (
-            f"// Load and apply surface texture\n"
-            f"const texture{idx} = vtk.Rendering.Core.vtkTexture.newInstance();\n"
-            f"texture{idx}.setInterpolate(true);\n"
-            f"actor{idx}.addTexture(texture{idx});\n"
-            f"const texImg{idx} = new Image();\n"
-            f"texImg{idx}.crossOrigin = 'anonymous';\n"
-            f"texImg{idx}.onload = function() {{\n"
-            f"  texture{idx}.setImage(texImg{idx});\n"
-            f"  renderWindow.render();\n"
-            f"}};\n"
-            f"texImg{idx}.src = '{tex_url}';"
-        )
-
-    def _generate_scalar_code(self, actor_info: dict[str, object], idx: int) -> str:
-        """Generate vtk.js JavaScript to set up scalar coloring with a lookup table.
-
-        Parameters
-        ----------
-        actor_info : dict
-            Actor dictionary, may contain ``'scalars'`` and ``'cmap'`` keys.
-        idx : int
-            Actor index used to create unique JS variable names.
-
-        Returns
-        -------
-        str
-            JavaScript code to set up scalar visualization with a lookup table,
-            or an empty string when scalars are not specified.
-
-        """
-        scalars = actor_info.get("scalars")
-        if scalars is None:
-            return ""
-
-        cmap = actor_info.get("cmap", "viridis")
-        mesh = actor_info["mesh"]
-
-        # Get the scalar array from mesh point_data
-        try:
-            scalar_array = mesh.point_data[scalars]  # type: ignore[index, attr-defined]
-        except (KeyError, AttributeError):
-            return ""
-
-        # Compute scalar range
-        scalar_min = float(scalar_array.min())
-        scalar_max = float(scalar_array.max())
-
-        # Generate lookup table based on colormap
-        lut_code = self._generate_lut_code(str(cmap), idx, scalar_min, scalar_max)
-
-        # For primitives with point_data, switch mapper to use the modified polydata
-        mapper_override = ""
-        if hasattr(mesh, "is_primitive") and mesh.is_primitive:  # type: ignore[union-attr]
-            mapper_override = (
-                f"// Switch mapper to use polydata with scalar arrays\n"
-                f"mapper{idx}.setInputData(polydata{idx});\n"
-            )
-
-        return (
-            f"{lut_code}\n"
-            f"{mapper_override}"
-            f"// Configure mapper for scalar coloring\n"
-            f"mapper{idx}.setScalarVisibility(true);\n"
-            f"mapper{idx}.setScalarModeToUsePointFieldData();\n"
-            f"mapper{idx}.setColorByArrayName('{scalars}');\n"
-            f"mapper{idx}.setLookupTable(lut{idx});\n"
-            f"mapper{idx}.setScalarRange({scalar_min}, {scalar_max});"
-        )
-
-    def _generate_lut_code(self, cmap: str, idx: int, vmin: float, vmax: float) -> str:
-        """Generate vtk.js lookup table code for a given colormap.
-
-        Parameters
-        ----------
-        cmap : str
-            Colormap name.
-        idx : int
-            Index for unique variable naming.
-        vmin : float
-            Minimum scalar value.
-        vmax : float
-            Maximum scalar value.
-
-        Returns
-        -------
-        str
-            JavaScript code to create a lookup table.
-
-        """
-        # Define colormap presets (RGB values from 0-1)
-        colormaps = {
-            "viridis": [
-                (0.267004, 0.004874, 0.329415),
-                (0.282623, 0.140926, 0.457517),
-                (0.253935, 0.265254, 0.529983),
-                (0.206756, 0.371758, 0.553117),
-                (0.163625, 0.471133, 0.558148),
-                (0.127568, 0.566949, 0.550556),
-                (0.134692, 0.658636, 0.517649),
-                (0.266941, 0.748751, 0.440573),
-                (0.477504, 0.821444, 0.318195),
-                (0.741388, 0.873449, 0.149561),
-                (0.993248, 0.906157, 0.143936),
-            ],
-            "plasma": [
-                (0.050383, 0.029803, 0.527975),
-                (0.279264, 0.023216, 0.620082),
-                (0.433594, 0.016101, 0.657922),
-                (0.562738, 0.051545, 0.641509),
-                (0.665667, 0.125731, 0.595428),
-                (0.746812, 0.216569, 0.524736),
-                (0.815735, 0.314176, 0.444306),
-                (0.877713, 0.415403, 0.359254),
-                (0.933095, 0.521049, 0.271180),
-                (0.980588, 0.633332, 0.177486),
-                (0.988260, 0.812325, 0.145357),
-            ],
-            "jet": [
-                (0.0, 0.0, 0.5),
-                (0.0, 0.0, 1.0),
-                (0.0, 0.5, 1.0),
-                (0.0, 1.0, 1.0),
-                (0.5, 1.0, 0.5),
-                (1.0, 1.0, 0.0),
-                (1.0, 0.5, 0.0),
-                (1.0, 0.0, 0.0),
-                (0.5, 0.0, 0.0),
-            ],
-            "coolwarm": [
-                (0.23, 0.299, 0.754),
-                (0.706, 0.016, 0.150),
-            ],
-        }
-
-        # Default to viridis if colormap not found
-        colors = colormaps.get(cmap, colormaps["viridis"])
-
-        # Generate JavaScript array of RGB values
-        colors_js = []
-        for r, g, b in colors:
-            colors_js.append(f"[{r}, {g}, {b}]")
-        colors_str = ",\n      ".join(colors_js)
-
-        return (
-            f"// Create lookup table for '{cmap}' colormap\n"
-            f"const lut{idx} = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();\n"
-            f"lut{idx}.setRange({vmin}, {vmax});\n"
-            f"const colors{idx} = [\n      {colors_str}\n    ];\n"
-            f"for (let i = 0; i < colors{idx}.length; i++) {{\n"
-            f"  const val = {vmin} + (i / (colors{idx}.length - 1)) * ({vmax} - {vmin});\n"
-            f"  lut{idx}.addRGBPoint(val, colors{idx}[i][0], colors{idx}[i][1], "
-            f"colors{idx}[i][2]);\n"
-            f"}}"
-        )
-
-    def _generate_lights_code(self) -> str:
-        """Generate vtk.js JavaScript for all lights.
-
-        Falls back to a default directional light when no lights have been added
-        and lighting="default". Returns empty string when lighting=None.
-        """
+    def _build_lights_data(self) -> list[dict[str, object]]:
+        """Build JSON-serializable light configurations."""
         if not self.lights:
             if self.lighting is None:
-                # No default lights when lighting=None
-                return ""
-            # Default angled directional light for specular highlights
-            return (
-                "      // Default directional light\n"
-                "      const light0 = vtk.Rendering.Core.vtkLight.newInstance();\n"
-                "      light0.setLightTypeToSceneLight();\n"
-                "      light0.setPositional(false);\n"
-                "      light0.setIntensity(1.0);\n"
-                "      light0.setPosition(1, 1, 1);\n"
-                "      light0.setFocalPoint(0, 0, 0);\n"
-                "      renderer.addLight(light0);"
+                return []
+            return [
+                {
+                    "type": "scene",
+                    "positional": False,
+                    "intensity": 1.0,
+                    "position": [1, 1, 1],
+                    "focalPoint": [0, 0, 0],
+                    "color": [1, 1, 1],
+                    "coneAngle": 30,
+                    "coneFalloff": 0,
+                    "attenuationValues": [1, 0, 0],
+                },
+            ]
+        lights_data: list[dict[str, object]] = []
+        for light in self.lights:
+            light_type = light.light_type.lower().replace("light", "")
+            lights_data.append(
+                {
+                    "type": light_type,
+                    "positional": light.positional,
+                    "intensity": light.intensity,
+                    "position": list(light.position),
+                    "focalPoint": list(light.focal_point),
+                    "color": list(light.color),
+                    "coneAngle": light.cone_angle,
+                    "coneFalloff": light.cone_falloff,
+                    "attenuationValues": list(light.attenuation_values),
+                },
             )
-        lines = []
-        for idx, light in enumerate(self.lights):
-            code = light.generate_vtk_js_code(idx)
-            # Indent each line
-            indented = "\n".join("      " + line for line in code.splitlines())
-            lines.append(indented)
-        return "\n\n".join(lines)
+        return lights_data
 
-    def _generate_scalar_bar_code(self) -> str:
-        """Generate vtk.js JavaScript for the scalar bar.
-
-        Returns
-        -------
-        str
-            JavaScript code to create and configure a scalar bar actor,
-            or an empty string if no scalar bar has been added.
-
-        """
-        if self._scalar_bar is None:
-            return ""
-
-        title = str(self._scalar_bar["title"])
-        vertical = bool(self._scalar_bar["vertical"])
-        n_labels = int(str(self._scalar_bar["n_labels"]))
-
-        # Generate orientation-specific code
-        common_style = (
-            "scalarBarActor.setAxisTextStyle({\n"
-            "  fontColor: 'black',\n"
-            "  fontFamily: 'Arial',\n"
-            "  fontSize: 14,\n"
-            "});\n"
-            "scalarBarActor.setTickTextStyle({\n"
-            "  fontColor: 'black',\n"
-            "  fontFamily: 'Arial',\n"
-            "  fontSize: 12,\n"
-            "});\n"
-            "scalarBarActor.setDrawNanAnnotation(false);\n"
-            "scalarBarActor.setDrawBelowRangeSwatch(false);\n"
-            "scalarBarActor.setDrawAboveRangeSwatch(false);"
-        )
-        if vertical:
-            orientation_code = common_style
-        else:
-            orientation_code = (
-                common_style + "\n"
-                "// Force horizontal layout via custom autoLayout\n"
-                "scalarBarActor.setAutoLayout(function(e) {\n"
-                "  var n = e.getLastSize();\n"
-                "  var r = Math.pow(n[0] / 700, 0.8);\n"
-                "  var a = Math.pow(n[1] / 700, 0.8);\n"
-                "  var o = Math.min(r, a);\n"
-                "  var i = e.getAxisTextStyle();\n"
-                "  var s = e.getTickTextStyle();\n"
-                "  i.fontSize = Math.max(24 * o, 12);\n"
-                "  s.fontSize = Math.max(16 * o, 10);\n"
-                "  e.setAxisTitlePixelOffset(1.2 * s.fontSize);\n"
-                "  e.setTickLabelPixelOffset(0.1 * s.fontSize);\n"
-                "  var l = e.updateTextureAtlas();\n"
-                "  var c = 2 * (0.8 * s.fontSize + l.titleHeight"
-                " + e.getAxisTitlePixelOffset()) / n[1];\n"
-                "  var d = 2 * l.tickWidth / n[0];\n"
-                "  var u = e.getBoxSizeByReference();\n"
-                "  u[0] = Math.min(1.9, Math.max(1.4,"
-                " 1.4 * d * (e.getTicks().length + 3)));\n"
-                "  u[1] = c;\n"
-                "  e.setBoxPosition([-0.5 * u[0], -0.97]);\n"
-                "  e.recomputeBarSegments(l);\n"
-                "});"
-            )
-
-        code = _render(
-            _SCALAR_BAR_TEMPLATE,
-            TITLE=title,
-            N_LABELS=str(n_labels),
-            ORIENTATION_CODE=orientation_code,
-        )
-
-        # Indent for consistency with other generated code
-        return "\n".join("      " + line for line in code.splitlines())
-
-    def _generate_axes_code(self) -> str:
-        """Generate vtk.js JavaScript for the orientation marker widget.
-
-        Returns empty string if axes are not enabled.
-        """
-        if not self._axes_enabled:
-            return ""
-
-        return """
-      // Create axes actor for orientation marker
-      const axes = vtk.Rendering.Core.vtkAxesActor.newInstance();
-
-      // Create orientation marker widget
-      const orientationWidget = vtk.Interaction.Widgets.vtkOrientationMarkerWidget.newInstance({
-        actor: axes,
-        interactor: interactor
-      });
-      orientationWidget.setEnabled(true);
-      orientationWidget.setViewportCorner(
-        vtk.Interaction.Widgets.vtkOrientationMarkerWidget.Corners.BOTTOM_LEFT
-      );
-      orientationWidget.setViewportSize(0.15);
-      orientationWidget.setMinPixelSize(100);
-      orientationWidget.setMaxPixelSize(300);"""
-
-    def _generate_actor_code(self, idx: int, actor_info: dict[str, object]) -> str:
-        """Generate vtk.js JavaScript for a single actor.
-
-        Parameters
-        ----------
-        idx : int
-            Actor index used for unique JS variable names.
-        actor_info : dict
-            Actor dictionary with mesh, color, opacity, etc.
-
-        Returns
-        -------
-        str
-            JavaScript code for the actor.
-
-        """
+    def _build_actor_data(self, actor_info: dict[str, object]) -> dict[str, object]:
+        """Build JSON-serializable actor configuration."""
         mesh = actor_info["mesh"]
-        color = actor_info.get("color") or (0.5, 0.5, 0.5)
-        opacity = actor_info.get("opacity", 1.0)
-        pbr = actor_info.get("pbr", False)
-        metallic = float(actor_info.get("metallic", 0.0))  # type: ignore[arg-type]
-        roughness = float(actor_info.get("roughness", 0.5))  # type: ignore[arg-type]
-        show_edges = actor_info.get("show_edges", False)
-        edge_color = actor_info.get("edge_color")
-        style = actor_info.get("style", "surface")
+        color: tuple[float, ...] = actor_info.get("color") or (0.5, 0.5, 0.5)  # type: ignore[assignment]
+        opacity = float(actor_info.get("opacity", 1.0))  # type: ignore[arg-type]
+        smooth_shading = bool(actor_info.get("smooth_shading", True))
+        style = str(actor_info.get("style", "surface"))
 
-        source_code = mesh.generate_vtk_js_source(idx)  # type: ignore[attr-defined]
-        mapper_setup = mesh.get_mapper_setup(idx)  # type: ignore[attr-defined]
+        source_data = mesh.to_scene_data()  # type: ignore[attr-defined]
 
-        pbr_code = self._generate_pbr_code(idx, pbr, metallic, roughness)
-        edge_code = self._generate_edge_code(
-            idx,
-            show_edges,
-            edge_color,  # type: ignore[arg-type]
-        )
-        style_code = self._generate_style_code(idx, str(style))
-        texture_code = self._generate_texture_code(actor_info, idx)
-        scalar_code = self._generate_scalar_code(actor_info, idx)
+        # Normals configuration
+        normals_data = None
+        if smooth_shading or source_data.get("type") == "sphere":
+            normals_data = {
+                "computePointNormals": bool(smooth_shading),
+                "computeCellNormals": not bool(smooth_shading),
+            }
 
-        return _render(
-            _ACTOR_TEMPLATE,
-            SOURCE_CODE=source_code,
-            MAPPER=f"mapper{idx}",
-            ACTOR=f"actor{idx}",
-            MAPPER_SETUP=mapper_setup,
-            COLOR_R=str(color[0]),  # type: ignore[index]
-            COLOR_G=str(color[1]),  # type: ignore[index]
-            COLOR_B=str(color[2]),  # type: ignore[index]
-            OPACITY=str(opacity),
-            EDGE_CODE=edge_code,
-            STYLE_CODE=style_code,
-            PBR_CODE=pbr_code,
-            TEXTURE_CODE=texture_code,
-            SCALAR_CODE=scalar_code,
-        )
+        # Texture
+        texture_data = None
+        texture: object = actor_info.get("texture")
+        if texture is not None:
+            texture_data = {"url": getattr(texture, "url", "")}
 
-    @staticmethod
-    def _generate_pbr_code(
-        idx: int,
-        pbr: object,
-        metallic: float,
-        roughness: float,
-    ) -> str:
-        """Generate vtk.js PBR property code for an actor.
+        # Scalars
+        scalars_data = None
+        scalars_name = actor_info.get("scalars")
+        if scalars_name is not None:
+            cmap = actor_info.get("cmap", "viridis")
+            scalars_array = mesh.point_data[str(scalars_name)]  # type: ignore[attr-defined]
+            scalars_data = {
+                "arrayName": scalars_name,
+                "cmap": cmap,
+                "range": [float(scalars_array.min()), float(scalars_array.max())],
+            }
 
-        Parameters
-        ----------
-        idx : int
-            Actor index.
-        pbr : object
-            Whether PBR is enabled.
-        metallic : float
-            Metallic factor.
-        roughness : float
-            Roughness factor.
+        # PBR
+        pbr_data = None
+        if actor_info.get("pbr"):
+            pbr_data = {
+                "metallic": actor_info.get("metallic", 0.0),
+                "roughness": actor_info.get("roughness", 0.5),
+            }
 
-        Returns
-        -------
-        str
-            JavaScript code or empty string.
+        # Edge
+        edge_data = None
+        if actor_info.get("show_edges"):
+            edge_color = actor_info.get("edge_color")
+            if isinstance(edge_color, str):
+                from pyvista_js.light import _color_name_to_rgb  # noqa: PLC0415
 
-        """
-        if not pbr:
-            return ""
-        # vtk.js WebGL uses Phong shading; map metallic/roughness to
-        # Phong parameters so both axes are visually distinct:
-        #   metallic  → diffuse (1.0 → 0.3) and specular (0.5 → 1.0)
-        #   roughness → specularPower (128 → 1)
-        specular = round(metallic * 0.5 + 0.5, 4)
-        specular_power = max(1, round((1.0 - roughness) ** 2 * 128))
-        diffuse = round(1.0 - metallic * 0.7, 4)
-        return (
-            f"actor{idx}.getProperty().setInterpolationToPhong();\n"
-            f"actor{idx}.getProperty().setMetallic({metallic});\n"
-            f"actor{idx}.getProperty().setRoughness({roughness});\n"
-            f"actor{idx}.getProperty().setAmbient(0.1);\n"
-            f"actor{idx}.getProperty().setSpecular({specular});\n"
-            f"actor{idx}.getProperty().setSpecularPower({specular_power});\n"
-            f"actor{idx}.getProperty().setDiffuse({diffuse});"
-        )
+                edge_color = list(_color_name_to_rgb(edge_color))
+            elif edge_color is not None:
+                edge_color = list(edge_color)  # type: ignore[call-overload]
+            else:
+                edge_color = [0, 0, 0]
+            edge_data = {"color": edge_color}
 
-    @staticmethod
-    def _generate_edge_code(
-        idx: int,
-        show_edges: object,
-        edge_color: str | tuple[float, float, float] | None,
-    ) -> str:
-        """Generate vtk.js edge visibility code for an actor.
+        actor_type = actor_info.get("type", "mesh")
 
-        Parameters
-        ----------
-        idx : int
-            Actor index.
-        show_edges : object
-            Whether edges are visible.
-        edge_color : str or tuple or None
-            Edge color.
+        result: dict[str, object] = {
+            "source": source_data,
+            "normals": normals_data,
+            "mapper": {"class": "vtkMapper"},
+            "color": list(color),
+            "opacity": float(opacity),
+            "style": style,
+            "shading": "gouraud" if smooth_shading else "flat",
+            "edges": edge_data,
+            "pbr": pbr_data,
+            "texture": texture_data,
+            "scalars": scalars_data,
+            "actorType": actor_type,
+        }
 
-        Returns
-        -------
-        str
-            JavaScript code or empty string.
-
-        """
-        if not show_edges:
-            return ""
-        if edge_color is None:
-            edge_color = (0.0, 0.0, 0.0)
-        edge_r, edge_g, edge_b = edge_color[0], edge_color[1], edge_color[2]  # type: ignore[index]
-        return (
-            f"actor{idx}.getProperty().setEdgeVisibility(true);\n"
-            f"actor{idx}.getProperty().setEdgeColor({edge_r}, {edge_g}, {edge_b});"
-        )
-
-    @staticmethod
-    def _generate_style_code(idx: int, style: str) -> str:
-        """Generate vtk.js representation code for an actor.
-
-        Parameters
-        ----------
-        idx : int
-            Actor index.
-        style : str
-            Rendering style ('surface', 'wireframe', or 'points').
-
-        Returns
-        -------
-        str
-            JavaScript code or empty string.
-
-        """
-        # vtk.js Representation constants: POINTS=0, WIREFRAME=1, SURFACE=2
-        style_map = {"wireframe": 1, "points": 0, "surface": 2}
-        rep = style_map.get(style)
-        if rep is not None:
-            return f"actor{idx}.getProperty().setRepresentation({rep});"
-        return ""
-
-    def _generate_environment_code(self) -> str:
-        """Generate vtk.js JavaScript for environment textures.
-
-        Returns
-        -------
-        str
-            JavaScript code for environment lighting, or empty string.
-
-        """
-        if self._environment_texture_url:
-            return (
-                "      // Load environment texture for image-based lighting\n"
-                "      const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
-                "      const envImg = new Image();\n"
-                "      envImg.crossOrigin = 'anonymous';\n"
-                "      envImg.onload = function() {\n"
-                "        envTexture.setImage(envImg);\n"
-                "        renderer.setEnvironmentTexture(envTexture);\n"
-                "        renderWindow.render();\n"
-                "      };\n"
-                f"      envImg.src = '{self._environment_texture_url}';"
+        if actor_type == "points":
+            point_size = float(actor_info.get("point_size", 5.0))  # type: ignore[arg-type]
+            as_spheres = bool(
+                actor_info.get("render_points_as_spheres", False),
             )
-        if self._environment_texture_cubemap:
-            urls = self._environment_texture_cubemap.face_urls
-            urls_js = ", ".join(f"'{u}'" for u in urls)
-            return (
-                "      // Load cubemap faces and stitch into a canvas for IBL\n"
-                f"      const faceUrls = [{urls_js}];\n"
-                "      Promise.all(faceUrls.map(function(url) {\n"
-                "        return new Promise(function(resolve, reject) {\n"
-                "          const img = new Image();\n"
-                "          img.crossOrigin = 'anonymous';\n"
-                "          img.onload = function() { resolve(img); };\n"
-                "          img.onerror = reject;\n"
-                "          img.src = url;\n"
-                "        });\n"
-                "      })).then(function(images) {\n"
-                "        const size = images[0].width;\n"
-                "        const canvas = document.createElement('canvas');\n"
-                "        canvas.width = size * 6;\n"
-                "        canvas.height = size;\n"
-                "        const ctx = canvas.getContext('2d');\n"
-                "        images.forEach(function(img, i) {\n"
-                "          ctx.drawImage(img, i * size, 0);\n"
-                "        });\n"
-                "        const envTexture = vtk.Rendering.Core.vtkTexture.newInstance();\n"
-                "        envTexture.setInterpolate(true);\n"
-                "        envTexture.setCanvas(canvas);\n"
-                "        renderer.setEnvironmentTexture(envTexture);\n"
-                "        renderWindow.render();\n"
-                "      });"
-            )
-        return ""
+            result["pointSize"] = point_size
+            result["renderPointsAsSpheres"] = as_spheres
+            if as_spheres:
+                result["mapper"] = {"class": "vtkSphereMapper"}
+            else:
+                result["mapper"] = {"class": "vtkMapper"}
 
-    def _generate_camera_code(self) -> str:
-        """Generate vtk.js JavaScript for camera setup.
+        return result
 
-        Returns
-        -------
-        str
-            JavaScript code for camera positioning, or empty string.
-
-        """
+    def _build_camera_data(self) -> dict[str, object] | None:
+        """Build JSON-serializable camera configuration."""
         if self._camera is not None:
-            px, py, pz = self._camera.position
-            fx, fy, fz = self._camera.focal_point
-            ux, uy, uz = self._camera.view_up
-            angle = self._camera.view_angle
-            near, far = self._camera.clipping_range
-            parallel = self._camera.parallel_projection
-            parallel_js = "true" if parallel else "false"
-            return (
-                "      const cam = renderer.getActiveCamera();\n"
-                f"      cam.setPosition({px}, {py}, {pz});\n"
-                f"      cam.setFocalPoint({fx}, {fy}, {fz});\n"
-                f"      cam.setViewUp({ux}, {uy}, {uz});\n"
-                f"      cam.setViewAngle({angle});\n"
-                f"      cam.setClippingRange({near}, {far});\n"
-                f"      cam.setParallelProjection({parallel_js});"
-            )
+            cam = self._camera
+            data: dict[str, object] = {
+                "position": list(cam.position),
+                "focalPoint": list(cam.focal_point),
+                "viewUp": list(cam.view_up),
+            }
+            if cam.view_angle is not None:
+                data["viewAngle"] = cam.view_angle
+            if cam.clipping_range is not None:
+                data["clippingRange"] = list(cam.clipping_range)
+            if cam.parallel_projection:
+                data["parallelProjection"] = True
+            return data
         if self._view_vector is not None:
-            vx, vy, vz = self._view_vector
-            ux, uy, uz = self._view_up
-            return (
-                "      const cam = renderer.getActiveCamera();\n"
-                "      const fp = cam.getFocalPoint();\n"
-                "      const dist = cam.getDistance();\n"
-                f"      const vlen = Math.sqrt({vx}*{vx} + {vy}*{vy} + {vz}*{vz});\n"
-                f"      cam.setPosition(fp[0]+dist*{vx}/vlen, fp[1]+dist*{vy}/vlen, fp[2]+dist*{vz}/vlen);\n"  # noqa: E501
-                f"      cam.setViewUp({ux}, {uy}, {uz});\n"
-                "      renderer.resetCameraClippingRange();"
-            )
-        return ""
+            return {
+                "viewVector": list(self._view_vector),
+                "viewUp": list(self._view_up),
+            }
+        return None
+
+    def _build_text_actors_data(self) -> list[dict[str, object]]:
+        """Build JSON-serializable text actor configurations."""
+        return [
+            {
+                "text": ta.input,
+                "position": list(ta.position),
+                "fontSize": ta.prop.font_size,
+                "color": list(ta.prop.color),
+                "opacity": ta.prop.opacity,
+                "bold": ta.prop.bold,
+                "italic": ta.prop.italic,
+            }
+            for ta in self.text_actors
+        ]
+
+    def _build_scene_data(self) -> dict[str, object]:
+        """Build a complete JSON-serializable scene description.
+
+        Returns
+        -------
+        dict
+            Scene configuration including container, background, lights,
+            actors, camera, etc.
+
+        """
+        import json as _json  # noqa: PLC0415
+
+        actors_data = [self._build_actor_data(info) for info in self.actors]
+
+        text_actors_data = self._build_text_actors_data()
+
+        scene: dict[str, object] = {
+            "containerId": self.container_id,
+            "background": list(self.background),
+            "lights": self._build_lights_data(),
+            "actors": actors_data,
+            "textActors": text_actors_data,
+            "axes": self._axes_enabled,
+            "camera": self._build_camera_data(),
+            "lightingMode": self.lighting,
+        }
+
+        # Validate JSON serializable
+        _json.dumps(scene)
+
+        return scene
 
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
-        actor_js_code = [
-            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
-        ]
+        import json as _json  # noqa: PLC0415
 
-        indented_actors = []
-        for actor in actor_js_code:
-            lines = actor.split("\n")
-            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
-            indented_actors.append(indented_lines)
-        actors_code = "\n\n".join(indented_actors)
+        scene_data = self._build_scene_data()
+        scene_json = _json.dumps(scene_data)
 
         return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
             VTKJS_CDN=_VTKJS_CDN,
             CONTAINER_ID=self.container_id,
-            BACKGROUND_R=str(self.background[0]),
-            BACKGROUND_G=str(self.background[1]),
-            BACKGROUND_B=str(self.background[2]),
-            LIGHTS_CODE=self._generate_lights_code(),
-            ACTORS_CODE=actors_code,
-            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
-            ENVIRONMENT_CODE=self._generate_environment_code(),
-            AXES_CODE=self._generate_axes_code(),
-            CAMERA_CODE=self._generate_camera_code(),
+            SCENE_JSON=scene_json,
+            RENDERER_JS=_RENDERER_JS,
+        )
+
+    def generate_standalone_html(self) -> str:
+        """Generate a complete standalone HTML page with vtk.js.
+
+        Wraps the HTML fragment from _generate_html() in a full HTML document.
+        """
+        fragment = self._generate_html()
+        return (
+            "<!DOCTYPE html>\n"
+            "<html>\n"
+            "<head><meta charset='utf-8'></head>\n"
+            "<body>\n" + fragment + "\n</body>\n"
+            "</html>\n"
         )
 
     def _generate_render_js(self) -> str:
-        """Generate JavaScript code for display(Javascript(...)) rendering.
+        """Generate pure JavaScript for display(Javascript(...)) in JupyterLite.
 
-        Creates the container div via JS and loads vtk.js if not already
-        available, then renders the scene. Used instead of _generate_html()
-        in environments where scripts in HTML outputs are sanitized
-        (e.g., JupyterLite/replite).
+        Embeds scene data as a JS variable and creates the container and
+        scene-data elements inside the cell output area. Each invocation
+        uses a unique scene-data ID to avoid collisions between cells.
         """
-        actor_js_code = [
-            self._generate_actor_code(idx, actor_info) for idx, actor_info in enumerate(self.actors)
-        ]
+        import json as _json  # noqa: PLC0415
 
-        indented_actors = []
-        for actor in actor_js_code:
-            lines = actor.split("\n")
-            indented_lines = "\n".join("      " + line if line.strip() else "" for line in lines)
-            indented_actors.append(indented_lines)
-        actors_code = "\n\n".join(indented_actors)
+        scene_data = self._build_scene_data()
+        scene_json = _json.dumps(scene_data)
 
-        rendered = _jinja_env.from_string(_RENDERING_JS_TEMPLATE).render(
-            VTKJS_CDN=_VTKJS_CDN,
-            CONTAINER_ID=self.container_id,
-            BACKGROUND_R=str(self.background[0]),
-            BACKGROUND_G=str(self.background[1]),
-            BACKGROUND_B=str(self.background[2]),
-            LIGHTS_CODE=self._generate_lights_code(),
-            ACTORS_CODE=actors_code,
-            SCALAR_BAR_CODE=self._generate_scalar_bar_code(),
-            ENVIRONMENT_CODE=self._generate_environment_code(),
-            AXES_CODE=self._generate_axes_code(),
-            CAMERA_CODE=self._generate_camera_code(),
+        # For JupyterLite: pass scene data and container via JS variables
+        # so renderer.js can use them directly without DOM lookups.
+        return (
+            "(function() {\n"
+            "  var container = document.createElement('div');\n"
+            f"  container.id = {_json.dumps(self.container_id)};\n"
+            "  container.style.cssText = "
+            "'width:600px;height:400px;border:2px solid #333;position:relative';\n"
+            "  var parent = (typeof element !== 'undefined' && element)"
+            " ? element : document.body;\n"
+            "  parent.appendChild(container);\n"
+            f"  var __pvjsSceneData = {scene_json};\n"
+            "  var __pvjsContainer = container;\n"
+            "  function doRender() {\n"
+            f"    {_RENDERER_JS}\n"
+            "  }\n"
+            "  if (typeof vtk !== 'undefined') {\n"
+            "    doRender();\n"
+            "  } else {\n"
+            "    var script = document.createElement('script');\n"
+            f"    script.src = {_json.dumps(_VTKJS_CDN)};\n"
+            "    script.onload = doRender;\n"
+            "    document.head.appendChild(script);\n"
+            "  }\n"
+            "})();\n"
         )
-        rendered = re.sub(r"^\s*<script>\s*\n?", "", rendered)
-        return re.sub(r"\n?\s*</script>\s*$", "", rendered)
 
     def _repr_html_(self) -> str:
         """IPython representation as HTML for Jupyter notebooks."""
@@ -1098,6 +857,46 @@ class _BaseHTMLRenderer:
             "black": (0.0, 0.0, 0.0),
         }
         return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot of the rendered scene.
+
+        This is a base implementation that raises NotImplementedError.
+        Subclasses should override this method to provide actual screenshot functionality.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent.
+        return_img : bool, optional
+            If True, return a numpy array of the image.
+        window_size : tuple or list of int, optional
+            Temporarily resize the window to (width, height).
+        scale : int or None, optional
+            Scale factor for higher resolution.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            Image data as numpy array if return_img is True, otherwise None.
+
+        Raises
+        ------
+        NotImplementedError
+            This base implementation always raises NotImplementedError.
+
+        """
+        msg = "screenshot() must be implemented by renderer subclass"
+        raise NotImplementedError(msg)
 
 
 class VTKJSRenderer(_BaseHTMLRenderer):
@@ -1231,6 +1030,38 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             self.renderer.removeAllActors()
 
 
+def _playwright_capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:  # noqa: FBT001
+    """Capture a screenshot of an HTML file using Playwright in a thread.
+
+    Parameters
+    ----------
+    html_path : str
+        Path to the HTML file to capture.
+    w : int
+        Viewport width in pixels.
+    h : int
+        Viewport height in pixels.
+    omit_bg : bool
+        Whether to omit the background (transparent PNG).
+
+    Returns
+    -------
+    bytes
+        PNG image data.
+
+    """
+    from playwright.sync_api import sync_playwright  # noqa: PLC0415
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        pg = browser.new_page(viewport={"width": w, "height": h})
+        pg.goto(f"file://{html_path}")
+        pg.wait_for_timeout(2000)
+        data = pg.screenshot(type="png", omit_background=omit_bg)
+        browser.close()
+    return data
+
+
 class BrowserRenderer(_BaseHTMLRenderer):
     """Renderer that opens the visualization in the default web browser.
 
@@ -1249,7 +1080,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
 
     def render(self) -> None:
         """Write the visualization to a temp HTML file and open it in the browser."""
-        html = self._generate_standalone_html()
+        html = self.generate_standalone_html()
         with tempfile.NamedTemporaryFile(
             suffix=".html",
             delete=False,
@@ -1263,7 +1094,7 @@ class BrowserRenderer(_BaseHTMLRenderer):
         webbrowser.open(url)
         logger.info("Opened visualization in browser: %s", url)
 
-    def _generate_standalone_html(self) -> str:
+    def generate_standalone_html(self) -> str:
         """Wrap the HTML fragment in a complete standalone HTML page."""
         fragment = self._generate_html()
         container_id = self.container_id
@@ -1286,6 +1117,109 @@ class BrowserRenderer(_BaseHTMLRenderer):
             "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Take a screenshot using Playwright browser automation.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If None, no file is written.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent. If None, uses current setting.
+        return_img : bool, optional
+            If True, return a numpy array of the image.
+        window_size : tuple or list of int, optional
+            Window size as (width, height). Default is (600, 400).
+        scale : int or None, optional
+            Scale factor for higher resolution.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            Image data as numpy array if return_img is True, otherwise None.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        # Set default window size
+        width, height = (600, 400) if window_size is None else window_size
+        if scale is not None:
+            width *= scale
+            height *= scale
+
+        # Temporarily change background if transparent requested
+        original_background = self.background
+        if transparent_background:
+            self.background = (0.0, 0.0, 0.0)  # Will be made transparent
+
+        try:
+            # Generate HTML
+            html = self.generate_standalone_html()
+
+            # Create temp HTML file
+            with tempfile.NamedTemporaryFile(
+                suffix=".html",
+                delete=False,
+                mode="w",
+                encoding="utf-8",
+            ) as f:
+                f.write(html)
+                tmp_html_path = f.name
+
+            try:
+                # Run Playwright in a thread to avoid conflicts when called
+                # inside an existing asyncio event loop (e.g. pytest-playwright).
+                import concurrent.futures  # noqa: PLC0415
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(
+                        _playwright_capture,
+                        tmp_html_path,
+                        width,
+                        height,
+                        transparent_background or False,
+                    )
+                    screenshot_bytes = future.result()
+
+                # Save to file if requested
+                if filename is not None:
+                    pathlib.Path(filename).write_bytes(screenshot_bytes)
+
+                # Convert to numpy array if requested
+                if return_img:
+                    try:
+                        from PIL import Image  # noqa: PLC0415
+                    except ImportError as e:  # pragma: no cover
+                        msg = (
+                            "Pillow is required to return image as numpy array. "
+                            "Install it with: pip install pillow"
+                        )
+                        raise ImportError(msg) from e
+
+                    from io import BytesIO  # noqa: PLC0415
+
+                    img = Image.open(BytesIO(screenshot_bytes))
+                    if transparent_background:
+                        img = img.convert("RGBA")
+                    return np.array(img)
+                return None
+
+            finally:
+                # Clean up temp file
+                pathlib.Path(tmp_html_path).unlink()
+
+        finally:
+            # Restore original background
+            if transparent_background:
+                self.background = original_background
 
 
 class MockRenderer:
@@ -1339,6 +1273,7 @@ class MockRenderer:
         self.actors: list[dict[str, object]] = []
         self.lights: list[Light] = []
         self.lighting: str | None = lighting
+        self.text_actors: list[Text] = []
         self.background = (1.0, 1.0, 1.0)  # Default background color
         self._view_vector: tuple[float, float, float] | None = None
         self._view_up: tuple[float, float, float] = (0.0, 1.0, 0.0)
@@ -1363,12 +1298,13 @@ class MockRenderer:
 
     def add_mesh_actor(  # noqa: PLR0913
         self,
-        mesh: PolyData,
+        mesh: PolyData | UnstructuredGrid,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         pbr: bool = False,  # noqa: FBT001 FBT002
         metallic: float = 0.0,
         roughness: float = 0.5,
+        smooth_shading: bool = True,  # noqa: FBT001 FBT002
         texture: Texture | None = None,
         show_edges: bool = False,  # noqa: FBT001 FBT002
         edge_color: str | tuple[float, float, float] | None = None,
@@ -1392,6 +1328,8 @@ class MockRenderer:
             Metallic factor (stored but not rendered).
         roughness : float
             Roughness factor (stored but not rendered).
+        smooth_shading : bool
+            Smooth shading flag (stored but not rendered).
         texture : Texture, optional
             Surface texture (stored but not rendered).
         show_edges : bool
@@ -1418,6 +1356,7 @@ class MockRenderer:
             "pbr": pbr,
             "metallic": metallic,
             "roughness": roughness,
+            "smooth_shading": smooth_shading,
             "texture": texture,
             "show_edges": show_edges,
             "edge_color": edge_color,
@@ -1429,12 +1368,84 @@ class MockRenderer:
         logger.info("Added mesh with %d points", mesh.n_points)
         return actor
 
+    def add_points_actor(
+        self,
+        points: object,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float = 1.0,
+        point_size: float = 5.0,
+        render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+    ) -> dict[str, object]:
+        """Mock point cloud addition.
+
+        Parameters
+        ----------
+        points : array-like or PolyData
+            Point coordinates (stored but not rendered).
+        color : str or tuple, optional
+            Color (stored but not rendered).
+        opacity : float
+            Opacity (stored but not rendered).
+        point_size : float
+            Point size (stored but not rendered).
+        render_points_as_spheres : bool
+            Sphere rendering flag (stored but not rendered).
+
+        Returns
+        -------
+        dict
+            Mock actor dictionary with point data.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import PolyData  # noqa: PLC0415
+
+        if isinstance(color, str):
+            color = _color_name_to_rgb(color)
+
+        if not isinstance(points, PolyData):
+            points_array = np.asarray(points)
+            if points_array.ndim != 2 or points_array.shape[1] != 3:  # noqa: PLR2004
+                msg = f"Points must be an (n, 3) array, got shape {points_array.shape}"
+                raise ValueError(msg)
+            points = PolyData(points_array)
+
+        actor: dict[str, object] = {
+            "type": "points",
+            "mesh": points,
+            "color": color,
+            "opacity": opacity,
+            "point_size": point_size,
+            "render_points_as_spheres": render_points_as_spheres,
+        }
+        self.actors.append(actor)
+        logger.info("Added point cloud with %d points", points.n_points)
+        return actor
+
     def render(self) -> None:
         """Mock rendering.
 
         Logs the number of actors that would be rendered.
         """
         logger.info("Rendering %d actors", len(self.actors))
+
+    def generate_standalone_html(self) -> str:
+        """Return a minimal HTML string for mock rendering.
+
+        Returns
+        -------
+        str
+            A placeholder HTML document.
+
+        """
+        return (
+            "<!DOCTYPE html>\n"
+            "<html>\n"
+            "<head><meta charset='utf-8'></head>\n"
+            "<body><!-- mock renderer --></body>\n"
+            "</html>\n"
+        )
 
     def add_light(self, light: Light) -> None:
         """Mock add_light.
@@ -1473,14 +1484,27 @@ class MockRenderer:
         }
         logger.info("Added scalar bar title=%s vertical=%s n_labels=%d", title, vertical, n_labels)
 
+    def add_text_actor(self, text: Text) -> None:
+        """Mock add_text_actor.
+
+        Parameters
+        ----------
+        text : Text
+            The text actor to add (stored but not rendered).
+
+        """
+        self.text_actors.append(text)
+        logger.info("Added text actor: %s", text.input)
+
     def clear(self) -> None:
         """Mock clear.
 
-        Removes all actors and lights from the mock renderer.
+        Removes all actors, lights, and text actors from the mock renderer.
         """
         self.actors = []
         self.lights = []
         self._scalar_bar = None
+        self.text_actors = []
         logger.info("Cleared all actors")
 
     def set_background(self, color: tuple[float, float, float]) -> None:
@@ -1558,6 +1582,68 @@ class MockRenderer:
 
         """
         logger.info("Set environment texture: %s", texture)
+
+    def screenshot(
+        self,
+        filename: str | Path | None = None,
+        transparent_background: bool | None = None,  # noqa: FBT001
+        return_img: bool = True,  # noqa: FBT001, FBT002
+        window_size: tuple[int, int] | list[int] | None = None,
+        scale: int | None = None,
+    ) -> np.ndarray | None:
+        """Mock screenshot that returns a dummy numpy array.
+
+        Parameters
+        ----------
+        filename : str, Path, or None, optional
+            File path to save the image. If None, no file is written.
+        transparent_background : bool or None, optional
+            Whether to make the background transparent.
+        return_img : bool, optional
+            If True, return a numpy array of the image.
+        window_size : tuple or list of int, optional
+            Window size as (width, height). Default is (600, 400).
+        scale : int or None, optional
+            Scale factor for higher resolution.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            Dummy image data as numpy array if return_img is True, otherwise None.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        width, height = (600, 400) if window_size is None else window_size
+        if scale is not None:
+            width *= scale
+            height *= scale
+
+        logger.info(
+            "Mock screenshot: filename=%s size=(%d, %d) transparent=%s",
+            filename,
+            width,
+            height,
+            transparent_background,
+        )
+
+        if filename is not None:
+            # Create a dummy PNG file
+            try:
+                from PIL import Image  # noqa: PLC0415
+            except ImportError as e:  # pragma: no cover
+                msg = "Pillow is required to save screenshot. Install it with: pip install pillow"
+                raise ImportError(msg) from e
+
+            channels = 4 if transparent_background else 3
+            img = Image.new("RGBA" if transparent_background else "RGB", (width, height))
+            img.save(filename)
+
+        if return_img:
+            # Return a dummy numpy array
+            channels = 4 if transparent_background else 3
+            return np.zeros((height, width, channels), dtype=np.uint8)
+        return None
 
 
 def get_renderer(

@@ -17,7 +17,34 @@ if TYPE_CHECKING:
     from pyvista_js.mesh import PolyData
 
 _PYVISTA_DATA_BASE = "https://raw.githubusercontent.com/pyvista/vtk-data/master/Data"
+_GLTF_SAMPLE_BASE = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0"
 _CACHE_DIR = Path.home() / ".pyvista_js" / "examples"
+
+
+def _download_url(url: str, filename: str) -> Path:
+    """Download a file from an arbitrary URL to the local cache.
+
+    Parameters
+    ----------
+    url : str
+        Full URL of the file to download.
+    filename : str
+        Local filename to save the file as inside the cache directory.
+
+    Returns
+    -------
+    Path
+        Local path to the downloaded file.
+
+    """
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    local = _CACHE_DIR / filename
+    if not local.exists():
+        if "pyodide" in sys.modules:
+            _fetch_with_js(url, local)
+        else:
+            urllib.request.urlretrieve(url, local)  # noqa: S310
+    return local
 
 
 def _download_file(filename: str) -> Path:
@@ -221,6 +248,38 @@ def download_masonry_texture() -> Texture:
     return Texture(f"{_PYVISTA_DATA_BASE}/masonry.bmp")
 
 
+def download_damaged_helmet() -> PolyData:
+    """Download the damaged helmet glTF example.
+
+    Downloads ``DamagedHelmet.gltf`` from the KhronosGroup glTF-Sample-Models
+    repository and returns it as a :class:`~pyvista_js.PolyData` mesh,
+    mirroring the ``pyvista.examples.gltf.download_damaged_helmet`` API.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The damaged helmet mesh.
+
+    See Also
+    --------
+    :ref:`using-download-damaged-helmet`
+        Interactive browser tutorial for glTF rendering.
+
+    Examples
+    --------
+    >>> from pyvista_js import examples
+    >>> mesh = examples.download_damaged_helmet()  # doctest: +SKIP
+    >>> type(mesh).__name__  # doctest: +SKIP
+    '_GLTFMesh'
+
+    """
+    from .readers import GLTFReader  # noqa: PLC0415
+
+    url = f"{_GLTF_SAMPLE_BASE}/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf"
+    path = _download_url(url, "DamagedHelmet.gltf")
+    return GLTFReader(path, gltf_url=url).read()
+
+
 def download_cad_model() -> PolyData:
     """Download the CAD model dataset.
 
@@ -274,4 +333,48 @@ def download_bunny() -> PolyData:
     from .readers import PLYReader  # noqa: PLC0415
 
     path = _download_file("bunny.ply")
+    return PLYReader(path).read()
+
+
+def download_lucy() -> PolyData:
+    """Download the Lucy Angel dataset.
+
+    Downloads ``lucy.ply`` from the PyVista vtk-data repository and
+    returns it as a :class:`~pyvista_js.PolyData` mesh, mirroring the
+    ``pyvista.examples.download_lucy`` API.
+
+    The Lucy Angel is a statue from The Stanford 3D Scanning Repository,
+    decimated to approximately 100k triangles.
+
+    Returns
+    -------
+    pyvista_js.PolyData
+        The Lucy Angel mesh.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> from pyvista_js import examples
+    >>> dataset = examples.download_lucy()
+    >>> flame_light = pv.Light(
+    ...     color=[0.886, 0.345, 0.133],
+    ...     position=[716, -29, 1000],
+    ...     intensity=5.0,
+    ...     positional=True,
+    ...     cone_angle=90,
+    ...     attenuation_values=(0.001, 0.005, 0),
+    ... )
+    >>> scene_light = pv.Light(intensity=0.5)
+    >>> pl = pv.Plotter(lighting=None)
+    >>> _ = pl.add_mesh(dataset, smooth_shading=True)
+    >>> pl.add_light(flame_light)
+    >>> pl.add_light(scene_light)
+    >>> pl.background_color = "black"
+    >>> pl.view_xz()
+    >>> pl.show()  # doctest: +SKIP
+
+    """
+    from .readers import PLYReader  # noqa: PLC0415
+
+    path = _download_file("lucy.ply")
     return PLYReader(path).read()

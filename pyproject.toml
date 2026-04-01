@@ -1,10 +1,10 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = [ "hatchling" ]
+requires = [ "hatch-build-scripts", "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.9.1"
+version = "0.13.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -87,6 +87,7 @@ optional-dependencies.docs = [
   "sphinx==9.1; python_version>='3.12' and python_version<'3.14'",
   "sphinx-book-theme==1.1.4; python_version>='3.12' and python_version<'3.14'",
   "sphinx-design==0.7; python_version>='3.12' and python_version<'3.14'",
+  "sphinx-intl>=2.2; python_version>='3.12' and python_version<'3.14'",
   "sphinxcontrib-typer>=0.5; python_version>='3.12'",
 ]
 optional-dependencies.io = [
@@ -118,6 +119,10 @@ test = [
 
 [tool.hatch]
 build.targets.wheel.packages = [ "src/pyvista_js" ]
+build.artifacts = [ "src/pyvista_js/templates/renderer.js" ]
+build.hooks.build-scripts.scripts = [
+  { commands = [ "npm ci", "npm run build" ], artifacts = [ "src/pyvista_js/templates/renderer.js" ] }
+]
 
 [tool.ruff]
 line-length = 100
@@ -134,6 +139,9 @@ lint.per-file-ignores."jupyterlite/content/*" = [
   "INP001",  # implicit namespace package
   "PLE1142", # await outside async - top-level await valid in Pyodide
 ]
+lint.per-file-ignores."stlite/*" = [
+  "INP001", # implicit namespace package
+]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
   "INP001",  # implicit namespace package
@@ -144,26 +152,6 @@ lint.per-file-ignores."tests/*" = [
 lint.flake8-pytest-style.parametrize-names-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-row-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-type = "list"
-
-[tool.pytest]
-ini_options.minversion = "6.0"
-ini_options.testpaths = [ "tests" ]
-ini_options.log_level = "INFO"
-ini_options.log_cli_level = "INFO"
-ini_options.xfail_strict = true
-ini_options.addopts = [
-  "-ra",
-  "--strict-config",
-  "--strict-markers",
-  "--doctest-modules",
-  "--import-mode=importlib",
-]
-ini_options.filterwarnings = [
-  "error",
-]
-ini_options.markers = [
-  "playwright: marks tests that use Playwright for browser automation (deselect with '-m \"not playwright\"')",
-]
 
 [tool.mypy]
 # SPEC 0: Target minimum supported Python version
@@ -192,6 +180,26 @@ ignore_missing_imports = true
 # Exclude stub files from direct checking; they are used by type checkers as stubs
 exclude = [ "src/pyvista_js/__init__\\.pyi" ]
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
+
+[tool.pytest]
+ini_options.minversion = "6.0"
+ini_options.testpaths = [ "tests" ]
+ini_options.log_level = "INFO"
+ini_options.log_cli_level = "INFO"
+ini_options.xfail_strict = true
+ini_options.addopts = [
+  "-ra",
+  "--strict-config",
+  "--strict-markers",
+  "--doctest-modules",
+  "--import-mode=importlib",
+]
+ini_options.filterwarnings = [
+  "error",
+]
+ini_options.markers = [
+  "playwright: marks tests that use Playwright for browser automation (deselect with '-m \"not playwright\"')",
+]
 
 [tool.jupytext]
 formats = "ipynb,py:percent"

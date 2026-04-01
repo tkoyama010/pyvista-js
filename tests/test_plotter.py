@@ -1,7 +1,10 @@
 """Test basic plotter functionality."""
 
+import pathlib
+import tempfile
 import webbrowser
 
+import numpy as np
 import pytest
 
 from pyvista_js import Camera, Cube, Cylinder, Plotter, PolyData, Sphere
@@ -276,6 +279,171 @@ def test_view_vector_common_directions(vector) -> None:
     plotter.view_vector(vector)
 
     assert plotter._renderer._view_vector == tuple(float(v) for v in vector)
+
+
+def test_add_points_numpy_array() -> None:
+    """Test adding points from a numpy array."""
+    plotter = Plotter()
+    points = np.random.rand(100, 3)  # noqa: NPY002
+
+    plotter.add_points(points, color="red", point_size=10)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["type"] == "points"
+    assert plotter.actors[0]["color"] == "red"
+    assert plotter.actors[0]["point_size"] == 10
+
+
+def test_add_points_default_params() -> None:
+    """Test adding points with default parameters."""
+    plotter = Plotter()
+    points = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]])
+
+    plotter.add_points(points)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["type"] == "points"
+    assert plotter.actors[0]["opacity"] == 1.0
+    assert plotter.actors[0]["point_size"] == 5.0
+    assert plotter.actors[0]["render_points_as_spheres"] is False
+
+
+def test_add_points_with_opacity() -> None:
+    """Test adding points with custom opacity."""
+    plotter = Plotter()
+    points = np.random.rand(50, 3)  # noqa: NPY002
+
+    plotter.add_points(points, color="blue", opacity=0.5, point_size=8)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["color"] == "blue"
+    assert plotter.actors[0]["opacity"] == 0.5
+    assert plotter.actors[0]["point_size"] == 8
+
+
+def test_add_points_with_spheres() -> None:
+    """Test adding points rendered as spheres."""
+    plotter = Plotter()
+    points = np.random.rand(30, 3)  # noqa: NPY002
+
+    plotter.add_points(
+        points,
+        color="green",
+        point_size=12,
+        render_points_as_spheres=True,
+    )
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["render_points_as_spheres"] is True
+    assert plotter.actors[0]["point_size"] == 12
+
+
+def test_add_points_rgb_color() -> None:
+    """Test adding points with RGB color tuple."""
+    plotter = Plotter()
+    points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]])
+
+    plotter.add_points(points, color=(0.8, 0.2, 0.5))
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["color"] == (0.8, 0.2, 0.5)
+
+
+def test_add_points_polydata() -> None:
+    """Test adding points from a PolyData object."""
+    plotter = Plotter()
+    points_array = np.random.rand(20, 3)  # noqa: NPY002
+    polydata = PolyData(points_array)
+
+    plotter.add_points(polydata, color="yellow", point_size=6)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["type"] == "points"
+
+
+def test_add_multiple_point_clouds() -> None:
+    """Test adding multiple point clouds."""
+    plotter = Plotter()
+
+    points1 = np.random.rand(50, 3)  # noqa: NPY002
+    points2 = np.random.rand(30, 3) + [2, 0, 0]  # noqa: NPY002, RUF005
+
+    plotter.add_points(points1, color="red", point_size=5)
+    plotter.add_points(points2, color="blue", point_size=8)
+
+    assert len(plotter.actors) == 2
+    assert plotter.actors[0]["color"] == "red"
+    assert plotter.actors[1]["color"] == "blue"
+
+
+def test_add_points_and_mesh() -> None:
+    """Test adding both points and meshes to the same plotter."""
+    plotter = Plotter()
+    mesh = Sphere()
+    points = np.random.rand(40, 3)  # noqa: NPY002
+
+    plotter.add_mesh(mesh, color="white", opacity=0.5)
+    plotter.add_points(points, color="red", point_size=10)
+
+    assert len(plotter.actors) == 2
+    assert plotter.actors[0].get("type", "mesh") == "mesh"
+    assert plotter.actors[1]["type"] == "points"
+
+
+def test_add_points_invalid_shape() -> None:
+    """Test that invalid point array shape raises an error."""
+    plotter = Plotter()
+    # Wrong shape - should be (n, 3)
+    points = np.random.rand(10, 2)  # noqa: NPY002
+
+    with pytest.raises(ValueError, match="Points must be an \\(n, 3\\) array"):
+        plotter.add_points(points)
+
+
+def test_add_points_1d_array() -> None:
+    """Test that 1D array raises an error."""
+    plotter = Plotter()
+    points = np.random.rand(10)  # noqa: NPY002
+
+    with pytest.raises(ValueError, match="Points must be an \\(n, 3\\) array"):
+        plotter.add_points(points)
+
+
+@pytest.mark.parametrize(
+    ("color_name", "expected_rgb"),
+    [
+        ("red", (1.0, 0.0, 0.0)),
+        ("green", (0.0, 1.0, 0.0)),
+        ("blue", (0.0, 0.0, 1.0)),
+        ("yellow", (1.0, 1.0, 0.0)),
+        ("cyan", (0.0, 1.0, 1.0)),
+        ("magenta", (1.0, 0.0, 1.0)),
+    ],
+)
+def test_add_points_color_names(color_name, expected_rgb) -> None:
+    """Test adding points with different color names."""
+    plotter = Plotter()
+    points = np.random.rand(10, 3)  # noqa: NPY002
+
+    plotter.add_points(points, color=color_name)
+
+    # Check that the renderer converted the color
+    actor = plotter.actors[0]["actor"]
+    assert actor["color"] == expected_rgb
+
+
+@pytest.mark.parametrize(
+    "point_size",
+    [1.0, 5.0, 10.0, 20.0, 50.0],
+)
+def test_add_points_various_sizes(point_size) -> None:
+    """Test adding points with various sizes."""
+    plotter = Plotter()
+    points = np.random.rand(10, 3)  # noqa: NPY002
+
+    plotter.add_points(points, point_size=point_size)
+
+    assert plotter.actors[0]["point_size"] == point_size
 
 
 def test_view_xy() -> None:
@@ -825,7 +993,9 @@ def test_plotter_parallel_projection_generates_code() -> None:
 
 
 def test_plotter_perspective_projection_generates_code() -> None:
-    """Test that plotter generates vtk.js code for perspective projection."""
+    """Test that plotter generates scene data for perspective projection."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
     plotter = Plotter()
     plotter.add_mesh(Sphere())
     plotter.enable_parallel_projection()
@@ -833,9 +1003,12 @@ def test_plotter_perspective_projection_generates_code() -> None:
 
     # Generate HTML
     html = plotter._renderer._generate_html()
+    scene = extract_scene_data(html)
 
-    # Verify perspective projection is set in the generated code
-    assert "cam.setParallelProjection(false)" in html
+    # After disabling parallel projection, it should not be set to True
+    camera = scene["camera"]
+    assert camera is not None
+    assert camera.get("parallelProjection") is not True
 
 
 def test_plotter_pickle() -> None:
@@ -1006,3 +1179,145 @@ def test_scalar_bar_updates_renderer() -> None:
     # Check that renderer has scalar bar
     assert plotter._renderer._scalar_bar is not None
     assert plotter._renderer._scalar_bar["title"] == "Height"
+
+
+def test_screenshot_returns_array() -> None:
+    """Test that screenshot returns a numpy array."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Get screenshot as array
+    img = plotter.screenshot(return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    assert img.ndim == 3
+    assert img.shape[2] in (3, 4)  # RGB or RGBA
+
+
+def test_screenshot_with_filename(tmp_path) -> None:
+    """Test that screenshot saves to file."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Save screenshot to file
+    filepath = tmp_path / "test_screenshot.png"
+    result = plotter.screenshot(filename=str(filepath), return_img=True)
+
+    # File should exist
+    assert filepath.exists()
+    # Should still return array
+    assert result is not None
+
+
+def test_screenshot_no_return_img(tmp_path) -> None:
+    """Test screenshot with return_img=False."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    filepath = tmp_path / "test_screenshot.png"
+    result = plotter.screenshot(filename=str(filepath), return_img=False)
+
+    # Should return None when return_img=False
+    assert result is None
+    # But file should still be saved
+    assert filepath.exists()
+
+
+def test_screenshot_transparent_background() -> None:
+    """Test screenshot with transparent background."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(transparent_background=True, return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Transparent background should give RGBA (4 channels)
+    assert img.shape[2] == 4
+
+
+def test_screenshot_window_size() -> None:
+    """Test screenshot with custom window size."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(window_size=(800, 600), return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    assert img.shape[0] == 600  # height
+    assert img.shape[1] == 800  # width
+
+
+def test_screenshot_with_scale() -> None:
+    """Test screenshot with scale factor."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    img = plotter.screenshot(window_size=(300, 200), scale=2, return_img=True)
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Scaled dimensions: 300*2 = 600, 200*2 = 400
+    assert img.shape[0] == 400  # height
+    assert img.shape[1] == 600  # width
+
+
+def test_screenshot_filename_only() -> None:
+    """Test screenshot with only filename, no return."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        tmp_path = tmp.name
+
+    try:
+        result = plotter.screenshot(filename=tmp_path, return_img=False)
+        assert result is None
+        assert pathlib.Path(tmp_path).exists()
+    finally:
+        pathlib.Path(tmp_path).unlink()
+
+
+def test_screenshot_default_parameters() -> None:
+    """Test screenshot with default parameters."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    # Default: return_img=True, no file, default size
+    img = plotter.screenshot()
+
+    assert img is not None
+    assert isinstance(img, np.ndarray)
+    # Default size should be 600x400
+    assert img.shape[0] == 400  # height
+    assert img.shape[1] == 600  # width
+    assert img.shape[2] == 3  # RGB by default
+
+
+def test_add_mesh_with_smooth_shading_default() -> None:
+    """Test adding mesh with default smooth shading (True)."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere())
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["smooth_shading"] is True
+
+
+def test_add_mesh_with_smooth_shading_enabled() -> None:
+    """Test adding mesh with smooth shading explicitly enabled."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), smooth_shading=True)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["smooth_shading"] is True
+
+
+def test_add_mesh_with_smooth_shading_disabled() -> None:
+    """Test adding mesh with smooth shading explicitly disabled."""
+    plotter = Plotter()
+    plotter.add_mesh(Sphere(), smooth_shading=False)
+
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["smooth_shading"] is False

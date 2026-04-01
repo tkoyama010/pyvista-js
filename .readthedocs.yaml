@@ -9,10 +9,13 @@ build:
   os: ubuntu-24.04
   tools:
     python: "3.13"
+    nodejs: "22"
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
    configuration: docs/conf.py
+   # Enable internationalization support
+   fail_on_warning: false
 
 # Optionally, but recommended,
 # declare the Python requirements required to build your documentation
