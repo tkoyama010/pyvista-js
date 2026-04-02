@@ -1,0 +1,53 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-02 22:52+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../api/_autosummary/pyvista_js.PolyData.triangulate.rst:2
+msgid "pyvista\\_js.PolyData.triangulate"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:1
+msgid "Triangulate the mesh, converting all polygons to triangles."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:3
+msgid "This filter converts all cells in the mesh with more than 3 vertices into triangles. It mirrors the PyVista ``triangulate`` filter API and uses vtk.js's ``vtkTriangleFilter``."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:9
+msgid "This filter is useful for ensuring all faces are triangles, which is required for some rendering operations and algorithms."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.triangulate.rst:0
+msgid "Returns"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:12
+msgid "A new mesh with all polygons triangulated."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.triangulate.rst:0
+msgid "Return type"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:16
+msgid "Examples"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:26
+msgid "Render the triangulated mesh:"
+msgstr ""
