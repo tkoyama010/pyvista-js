@@ -972,58 +972,6 @@ class PolyData:
             _scene_data=base_scene,
         )
 
-    def triangulate(self) -> PolyData:
-        """Triangulate the mesh, converting all polygons to triangles.
-
-        This filter converts all cells in the mesh with more than 3 vertices
-        into triangles. It mirrors the PyVista ``triangulate`` filter API
-        and uses vtk.js's ``vtkTriangleFilter``.
-
-        .. note::
-
-            This filter is useful for ensuring all faces are triangles,
-            which is required for some rendering operations and algorithms.
-
-        Returns
-        -------
-        PolyData
-            A new mesh with all polygons triangulated.
-
-        Examples
-        --------
-        >>> import pyvista_js as pv
-        >>> cube = pv.Cube()
-        >>> triangulated = cube.triangulate()
-        >>> isinstance(triangulated, pv.PolyData)
-        True
-
-        Render the triangulated mesh:
-
-        >>> triangulated.plot()  # doctest: +SKIP
-
-        """
-        base_scene = (
-            dict(self._scene_data)
-            if self._scene_data
-            else {
-                "type": "mesh",
-                "points": self.points.flatten().tolist(),
-            }
-        )
-        base_scene.setdefault("filters", [])
-        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
-        filters_list.append(
-            {
-                "type": "triangulate",
-            },
-        )
-
-        return PolyData(
-            points=self.points,
-            faces=self.faces,
-            _scene_data=base_scene,
-        )
-
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.
 
