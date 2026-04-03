@@ -66,10 +66,10 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "jinja2>=3.0.0,<4.0.0",
-  "lazy-loader>=0.4.0,<0.5.0",
-  "numpy>=2.0.0,<3.0.0",
-  "typer>=0.9.0,<1.0.0",
+  "jinja2>=3,<4",
+  "lazy-loader>=0.4,<1",
+  "numpy>=2,<3",
+  "typer>=0.9,<1",
 ]
 optional-dependencies.dev = [
   "mypy>=1",

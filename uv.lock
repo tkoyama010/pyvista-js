@@ -1683,15 +1683,15 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "atsphinx-stlite", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.2.1" },
-    { name = "jinja2", specifier = ">=3" },
+    { name = "jinja2", specifier = ">=3,<4" },
     { name = "jupyterlite-pyodide-kernel", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.7.1" },
     { name = "jupyterlite-sphinx", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.22.1" },
     { name = "jupytext", marker = "extra == 'docs'", specifier = ">=1.19" },
-    { name = "lazy-loader", specifier = ">=0.4" },
+    { name = "lazy-loader", specifier = ">=0.4,<1" },
     { name = "meshio", marker = "extra == 'io'" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "myst-parser", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==5" },
-    { name = "numpy", specifier = ">=2" },
+    { name = "numpy", specifier = ">=2,<3" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1" },
@@ -1702,7 +1702,7 @@ requires-dist = [
     { name = "sphinxcontrib-typer", marker = "python_full_version >= '3.12' and extra == 'docs'", specifier = ">=0.5" },
     { name = "streamlit", marker = "extra == 'streamlit'", specifier = ">=1.30" },
     { name = "tox", marker = "extra == 'dev'", specifier = ">=4" },
-    { name = "typer", specifier = ">=0.9" },
+    { name = "typer", specifier = ">=0.9,<1" },
 ]
 provides-extras = ["dev", "docs", "io", "streamlit"]
 
