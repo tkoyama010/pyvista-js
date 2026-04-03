@@ -30,9 +30,9 @@ authors = [
 # SPEC 6 — Upper Bound Constraints on Dependencies
 # https://scientific-python.org/specs/spec-0006/
 #
-# This project follows SPEC 6 by avoiding upper bound version constraints on
-# dependencies unless there is a specific technical reason. All core dependencies
-# use lower bounds only (e.g., package>=1.0) to prevent dependency conflicts.
+# This project follows SPEC 6 by using upper bound version constraints on
+# dependencies to prevent breaking changes from major version updates.
+# All core dependencies use upper bounds (e.g., package>=1.0,<2.0).
 #
 # SPEC 7 — Seeding Pseudo-Random Number Generation
 # https://scientific-python.org/specs/spec-0007/
@@ -66,10 +66,10 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "jinja2>=3",
-  "lazy-loader>=0.4",
-  "numpy>=2",
-  "typer>=0.9",
+  "jinja2>=3,<4",
+  "lazy-loader>=0.4,<0.5",
+  "numpy>=2,<3",
+  "typer>=0.9,<1",
 ]
 optional-dependencies.dev = [
   "mypy>=1",
