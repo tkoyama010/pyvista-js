@@ -1,0 +1,43 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-04-05T15:01:20.120286Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-04-05T15:01:18.628072Z",
+      "mimetype": "text/x-python",
+      "name": "intro.py",
+      "path": "intro.py",
+      "size": 491,
+      "type": "file",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-04-05T15:01:20.119988Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-04-05T15:01:18.627787Z",
+      "mimetype": null,
+      "name": "intro.ipynb",
+      "path": "intro.ipynb",
+      "size": 750,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-04-05T15:01:20.120286Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-04-05T15:01:20.120286Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
