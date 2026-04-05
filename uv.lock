@@ -1362,7 +1362,7 @@ wheels = [
 
 [[package]]
 name = "pre-commit"
-version = "4.0.0"
+version = "4.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cfgv" },
@@ -1371,9 +1371,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5c/e8/4aac596478e02f29b3e323db3dfb90a11c1291ef4e5cceca608a57df8975/pre_commit-4.0.0.tar.gz", hash = "sha256:5d9807162cc5537940f94f266cbe2d716a75cfad0d78a317a92cac16287cfed6", size = 191628, upload-time = "2024-10-05T18:58:45.295Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/f1/6d86a29246dfd2e9b6237f0b5823717f60cad94d47ddc26afa916d21f525/pre_commit-4.5.1.tar.gz", hash = "sha256:eb545fcff725875197837263e977ea257a402056661f09dae08e4b149b030a61", size = 198232, upload-time = "2025-12-16T21:14:33.552Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/77/e808ffcf30b842b80a42e466edb7bad9644083d0452f01cce51a1f1921f6/pre_commit-4.0.0-py2.py3-none-any.whl", hash = "sha256:0ca2341cf94ac1865350970951e54b1a50521e57b7b500403307aed4315a1234", size = 218705, upload-time = "2024-10-05T18:58:43.59Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/19/fd3ef348460c80af7bb4669ea7926651d1f95c23ff2df18b9d24bab4f3fa/pre_commit-4.5.1-py2.py3-none-any.whl", hash = "sha256:3b3afd891e97337708c1674210f8eba659b52a38ea5f822ff142d10786221f77", size = 226437, upload-time = "2025-12-16T21:14:32.409Z" },
 ]
 
 [[package]]
@@ -1691,7 +1691,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.1,<2.0.1" },
     { name = "myst-parser", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==5" },
     { name = "numpy", specifier = ">=2.0.1,<3.0.1" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0.1,<4.0.1" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0.1,<4.5.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.1,<8.0.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.1,<1.0.1" },
     { name = "sphinx", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==9.1" },
@@ -1710,7 +1710,7 @@ dev = [
     { name = "meshio", specifier = ">=5.3.5,<6.0.1" },
     { name = "mypy", specifier = ">=1.0.1,<2.0.1" },
     { name = "playwright", specifier = ">=1.40.1,<2.0.1" },
-    { name = "pre-commit", specifier = ">=3.0.1,<4.0.1" },
+    { name = "pre-commit", specifier = ">=3.0.1,<4.5.2" },
     { name = "pytest", specifier = ">=7.0.1,<8.0.1" },
     { name = "pytest-playwright", specifier = ">=0.4.1,<1.0.1" },
     { name = "ruff", specifier = ">=0.1.1,<1.0.1" },
