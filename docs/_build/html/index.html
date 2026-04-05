@@ -1,0 +1,649 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pyvista-js &#8212; pyvista-js 0.2.dev0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Vibur" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyterlite_sphinx.css?v=8ee2c72c" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=4fde6e7f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=af34ab12"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/jupyterlite_sphinx.js?v=96e329c5"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorials" href="tutorials/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pyvista-js 0.2.dev0 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="howtos/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explanation/index.html">Explanation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Plotter.html">pyvista_js.Plotter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Camera.html">pyvista_js.Camera</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Light.html">pyvista_js.Light</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PointData.html">pyvista_js.PointData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.html">pyvista_js.PolyData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.UnstructuredGrid.html">pyvista_js.UnstructuredGrid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.CellType.html">pyvista_js.CellType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Arrow.html">pyvista_js.Arrow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Sphere.html">pyvista_js.Sphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Cube.html">pyvista_js.Cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Cylinder.html">pyvista_js.Cylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Cone.html">pyvista_js.Cone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Plane.html">pyvista_js.Plane</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Disc.html">pyvista_js.Disc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Circle.html">pyvista_js.Circle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Line.html">pyvista_js.Line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Text.html">pyvista_js.Text</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.TextProperty.html">pyvista_js.TextProperty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.Texture.html">pyvista_js.Texture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.clip.html">pyvista_js.PolyData.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.contour.html">pyvista_js.PolyData.contour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.fill_holes.html">pyvista_js.PolyData.fill_holes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.shrink.html">pyvista_js.PolyData.shrink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.texture_map_to_plane.html">pyvista_js.PolyData.texture_map_to_plane</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.triangulate.html">pyvista_js.PolyData.triangulate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyData.tube.html">pyvista_js.PolyData.tube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.GLTFReader.html">pyvista_js.GLTFReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.OBJReader.html">pyvista_js.OBJReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PLYReader.html">pyvista_js.PLYReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.PolyDataReader.html">pyvista_js.PolyDataReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.STLReader.html">pyvista_js.STLReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.CubeMap.html">pyvista_js.examples.CubeMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_bunny.html">pyvista_js.examples.download_bunny</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_lucy.html">pyvista_js.examples.download_lucy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_cad_model.html">pyvista_js.examples.download_cad_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_damaged_helmet.html">pyvista_js.examples.download_damaged_helmet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_masonry_texture.html">pyvista_js.examples.download_masonry_texture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_sky_box_cube_map.html">pyvista_js.examples.download_sky_box_cube_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/_autosummary/pyvista_js.examples.download_trumpet.html">pyvista_js.examples.download_trumpet</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="cli/index.html">CLI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli/plot.html">plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/info.html">info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/capture-preview.html">capture-preview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli/capture-stlite-preview.html">capture-stlite-preview</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/index.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>pyvista-js</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install">Install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#links">Links</a><ul class="nav section-nav flex-column">
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="pyvista-js">
+<h1>pyvista-js<a class="headerlink" href="#pyvista-js" title="Link to this heading">#</a></h1>
+<p><a class="reference external" href="https://pyvista-js.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/pyvista-js/badge/?version=latest" /></a>
+<a class="reference external" href="https://tkoyama010.github.io/pyvista-js/"><img alt="JupyterLite" src="https://jupyterlite.rtfd.io/en/latest/_static/badge.svg" /></a>
+<a class="reference external" href="https://edit.share.stlite.net/#!CgZhcHAucHkS3AQKBmFwcC5weRLRBArOBCIiIlN0cmVhbWxpdCBhcHAgZm9yIHRoZSBweXZpc3RhLWpzIHN0bGl0ZSBkZW1vLiIiIgoKaW1wb3J0IHN0cmVhbWxpdCBhcyBzdAppbXBvcnQgc3RyZWFtbGl0LmNvbXBvbmVudHMudjEgYXMgY29tcG9uZW50cwoKaW1wb3J0IHB5dmlzdGFfanMgYXMgcHYKZnJvbSBweXZpc3RhX2pzIGltcG9ydCBleGFtcGxlcwoKY29sb3IgPSBzdC5zZWxlY3Rib3goCiAgICAiQ29sb3IiLAogICAgWyJncmF5IiwgIndoaXRlIiwgInJlZCIsICJncmVlbiIsICJibHVlIiwgInllbGxvdyIsICJjeWFuIiwgIm1hZ2VudGEiXSwKKQoKb3BhY2l0eSA9IHN0LnNsaWRlcigiT3BhY2l0eSIsIG1pbl92YWx1ZT0wLjAsIG1heF92YWx1ZT0xLjAsIHZhbHVlPTAuOCwgc3RlcD0wLjEpCgpwbG90dGVyID0gcHYuUGxvdHRlcigpCgptZXNoID0gZXhhbXBsZXMuZG93bmxvYWRfYnVubnkoKQoKcGxvdHRlci5hZGRfbWVzaChtZXNoLCBjb2xvcj1jb2xvciwgb3BhY2l0eT1vcGFjaXR5KQoKaHRtbCA9IHBsb3R0ZXIuX3JlbmRlcmVyLl9nZW5lcmF0ZV9zdGFuZGFsb25lX2h0bWwoKSAgIyBub3FhOiBTTEYwMDEKY29tcG9uZW50cy5odG1sKGh0bWwsIGhlaWdodD02MDApGgpweXZpc3RhLWpz"><img alt="stlite" src="https://img.shields.io/badge/stlite-lite_now-FF4B4B?logo=streamlit&amp;logoColor=white" /></a>
+<a class="reference external" href="https://notebook.link/github/tkoyama010/pyvista-js/blob/notebook-link/intro.ipynb"><img alt="notebook-link" src="https://img.shields.io/badge/notebook-link-e2d610?logo=jupyter&amp;logoColor=white" /></a>
+<a class="reference external" href="https://github.com/RichardLitt/standard-readme"><img alt="standard-readme compliant" src="https://img.shields.io/badge/readme%20style-standard-brightgreen.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/pyvista/pyvista">PyVista</a>-like API for <a class="reference external" href="https://github.com/Kitware/vtk-js">vtk.js</a> — bring intuitive 3D visualization to the browser.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head text-center"><p><a class="reference external" href="https://tkoyama010.github.io/pyvista-js/">Try it with JupyterLite</a></p></th>
+<th class="head text-center"><p><a class="reference external" href="https://edit.share.stlite.net/#!CgZhcHAucHkS3AQKBmFwcC5weRLRBArOBCIiIlN0cmVhbWxpdCBhcHAgZm9yIHRoZSBweXZpc3RhLWpzIHN0bGl0ZSBkZW1vLiIiIgoKaW1wb3J0IHN0cmVhbWxpdCBhcyBzdAppbXBvcnQgc3RyZWFtbGl0LmNvbXBvbmVudHMudjEgYXMgY29tcG9uZW50cwoKaW1wb3J0IHB5dmlzdGFfanMgYXMgcHYKZnJvbSBweXZpc3RhX2pzIGltcG9ydCBleGFtcGxlcwoKY29sb3IgPSBzdC5zZWxlY3Rib3goCiAgICAiQ29sb3IiLAogICAgWyJncmF5IiwgIndoaXRlIiwgInJlZCIsICJncmVlbiIsICJibHVlIiwgInllbGxvdyIsICJjeWFuIiwgIm1hZ2VudGEiXSwKKQoKb3BhY2l0eSA9IHN0LnNsaWRlcigiT3BhY2l0eSIsIG1pbl92YWx1ZT0wLjAsIG1heF92YWx1ZT0xLjAsIHZhbHVlPTAuOCwgc3RlcD0wLjEpCgpwbG90dGVyID0gcHYuUGxvdHRlcigpCgptZXNoID0gZXhhbXBsZXMuZG93bmxvYWRfYnVubnkoKQoKcGxvdHRlci5hZGRfbWVzaChtZXNoLCBjb2xvcj1jb2xvciwgb3BhY2l0eT1vcGFjaXR5KQoKaHRtbCA9IHBsb3R0ZXIuX3JlbmRlcmVyLl9nZW5lcmF0ZV9zdGFuZGFsb25lX2h0bWwoKSAgIyBub3FhOiBTTEYwMDEKY29tcG9uZW50cy5odG1sKGh0bWwsIGhlaWdodD02MDApGgpweXZpc3RhLWpz">Try it with Stlite</a></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-center"><p><img alt="jupyterlite-preview" src="https://github.com/tkoyama010/pyvista-js/releases/latest/download/preview.gif" /></p></td>
+<td class="text-center"><p><img alt="stlite-preview" src="https://github.com/tkoyama010/pyvista-js/releases/latest/download/stlite-preview.gif" /></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
+<!-- mdformat-toc start --slug=github --no-anchors --maxlevel=6 --minlevel=2 -->
+<ul class="simple">
+<li><p><a class="reference internal" href="#table-of-contents"><span class="xref myst">Table of Contents</span></a></p></li>
+<li><p><a class="reference internal" href="#install"><span class="xref myst">Install</span></a></p></li>
+<li><p><a class="reference internal" href="#usage"><span class="xref myst">Usage</span></a></p></li>
+<li><p><a class="reference internal" href="#citation"><span class="xref myst">Citation</span></a></p></li>
+<li><p><a class="reference internal" href="#contributing"><span class="xref myst">Contributing</span></a></p></li>
+<li><p><a class="reference internal" href="#license"><span class="xref myst">License</span></a></p></li>
+</ul>
+<!-- mdformat-toc end -->
+</section>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://pypi.org/project/pyvista-js/"><img alt="PyPI" src="https://img.shields.io/pypi/v/pyvista-js.svg" /></a>
+<a class="reference external" href="https://www.python.org/downloads/"><img alt="Python" src="https://img.shields.io/badge/python-3.12+-blue.svg" /></a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pyvista-js
+</pre></div>
+</div>
+<p>For Pyodide/stlite:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">micropip</span>
+
+<span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s2">&quot;pyvista-js&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Plotter</span><span class="p">()</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Sphere</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://doi.org/10.5281/zenodo.19092335"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg" /></a></p>
+<p>If you use pyvista-js in your research or projects, please cite it using the following:</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@software</span><span class="p">{</span><span class="nl">koyama_pyvista_js</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">       </span><span class="p">=</span><span class="w"> </span><span class="s">{Koyama, Tetsuo}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">        </span><span class="p">=</span><span class="w"> </span><span class="s">{pyvista-js: A PyVista-like API for 3D visualization in the browser}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">         </span><span class="p">=</span><span class="w"> </span><span class="m">2026</span><span class="p">,</span>
+<span class="w">  </span><span class="na">publisher</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Zenodo}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">doi</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="s">{10.5281/zenodo.19092335}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/tkoyama010/pyvista-js}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Alternatively, you can use the <a class="reference internal" href="#CITATION.cff"><span class="xref myst">CITATION.cff</span></a> file in this repository, which follows the <a class="reference external" href="https://citation-file-format.github.io/">Citation File Format</a> standard.</p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>
+<p><img alt="All Contributors" src="https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449" /></p>
+<p>Enjoying pyvista-js? Show your support with a GitHub star — it’s a simple click that means the world to us and helps others discover it, too!</p>
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=tkoyama010/pyvista-js&type=Date">
+  <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=tkoyama010/pyvista-js&type=Date&theme=dark">
+  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=tkoyama010/pyvista-js&type=Date">
+</picture>
+<p>Contributions are welcome! Please open an issue or pull request on <a class="reference external" href="https://github.com/tkoyama010/pyvista-js/issues">GitHub</a>.</p>
+<p>This project follows the <a class="reference external" href="https://github.com/all-contributors/all-contributors">all-contributors</a> specification. Contributions of any kind welcome!</p>
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/tkoyama010"><img src="https://avatars.githubusercontent.com/u/7513610?v=4?s=100" width="100px;" alt="Tetsuo Koyama"/><br /><sub><b>Tetsuo Koyama</b></sub></a><br /><a href="#ideas-tkoyama010" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/tkoyama010/pyvista-js/commits?author=tkoyama010" title="Documentation">📖</a> <a href="https://github.com/tkoyama010/pyvista-js/commits?author=tkoyama010" title="Code">💻</a> <a href="https://github.com/tkoyama010/pyvista-js/pulls?q=is%3Apr+reviewed-by%3Atkoyama010" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/tkoyama010/pyvista-js/issues?q=author%3Atkoyama010" title="Bug reports">🐛</a> <a href="#translation-tkoyama010" title="Translation">🌍</a> <a href="#platform-tkoyama010" title="Packaging/porting to new platform">📦</a> <a href="#projectManagement-tkoyama010" title="Project Management">📆</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://allcontributors.org"><img src="https://avatars.githubusercontent.com/u/46410174?v=4?s=100" width="100px;" alt="All Contributors"/><br /><sub><b>All Contributors</b></sub></a><br /><a href="https://github.com/tkoyama010/pyvista-js/commits?author=all-contributors" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://pre-commit.com"><img src="https://avatars.githubusercontent.com/u/6943086?v=4?s=100" width="100px;" alt="pre-commit"/><br /><sub><b>pre-commit</b></sub></a><br /><a href="#maintenance-pre-commit" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://anthropic.com/claude-code"><img src="https://avatars.githubusercontent.com/u/81847?v=4?s=100" width="100px;" alt="Claude"/><br /><sub><b>Claude</b></sub></a><br /><a href="https://github.com/tkoyama010/pyvista-js/issues?q=author%3Aclaude" title="Bug reports">🐛</a> <a href="#maintenance-claude" title="Maintenance">🚧</a> <a href="https://github.com/tkoyama010/pyvista-js/commits?author=claude" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/features/security"><img src="https://avatars.githubusercontent.com/u/27347476?v=4?s=100" width="100px;" alt="Dependabot"/><br /><sub><b>Dependabot</b></sub></a><br /><a href="#maintenance-dependabot" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.transifex.com/"><img src="https://avatars.githubusercontent.com/u/22542?v=4?s=100" width="100px;" alt="Transifex"/><br /><sub><b>Transifex</b></sub></a><br /><a href="https://github.com/tkoyama010/pyvista-js/commits?author=transifex" title="Documentation">📖</a> <a href="#translation-transifex" title="Translation">🌍</a></td>
+    </tr>
+  </tbody>
+</table>
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://opensource.org/licenses/BSD-3-Clause"><img alt="License" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" /></a></p>
+<p><a class="reference internal" href="#LICENSE"><span class="xref myst">BSD 3-Clause</span></a> © Tetsuo Koyama</p>
+<hr class="docutils" />
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-1 sd-row-cols-xs-1 sd-row-cols-sm-1 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-rounded-3 docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Tutorials</div>
+<p class="sd-card-text">Topic driven themed lessons.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="tutorials/index.html"><span class="doc">Tutorials</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-rounded-3 docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+How-To Guides</div>
+<p class="sd-card-text">Focused guides for common tasks.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="howtos/index.html"><span class="doc">How-To Guides</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-rounded-3 docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Explanation</div>
+<p class="sd-card-text">Deeper understanding awaits.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="explanation/index.html"><span class="doc">Explanation</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-rounded-3 docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Reference</div>
+<p class="sd-card-text">No fuss facts.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="api/index.html"><span class="doc">API Reference</span></a></div>
+</div>
+</div>
+</div>
+<p>Choose your approach to learning and <code class="docutils literal notranslate"><span class="pre">pyvista-js</span></code> knowledge discovery
+(<a class="reference external" href="https://diataxis.fr/">Diátaxis</a>).</p>
+</section>
+<hr class="docutils" />
+<section id="links">
+<h2>Links<a class="headerlink" href="#links" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/tkoyama010/pyvista-js">GitHub Repository</a></p></li>
+<li><p><a class="reference external" href="https://github.com/tkoyama010/pyvista-js/issues">Issue Tracker</a></p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="tutorials/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tutorials</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install">Install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage">Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">Citation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#license">License</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#links">Links</a><ul class="nav section-nav flex-column">
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tetsuo Koyama
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, Tetsuo Koyama.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

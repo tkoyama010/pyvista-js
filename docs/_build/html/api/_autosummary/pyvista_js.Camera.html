@@ -1,0 +1,969 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pyvista_js.Camera &#8212; pyvista-js 0.2.dev0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Vibur" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyterlite_sphinx.css?v=8ee2c72c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=4fde6e7f" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=af34ab12"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/jupyterlite_sphinx.js?v=96e329c5"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/_autosummary/pyvista_js.Camera';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="pyvista_js.Light" href="pyvista_js.Light.html" />
+    <link rel="prev" title="pyvista_js.Plotter" href="pyvista_js.Plotter.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">pyvista-js 0.2.dev0 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Installation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../howtos/index.html">How-To Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../explanation/index.html">Explanation</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Plotter.html">pyvista_js.Plotter</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">pyvista_js.Camera</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Light.html">pyvista_js.Light</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PointData.html">pyvista_js.PointData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.html">pyvista_js.PolyData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.UnstructuredGrid.html">pyvista_js.UnstructuredGrid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.CellType.html">pyvista_js.CellType</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Arrow.html">pyvista_js.Arrow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Sphere.html">pyvista_js.Sphere</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Cube.html">pyvista_js.Cube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Cylinder.html">pyvista_js.Cylinder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Cone.html">pyvista_js.Cone</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Plane.html">pyvista_js.Plane</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Disc.html">pyvista_js.Disc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Circle.html">pyvista_js.Circle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Line.html">pyvista_js.Line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Text.html">pyvista_js.Text</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.TextProperty.html">pyvista_js.TextProperty</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.Texture.html">pyvista_js.Texture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.clip.html">pyvista_js.PolyData.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.contour.html">pyvista_js.PolyData.contour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.fill_holes.html">pyvista_js.PolyData.fill_holes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.shrink.html">pyvista_js.PolyData.shrink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.texture_map_to_plane.html">pyvista_js.PolyData.texture_map_to_plane</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.triangulate.html">pyvista_js.PolyData.triangulate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyData.tube.html">pyvista_js.PolyData.tube</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.GLTFReader.html">pyvista_js.GLTFReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.OBJReader.html">pyvista_js.OBJReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PLYReader.html">pyvista_js.PLYReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.PolyDataReader.html">pyvista_js.PolyDataReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.STLReader.html">pyvista_js.STLReader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.CubeMap.html">pyvista_js.examples.CubeMap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_bunny.html">pyvista_js.examples.download_bunny</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_lucy.html">pyvista_js.examples.download_lucy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_cad_model.html">pyvista_js.examples.download_cad_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_damaged_helmet.html">pyvista_js.examples.download_damaged_helmet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_masonry_texture.html">pyvista_js.examples.download_masonry_texture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_sky_box_cube_map.html">pyvista_js.examples.download_sky_box_cube_map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyvista_js.examples.download_trumpet.html">pyvista_js.examples.download_trumpet</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../cli/index.html">CLI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../cli/plot.html">plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli/info.html">info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli/capture-preview.html">capture-preview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli/capture-stlite-preview.html">capture-stlite-preview</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/api/_autosummary/pyvista_js.Camera.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>pyvista_js.Camera</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera"><code class="docutils literal notranslate"><span class="pre">Camera</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.__init__"><code class="docutils literal notranslate"><span class="pre">Camera.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.azimuth"><code class="docutils literal notranslate"><span class="pre">Camera.azimuth()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.clipping_range"><code class="docutils literal notranslate"><span class="pre">Camera.clipping_range</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.disable_parallel_projection"><code class="docutils literal notranslate"><span class="pre">Camera.disable_parallel_projection()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.elevation"><code class="docutils literal notranslate"><span class="pre">Camera.elevation</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.enable_parallel_projection"><code class="docutils literal notranslate"><span class="pre">Camera.enable_parallel_projection()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.focal_point"><code class="docutils literal notranslate"><span class="pre">Camera.focal_point</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.orbit_elevation"><code class="docutils literal notranslate"><span class="pre">Camera.orbit_elevation()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.parallel_projection"><code class="docutils literal notranslate"><span class="pre">Camera.parallel_projection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.position"><code class="docutils literal notranslate"><span class="pre">Camera.position</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.roll"><code class="docutils literal notranslate"><span class="pre">Camera.roll()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.view_angle"><code class="docutils literal notranslate"><span class="pre">Camera.view_angle</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.view_up"><code class="docutils literal notranslate"><span class="pre">Camera.view_up</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.zoom"><code class="docutils literal notranslate"><span class="pre">Camera.zoom()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="pyvista-js-camera">
+<h1>pyvista_js.Camera<a class="headerlink" href="#pyvista-js-camera" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyvista_js.Camera">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pyvista_js.</span></span><span class="sig-name descname"><span class="pre">Camera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focal_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_up</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">1.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clipping_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.01,</span> <span class="pre">1000.01)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_projection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elevation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyvista_js.Camera" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a virtual camera in a 3D scene.</p>
+<p>Provides a PyVista-like API for controlling camera position, orientation,
+and projection settings in vtk.js scenes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Camera position as (x, y, z). Default is (0, 0, 1).</p></li>
+<li><p><strong>focal_point</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Point the camera looks at as (x, y, z). Default is (0, 0, 0).</p></li>
+<li><p><strong>view_up</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – View-up vector as (x, y, z). Default is (0, 1, 0).</p></li>
+<li><p><strong>view_angle</strong> (<em>float</em><em>, </em><em>optional</em>) – Camera view angle (field of view) in degrees. Default is 30.0.</p></li>
+<li><p><strong>clipping_range</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Near and far clipping plane distances as (near, far).
+Default is (0.01, 1000.01).</p></li>
+<li><p><strong>parallel_projection</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enable parallel (orthographic) projection instead of perspective
+projection. Default is False.</p></li>
+<li><p><strong>elevation</strong> (<em>float</em><em>, </em><em>optional</em>) – Camera elevation angle in degrees. Default is 0.0.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="b94c9320-01c0-4d6b-915e-413ec88885de">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('b94c9320-01c0-4d6b-915e-413ec88885de','bc3ae3b9-e66e-4354-b137-ce6b837061ce','36905b54-b7e7-4633-b696-e67e531d449c','../../lite/tree/../notebooks/index.html?path=dc60cd47_f187_43f9_961a_149b2c01e791.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">focal_point</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Plotter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">plotter</span><span class="o">.</span><span class="n">add_mesh</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">Sphere</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="n">camera</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="36905b54-b7e7-4633-b696-e67e531d449c" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('b94c9320-01c0-4d6b-915e-413ec88885de','36905b54-b7e7-4633-b696-e67e531d449c')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('b94c9320-01c0-4d6b-915e-413ec88885de','36905b54-b7e7-4633-b696-e67e531d449c')">Open In Tab</button></div><div id="bc3ae3b9-e66e-4354-b137-ce6b837061ce" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script><dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focal_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_up</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">1.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clipping_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.01,</span> <span class="pre">1000.01)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_projection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elevation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.__init__" title="Link to this definition">#</a></dt>
+<dd><p>Initialize a Camera instance.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.__init__" title="pyvista_js.Camera.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([position, focal_point, view_up, ...])</p></td>
+<td><p>Initialize a Camera instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvista_js.Camera.azimuth" title="pyvista_js.Camera.azimuth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">azimuth</span></code></a>(angle)</p></td>
+<td><p>Rotate the camera position horizontally around the focal point.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.disable_parallel_projection" title="pyvista_js.Camera.disable_parallel_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">disable_parallel_projection</span></code></a>()</p></td>
+<td><p>Disable parallel projection (use perspective projection).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvista_js.Camera.enable_parallel_projection" title="pyvista_js.Camera.enable_parallel_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_parallel_projection</span></code></a>()</p></td>
+<td><p>Enable parallel (orthographic) projection.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.orbit_elevation" title="pyvista_js.Camera.orbit_elevation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">orbit_elevation</span></code></a>(angle)</p></td>
+<td><p>Rotate the camera position vertically around the focal point.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvista_js.Camera.roll" title="pyvista_js.Camera.roll"><code class="xref py py-obj docutils literal notranslate"><span class="pre">roll</span></code></a>(angle)</p></td>
+<td><p>Roll the camera around the view direction axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.zoom" title="pyvista_js.Camera.zoom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zoom</span></code></a>(factor)</p></td>
+<td><p>Move the camera closer to or farther from the focal point.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.clipping_range" title="pyvista_js.Camera.clipping_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clipping_range</span></code></a></p></td>
+<td><p>Get or set the clipping range (near, far).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvista_js.Camera.elevation" title="pyvista_js.Camera.elevation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elevation</span></code></a></p></td>
+<td><p>Get or set the camera elevation angle in degrees.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.focal_point" title="pyvista_js.Camera.focal_point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">focal_point</span></code></a></p></td>
+<td><p>Get or set the camera focal point.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvista_js.Camera.parallel_projection" title="pyvista_js.Camera.parallel_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parallel_projection</span></code></a></p></td>
+<td><p>Get or set parallel projection mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.position" title="pyvista_js.Camera.position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">position</span></code></a></p></td>
+<td><p>Get or set the camera position.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyvista_js.Camera.view_angle" title="pyvista_js.Camera.view_angle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">view_angle</span></code></a></p></td>
+<td><p>Get or set the camera view angle in degrees.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyvista_js.Camera.view_up" title="pyvista_js.Camera.view_up"><code class="xref py py-obj docutils literal notranslate"><span class="pre">view_up</span></code></a></p></td>
+<td><p>Get or set the view-up vector.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.azimuth">
+<span class="sig-name descname"><span class="pre">azimuth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.azimuth" title="Link to this definition">#</a></dt>
+<dd><p>Rotate the camera position horizontally around the focal point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle</strong> (<em>float</em>) – Rotation angle in degrees.  Positive values rotate
+counter-clockwise when viewed from above the up vector.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="5551ae03-0cc0-4f24-8d41-ff83bdfb448f">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('5551ae03-0cc0-4f24-8d41-ff83bdfb448f','6cd7569e-a10d-4b15-bb43-94a80fb86eeb','2b501d28-44ed-43df-a06a-e2a29aa39ef5','../../lite/tree/../notebooks/index.html?path=b909b51c_6a9d_42d7_93be_cf67efad0dff.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">focal_point</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">azimuth</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="2b501d28-44ed-43df-a06a-e2a29aa39ef5" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('5551ae03-0cc0-4f24-8d41-ff83bdfb448f','2b501d28-44ed-43df-a06a-e2a29aa39ef5')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('5551ae03-0cc0-4f24-8d41-ff83bdfb448f','2b501d28-44ed-43df-a06a-e2a29aa39ef5')">Open In Tab</button></div><div id="6cd7569e-a10d-4b15-bb43-94a80fb86eeb" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.clipping_range">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">clipping_range</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyvista_js.Camera.clipping_range" title="Link to this definition">#</a></dt>
+<dd><p>Get or set the clipping range (near, far).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>tuple</em><em> of </em><em>float</em>) – Near and far clipping plane distances as (near, far).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Clipping range as (near, far).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="c4e175b5-ceb5-4648-92b7-a728abc8645d">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('c4e175b5-ceb5-4648-92b7-a728abc8645d','8fe1cdbc-d6b8-4b16-8308-5f07d49d3e05','54668122-2186-4645-99f0-7f4da53c8423','../../lite/tree/../notebooks/index.html?path=0ffc351d_a609_475c_a146_4a466f1a719b.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">clipping_range</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">clipping_range</span>
+<span class="go">(0.1, 100.0)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="54668122-2186-4645-99f0-7f4da53c8423" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('c4e175b5-ceb5-4648-92b7-a728abc8645d','54668122-2186-4645-99f0-7f4da53c8423')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('c4e175b5-ceb5-4648-92b7-a728abc8645d','54668122-2186-4645-99f0-7f4da53c8423')">Open In Tab</button></div><div id="8fe1cdbc-d6b8-4b16-8308-5f07d49d3e05" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.disable_parallel_projection">
+<span class="sig-name descname"><span class="pre">disable_parallel_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.disable_parallel_projection" title="Link to this definition">#</a></dt>
+<dd><p>Disable parallel projection (use perspective projection).</p>
+<p>Switches the camera from parallel projection to perspective projection.
+This is equivalent to setting <code class="docutils literal notranslate"><span class="pre">parallel_projection</span> <span class="pre">=</span> <span class="pre">False</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="b964f955-52dc-4399-a935-76f100462e73">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('b964f955-52dc-4399-a935-76f100462e73','08a1412c-a413-4760-b796-609d2333c8e2','03fa3c99-2885-4f9c-8011-50c1d10d6f8a','../../lite/tree/../notebooks/index.html?path=a7f4c560_e2e0_48fc_8055_2e7fe244e8ff.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">enable_parallel_projection</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">disable_parallel_projection</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">parallel_projection</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="03fa3c99-2885-4f9c-8011-50c1d10d6f8a" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('b964f955-52dc-4399-a935-76f100462e73','03fa3c99-2885-4f9c-8011-50c1d10d6f8a')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('b964f955-52dc-4399-a935-76f100462e73','03fa3c99-2885-4f9c-8011-50c1d10d6f8a')">Open In Tab</button></div><div id="08a1412c-a413-4760-b796-609d2333c8e2" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.elevation">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">elevation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyvista_js.Camera.elevation" title="Link to this definition">#</a></dt>
+<dd><p>Get or set the camera elevation angle in degrees.</p>
+<p>The elevation angle controls the vertical rotation of the camera.
+It rotates the camera about the cross product of the negative of
+the direction of projection and the view up vector, using the
+focal point as the center of rotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em>) – Elevation angle in degrees.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Elevation angle in degrees.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="5f7038f3-dedf-4b9c-a8ec-dd10d22212c1">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('5f7038f3-dedf-4b9c-a8ec-dd10d22212c1','2932fa85-a898-415c-8261-c22f774d8750','e09cbf2d-c559-4408-bf12-fd6792203d83','../../lite/tree/../notebooks/index.html?path=b12be456_ade6_46c6_b6fd_243147fe315d.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">elevation</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">elevation</span> <span class="o">=</span> <span class="mf">45.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">elevation</span>
+<span class="go">45.0</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="e09cbf2d-c559-4408-bf12-fd6792203d83" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('5f7038f3-dedf-4b9c-a8ec-dd10d22212c1','e09cbf2d-c559-4408-bf12-fd6792203d83')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('5f7038f3-dedf-4b9c-a8ec-dd10d22212c1','e09cbf2d-c559-4408-bf12-fd6792203d83')">Open In Tab</button></div><div id="2932fa85-a898-415c-8261-c22f774d8750" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.enable_parallel_projection">
+<span class="sig-name descname"><span class="pre">enable_parallel_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.enable_parallel_projection" title="Link to this definition">#</a></dt>
+<dd><p>Enable parallel (orthographic) projection.</p>
+<p>Switches the camera from perspective projection to parallel projection.
+This is equivalent to setting <code class="docutils literal notranslate"><span class="pre">parallel_projection</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="4400add8-190f-407b-b639-db1416b4df3c">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('4400add8-190f-407b-b639-db1416b4df3c','06d90631-8716-4a70-b37e-08edfa0a46b3','ae9d4416-868c-40a6-940c-cd6b607c1082','../../lite/tree/../notebooks/index.html?path=d8bc8c04_a7a9_4bd5_a342_6c68124528bf.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">enable_parallel_projection</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">parallel_projection</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="ae9d4416-868c-40a6-940c-cd6b607c1082" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('4400add8-190f-407b-b639-db1416b4df3c','ae9d4416-868c-40a6-940c-cd6b607c1082')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('4400add8-190f-407b-b639-db1416b4df3c','ae9d4416-868c-40a6-940c-cd6b607c1082')">Open In Tab</button></div><div id="06d90631-8716-4a70-b37e-08edfa0a46b3" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.focal_point">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">focal_point</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyvista_js.Camera.focal_point" title="Link to this definition">#</a></dt>
+<dd><p>Get or set the camera focal point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>tuple</em><em> of </em><em>float</em>) – Focal point as (x, y, z).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Focal point as (x, y, z).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="61baba7b-51c8-4681-bf50-8d22845e7a17">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('61baba7b-51c8-4681-bf50-8d22845e7a17','454bf3aa-c557-4ce9-b18b-28342940acd6','a7683e3c-00d2-4e90-b289-d90abb28c633','../../lite/tree/../notebooks/index.html?path=fbde95e7_e22a_4663_b923_bb3b5f797bf1.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">focal_point</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">focal_point</span>
+<span class="go">(1.0, 2.0, 3.0)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="a7683e3c-00d2-4e90-b289-d90abb28c633" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('61baba7b-51c8-4681-bf50-8d22845e7a17','a7683e3c-00d2-4e90-b289-d90abb28c633')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('61baba7b-51c8-4681-bf50-8d22845e7a17','a7683e3c-00d2-4e90-b289-d90abb28c633')">Open In Tab</button></div><div id="454bf3aa-c557-4ce9-b18b-28342940acd6" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.orbit_elevation">
+<span class="sig-name descname"><span class="pre">orbit_elevation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.orbit_elevation" title="Link to this definition">#</a></dt>
+<dd><p>Rotate the camera position vertically around the focal point.</p>
+<p>This method is named <code class="docutils literal notranslate"><span class="pre">orbit_elevation</span></code> to avoid conflict with
+the <a class="reference internal" href="#pyvista_js.Camera.elevation" title="pyvista_js.Camera.elevation"><code class="xref py py-attr docutils literal notranslate"><span class="pre">elevation</span></code></a> property, which stores a static angle value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle</strong> (<em>float</em>) – Rotation angle in degrees.  Positive values tilt the camera
+upward.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="3219ca18-da2d-4600-84f1-025c24cd5aa2">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('3219ca18-da2d-4600-84f1-025c24cd5aa2','cb41ceed-956a-4a24-9e41-d83369a47507','d1a9a0e4-f132-42b3-9eee-f8c25095cec0','../../lite/tree/../notebooks/index.html?path=8f4c3ea6_f851_4240_9db5_e51943845d92.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">focal_point</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">orbit_elevation</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="d1a9a0e4-f132-42b3-9eee-f8c25095cec0" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('3219ca18-da2d-4600-84f1-025c24cd5aa2','d1a9a0e4-f132-42b3-9eee-f8c25095cec0')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('3219ca18-da2d-4600-84f1-025c24cd5aa2','d1a9a0e4-f132-42b3-9eee-f8c25095cec0')">Open In Tab</button></div><div id="cb41ceed-956a-4a24-9e41-d83369a47507" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.parallel_projection">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">parallel_projection</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pyvista_js.Camera.parallel_projection" title="Link to this definition">#</a></dt>
+<dd><p>Get or set parallel projection mode.</p>
+<p>When True, uses parallel (orthographic) projection instead of
+perspective projection. Parallel projection is useful for viewing
+2D datasets, CAD-like orthographic views, and scientific visualization
+where perspective distortion is undesirable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>bool</em>) – Enable (True) or disable (False) parallel projection.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether parallel projection is enabled.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="bea951dd-7656-46bb-9329-1dc1193f61d5">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('bea951dd-7656-46bb-9329-1dc1193f61d5','9ee9aed9-49a5-476e-bade-ba41e4616d87','15560439-b4b2-4de9-8acb-13e89de69dbb','../../lite/tree/../notebooks/index.html?path=0a3e03e8_f418_4840_8c53_8bc0de825a0d.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">parallel_projection</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">parallel_projection</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="15560439-b4b2-4de9-8acb-13e89de69dbb" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('bea951dd-7656-46bb-9329-1dc1193f61d5','15560439-b4b2-4de9-8acb-13e89de69dbb')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('bea951dd-7656-46bb-9329-1dc1193f61d5','15560439-b4b2-4de9-8acb-13e89de69dbb')">Open In Tab</button></div><div id="9ee9aed9-49a5-476e-bade-ba41e4616d87" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.position">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">position</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyvista_js.Camera.position" title="Link to this definition">#</a></dt>
+<dd><p>Get or set the camera position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>tuple</em><em> of </em><em>float</em>) – Camera position as (x, y, z).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Camera position as (x, y, z).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="4106f8fd-697f-4ce9-be2b-b89bda6242b8">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('4106f8fd-697f-4ce9-be2b-b89bda6242b8','c77e1f86-993c-48af-a548-1f8d6833a859','8b160205-f9f6-4d8a-bdc9-0938cb274b26','../../lite/tree/../notebooks/index.html?path=081c978c_fbf4_461d_bd38_cd4b4fb78b74.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">position</span>
+<span class="go">(5.0, 0.0, 0.0)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="8b160205-f9f6-4d8a-bdc9-0938cb274b26" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('4106f8fd-697f-4ce9-be2b-b89bda6242b8','8b160205-f9f6-4d8a-bdc9-0938cb274b26')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('4106f8fd-697f-4ce9-be2b-b89bda6242b8','8b160205-f9f6-4d8a-bdc9-0938cb274b26')">Open In Tab</button></div><div id="c77e1f86-993c-48af-a548-1f8d6833a859" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.roll">
+<span class="sig-name descname"><span class="pre">roll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.roll" title="Link to this definition">#</a></dt>
+<dd><p>Roll the camera around the view direction axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle</strong> (<em>float</em>) – Roll angle in degrees.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="3d170554-6f67-4eab-af5d-b6513a958fd8">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('3d170554-6f67-4eab-af5d-b6513a958fd8','d0c0d1cb-dbf9-4923-ad29-ff9e819c75ad','a6cc0f9d-cab2-4686-b272-f03d3409fa88','../../lite/tree/../notebooks/index.html?path=e4cbb069_3fd5_436f_a7b4_b5ea70192c6b.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">focal_point</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">camera</span><span class="o">.</span><span class="n">view_up</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="a6cc0f9d-cab2-4686-b272-f03d3409fa88" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('3d170554-6f67-4eab-af5d-b6513a958fd8','a6cc0f9d-cab2-4686-b272-f03d3409fa88')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('3d170554-6f67-4eab-af5d-b6513a958fd8','a6cc0f9d-cab2-4686-b272-f03d3409fa88')">Open In Tab</button></div><div id="d0c0d1cb-dbf9-4923-ad29-ff9e819c75ad" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.view_angle">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">view_angle</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#pyvista_js.Camera.view_angle" title="Link to this definition">#</a></dt>
+<dd><p>Get or set the camera view angle in degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em>) – View angle in degrees (field of view).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>View angle in degrees.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="b6336a89-d5c6-4329-a963-a9a0247f1224">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('b6336a89-d5c6-4329-a963-a9a0247f1224','d9b96124-265e-4185-b9f0-e919186e4eed','5cdee027-47e7-448a-923c-3da77815cdc4','../../lite/tree/../notebooks/index.html?path=90c2a2ae_a16d_418d_ab72_94b6a58737de.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">view_angle</span> <span class="o">=</span> <span class="mf">45.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">view_angle</span>
+<span class="go">45.0</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="5cdee027-47e7-448a-923c-3da77815cdc4" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('b6336a89-d5c6-4329-a963-a9a0247f1224','5cdee027-47e7-448a-923c-3da77815cdc4')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('b6336a89-d5c6-4329-a963-a9a0247f1224','5cdee027-47e7-448a-923c-3da77815cdc4')">Open In Tab</button></div><div id="d9b96124-265e-4185-b9f0-e919186e4eed" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyvista_js.Camera.view_up">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">view_up</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pyvista_js.Camera.view_up" title="Link to this definition">#</a></dt>
+<dd><p>Get or set the view-up vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>tuple</em><em> of </em><em>float</em>) – View-up vector as (x, y, z).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>View-up vector as (x, y, z).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="8b8d853a-3eca-463b-92a6-23fb778b8537">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('8b8d853a-3eca-463b-92a6-23fb778b8537','2f249fb4-07cd-4d00-bbe2-ac0e6f124fbe','0cf4cdaf-9b92-4d2e-ab33-88c47ea89208','../../lite/tree/../notebooks/index.html?path=93924667_72d6_480f_82c8_b2f942354c46.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">view_up</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">view_up</span>
+<span class="go">(0.0, 0.0, 1.0)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="0cf4cdaf-9b92-4d2e-ab33-88c47ea89208" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('8b8d853a-3eca-463b-92a6-23fb778b8537','0cf4cdaf-9b92-4d2e-ab33-88c47ea89208')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('8b8d853a-3eca-463b-92a6-23fb778b8537','0cf4cdaf-9b92-4d2e-ab33-88c47ea89208')">Open In Tab</button></div><div id="2f249fb4-07cd-4d00-bbe2-ac0e6f124fbe" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyvista_js.Camera.zoom">
+<span class="sig-name descname"><span class="pre">zoom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pyvista_js.Camera.zoom" title="Link to this definition">#</a></dt>
+<dd><p>Move the camera closer to or farther from the focal point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>factor</strong> (<em>float</em>) – Zoom factor.  Values greater than 1 move the camera closer
+(zoom in); values between 0 and 1 move it farther away
+(zoom out).</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <em>factor</em> is not positive.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="try_examples_outer_container docutils container" id="23fe109d-007d-4db5-81b9-709e78e57604">
+<div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesShowIframe('23fe109d-007d-4db5-81b9-709e78e57604','b3d4b930-3354-4d93-a75b-e19a506d1a60','0721372a-50c4-4a39-a689-c89b37706397','../../lite/tree/../notebooks/index.html?path=80daa7d3_2bce_46cc_89ce_0e2d75706a45.ipynb','None')">Try it with JupyterLite!</button></div><div class="try_examples_content docutils container">
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyvista_js</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pv</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">Camera</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">focal_point</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">camera</span><span class="o">.</span><span class="n">zoom</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div id="0721372a-50c4-4a39-a689-c89b37706397" class="try_examples_outer_iframe  hidden"><div class="try_examples_button_container"><button class="try_examples_button" onclick="window.tryExamplesHideIframe('23fe109d-007d-4db5-81b9-709e78e57604','0721372a-50c4-4a39-a689-c89b37706397')">Go Back</button><button class="try_examples_button" onclick="window.openInNewTab('23fe109d-007d-4db5-81b9-709e78e57604','0721372a-50c4-4a39-a689-c89b37706397')">Open In Tab</button></div><div id="b3d4b930-3354-4d93-a75b-e19a506d1a60" class="jupyterlite_sphinx_iframe_container"></div></div><script>document.addEventListener("DOMContentLoaded", function() {window.loadTryExamplesConfig("../../try_examples.json");});</script></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pyvista_js.Plotter.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">pyvista_js.Plotter</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pyvista_js.Light.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">pyvista_js.Light</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera"><code class="docutils literal notranslate"><span class="pre">Camera</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.__init__"><code class="docutils literal notranslate"><span class="pre">Camera.__init__()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.azimuth"><code class="docutils literal notranslate"><span class="pre">Camera.azimuth()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.clipping_range"><code class="docutils literal notranslate"><span class="pre">Camera.clipping_range</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.disable_parallel_projection"><code class="docutils literal notranslate"><span class="pre">Camera.disable_parallel_projection()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.elevation"><code class="docutils literal notranslate"><span class="pre">Camera.elevation</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.enable_parallel_projection"><code class="docutils literal notranslate"><span class="pre">Camera.enable_parallel_projection()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.focal_point"><code class="docutils literal notranslate"><span class="pre">Camera.focal_point</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.orbit_elevation"><code class="docutils literal notranslate"><span class="pre">Camera.orbit_elevation()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.parallel_projection"><code class="docutils literal notranslate"><span class="pre">Camera.parallel_projection</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.position"><code class="docutils literal notranslate"><span class="pre">Camera.position</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.roll"><code class="docutils literal notranslate"><span class="pre">Camera.roll()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.view_angle"><code class="docutils literal notranslate"><span class="pre">Camera.view_angle</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.view_up"><code class="docutils literal notranslate"><span class="pre">Camera.view_up</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pyvista_js.Camera.zoom"><code class="docutils literal notranslate"><span class="pre">Camera.zoom()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tetsuo Koyama
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, Tetsuo Koyama.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
