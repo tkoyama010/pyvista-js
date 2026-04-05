@@ -9,6 +9,7 @@ import pytest
 
 from pyvista_js import (
     Arrow,
+    CellType,
     Circle,
     Cone,
     Cube,
@@ -18,6 +19,7 @@ from pyvista_js import (
     Plane,
     PolyData,
     Sphere,
+    UnstructuredGrid,
 )
 
 
@@ -896,11 +898,9 @@ def test_plane_scene_data_is_not_none() -> None:
     assert scene["type"] == "plane"
 
 
-meshio = pytest.importorskip("meshio")
-
-
 def test_save_obj(tmp_path) -> None:
     """Test that save writes a valid OBJ file via meshio."""
+    meshio = pytest.importorskip("meshio")
     cube = Cube()
     out = tmp_path / "cube.obj"
     cube.save(out)
@@ -912,6 +912,7 @@ def test_save_obj(tmp_path) -> None:
 
 def test_save_obj_vertex_coords(tmp_path) -> None:
     """Test that saved vertex coordinates match original points."""
+    meshio = pytest.importorskip("meshio")
     points = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
     mesh = PolyData(points)
     out = tmp_path / "mesh.obj"
@@ -922,6 +923,7 @@ def test_save_obj_vertex_coords(tmp_path) -> None:
 
 def test_save_vtk(tmp_path) -> None:
     """Test that save can write VTK format via meshio."""
+    meshio = pytest.importorskip("meshio")
     cube = Cube()
     out = tmp_path / "cube.vtk"
     cube.save(out)
@@ -947,7 +949,175 @@ def test_save_no_meshio(tmp_path, monkeypatch) -> None:
 
 def test_save_string_path(tmp_path) -> None:
     """Test that save accepts a string path."""
+    pytest.importorskip("meshio")  # Skip if meshio not available
     cube = Cube()
     out = str(tmp_path / "cube.obj")
     cube.save(out)
     assert Path(out).exists()
+
+
+# --- CellType constants ---
+
+
+def test_cell_type_constants() -> None:
+    """Test that CellType constants match VTK values."""
+    assert CellType.VERTEX == 1
+    assert CellType.LINE == 3
+    assert CellType.TRIANGLE == 5
+    assert CellType.QUAD == 9
+    assert CellType.TETRA == 10
+    assert CellType.HEXAHEDRON == 12
+    assert CellType.WEDGE == 13
+    assert CellType.PYRAMID == 14
+
+
+# --- UnstructuredGrid ---
+
+
+def _make_tetra_grid() -> UnstructuredGrid:
+    """Create a simple single-tetrahedron grid."""
+    points = np.array(
+        [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
+        dtype=float,
+    )
+    cells = [4, 0, 1, 2, 3]
+    celltypes = [CellType.TETRA]
+    return UnstructuredGrid(cells, celltypes, points)
+
+
+def test_unstructured_grid_creation() -> None:
+    """Test basic UnstructuredGrid creation."""
+    grid = _make_tetra_grid()
+    assert grid.n_points == 4
+    assert grid.n_cells == 1
+
+
+def test_unstructured_grid_hexahedron() -> None:
+    """Test UnstructuredGrid with a hexahedron cell."""
+    points = np.array(
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 0, 1],
+            [1, 1, 1],
+            [0, 1, 1],
+        ],
+        dtype=float,
+    )
+    cells = [8, 0, 1, 2, 3, 4, 5, 6, 7]
+    celltypes = [CellType.HEXAHEDRON]
+    grid = UnstructuredGrid(cells, celltypes, points)
+    assert grid.n_points == 8
+    assert grid.n_cells == 1
+
+
+def test_unstructured_grid_to_scene_data_tetra() -> None:
+    """Test to_scene_data for tetrahedron produces correct polys."""
+    grid = _make_tetra_grid()
+    data = grid.to_scene_data()
+    assert data["type"] == "mesh"
+    assert "points" in data
+    assert "polys" in data
+    # A tetrahedron has 4 triangular faces, each [3, a, b, c] → 4 * 4 = 16 entries
+    polys = data["polys"]
+    assert len(polys) == 16
+    # Every face starts with 3 (triangle)
+    face_starts = [polys[i] for i in range(0, len(polys), 4)]
+    assert all(n == 3 for n in face_starts)
+
+
+def test_unstructured_grid_to_scene_data_hex() -> None:
+    """Test to_scene_data for hexahedron produces correct polys."""
+    points = np.array(
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 0, 1],
+            [1, 1, 1],
+            [0, 1, 1],
+        ],
+        dtype=float,
+    )
+    grid = UnstructuredGrid(
+        [8, 0, 1, 2, 3, 4, 5, 6, 7],
+        [CellType.HEXAHEDRON],
+        points,
+    )
+    data = grid.to_scene_data()
+    polys = data["polys"]
+    # 6 quad faces → each [4, a, b, c, d] → 6 * 5 = 30 entries
+    assert len(polys) == 30
+
+
+def test_unstructured_grid_point_data() -> None:
+    """Test that point_data arrays are injected into scene data."""
+    grid = _make_tetra_grid()
+    grid.point_data["temperature"] = np.array([100, 200, 300, 400])
+    data = grid.to_scene_data()
+    assert "pointData" in data
+    pd_arrays = data["pointData"]
+    assert len(pd_arrays) == 1
+    assert pd_arrays[0]["name"] == "temperature"
+    assert pd_arrays[0]["numberOfComponents"] == 1
+    assert pd_arrays[0]["values"] == [100.0, 200.0, 300.0, 400.0]
+
+
+def test_unstructured_grid_dict_access() -> None:
+    """Test dict-style point data access on UnstructuredGrid."""
+    grid = _make_tetra_grid()
+    grid["scalars"] = np.array([1.0, 2.0, 3.0, 4.0])
+    assert np.array_equal(grid["scalars"], [1.0, 2.0, 3.0, 4.0])
+
+
+def test_unstructured_grid_bounding_sphere() -> None:
+    """Test bounding_sphere for UnstructuredGrid."""
+    grid = _make_tetra_grid()
+    radius, center = grid.bounding_sphere
+    assert isinstance(radius, float)
+    assert isinstance(center, tuple)
+    assert len(center) == 3
+    assert radius > 0
+
+
+def test_unstructured_grid_plot(monkeypatch) -> None:
+    """Test that UnstructuredGrid.plot() opens a browser."""
+    opened: list[str] = []
+    monkeypatch.setattr(webbrowser, "open", opened.append)
+
+    grid = _make_tetra_grid()
+    grid.plot(color="red")
+
+    assert len(opened) == 1
+    assert opened[0].startswith("file://")
+
+
+def test_unstructured_grid_mixed_cells() -> None:
+    """Test UnstructuredGrid with mixed cell types."""
+    points = np.array(
+        [
+            # tetra points
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            # triangle points (separate)
+            [2, 0, 0],
+            [3, 0, 0],
+            [2, 1, 0],
+        ],
+        dtype=float,
+    )
+    cells = [4, 0, 1, 2, 3, 3, 4, 5, 6]
+    celltypes = [CellType.TETRA, CellType.TRIANGLE]
+    grid = UnstructuredGrid(cells, celltypes, points)
+    assert grid.n_cells == 2
+    data = grid.to_scene_data()
+    polys = data["polys"]
+    # tetra: 4 tri faces (16 entries) + 1 triangle (4 entries) = 20
+    assert len(polys) == 20

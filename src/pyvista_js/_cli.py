@@ -573,14 +573,25 @@ def _find_canvas_in_frames(page) -> tuple:  # noqa: ANN001
         A (frame, element_handle) pair, or (None, None) if not found.
 
     """
-    for frame in page.frames:
+    logger.debug("Searching for canvas in %d frames", len(page.frames))
+    for i, frame in enumerate(page.frames):
         try:
-            canvas = frame.query_selector("canvas")
-            if canvas is not None:
-                return frame, canvas
-        except Exception:  # noqa: BLE001
-            logger.debug("Failed to query canvas in frame", exc_info=True)
+            # Check if frame is accessible
+            frame_url = frame.url
+            logger.debug("Checking frame %d: %s", i, frame_url[:100] if frame_url else "no url")
+
+            # Try multiple canvas selectors
+            selectors = ["canvas", "canvas[data-testid]", "[data-testid='stCanvas'] canvas"]
+            for selector in selectors:
+                canvas = frame.query_selector(selector)
+                if canvas is not None:
+                    logger.info("Found canvas element in frame %d using selector: %s", i, selector)
+                    return frame, canvas
+        except Exception as e:  # noqa: BLE001
+            logger.debug("Failed to query canvas in frame %d: %s", i, e)
             continue
+
+    logger.debug("No canvas found in any frame")
     return None, None
 
 
@@ -837,14 +848,30 @@ def _wait_for_canvas_in_frames(page, timeout: int = 120) -> None:  # noqa: ANN00
     import time  # noqa: PLC0415
 
     deadline = time.monotonic() + timeout
+    check_count = 0
+
     while time.monotonic() < deadline:
+        check_count += 1
         _frame, canvas = _find_canvas_in_frames(page)
         if canvas is not None:
-            logger.info("Found canvas element in iframe")
+            logger.info("Found canvas element in iframe after %d checks", check_count)
             return
+
+        # Log progress every 10 checks (20 seconds)
+        if check_count % 10 == 0:  # pragma: no cover
+            elapsed = int(time.monotonic() - (deadline - timeout))
+            logger.info(
+                "Still waiting for canvas... elapsed: %ds, frames: %d",
+                elapsed,
+                len(page.frames),
+            )
+
         page.wait_for_timeout(2000)
 
-    msg = f"Canvas element not found in any frame within {timeout} seconds"
+    msg = (
+        f"Canvas element not found in any frame within {timeout} seconds "
+        f"(checked {check_count} times)"
+    )
     raise TimeoutError(msg)
 
 
@@ -887,7 +914,17 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
 
             logger.info("Waiting for stlite to load and install dependencies...")
             # Wait for stlite to initialize Python and install pyvista-js
-            page.wait_for_timeout(60000)
+            # Increased from 60s to 90s as dependency installation can be slow
+            page.wait_for_timeout(90000)
+
+            # Log frame information for debugging
+            logger.info("Page has %d frames after initial load", len(page.frames))
+            for i, frame in enumerate(page.frames):
+                try:
+                    url = frame.url[:100] if frame.url else "no url"
+                    logger.info("Frame %d: %s", i, url)
+                except Exception as e:  # noqa: BLE001  # pragma: no cover
+                    logger.debug("Could not get URL for frame %d: %s", i, e)
 
             logger.info("Waiting for 3D rendering to appear in iframes...")
             # stlite renders the Streamlit app in iframes, and
