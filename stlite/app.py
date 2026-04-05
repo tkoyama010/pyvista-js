@@ -19,5 +19,5 @@ mesh = examples.download_bunny()
 
 plotter.add_mesh(mesh, color=color, opacity=opacity)
 
-html = plotter.generate_standalone_html()  # noqa: SLF001
+html = plotter.generate_standalone_html()
 components.html(html, height=600)
