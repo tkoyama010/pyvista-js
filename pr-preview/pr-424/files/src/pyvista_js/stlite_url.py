@@ -16,13 +16,8 @@ this module can be updated to use it directly.
 from __future__ import annotations
 
 import base64
-import hashlib
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 # Base URL for Stlite Sharing editor
 STLITE_EDITOR_URL = "https://edit.share.stlite.net/#!"
@@ -146,7 +141,8 @@ def _extract_source_from_decoded(decoded: bytes) -> dict[str, str] | None:
                                 if inner_content[source_start:].startswith(b'"""'):
                                     # Found Python source code
                                     source = inner_content[source_start:].decode(
-                                        "utf-8", errors="ignore"
+                                        "utf-8",
+                                        errors="ignore",
                                     )
                                     files[filename] = source
                 else:
@@ -159,7 +155,7 @@ def _extract_source_from_decoded(decoded: bytes) -> dict[str, str] | None:
         else:
             idx += 1
 
-    return files if files else None
+    return files or None
 
 
 def extract_source_from_url(url: str) -> dict[str, str] | None:
