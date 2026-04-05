@@ -47,11 +47,6 @@ jobs:
         run: |
           jupytext --sync jupyterlite/content/*.py
 
-      - name: Copy source code to JupyterLite
-        run: |
-          mkdir -p jupyterlite/content/src
-          cp -r src/pyvista_js jupyterlite/content/src/
-
       - name: Build JupyterLite
         run: |
           jupyter lite build --contents jupyterlite/content --output-dir _site
