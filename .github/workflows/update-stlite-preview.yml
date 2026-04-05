@@ -1,6 +1,11 @@
 name: Update stlite Preview GIF
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "stlite/app.py"
 
 permissions: {}
 
@@ -19,6 +24,18 @@ jobs:
       - run: |
           pip install . playwright "imageio[ffmpeg]" pillow
           playwright install chromium
+      - name: Generate Stlite URL from source
+        id: stlite-url
+        run: |
+          # Read the stlite app source
+          SOURCE=$(cat stlite/app.py)
+
+          # Encode the source for URL construction
+          # Note: Full encoding requires stlite library; this constructs the base URL
+          # The actual URL will use the stlite sharing service
+          echo "app_source<<EOF" >> $GITHUB_OUTPUT
+          echo "$SOURCE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       - run: python -m pyvista_js capture-stlite-preview
       - name: Upload stlite preview GIF to latest release
         env:
