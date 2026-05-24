@@ -1,0 +1,42 @@
+{
+  "name": "react-pyvista",
+  "version": "0.1.0",
+  "description": "React components for PyVista 3D visualization via vtk.js and Pyodide",
+  "type": "module",
+  "main": "dist/react-pyvista.umd.cjs",
+  "module": "dist/react-pyvista.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/react-pyvista.js",
+      "require": "./dist/react-pyvista.umd.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^6.0",
+    "vite": "^6.0",
+    "vite-plugin-dts": "^4.0.0"
+  },
+  "keywords": ["react", "pyvista", "vtk", "3d", "visualization", "webassembly", "pyodide"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tkoyama010/pyvista-js"
+  }
+}

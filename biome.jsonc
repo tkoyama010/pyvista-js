@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["ts/**/*.ts", "ts/**/*.d.ts", "biome.json"]
+    "includes": [
+      "ts/**/*.ts",
+      "ts/**/*.d.ts",
+      "biome.json",
+      "packages/react-pyvista/src/**/*.ts",
+      "packages/react-pyvista/src/**/*.tsx"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -41,5 +47,69 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      // react-pyvista: relax rules that conflict with React/vtk.js patterns
+      "includes": ["packages/react-pyvista/src/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            // React components do not need explicit return types
+            "useExplicitType": "off",
+            // Ternary is idiomatic in JSX
+            "noTernary": "off",
+            // Inline styles are used for the viewer container sizing
+            "noInlineStyles": "off",
+            // `window` is intentional in browser-targeted code; `self` in workers
+            "useGlobalThis": "off",
+            // ++/-- are idiomatic in loop bodies across this package
+            "noIncrementDecrement": "off"
+          },
+          "style": {
+            // Single-line guard returns are idiomatic in React
+            "useBlockStatements": "off"
+          },
+          "performance": {
+            // index.ts is the standard library entry point
+            "noBarrelFile": "off"
+          },
+          "suspicious": {
+            // Pyodide and vtk.js interop requires `any` in several places
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    },
+    {
+      // renderer.ts is an intentionally large vtk.js adapter; complexity is expected
+      "includes": ["packages/react-pyvista/src/renderer.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "noExcessiveLinesPerFunction": "off"
+          },
+          "nursery": {
+            "noExcessiveLinesPerFile": "off",
+            // ++/-- are idiomatic in loop bodies
+            "noIncrementDecrement": "off",
+            "noContinue": "off"
+          },
+          "style": {
+            "useReadonlyClassProperties": "off",
+            "useSingleVarDeclarator": "off"
+          },
+          "suspicious": {
+            // vtk.js global requires `any` bridging
+            "noExplicitAny": "off"
+          },
+          "security": {
+            // CDN URLs are not secrets
+            "noSecrets": "off"
+          }
+        }
+      }
+    }
+  ]
 }

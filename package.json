@@ -1,6 +1,7 @@
 {
   "private": true,
   "type": "module",
+  "workspaces": ["packages/*"],
   "scripts": {
     "build": "esbuild ts/renderer.ts --bundle --format=iife --outfile=src/pyvista_js/templates/renderer.js --target=es2017",
     "lint": "biome check .",
