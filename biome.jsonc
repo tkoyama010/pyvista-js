@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.9/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["ts/**/*.ts", "ts/**/*.d.ts", "biome.json"]
+    "includes": [
+      "ts/**/*.ts",
+      "ts/**/*.d.ts",
+      "biome.json",
+      "packages/react-pyvista/src/**/*.ts",
+      "packages/react-pyvista/src/**/*.tsx"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -41,5 +47,80 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      // react-pyvista: relax rules that conflict with React/vtk.js patterns
+      "includes": ["packages/react-pyvista/src/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            // React components do not need explicit return types (two sibling rules)
+            "useExplicitType": "off",
+            "useExplicitReturnType": "off",
+            // Ternary is idiomatic in JSX
+            "noTernary": "off",
+            // Inline styles are used for the viewer container sizing
+            "noInlineStyles": "off",
+            // `window` is intentional in browser-targeted code; `self` in workers
+            "useGlobalThis": "off",
+            // ++/-- are idiomatic in loop bodies across this package
+            "noIncrementDecrement": "off"
+          },
+          "style": {
+            // Single-line guard returns are idiomatic in React
+            "useBlockStatements": "off",
+            // Public API types are declared before internal helpers for readability
+            "useExportsLast": "off"
+          },
+          "complexity": {
+            // Hooks accumulate state + effect logic; splitting further reduces readability
+            "noExcessiveLinesPerFunction": "off"
+          },
+          "performance": {
+            // index.ts is the standard library entry point
+            "noBarrelFile": "off"
+          },
+          "suspicious": {
+            // Pyodide and vtk.js interop requires `any` in several places
+            "noExplicitAny": "off",
+            // This is a Solid.js rule; React uses className/htmlFor intentionally
+            "noReactSpecificProps": "off"
+          }
+        }
+      }
+    },
+    {
+      // renderer.ts is an intentionally large vtk.js adapter; complexity is expected
+      "includes": ["packages/react-pyvista/src/renderer.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off",
+            "noExcessiveLinesPerFunction": "off"
+          },
+          "nursery": {
+            "noExcessiveLinesPerFile": "off",
+            // ++/-- are idiomatic in loop bodies
+            "noIncrementDecrement": "off",
+            "noContinue": "off",
+            // Private helpers that operate purely on parameters need not use `this`
+            "useThisInClassMethods": "off"
+          },
+          "style": {
+            "useReadonlyClassProperties": "off",
+            "useSingleVarDeclarator": "off"
+          },
+          "suspicious": {
+            // vtk.js global requires `any` bridging
+            "noExplicitAny": "off"
+          },
+          "security": {
+            // CDN URLs are not secrets
+            "noSecrets": "off"
+          }
+        }
+      }
+    }
+  ]
 }

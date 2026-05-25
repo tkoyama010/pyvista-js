@@ -808,6 +808,32 @@ class Plotter:
         self._scalar_bar = None
         self._renderer.clear()
 
+    def get_scene_dict(self) -> dict[str, object]:
+        """Return the scene as a JSON-serialisable dictionary.
+
+        This is the same data that ``show()`` passes to the vtk.js renderer.
+        It is useful when you need to transfer scene data to JavaScript without
+        triggering a DOM render — for example, inside a Pyodide Web Worker.
+
+        Returns
+        -------
+        dict
+            Scene configuration including background, lights, actors, camera, etc.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere(), color='red')
+        >>> scene = plotter.get_scene_dict()
+        >>> isinstance(scene, dict)
+        True
+        >>> 'actors' in scene
+        True
+
+        """
+        return self._renderer.get_scene_dict()
+
     @property
     def actors(self) -> list[dict[str, Any]]:
         """Return the list of actors in the plotter."""
