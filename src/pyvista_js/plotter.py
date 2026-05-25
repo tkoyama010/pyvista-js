@@ -832,7 +832,7 @@ class Plotter:
         True
 
         """
-        return self._renderer._build_scene_data()
+        return self._renderer.get_scene_dict()
 
     @property
     def actors(self) -> list[dict[str, Any]]:

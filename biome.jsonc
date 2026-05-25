@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.9/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -55,8 +55,9 @@
       "linter": {
         "rules": {
           "nursery": {
-            // React components do not need explicit return types
+            // React components do not need explicit return types (two sibling rules)
             "useExplicitType": "off",
+            "useExplicitReturnType": "off",
             // Ternary is idiomatic in JSX
             "noTernary": "off",
             // Inline styles are used for the viewer container sizing
@@ -102,7 +103,9 @@
             "noExcessiveLinesPerFile": "off",
             // ++/-- are idiomatic in loop bodies
             "noIncrementDecrement": "off",
-            "noContinue": "off"
+            "noContinue": "off",
+            // Private helpers that operate purely on parameters need not use `this`
+            "useThisInClassMethods": "off"
           },
           "style": {
             "useReadonlyClassProperties": "off",

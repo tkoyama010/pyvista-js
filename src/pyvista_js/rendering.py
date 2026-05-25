@@ -760,6 +760,17 @@ class _BaseHTMLRenderer:
 
         return scene
 
+    def get_scene_dict(self) -> dict[str, object]:
+        """Return the scene as a JSON-serializable dictionary.
+
+        Returns
+        -------
+        dict
+            Scene configuration including background, lights, actors, camera, etc.
+
+        """
+        return self._build_scene_data()
+
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
         import json as _json  # noqa: PLC0415
