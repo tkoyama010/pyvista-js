@@ -1656,6 +1656,26 @@ class MockRenderer:
             return np.zeros((height, width, channels), dtype=np.uint8)
         return None
 
+    def get_scene_dict(self) -> dict[str, object]:
+        """Return a minimal scene dictionary for testing.
+
+        Returns
+        -------
+        dict
+            Empty scene dictionary with no actors.
+
+        """
+        return {
+            "containerId": "",
+            "background": [0.0, 0.0, 0.0],
+            "lights": [],
+            "actors": [],
+            "textActors": [],
+            "axes": False,
+            "camera": {},
+            "lightingMode": "default",
+        }
+
 
 def get_renderer(
     lighting: str | None = "default",
