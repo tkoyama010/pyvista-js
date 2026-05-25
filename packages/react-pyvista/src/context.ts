@@ -1,12 +1,12 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext } from "react";
 
 export interface PyVistaConfig {
-  vtkJsCdnUrl?: string
-  pyodideUrl?: string
+  vtkJsCdnUrl?: string;
+  pyodideUrl?: string;
 }
 
-export const PyVistaContext = createContext<PyVistaConfig>({})
+export const PyVistaContext = createContext<PyVistaConfig>({});
 
 export function usePyVistaConfig(): PyVistaConfig {
-  return useContext(PyVistaContext)
+  return useContext(PyVistaContext);
 }

@@ -68,7 +68,13 @@
           },
           "style": {
             // Single-line guard returns are idiomatic in React
-            "useBlockStatements": "off"
+            "useBlockStatements": "off",
+            // Public API types are declared before internal helpers for readability
+            "useExportsLast": "off"
+          },
+          "complexity": {
+            // Hooks accumulate state + effect logic; splitting further reduces readability
+            "noExcessiveLinesPerFunction": "off"
           },
           "performance": {
             // index.ts is the standard library entry point
@@ -76,7 +82,9 @@
           },
           "suspicious": {
             // Pyodide and vtk.js interop requires `any` in several places
-            "noExplicitAny": "off"
+            "noExplicitAny": "off",
+            // This is a Solid.js rule; React uses className/htmlFor intentionally
+            "noReactSpecificProps": "off"
           }
         }
       }

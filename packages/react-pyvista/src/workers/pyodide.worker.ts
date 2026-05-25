@@ -8,59 +8,59 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const loadPyodide: (options?: Record<string, unknown>) => Promise<any>
+declare const loadPyodide: (options?: Record<string, unknown>) => Promise<any>;
 
 // importScripts is available in classic workers; type it explicitly
-declare function importScripts(...urls: string[]): void
+declare function importScripts(...urls: string[]): void;
 
-const DEFAULT_PYODIDE_INDEX =
-  'https://cdn.jsdelivr.net/pyodide/stable/full/'
+const DEFAULT_PYODIDE_INDEX = "https://cdn.jsdelivr.net/pyodide/stable/full/";
 
 interface InitMessage {
-  type: 'init'
-  packages: string[]
-  pyodideUrl?: string
+  type: "init";
+  packages: string[];
+  pyodideUrl?: string;
 }
 
 interface RunMessage {
-  type: 'run'
-  id: string
-  code: string
+  type: "run";
+  id: string;
+  code: string;
 }
 
-type WorkerInput = InitMessage | RunMessage
+type WorkerInput = InitMessage | RunMessage;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let pyodide: any = null
+let pyodide: any = null;
 
 async function initialize(packages: string[], pyodideUrl?: string): Promise<void> {
-  const indexURL = pyodideUrl ?? DEFAULT_PYODIDE_INDEX
+  const indexUrl = pyodideUrl ?? DEFAULT_PYODIDE_INDEX;
 
   // Load Pyodide bootstrap
-  importScripts(indexURL + 'pyodide.js')
+  importScripts(`${indexUrl}pyodide.js`);
 
-  pyodide = await loadPyodide({ indexURL })
+  // biome-ignore lint/style/useNamingConvention: indexURL is required by the Pyodide API
+  pyodide = await loadPyodide({ indexURL: indexUrl });
 
   // Redirect stdout to main thread
   pyodide.setStdout({
     batched: (text: string) => {
-      self.postMessage({ type: 'stdout', text })
+      self.postMessage({ type: "stdout", text });
     },
-  })
+  });
   pyodide.setStderr({
     batched: (text: string) => {
-      self.postMessage({ type: 'stderr', text })
+      self.postMessage({ type: "stderr", text });
     },
-  })
+  });
 
   // Install pyvista-js
-  await pyodide.loadPackage('micropip')
-  const micropip = pyodide.pyimport('micropip')
-  await micropip.install('pyvista-js')
+  await pyodide.loadPackage("micropip");
+  const micropip = pyodide.pyimport("micropip");
+  await micropip.install("pyvista-js");
 
   // Install any additional packages requested by the caller
   if (packages.length > 0) {
-    await micropip.install(packages)
+    await micropip.install(packages);
   }
 
   // Intercept Plotter.show() so it emits scene JSON instead of trying to
@@ -78,64 +78,63 @@ def _rp_capturing_show(self, *args, **kwargs):
     _rp_captured_scene = self.get_scene_dict()
 
 pv.Plotter.show = _rp_capturing_show
-`)
+`);
 
-  self.postMessage({ type: 'ready' })
+  self.postMessage({ type: "ready" });
 }
 
 async function run(id: string, code: string): Promise<void> {
   if (!pyodide) {
-    self.postMessage({ type: 'error', id, message: 'Pyodide is not initialised yet.' })
-    return
+    self.postMessage({ type: "error", id, message: "Pyodide is not initialised yet." });
+    return;
   }
 
   try {
     // Reset the captured scene before each run
-    await pyodide.runPythonAsync('_rp_captured_scene = None')
+    await pyodide.runPythonAsync("_rp_captured_scene = None");
 
     // Execute user code
-    await pyodide.runPythonAsync(code)
+    await pyodide.runPythonAsync(code);
 
     // Retrieve scene JSON
     const sceneJson: string = await pyodide.runPythonAsync(
       '_json.dumps(_rp_captured_scene) if _rp_captured_scene is not None else "null"',
-    )
+    );
 
-    if (sceneJson === 'null') {
+    if (sceneJson === "null") {
       self.postMessage({
-        type: 'error',
+        type: "error",
         id,
-        message:
-          'No scene was captured. Make sure your code calls plotter.show().',
-      })
+        message: "No scene was captured. Make sure your code calls plotter.show().",
+      });
     } else {
-      self.postMessage({ type: 'scene', id, data: JSON.parse(sceneJson) })
+      self.postMessage({ type: "scene", id, data: JSON.parse(sceneJson) });
     }
   } catch (err: unknown) {
     self.postMessage({
-      type: 'error',
+      type: "error",
       id,
       message: err instanceof Error ? err.message : String(err),
-    })
+    });
   }
 }
 
-self.addEventListener('message', (e: MessageEvent<WorkerInput>) => {
-  const msg = e.data
-  if (msg.type === 'init') {
+self.addEventListener("message", (e: MessageEvent<WorkerInput>) => {
+  const msg = e.data;
+  if (msg.type === "init") {
     initialize(msg.packages, msg.pyodideUrl).catch((err: unknown) => {
       self.postMessage({
-        type: 'error',
+        type: "error",
         message: `Pyodide initialisation failed: ${String(err)}`,
-      })
-    })
-  } else if (msg.type === 'run') {
+      });
+    });
+  } else if (msg.type === "run") {
     run(msg.id, msg.code).catch((err: unknown) => {
       self.postMessage({
-        type: 'error',
+        type: "error",
         id: msg.id,
         message: String(err),
-      })
-    })
+      });
+    });
   }
-})
+});

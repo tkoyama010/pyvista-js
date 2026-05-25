@@ -1,20 +1,20 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
-import type { SceneData } from '../types'
-import { loadVtkJs } from '../vtkLoader'
-import { PyVistaRenderer } from '../renderer'
-import { usePyVistaConfig } from '../context'
+import { type CSSProperties, useEffect, useRef } from "react";
+import { usePyVistaConfig } from "../context";
+import { PyVistaRenderer } from "../renderer";
+import type { SceneData } from "../types";
+import { loadVtkJs } from "../vtkLoader";
 
 export interface PyVistaViewerProps {
   /** Scene data produced by pyvista-js (via usePyVista or fetched from a server). */
-  scene: SceneData
+  scene: SceneData;
   /** Width of the viewer. Defaults to 600. */
-  width?: number | string
+  width?: number | string;
   /** Height of the viewer. Defaults to 400. */
-  height?: number | string
+  height?: number | string;
   /** Additional CSS class names for the container element. */
-  className?: string
+  className?: string;
   /** Additional inline styles merged onto the container element. */
-  style?: CSSProperties
+  style?: CSSProperties;
 }
 
 /**
@@ -37,29 +37,30 @@ export function PyVistaViewer({
   className,
   style,
 }: PyVistaViewerProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const rendererRef = useRef<PyVistaRenderer | null>(null)
-  const { vtkJsCdnUrl } = usePyVistaConfig()
+  const containerRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<PyVistaRenderer | null>(null);
+  const { vtkJsCdnUrl } = usePyVistaConfig();
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     loadVtkJs(vtkJsCdnUrl)
       .then(() => {
-        if (cancelled || !containerRef.current) return
-        rendererRef.current?.destroy()
-        rendererRef.current = new PyVistaRenderer(containerRef.current, scene)
+        if (cancelled || !containerRef.current) return;
+        rendererRef.current?.destroy();
+        rendererRef.current = new PyVistaRenderer(containerRef.current, scene);
       })
       .catch((err: unknown) => {
-        console.error('[react-pyvista] Failed to initialise vtk.js renderer:', err)
-      })
+        // biome-ignore lint/suspicious/noConsole: library-level error reporting
+        console.error("[react-pyvista] Failed to initialise vtk.js renderer:", err);
+      });
 
     return () => {
-      cancelled = true
-      rendererRef.current?.destroy()
-      rendererRef.current = null
-    }
-  }, [scene, vtkJsCdnUrl])
+      cancelled = true;
+      rendererRef.current?.destroy();
+      rendererRef.current = null;
+    };
+  }, [scene, vtkJsCdnUrl]);
 
   return (
     <div
@@ -68,11 +69,11 @@ export function PyVistaViewer({
       style={{
         width,
         height,
-        position: 'relative',
-        border: '2px solid #333',
-        overflow: 'hidden',
+        position: "relative",
+        border: "2px solid #333",
+        overflow: "hidden",
         ...style,
       }}
     />
-  )
+  );
 }

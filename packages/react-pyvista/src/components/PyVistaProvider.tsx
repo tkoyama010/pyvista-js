@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import { PyVistaContext, type PyVistaConfig } from '../context'
+import type { ReactNode } from "react";
+import { type PyVistaConfig, PyVistaContext } from "../context";
 
 interface PyVistaProviderProps extends PyVistaConfig {
-  children: ReactNode
+  children: ReactNode;
 }
 
 /**
@@ -23,5 +23,5 @@ export function PyVistaProvider({ vtkJsCdnUrl, pyodideUrl, children }: PyVistaPr
     <PyVistaContext.Provider value={{ vtkJsCdnUrl, pyodideUrl }}>
       {children}
     </PyVistaContext.Provider>
-  )
+  );
 }
