@@ -20,7 +20,14 @@ if sys.platform == "emscripten":
 
         import micropip  # type: ignore[import-not-found]
 
-        asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
+        try:
+            asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
+        except RuntimeError:
+
+            async def _install_numpy() -> None:
+                await micropip.install("numpy")
+
+            asyncio.ensure_future(_install_numpy())
 
 # SPEC 0001 — Lazy Loading of Submodules and Functions
 # https://scientific-python.org/specs/spec-0001/
