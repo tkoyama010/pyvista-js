@@ -22,6 +22,11 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
+# Note: The upper bound on requires-python (<3.15) is needed to prevent
+# uv-lock from attempting dependency resolution for unreleased Python
+# versions where packages are not yet available. This aligns with the
+# supported versions declared in classifiers.
+#
 # SPEC 1 — Lazy Loading of Submodules and Functions
 # https://scientific-python.org/specs/spec-0001/
 #
@@ -127,6 +132,11 @@ build.targets.wheel.packages = [ "src/pyvista_js" ]
 [tool.uv]
 constraint-dependencies = [
   "gitpython>=3.1.50",
+]
+
+[tool.repo-review]
+ignore = [
+  "PP004",  # Upper cap on requires-python is needed for uv-lock resolution
 ]
 
 [tool.ruff]
