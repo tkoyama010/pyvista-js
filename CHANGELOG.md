@@ -2,29 +2,26 @@
 
 ## [0.14.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.13.0...pyvista-js-v0.14.0) (2026-06-20)
 
-
 ### Features
 
-* add intro.ipynb notebook and update ReadTheDocs config for JupyterLite ([#432](https://github.com/tkoyama010/pyvista-js/issues/432)) ([4a1e97e](https://github.com/tkoyama010/pyvista-js/commit/4a1e97e0a23be896ed94326c42e6b28867ff0fcb))
-* add triangulate filter using vtk.js TriangleFilter ([#413](https://github.com/tkoyama010/pyvista-js/issues/413)) ([a43ec9b](https://github.com/tkoyama010/pyvista-js/commit/a43ec9b45d9eba397fa5f34cea208fc354e3b1d7))
-* add upper bound constraints to dependencies ([#417](https://github.com/tkoyama010/pyvista-js/issues/417)) ([17197e3](https://github.com/tkoyama010/pyvista-js/commit/17197e3a04e9f72405ccfd05312991c665650abc))
-* add uv-lock workflow from pyvista-wasm ([#421](https://github.com/tkoyama010/pyvista-js/issues/421)) ([03ee6aa](https://github.com/tkoyama010/pyvista-js/commit/03ee6aa89313af4210a754348f4df1ec4fcba024))
-* Update Try Lite Now link to ReadTheDocs and remove JupyterLite deploy action ([#433](https://github.com/tkoyama010/pyvista-js/issues/433)) ([de7e3d1](https://github.com/tkoyama010/pyvista-js/commit/de7e3d1c55040666c1a66c5b3c762048ee146f02))
-
+- add intro.ipynb notebook and update ReadTheDocs config for JupyterLite ([#432](https://github.com/tkoyama010/pyvista-js/issues/432)) ([4a1e97e](https://github.com/tkoyama010/pyvista-js/commit/4a1e97e0a23be896ed94326c42e6b28867ff0fcb))
+- add triangulate filter using vtk.js TriangleFilter ([#413](https://github.com/tkoyama010/pyvista-js/issues/413)) ([a43ec9b](https://github.com/tkoyama010/pyvista-js/commit/a43ec9b45d9eba397fa5f34cea208fc354e3b1d7))
+- add upper bound constraints to dependencies ([#417](https://github.com/tkoyama010/pyvista-js/issues/417)) ([17197e3](https://github.com/tkoyama010/pyvista-js/commit/17197e3a04e9f72405ccfd05312991c665650abc))
+- add uv-lock workflow from pyvista-wasm ([#421](https://github.com/tkoyama010/pyvista-js/issues/421)) ([03ee6aa](https://github.com/tkoyama010/pyvista-js/commit/03ee6aa89313af4210a754348f4df1ec4fcba024))
+- Update Try Lite Now link to ReadTheDocs and remove JupyterLite deploy action ([#433](https://github.com/tkoyama010/pyvista-js/issues/433)) ([de7e3d1](https://github.com/tkoyama010/pyvista-js/commit/de7e3d1c55040666c1a66c5b3c762048ee146f02))
 
 ### Bug Fixes
 
-* add upper bound to requires-python to prevent uv-lock failure ([#505](https://github.com/tkoyama010/pyvista-js/issues/505)) ([6c077ce](https://github.com/tkoyama010/pyvista-js/commit/6c077ce3c8390df57c75cc003d3ce0b651eb2a05))
-* **deps:** upgrade gitpython to 3.1.49 to fix GHSA-rpm5-65cw-6hj4 ([#460](https://github.com/tkoyama010/pyvista-js/issues/460)) ([7565220](https://github.com/tkoyama010/pyvista-js/commit/756522086d81863e47429002f16e4247a10c86d6))
-* **deps:** upgrade Pygments to 2.20.0 to fix CVE-2026-4539 ([#461](https://github.com/tkoyama010/pyvista-js/issues/461)) ([1c53e18](https://github.com/tkoyama010/pyvista-js/commit/1c53e189f7093bc6621d12883ec195e3e15e5987))
-* handle TypeError from Pyodide proxy creation in JupyterLite ([#503](https://github.com/tkoyama010/pyvista-js/issues/503)) ([d06fed3](https://github.com/tkoyama010/pyvista-js/commit/d06fed3bc01810626bc7295da80b813eebce3263))
-* improve stlite preview capture reliability ([#412](https://github.com/tkoyama010/pyvista-js/issues/412)) ([81f00f5](https://github.com/tkoyama010/pyvista-js/commit/81f00f569de348a89616ab106370c04f380287f2))
-* resolve mypy type errors for _scene_data parameter ([#411](https://github.com/tkoyama010/pyvista-js/issues/411)) ([be26dee](https://github.com/tkoyama010/pyvista-js/commit/be26dee74ef5f0cd86b553352bc0896b3840a692))
-
+- add upper bound to requires-python to prevent uv-lock failure ([#505](https://github.com/tkoyama010/pyvista-js/issues/505)) ([6c077ce](https://github.com/tkoyama010/pyvista-js/commit/6c077ce3c8390df57c75cc003d3ce0b651eb2a05))
+- **deps:** upgrade gitpython to 3.1.49 to fix GHSA-rpm5-65cw-6hj4 ([#460](https://github.com/tkoyama010/pyvista-js/issues/460)) ([7565220](https://github.com/tkoyama010/pyvista-js/commit/756522086d81863e47429002f16e4247a10c86d6))
+- **deps:** upgrade Pygments to 2.20.0 to fix CVE-2026-4539 ([#461](https://github.com/tkoyama010/pyvista-js/issues/461)) ([1c53e18](https://github.com/tkoyama010/pyvista-js/commit/1c53e189f7093bc6621d12883ec195e3e15e5987))
+- handle TypeError from Pyodide proxy creation in JupyterLite ([#503](https://github.com/tkoyama010/pyvista-js/issues/503)) ([d06fed3](https://github.com/tkoyama010/pyvista-js/commit/d06fed3bc01810626bc7295da80b813eebce3263))
+- improve stlite preview capture reliability ([#412](https://github.com/tkoyama010/pyvista-js/issues/412)) ([81f00f5](https://github.com/tkoyama010/pyvista-js/commit/81f00f569de348a89616ab106370c04f380287f2))
+- resolve mypy type errors for \_scene_data parameter ([#411](https://github.com/tkoyama010/pyvista-js/issues/411)) ([be26dee](https://github.com/tkoyama010/pyvista-js/commit/be26dee74ef5f0cd86b553352bc0896b3840a692))
 
 ### Continuous Integration
 
-* resolve lint errors by updating to fixed codebase ([16575dc](https://github.com/tkoyama010/pyvista-js/commit/16575dc25fcb4ab96dd5dcc97d931cbed63bd987))
+- resolve lint errors by updating to fixed codebase ([16575dc](https://github.com/tkoyama010/pyvista-js/commit/16575dc25fcb4ab96dd5dcc97d931cbed63bd987))
 
 ## [0.13.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.12.0...pyvista-js-v0.13.0) (2026-03-30)
 
