@@ -23,11 +23,14 @@ if sys.platform == "emscripten":
         try:
             asyncio.get_event_loop().run_until_complete(micropip.install("numpy"))
         except RuntimeError:
+            _background_tasks: set[asyncio.Task[object]] = set()
 
             async def _install_numpy() -> None:
                 await micropip.install("numpy")
 
-            asyncio.ensure_future(_install_numpy())
+            _task = asyncio.ensure_future(_install_numpy())
+            _background_tasks.add(_task)
+            _task.add_done_callback(_background_tasks.discard)
 
 # SPEC 0001 — Lazy Loading of Submodules and Functions
 # https://scientific-python.org/specs/spec-0001/
