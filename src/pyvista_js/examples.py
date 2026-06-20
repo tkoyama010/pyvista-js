@@ -83,11 +83,7 @@ def _fetch_with_js(url: str, local: Path) -> None:
         Local path to save the file.
 
     """
-    try:
-        from js import Uint8Array, XMLHttpRequest  # noqa: PLC0415
-    except (ImportError, TypeError) as err:
-        msg = "JavaScript XMLHttpRequest not available in this environment"
-        raise OSError(msg) from err
+    from js import Uint8Array, XMLHttpRequest  # noqa: PLC0415
 
     req = XMLHttpRequest.new()
     req.open("GET", url, False)  # noqa: FBT003
