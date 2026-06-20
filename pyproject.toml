@@ -22,6 +22,11 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
+# Note: The upper bound on requires-python (<3.15) is needed to prevent
+# uv-lock from attempting dependency resolution for unreleased Python
+# versions where packages are not yet available. This aligns with the
+# supported versions declared in classifiers.
+#
 # SPEC 1 — Lazy Loading of Submodules and Functions
 # https://scientific-python.org/specs/spec-0001/
 #
@@ -53,7 +58,7 @@ authors = [
 # - Build provenance attestations using Sigstore
 # - All GitHub Actions pinned to commit SHAs
 # - See .github/workflows/release-please.yml for implementation details
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.15"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
@@ -157,6 +162,11 @@ lint.per-file-ignores."tests/*" = [
 lint.flake8-pytest-style.parametrize-names-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-row-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-type = "list"
+
+[tool.repo-review]
+ignore = [
+  "PP004", # Upper cap on requires-python is needed for uv-lock resolution
+]
 
 [tool.mypy]
 # Exclude stub files from direct checking; they are used by type checkers as stubs
