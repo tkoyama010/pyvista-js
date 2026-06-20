@@ -53,7 +53,7 @@ authors = [
 # - Build provenance attestations using Sigstore
 # - All GitHub Actions pinned to commit SHAs
 # - See .github/workflows/release-please.yml for implementation details
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.15"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
