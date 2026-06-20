@@ -15,7 +15,11 @@
 # %%
 import micropip
 
-await micropip.install("pyvista-js")
+await micropip.install("jinja2")
+await micropip.install("lazy-loader")
+import sys
+
+sys.path.insert(0, "/drive/src")
 
 # %%
 import pyvista_js as pv

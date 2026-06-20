@@ -12,6 +12,8 @@ build:
     nodejs: "22"
   jobs:
     pre_build:
+      # Build renderer.js (ensure the JS bundle is available for docs/JupyterLite)
+      - npm ci && npm run build
       # Convert jupytext .py files to .ipynb
       - mkdir -p docs/content
       - jupytext --to notebook jupyterlite/content/intro.py --output docs/content/intro.ipynb
