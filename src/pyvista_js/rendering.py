@@ -113,7 +113,7 @@ if PYODIDE_ENV:
         from js import document  # type: ignore[import-not-found]
 
         VTK_AVAILABLE = True
-    except (ImportError, TypeError):
+    except ImportError:
         VTK_AVAILABLE = False
         document = None  # type: ignore[assignment]
 else:
