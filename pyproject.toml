@@ -134,11 +134,6 @@ constraint-dependencies = [
   "gitpython>=3.1.50",
 ]
 
-[tool.repo-review]
-ignore = [
-  "PP004",  # Upper cap on requires-python is needed for uv-lock resolution
-]
-
 [tool.ruff]
 line-length = 100
 lint.select = [ "ALL" ]
@@ -167,6 +162,11 @@ lint.per-file-ignores."tests/*" = [
 lint.flake8-pytest-style.parametrize-names-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-row-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-type = "list"
+
+[tool.repo-review]
+ignore = [
+  "PP004", # Upper cap on requires-python is needed for uv-lock resolution
+]
 
 [tool.mypy]
 # Exclude stub files from direct checking; they are used by type checkers as stubs
