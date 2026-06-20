@@ -17,8 +17,6 @@ import micropip
 
 await micropip.install("pyvista-js")
 
-sys.path.insert(0, "/drive/src")
-
 # %%
 import pyvista_js as pv
 from pyvista_js import examples
