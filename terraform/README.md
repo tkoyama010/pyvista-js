@@ -36,6 +36,34 @@ cd terraform
 tflint -f compact
 ```
 
+## CI Plan & Apply
+
+In addition to TFLint, the `Terraform` GitHub Actions workflow
+(`.github/workflows/terraform.yml`) automates `terraform plan` and
+`terraform apply` using [tfcmt](https://github.com/suzuki-shunsuke/tfcmt)
+so that plan output is posted directly as a PR comment for review.
+
+### Workflow jobs
+
+| Job    | Trigger                          | Action                                                |
+| ------ | -------------------------------- | ----------------------------------------------------- |
+| `plan` | `pull_request` targeting `main`  | Runs `terraform plan` and posts the result as a PR comment.  |
+| `apply`| `push` to `main`                 | Runs `terraform apply -auto-approve` and posts the result.   |
+
+Both jobs only run when files under `terraform/` or the workflow file itself
+change.
+
+### Required secret
+
+The workflow passes the `github_token` Terraform variable from the
+`TF_GITHUB_TOKEN` repository secret.  Create a GitHub personal access token
+(or fine-grained token) with `repo:admin` scope and add it as a repository
+secret named `TF_GITHUB_TOKEN`.
+
+> **Note:** tfcmt uses the auto-generated `GITHUB_TOKEN` (with
+> `pull-requests: write` permission) to post comments, so no extra token is
+> needed for commenting.
+
 ## Variables
 
 | Name | Description | Default |
