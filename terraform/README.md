@@ -24,10 +24,10 @@ terraform apply -var="github_token=<your-token>"
 
 The Terraform configuration is linted with [tflint](https://github.com/terraform-linters/tflint)
 using the bundled Terraform Language ruleset with all rules enabled.
-The configuration lives in `.tflint.hcl` at the repository root.
+The configuration lives in `.tflint.hcl` in this directory.
 
-tflint runs automatically as a [pre-commit](https://pre-commit.com) hook (see
-`.pre-commit-config.yaml`). To run it manually:
+tflint runs in CI via the `TFLint` GitHub Actions workflow on every change
+to the `terraform/` directory. To run it manually:
 
 ```bash
 cd terraform
