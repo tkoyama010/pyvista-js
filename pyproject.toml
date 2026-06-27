@@ -4,7 +4,7 @@ requires = [ "hatch-build-scripts", "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.13.0"
+version = "0.14.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -21,6 +21,11 @@ authors = [
 # As of 2026-03-20:
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
+#
+# Note: The upper bound on requires-python (<3.15) is needed to prevent
+# uv-lock from attempting dependency resolution for unreleased Python
+# versions where packages are not yet available. This aligns with the
+# supported versions declared in classifiers.
 #
 # SPEC 1 — Lazy Loading of Submodules and Functions
 # https://scientific-python.org/specs/spec-0001/
@@ -53,7 +58,7 @@ authors = [
 # - Build provenance attestations using Sigstore
 # - All GitHub Actions pinned to commit SHAs
 # - See .github/workflows/release-please.yml for implementation details
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.15"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
@@ -74,7 +79,7 @@ dependencies = [
 optional-dependencies.dev = [
   "mypy>=1.0.1,<2.1.1",
   "pre-commit>=3.0.1,<4.6.1",
-  "pytest>=7.0.1,<9.0.4",
+  "pytest>=7.0.1,<9.1.1",
   "ruff>=0.1.1,<1.0.1",
   "tox>=4.0.1,<5.0.1",
 ]
@@ -113,16 +118,16 @@ dev = [
 ]
 test = [
   "playwright>=1.40.1,<2.0.1",
-  "pytest>=7.0.1,<9.0.4",
+  "pytest>=7.0.1,<9.1.1",
   "pytest-playwright>=0.4.1,<1.0.1",
 ]
 
 [tool.hatch]
-build.targets.wheel.packages = [ "src/pyvista_js" ]
 build.artifacts = [ "src/pyvista_js/templates/renderer.js" ]
 build.hooks.build-scripts.scripts = [
   { commands = [ "npm ci", "npm run build" ], artifacts = [ "src/pyvista_js/templates/renderer.js" ] }
 ]
+build.targets.wheel.packages = [ "src/pyvista_js" ]
 
 [tool.uv]
 constraint-dependencies = [
@@ -158,40 +163,42 @@ lint.flake8-pytest-style.parametrize-names-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-row-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-type = "list"
 
+[tool.repo-review]
+ignore = [
+  "PP004", # Upper cap on requires-python is needed for uv-lock resolution
+]
+
 [tool.mypy]
+# Exclude stub files from direct checking; they are used by type checkers as stubs
+exclude = [ "src/pyvista_js/__init__\\.pyi" ]
+# Ignore missing imports for optional dependencies
+ignore_missing_imports = true
 # SPEC 0: Target minimum supported Python version
 # SPEC 1: Use lazy loading for submodules and functions
 python_version = "3.12"
-strict = false
-warn_unused_configs = true
+disallow_any_generics = false
+# Lenient settings for gradual typing
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
 warn_redundant_casts = true
+warn_unused_ignores = false
+warn_return_any = false
 warn_unreachable = true
-strict_equality = true
-no_implicit_optional = true
 enable_error_code = [
   "ignore-without-code",
   "redundant-expr",
   "truthy-bool",
 ]
-# Lenient settings for gradual typing
-disallow_untyped_defs = false
-disallow_any_generics = false
-disallow_incomplete_defs = false
-warn_return_any = false
-warn_unused_ignores = false
-check_untyped_defs = false
-# Ignore missing imports for optional dependencies
-ignore_missing_imports = true
-# Exclude stub files from direct checking; they are used by type checkers as stubs
-exclude = [ "src/pyvista_js/__init__\\.pyi" ]
+strict_equality = true
+strict = false
+warn_unused_configs = true
 overrides = [ { module = "tests.*", disallow_untyped_defs = false, check_untyped_defs = false } ]
+no_implicit_optional = true
 
 [tool.pytest]
 ini_options.minversion = "6.0"
 ini_options.testpaths = [ "tests" ]
-ini_options.log_level = "INFO"
-ini_options.log_cli_level = "INFO"
-ini_options.xfail_strict = true
 ini_options.addopts = [
   "-ra",
   "--strict-config",
@@ -199,12 +206,15 @@ ini_options.addopts = [
   "--doctest-modules",
   "--import-mode=importlib",
 ]
-ini_options.filterwarnings = [
-  "error",
-]
 ini_options.markers = [
   "playwright: marks tests that use Playwright for browser automation (deselect with '-m \"not playwright\"')",
 ]
+ini_options.xfail_strict = true
+ini_options.filterwarnings = [
+  "error",
+]
+ini_options.log_level = "INFO"
+ini_options.log_cli_level = "INFO"
 
 [tool.jupytext]
 formats = "ipynb,py:percent"
