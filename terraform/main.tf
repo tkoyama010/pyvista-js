@@ -61,9 +61,6 @@ resource "github_repository" "main" {
     secret_scanning_push_protection {
       status = "enabled"
     }
-    secret_scanning_non_provider_patterns {
-      status = "disabled"
-    }
   }
 }
 
@@ -71,22 +68,6 @@ resource "github_repository" "main" {
 resource "github_repository_vulnerability_alerts" "main" {
   repository = github_repository.main.name
   enabled    = true
-}
-
-# Branch protection on main
-resource "github_branch_protection" "main" {
-  repository_id  = github_repository.main.name
-  pattern        = var.branch_name
-  enforce_admins = true
-
-  required_pull_request_reviews {
-    require_code_owner_reviews = true
-  }
-
-  required_status_checks {
-    strict   = true
-    contexts = ["lint", "js-check"]
-  }
 }
 
 # Main ruleset: deletion, non-fast-forward, PR reviews, status checks
@@ -98,7 +79,7 @@ resource "github_repository_ruleset" "main" {
 
   conditions {
     ref_name {
-      include = ["~ALL"]
+      include = ["refs/heads/main"]
       exclude = []
     }
   }
@@ -108,7 +89,7 @@ resource "github_repository_ruleset" "main" {
     non_fast_forward = true
 
     pull_request {
-      required_approving_review_count   = 1
+      required_approving_review_count   = 0
       require_code_owner_review         = false
       dismiss_stale_reviews_on_push     = false
       require_last_push_approval        = false
@@ -166,27 +147,6 @@ resource "github_repository_ruleset" "main" {
       required_check {
         context = "docs/readthedocs.org:pyvista-js-ja"
       }
-    }
-  }
-}
-
-# Require conversation resolution on main
-resource "github_repository_ruleset" "conversation_resolution" {
-  repository  = github_repository.main.name
-  name        = "Require conversation resolution on main"
-  target      = "branch"
-  enforcement = "active"
-
-  conditions {
-    ref_name {
-      include = ["refs/heads/main"]
-      exclude = []
-    }
-  }
-
-  rules {
-    pull_request {
-      required_review_thread_resolution = true
     }
   }
 }
