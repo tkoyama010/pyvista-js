@@ -45,10 +45,10 @@ so that plan output is posted directly as a PR comment for review.
 
 ### Workflow jobs
 
-| Job    | Trigger                          | Action                                                |
+| Job | Trigger | Action |
 | ------ | -------------------------------- | ----------------------------------------------------- |
-| `plan` | `pull_request` targeting `main`  | Runs `terraform plan` and posts the result as a PR comment.  |
-| `apply`| `push` to `main`                 | Runs `terraform apply -auto-approve` and posts the result.   |
+| `plan` | `pull_request` targeting `main` | Runs `terraform plan` and posts the result as a PR comment. |
+| `apply`| `push` to `main` | Runs `terraform apply -auto-approve` and posts the result. |
 
 Both jobs only run when files under `terraform/` or the workflow file itself
 change.
@@ -56,7 +56,7 @@ change.
 ### Required secret
 
 The workflow passes the `github_token` Terraform variable from the
-`TF_GITHUB_TOKEN` repository secret.  Create a GitHub personal access token
+`TF_GITHUB_TOKEN` repository secret. Create a GitHub personal access token
 (or fine-grained token) with `repo:admin` scope and add it as a repository
 secret named `TF_GITHUB_TOKEN`.
 
