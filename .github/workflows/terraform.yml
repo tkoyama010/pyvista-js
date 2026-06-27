@@ -38,11 +38,12 @@ jobs:
         run: |
           set -eu
           TFCMT_VERSION=v4.14.15
-          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -o /tmp/tfcmt.tar.gz
-          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o /tmp/checksums.txt
-          grep 'tfcmt_linux_amd64.tar.gz' /tmp/checksums.txt | sha256sum -c -
-          tar xzf /tmp/tfcmt.tar.gz -C /tmp
-          sudo mv /tmp/tfcmt /usr/local/bin/tfcmt
+          cd /tmp
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -o tfcmt.tar.gz
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o checksums.txt
+          grep 'tfcmt_linux_amd64\.tar\.gz$' checksums.txt | sha256sum -c -
+          tar xzf tfcmt.tar.gz
+          sudo mv tfcmt /usr/local/bin/tfcmt
           tfcmt --version
 
       - name: Terraform init
@@ -74,11 +75,12 @@ jobs:
         run: |
           set -eu
           TFCMT_VERSION=v4.14.15
-          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -o /tmp/tfcmt.tar.gz
-          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o /tmp/checksums.txt
-          grep 'tfcmt_linux_amd64.tar.gz' /tmp/checksums.txt | sha256sum -c -
-          tar xzf /tmp/tfcmt.tar.gz -C /tmp
-          sudo mv /tmp/tfcmt /usr/local/bin/tfcmt
+          cd /tmp
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -o tfcmt.tar.gz
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o checksums.txt
+          grep 'tfcmt_linux_amd64\.tar\.gz$' checksums.txt | sha256sum -c -
+          tar xzf tfcmt.tar.gz
+          sudo mv tfcmt /usr/local/bin/tfcmt
           tfcmt --version
 
       - name: Terraform init
