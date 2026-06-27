@@ -64,6 +64,19 @@ repos:
         language: node
         types_or: [javascript, ts]
         pass_filenames: false
+      - id: tflint-install
+        name: Install tflint
+        entry: >-
+          bash -c 'command -v tflint >/dev/null 2>&1 && exit 0;
+          OS=$(uname -s | tr "[:upper:]" "[:lower:]");
+          ARCH=$(uname -m);
+          case "$ARCH" in x86_64) ARCH=amd64;; aarch64|arm64) ARCH=arm64;; esac;
+          curl -sL "https://github.com/terraform-linters/tflint/releases/download/v0.63.1/tflint_${OS}_${ARCH}.zip" -o /tmp/tflint.zip &&
+          unzip -o /tmp/tflint.zip -d /usr/local/bin/ &&
+          chmod +x /usr/local/bin/tflint'
+        language: system
+        pass_filenames: false
+        always_run: true
 
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.103.0
