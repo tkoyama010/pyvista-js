@@ -64,6 +64,14 @@ repos:
         language: node
         types_or: [javascript, ts]
         pass_filenames: false
+      - id: tflint
+        name: tflint
+        entry: tflint -f compact
+        language: system
+        files: ^terraform/.*\.tf$
+        pass_filenames: false
+        args: [--chdir=terraform]
+        always_run: true
 
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.06.18
@@ -109,5 +117,5 @@ ci:
   autoupdate_branch: ''
   autoupdate_commit_msg: 'chore: pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: [biome]
+  skip: [biome, tflint]
   submodules: false
