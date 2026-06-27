@@ -1,0 +1,19 @@
+name: Auto Approve
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, reopened, synchronize ]
+
+permissions: {}
+
+jobs:
+  auto-approve:
+    if: github.actor == 'tkoyama010' && (contains(github.event.pull_request.labels.*.name, 'dependencies') || contains(github.event.pull_request.labels.*.name, 'automation'))
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363  # v4.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
