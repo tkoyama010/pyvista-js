@@ -1,0 +1,94 @@
+name: Terraform
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        with:
+          persist-credentials: false
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e  # v4.0.1
+        with:
+          terraform_wrapper: false
+
+      - name: Install tfcmt
+        run: |
+          set -eu
+          TFCMT_VERSION=v4.14.15
+          cd /tmp
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o checksums.txt
+          grep 'tfcmt_linux_amd64\.tar\.gz$' checksums.txt | sha256sum -c -
+          tar xzf tfcmt_linux_amd64.tar.gz
+          sudo mv tfcmt /usr/local/bin/tfcmt
+          tfcmt --version
+
+      - name: Terraform init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform plan
+        run: tfcmt plan -- terraform plan -input=false -var="github_token=${{ secrets.TF_GITHUB_TOKEN }}"
+        working-directory: terraform
+        env:
+          TFCMT_GITHUB_TOKEN: ${{ github.token }}
+
+  apply:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        with:
+          persist-credentials: false
+
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e  # v4.0.1
+        with:
+          terraform_wrapper: false
+
+      - name: Install tfcmt
+        run: |
+          set -eu
+          TFCMT_VERSION=v4.14.15
+          cd /tmp
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o checksums.txt
+          grep 'tfcmt_linux_amd64\.tar\.gz$' checksums.txt | sha256sum -c -
+          tar xzf tfcmt_linux_amd64.tar.gz
+          sudo mv tfcmt /usr/local/bin/tfcmt
+          tfcmt --version
+
+      - name: Terraform init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform apply
+        run: tfcmt apply -- terraform apply -input=false -auto-approve -var="github_token=${{ secrets.TF_GITHUB_TOKEN }}"
+        working-directory: terraform
+        env:
+          TFCMT_GITHUB_TOKEN: ${{ github.token }}

@@ -15,9 +15,3 @@ variable "github_repository" {
   type        = string
   default     = "pyvista-js"
 }
-
-variable "branch_name" {
-  description = "Branch to protect"
-  type        = string
-  default     = "main"
-}
