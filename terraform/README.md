@@ -20,6 +20,20 @@ terraform plan -var="github_token=<your-token>"
 terraform apply -var="github_token=<your-token>"
 ```
 
+## Linting
+
+The Terraform configuration is linted with [tflint](https://github.com/terraform-linters/tflint)
+using the bundled Terraform Language ruleset with all rules enabled.
+The configuration lives in `.tflint.hcl` in this directory.
+
+tflint runs in CI via the `TFLint` GitHub Actions workflow on every change
+to the `terraform/` directory. To run it manually:
+
+```bash
+cd terraform
+tflint -f compact
+```
+
 ## Variables
 
 | Name | Description | Default |
