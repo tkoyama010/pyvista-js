@@ -10,7 +10,7 @@ from pathlib import Path
 # Compatibility shim: typer 0.26.8 removed ``rich_utils.STYLE_METAVAR`` and
 # ``STYLE_METAVAR_SEPARATOR``, which sphinxcontrib-typer still references when
 # rendering CLI help. Restore them when missing so the docs build works across
-# typer versions. No-op once sphinxcontrib-typer ships a compatible release.
+# any typer version. No-op once sphinxcontrib-typer ships a compatible release.
 try:
     import typer.rich_utils as _typer_rich_utils
 
