@@ -22,9 +22,9 @@ terraform apply -var="github_token=<your-token>"
 
 ## Variables
 
-| Name              | Description                                          | Default       |
+| Name | Description | Default |
 | ----------------- | ---------------------------------------------------- | ------------- |
-| `github_token`    | GitHub personal access token with `repo:admin` scope | _(required)_  |
-| `github_owner`    | GitHub repository owner                              | `tkoyama010`  |
-| `github_repository` | GitHub repository name                             | `pyvista-js`  |
-| `branch_name`     | Branch to protect                                    | `main`        |
+| `github_token` | GitHub personal access token with `repo:admin` scope | _(required)_ |
+| `github_owner` | GitHub repository owner | `tkoyama010` |
+| `github_repository` | GitHub repository name | `pyvista-js` |
+| `branch_name` | Branch to protect | `main` |
