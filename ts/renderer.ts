@@ -8,7 +8,7 @@
  */
 
 /** Number of components in a 3-D coordinate (x, y, z). */
-// biome-ignore lint/nursery/noExcessiveLinesPerFile: renderer is a cohesive single-file module
+// biome-ignore lint/style/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
@@ -109,13 +109,13 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
 }
 
 const sceneData: SceneData =
-  // biome-ignore lint/nursery/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
   typeof __pvjsSceneData === "undefined"
     ? (JSON.parse(document.querySelector("#scene-data")?.textContent ?? "{}") as SceneData)
     : // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
       __pvjsSceneData;
 const container: HTMLElement =
-  // biome-ignore lint/nursery/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
   typeof __pvjsContainer === "undefined"
     ? (document.querySelector<HTMLElement>(`#${CSS.escape(sceneData.containerId)}`) ??
       document.createElement("div"))
@@ -124,39 +124,38 @@ const container: HTMLElement =
 // biome-ignore lint/nursery/useExplicitType: vtk.js factory return types are untyped
 const bg = sceneData.background;
 
-// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
+// biome-ignore lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const renderer = vtk.Rendering.Core.vtkRenderer.newInstance();
 renderer.setBackground(bg[0], bg[1], bg[2]);
 
-// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
+// biome-ignore lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const renderWindow = vtk.Rendering.Core.vtkRenderWindow.newInstance();
 renderWindow.addRenderer(renderer);
 
-// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
+// biome-ignore lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const openGlRenderWindow = vtk.Rendering.OpenGL.vtkRenderWindow.newInstance();
 renderWindow.addView(openGlRenderWindow);
 openGlRenderWindow.setContainer(container);
 
-// biome-ignore lint/nursery/useExplicitType: vtk.js factory return types are untyped
 const bbox = container.getBoundingClientRect();
 openGlRenderWindow.setSize(bbox.width || DEFAULT_WIDTH, bbox.height || DEFAULT_HEIGHT);
 
-// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
+// biome-ignore lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const interactor = vtk.Rendering.Core.vtkRenderWindowInteractor.newInstance();
-// biome-ignore lint/nursery/useExplicitType lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
+// biome-ignore lint/correctness/noUndeclaredVariables: vtk.js factory return types are untyped
 const interactorStyle = vtk.Interaction.Style.vtkInteractorStyleTrackballCamera.newInstance();
 interactor.setInteractorStyle(interactorStyle);
 interactor.setView(openGlRenderWindow);
 interactor.initialize();
 interactor.bindEvents(container);
 
-// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
 window.renderer = renderer;
-// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
 window.renderWindow = renderWindow;
-// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
 window.openGlRenderWindow = openGlRenderWindow;
-// biome-ignore lint/nursery/useGlobalThis: window augmentation requires window, not globalThis
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
 window.interactor = interactor;
 
 if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
@@ -367,7 +366,7 @@ function createCylinderSource(cfg: SourceConfig): SourceResult {
 function createDiskSource(cfg: SourceConfig): SourceResult {
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const diskFactory = vtk.Filters.Sources.vtkDiskSource;
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   const source = diskFactory
     ? diskFactory.newInstance({
         innerRadius: cfg.innerRadius,
@@ -676,7 +675,7 @@ function applyPointStyle(actor: VtkActor, mapper: VtkMapper, cfg: ActorConfig): 
  */
 function createMapper(mapperInput: SourceResult, cfg: ActorConfig): VtkMapper {
   const mapperClass =
-    // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+    // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
     cfg.actorType === "points" && cfg.renderPointsAsSpheres
       ? // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
         vtk.Rendering.Core.vtkSphereMapper
@@ -816,9 +815,9 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
   const b = Math.round(cfg.color[2] * COLOR_BYTE_SCALE);
   div.style.color = `rgba(${String(r)},${String(g)},${String(b)},${String(cfg.opacity)})`;
   div.style.fontSize = `${String(cfg.fontSize)}px`;
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   div.style.fontWeight = cfg.bold ? "bold" : "normal";
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   div.style.fontStyle = cfg.italic ? "italic" : "normal";
   div.style.pointerEvents = "none";
   div.style.zIndex = "10";
@@ -834,7 +833,7 @@ function setupTextActor(cfg: TextActorConfig, containerElement: HTMLElement): vo
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryShrinkFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.shrinkFactor === undefined ? current : applyShrinkFilter(current, f.shrinkFactor);
 }
 
@@ -845,7 +844,7 @@ function tryShrinkFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryTubeFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.radius === undefined || f.numberOfSides === undefined
     ? current
     : applyTubeFilter(current, f.radius, f.numberOfSides);
@@ -858,7 +857,7 @@ function tryTubeFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return !(f.normal && f.origin) || f.invert === undefined
     ? current
     : applyClipFilter(current, f.normal, f.origin, f.invert);
@@ -871,7 +870,7 @@ function tryClipFilter(current: SourceResult, f: FilterConfig): SourceResult {
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryContourFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.values && f.scalarName && f.scalarData
     ? applyContourFilter(current, f.values, f.scalarName, f.scalarData)
     : current;
@@ -884,7 +883,7 @@ function tryContourFilter(current: SourceResult, f: FilterConfig): SourceResult 
  * @returns The filtered result, or the original if config is incomplete.
  */
 function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResult {
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.holeSize === undefined ? current : applyFillHolesFilter(current, f.holeSize);
 }
 
@@ -942,13 +941,13 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     index++;
     let cx = 0;
     let cy = 0;
     let cz = 0;
     const indices: number[] = [];
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     for (let index_ = 0; index_ < nVerts; index_++) {
       const vi = at(polys, index + index_);
       indices.push(vi);
@@ -961,7 +960,7 @@ function applyShrinkFilter(sourceResult: SourceResult, shrinkFactor: number): So
     cy /= nVerts;
     cz /= nVerts;
     resultPolys.push(nVerts);
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     for (let k = 0; k < nVerts; k++) {
       const pi = indices[k] ?? 0;
       const px = at(inPoints, pi * XYZ_COMPONENTS);
@@ -1079,7 +1078,7 @@ function shouldKeepCell(cellIndices: number[], inPoints: Float32Array, plane: Cl
     (cx - plane.origin[0]) * plane.normal[0] +
     (cy - plane.origin[1]) * plane.normal[1] +
     (cz - plane.origin[2]) * plane.normal[2];
-  // biome-ignore lint/nursery/noTernary: ternary is idiomatic for concise conditional returns
+  // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return plane.invert ? dot >= 0 : dot <= 0;
 }
 
@@ -1101,7 +1100,7 @@ function emitClippedCell(cellIndices: number[], state: ClipState): void {
   state.resultPolys.push(cellIndices.length);
   for (const pi of cellIndices) {
     if (!state.pointMap.has(pi)) {
-      // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+      // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
       state.pointMap.set(pi, state.nextIndex++);
       state.resultPoints.push(
         at(state.inPoints, pi * XYZ_COMPONENTS),
@@ -1146,10 +1145,10 @@ function applyClipManual(
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     index++;
     const cellIndices: number[] = [];
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     for (let index_ = 0; index_ < nVerts; index_++) {
       cellIndices.push(at(polys, index + index_));
     }
@@ -1320,7 +1319,7 @@ function applyContourManual(
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     index++;
     if (nVerts === TRIANGLE_VERTS) {
       processContourTriangle(state, index);
@@ -1349,9 +1348,9 @@ function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
   let index = 0;
   while (index < polys.length) {
     const nVerts = at(polys, index);
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     index++;
-    // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+    // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
     for (let k = 0; k < nVerts; k++) {
       const a = at(polys, index + k);
       const b = at(polys, index + ((k + 1) % nVerts));
@@ -1365,7 +1364,7 @@ function buildBoundaryAdjacency(polys: Uint32Array): Map<number, number[]> {
   const boundaryAdj = new Map<number, number[]>();
   for (const [key, count] of edgeCount) {
     if (count !== 1) {
-      // biome-ignore lint/nursery/noContinue: early-skip in loop improves readability
+      // biome-ignore lint/style/noContinue: early-skip in loop improves readability
       continue;
     }
     const parts = key.split("_");
@@ -1438,7 +1437,7 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
   const loops: number[][] = [];
   for (const startNode of boundaryAdj.keys()) {
     if (visited.has(startNode)) {
-      // biome-ignore lint/nursery/noContinue: early-skip in loop improves readability
+      // biome-ignore lint/style/noContinue: early-skip in loop improves readability
       continue;
     }
     const loop = walkLoop(startNode, boundaryAdj, visited);
@@ -1468,7 +1467,7 @@ function traceBoundaryLoops(boundaryAdj: Map<number, number[]>): number[][] {
  */
 function computeLoopPerimeter(loop: number[], inPoints: Float32Array): number {
   let perimeter = 0;
-  // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+  // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
   for (let k = 0; k < loop.length; k++) {
     const a = loop[k] ?? 0;
     const b = loop[(k + 1) % loop.length] ?? 0;
@@ -1488,7 +1487,7 @@ function computeLoopPerimeter(loop: number[], inPoints: Float32Array): number {
  */
 function triangulateLoop(loop: number[], newPolys: number[]): void {
   const v0 = loop[0] ?? 0;
-  // biome-ignore lint/nursery/noIncrementDecrement: standard loop counter pattern
+  // biome-ignore lint/style/noIncrementDecrement: standard loop counter pattern
   for (let k = 1; k < loop.length - 1; k++) {
     const v1 = loop[k] ?? 0;
     const v2 = loop[k + 1] ?? 0;
