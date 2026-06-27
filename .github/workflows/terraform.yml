@@ -39,10 +39,10 @@ jobs:
           set -eu
           TFCMT_VERSION=v4.14.15
           cd /tmp
-          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -o tfcmt.tar.gz
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O
           curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o checksums.txt
           grep 'tfcmt_linux_amd64\.tar\.gz$' checksums.txt | sha256sum -c -
-          tar xzf tfcmt.tar.gz
+          tar xzf tfcmt_linux_amd64.tar.gz
           sudo mv tfcmt /usr/local/bin/tfcmt
           tfcmt --version
 
@@ -76,10 +76,10 @@ jobs:
           set -eu
           TFCMT_VERSION=v4.14.15
           cd /tmp
-          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -o tfcmt.tar.gz
+          curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O
           curl -sSL "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_4.14.15_checksums.txt" -o checksums.txt
           grep 'tfcmt_linux_amd64\.tar\.gz$' checksums.txt | sha256sum -c -
-          tar xzf tfcmt.tar.gz
+          tar xzf tfcmt_linux_amd64.tar.gz
           sudo mv tfcmt /usr/local/bin/tfcmt
           tfcmt --version
 
