@@ -61,9 +61,6 @@ resource "github_repository" "main" {
     secret_scanning_push_protection {
       status = "enabled"
     }
-    secret_scanning_non_provider_patterns {
-      status = "disabled"
-    }
   }
 }
 
@@ -80,7 +77,8 @@ resource "github_branch_protection" "main" {
   enforce_admins = true
 
   required_pull_request_reviews {
-    require_code_owner_reviews = true
+    require_code_owner_reviews      = true
+    required_approving_review_count = 0
   }
 
   required_status_checks {
