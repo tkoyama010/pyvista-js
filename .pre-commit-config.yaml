@@ -116,5 +116,5 @@ ci:
   autoupdate_branch: ''
   autoupdate_commit_msg: 'chore: pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: [biome, terraform_tflint]
+  skip: [biome]
   submodules: false
