@@ -7,7 +7,7 @@
  */
 
 /** Generic factory that creates vtk.js instances via `newInstance()`. */
-// biome-ignore lint/nursery/noExcessiveLinesPerFile: vtk.d.ts type declarations are cohesive and should not be split
+// biome-ignore lint/style/noExcessiveLinesPerFile: vtk.d.ts type declarations are cohesive and should not be split
 interface VtkNewInstanceFactory<T> {
   // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance: (options?: Record<string, unknown>) => T;
