@@ -2,22 +2,19 @@
 
 ## [0.15.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.14.0...pyvista-js-v0.15.0) (2026-06-28)
 
-
 ### Features
 
-* add terraform config to protect main branch ([#516](https://github.com/tkoyama010/pyvista-js/issues/516)) ([1142ab6](https://github.com/tkoyama010/pyvista-js/commit/1142ab6deb6af6e96e4a2a174af680f3db3f1f8a))
-
+- add terraform config to protect main branch ([#516](https://github.com/tkoyama010/pyvista-js/issues/516)) ([1142ab6](https://github.com/tkoyama010/pyvista-js/commit/1142ab6deb6af6e96e4a2a174af680f3db3f1f8a))
 
 ### Bug Fixes
 
-* commit terraform state and lock file for CI plan/apply ([#528](https://github.com/tkoyama010/pyvista-js/issues/528)) ([ae51c8f](https://github.com/tkoyama010/pyvista-js/commit/ae51c8f27a8505d6a5d5476d8dc6a7688df43701))
-* restore typer rich_utils styles for sphinxcontrib-typer docs build ([#512](https://github.com/tkoyama010/pyvista-js/issues/512)) ([86df301](https://github.com/tkoyama010/pyvista-js/commit/86df301e617a3502762b6abe3c345ea07400e753))
-
+- commit terraform state and lock file for CI plan/apply ([#528](https://github.com/tkoyama010/pyvista-js/issues/528)) ([ae51c8f](https://github.com/tkoyama010/pyvista-js/commit/ae51c8f27a8505d6a5d5476d8dc6a7688df43701))
+- restore typer rich_utils styles for sphinxcontrib-typer docs build ([#512](https://github.com/tkoyama010/pyvista-js/issues/512)) ([86df301](https://github.com/tkoyama010/pyvista-js/commit/86df301e617a3502762b6abe3c345ea07400e753))
 
 ### Continuous Integration
 
-* add tfcmt to review terraform plan in PRs and apply on main ([#526](https://github.com/tkoyama010/pyvista-js/issues/526)) ([cc6acaf](https://github.com/tkoyama010/pyvista-js/commit/cc6acaf3eb42e9d679266f38fb287c4defeb6e55))
-* add tflint to lint Terraform configuration ([#518](https://github.com/tkoyama010/pyvista-js/issues/518)) ([4994038](https://github.com/tkoyama010/pyvista-js/commit/49940384b31661dd0828630383352392a8575e72))
+- add tfcmt to review terraform plan in PRs and apply on main ([#526](https://github.com/tkoyama010/pyvista-js/issues/526)) ([cc6acaf](https://github.com/tkoyama010/pyvista-js/commit/cc6acaf3eb42e9d679266f38fb287c4defeb6e55))
+- add tflint to lint Terraform configuration ([#518](https://github.com/tkoyama010/pyvista-js/issues/518)) ([4994038](https://github.com/tkoyama010/pyvista-js/commit/49940384b31661dd0828630383352392a8575e72))
 
 ## [0.14.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.13.0...pyvista-js-v0.14.0) (2026-06-20)
 
