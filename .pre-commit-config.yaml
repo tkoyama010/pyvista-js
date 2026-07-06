@@ -41,14 +41,14 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.25
+    rev: 0.11.26
     hooks:
       - id: uv-lock
         args: [--check, --offline]
 
 
   - repo: https://github.com/djlint/djLint
-    rev: v1.39.5
+    rev: v1.40.3
     hooks:
       - id: djlint-reformat-jinja
         files: src/pyvista_js/templates/.*\.html$
