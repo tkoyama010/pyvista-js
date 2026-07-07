@@ -165,8 +165,7 @@ msgstr "結果"
 msgid ""
 "Good, because architectural rationale will live alongside the code in "
 "`docs/decisions/` and travel through the same review/PR flow."
-msgstr ""
-"高評価。そうすれば、設計上の根拠も `docs/decisions/` 内のコードと並んで存在し、同じレビュー/PR フローを経ることになります。"
+msgstr "高評価。設計上の根拠も `docs/decisions/` 内のコードと並んで存在し、同じレビュー/PR フローを経ることになります。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:39
 msgid ""
