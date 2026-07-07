@@ -337,7 +337,7 @@ msgstr "中間。簡潔さは魅力的だが、選択肢を比較したり、動
 msgid ""
 "Bad, because it lacks a \"Considered Options\" / \"Pros and Cons\" section, "
 "so alternatives and their trade-offs are not recorded."
-msgstr "\"検討した選択肢\" や \"長所と短所\" の項目がないため、代替案やそのトレードオフが記録されていないという点で、不十分である。"
+msgstr "低評価。\"検討した選択肢\" や \"長所と短所\" の項目がないため、代替案やそのトレードオフが記録されていない。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:75
 msgid ""
