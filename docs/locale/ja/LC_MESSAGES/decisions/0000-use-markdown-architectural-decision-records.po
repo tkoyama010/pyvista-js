@@ -296,7 +296,7 @@ msgstr "高評価。 *あらゆる* 決定を網羅しているので、汎用�
 msgid ""
 "Neutral, because it ships optional YAML front matter that we will adopt but "
 "is not strictly required."
-msgstr "中立。これは、私たちが採用する予定のオプションのYAMLフロントマターが含まれていますが、厳密には必須ではないためです。"
+msgstr "中間。これは、私たちが採用する予定のオプションのYAMLフロントマターが含まれていますが、厳密には必須ではないためです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:65
 msgid ""
@@ -331,7 +331,7 @@ msgstr "高評価。必要最低限の内容だからです: タイトル、背�
 msgid ""
 "Neutral, because its brevity is appealing but leaves no room for comparing "
 "options or capturing drivers."
-msgstr "中立。簡潔さは魅力的だが、選択肢を比較したり、動機を把握したりする余地がないため。"
+msgstr "中間。簡潔さは魅力的だが、選択肢を比較したり、動機を把握したりする余地がないため。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:74
 msgid ""
@@ -372,7 +372,7 @@ msgstr ""
 msgid ""
 "Neutral, because the format is more of a single-sentence pattern than a full"
 " document template."
-msgstr "中立。このフォーマットは、完全な文書テンプレートというよりは、一文単位のパターンに近いからです。"
+msgstr "中間。このフォーマットは、完全な文書テンプレートというよりは、一文単位のパターンに近いからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:83
 msgid ""
@@ -410,7 +410,7 @@ msgstr ""
 msgid ""
 "Neutral, because choosing one of the lesser-known templates would mean self-"
 "maintaining it."
-msgstr "中立。あまり知られていないテンプレートを選ぶと、自分でメンテナンスしなければならないことになるからです。"
+msgstr "中間。あまり知られていないテンプレートを選ぶと、自分でメンテナンスしなければならないことになるからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:92
 msgid ""
