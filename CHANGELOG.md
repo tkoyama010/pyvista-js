@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.15.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.15.0...pyvista-js-v0.15.1) (2026-07-07)
+
+### Documentation
+
+- adopt MADR 4.0.0 for architecture decision records ([#547](https://github.com/tkoyama010/pyvista-js/issues/547)) ([1caa396](https://github.com/tkoyama010/pyvista-js/commit/1caa396281d9dbdcc77353aeab406269ed9d558c))
+
 ## [0.15.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.14.0...pyvista-js-v0.15.0) (2026-06-28)
 
 ### Features
