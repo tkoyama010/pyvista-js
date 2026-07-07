@@ -196,7 +196,7 @@ msgstr ""
 msgid ""
 "Bad, because contributors must learn the template and remember to open a "
 "record for significant decisions."
-msgstr "良くない点としては、貢献者はテンプレートを習得し、重要な決定を行う際には必ず記録を作成するよう心がけなければならない点です。"
+msgstr "低評価。貢献者はテンプレートを習得し、重要な決定を行う際には必ず記録を作成するよう心がけなければならない点です。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:43
 msgid ""
