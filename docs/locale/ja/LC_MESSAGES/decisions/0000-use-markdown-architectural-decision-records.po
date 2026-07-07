@@ -2,10 +2,10 @@
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Tetsuo Koyama <tkoyama010@gmail.com>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
@@ -45,8 +45,8 @@ msgid ""
 msgstr ""
 "pyvista-js では、アーキテクチャ上重要な決定事項が蓄積されつつあります。例えば、 "
 "[#354](https://github.com/tkoyama010/pyvista-js/issues/354) "
-"で提案されたクライアント・サーバーアーキテクチャや WebSocket 同期、 [#357] "
-"(https://github.com/tkoyama010/pyvista-js/issues/357) "
+"で提案されたクライアント・サーバーアーキテクチャや WebSocket 同期、 "
+"[#357](https://github.com/tkoyama010/pyvista-js/issues/357) "
 "で追跡されているviser.studio風の機能セット、そしてブラウザランタイムとしてPyodide/stliteを選択したことなどです。現在、これらの決定事項はイシューのスレッドやプルリクエストの説明文にのみ記録されており、後になってその根拠を見つけにくく、失われやすい状態です。私たちは、このプロジェクトで行われたアーキテクチャ上の決定"
 " — アーキテクチャ、コード、その他の分野に関するものを問わず — "
 "を、一貫性があり、バージョン管理可能な方法で記録したいと考えています。これらの記録は、どのような形式と構造に従うべきでしょうか？"
