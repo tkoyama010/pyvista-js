@@ -372,7 +372,7 @@ msgstr ""
 msgid ""
 "Neutral, because the format is more of a single-sentence pattern than a full"
 " document template."
-msgstr "中間。このフォーマットは、完全な文書テンプレートというよりは、一文単位のパターンに近いからです。"
+msgstr "中間。このフォーマットは、完全な文書テンプレートというよりは、一文単位のパターンに近いため。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:83
 msgid ""
