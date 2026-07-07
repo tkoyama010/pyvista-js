@@ -343,7 +343,7 @@ msgstr "\"検討した選択肢\" や \"長所と短所\" の項目がないた�
 msgid ""
 "Bad, because there is no maintained tooling or canonical Markdown source; "
 "many variants exist."
-msgstr "良くない。メンテナンスされたツールや標準的なMarkdownソースが存在せず、多くのバリエーションが存在するため。"
+msgstr "低評価。メンテナンスされたツールや標準的なMarkdownソースが存在せず、多くのバリエーションが存在するため。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:77
 msgid "Sustainable Architectural Decisions — The Y-Statements"
@@ -428,7 +428,7 @@ msgid ""
 "Bad, because records drift in style, omit rationale, and become hard to find"
 " — failing the explicit-rationale and comprehensibility drivers."
 msgstr ""
-"良くない。なぜなら、記録はスタイルが統一されず、根拠が省略され、見つけにくくなってしまうため、「明確な根拠」と「理解しやすさ」という要件を満たせないからです。"
+"低評価。なぜなら、記録はスタイルが統一されず、根拠が省略され、見つけにくくなってしまうため、「明確な根拠」と「理解しやすさ」という要件を満たせないからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:98
 msgid ""
@@ -436,7 +436,7 @@ msgid ""
 "decisions stay scattered across issues and PRs, which is the situation we "
 "are trying to escape."
 msgstr ""
-"良くない。というのも、 `docs/decisions/` "
+"低評価。というのも、 `docs/decisions/` "
 "という規約やファイル名のパターンがないと、決定事項がイシューやプルリクエストに散らばったままになってしまうからだ。これは、私たちが脱却しようとしている状況そのものである。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:100
