@@ -28,6 +28,7 @@ Thank you for your interest in contributing to pyvista-js! This document provide
   - [Documentation Framework](#documentation-framework)
   - [Building Documentation](#building-documentation)
   - [Documentation Standards](#documentation-standards)
+  - [Architecture Decision Records](#architecture-decision-records)
 - [Pull Request Process](#pull-request-process)
   - [Before Submitting](#before-submitting)
   - [Submitting a Pull Request](#submitting-a-pull-request)
@@ -258,6 +259,19 @@ uv run tox -e docs
 - Update API documentation for new features
 - Check spelling with `codespell`
 - Follow existing documentation structure
+
+### Architecture Decision Records
+
+Architecturally significant decisions are recorded as [MADR 4.0.0](https://adr.github.io/madr/) records in [`docs/decisions/`](../docs/decisions/). This captures the *why* behind a decision alongside the code it governs.
+
+To add a record:
+
+1. Copy `docs/decisions/adr-template.md` to `docs/decisions/NNNN-title-with-dashes.md` (use the next free number).
+1. Fill in the sections, including the optional YAML front matter (`status`, `date`, `decision-makers`, `consulted`, `informed`).
+1. Link the record from the related issue or PR.
+1. Records are linted by `markdownlint-cli2` using MADR's `.markdownlint.yml` config (run via pre-commit and the `ADR Lint` workflow).
+
+See [ADR-0000](../docs/decisions/0000-use-markdown-architectural-decision-records.md) for a worked example.
 
 ## Pull Request Process
 
