@@ -20,7 +20,8 @@
         "bug",
         "translation",
         "platform",
-        "projectManagement"
+        "projectManagement",
+        "infra"
       ]
     },
     {
