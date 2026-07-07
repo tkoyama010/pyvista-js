@@ -1,0 +1,31 @@
+name: ADR Lint
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/decisions/**'
+      - '.github/workflows/adr-lint.yml'
+      - '.pre-commit-config.yaml'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Lint ADR records with markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@fa017d9f059acc0a1f6d0711a36d3a50acea73cd  # v24
+        with:
+          globs: 'docs/decisions/**/*.md'
+          config: 'docs/decisions/.markdownlint.yml'

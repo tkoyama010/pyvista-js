@@ -25,6 +25,8 @@ repos:
     hooks:
       - id: mdformat
         additional_dependencies: ['mdformat-toc==0.5.0']
+        # Preserve MADR's as-is formatting in ADR records (see docs/decisions/).
+        exclude: '^docs/decisions/.*\.md$'
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.25.1"
@@ -55,6 +57,13 @@ repos:
         args: ["--format-js", "--indent-js", "2"]
       - id: djlint-jinja
         files: src/pyvista_js/templates/.*\.html$
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.23.0
+    hooks:
+      - id: markdownlint-cli2
+        # Lint only ADR records using MADR's .markdownlint.yml config.
+        files: '^docs/decisions/.*\.md$'
 
   - repo: local
     hooks:
