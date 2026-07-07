@@ -204,7 +204,7 @@ msgid ""
 " template, trading a little flexibility for staying on a maintained "
 "upstream."
 msgstr ""
-"中立です。テンプレートをフォークするのではなく、MADRの規約をそのまま採用しているため、維持管理されているアップストリームに留まる代わりに、柔軟性を少し犠牲にしているからです。"
+"中間。テンプレートをフォークするのではなく、MADRの規約をそのまま採用しているため、維持管理されているアップストリームに留まる代わりに、柔軟性を少し犠牲にしているからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:45
 msgid "Confirmation"
