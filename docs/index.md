@@ -68,4 +68,5 @@ howtos/index
 explanation/index
 api/index
 cli/index
+decisions/index
 ```
