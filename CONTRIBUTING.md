@@ -262,6 +262,8 @@ uv run tox -e docs
 
 ### Architecture Decision Records
 
+[![MADR](https://img.shields.io/badge/decisions-MADR_4.0.0-blue.svg)](https://github.com/tkoyama010/pyvista-js/tree/main/docs/decisions)
+
 Architecturally significant decisions are recorded as [MADR 4.0.0](https://adr.github.io/madr/) records in [`docs/decisions/`](../docs/decisions/). This captures the *why* behind a decision alongside the code it governs.
 
 To add a record:
