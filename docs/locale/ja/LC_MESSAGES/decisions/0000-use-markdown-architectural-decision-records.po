@@ -2,10 +2,10 @@
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Tetsuo Koyama <tkoyama010@gmail.com>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
@@ -302,7 +302,7 @@ msgstr "中間。これは、私たちが採用する予定のオプションの
 msgid ""
 "Bad, because it introduces a small documentation convention contributors "
 "must learn."
-msgstr "低評価。なぜなら、貢献者が覚えなければならない小さなドキュメントの規約が導入されてしまうからです。"
+msgstr "低評価。貢献者が覚えなければならない小さなドキュメントの規約が導入されてしまうからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:67
 msgid "Michael Nygard's template"
@@ -378,7 +378,7 @@ msgstr "中間。このフォーマットは、完全な文書テンプレート
 msgid ""
 "Bad, because it does not scale to multi-option comparisons with detailed "
 "pros and cons."
-msgstr "低評価。なぜなら、詳細な長所と短所を伴う複数の選択肢の比較には対応していないからです。"
+msgstr "低評価。詳細な長所と短所を伴う複数の選択肢の比較には対応していないからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:84
 msgid "Bad, because it is less widely adopted and has less tooling than MADR."
@@ -417,7 +417,7 @@ msgid ""
 "Bad, because the variety itself is a cost: contributors would need to learn "
 "whichever one we pick with less community documentation behind it."
 msgstr ""
-"低評価。なぜなら、バリエーションそのものがコストになるからです。コミュニティによるドキュメントが乏しいものを選んだ場合、貢献者はそのバリエーションを習得しなければなりません。"
+"低評価。バリエーションそのものがコストになるからです。コミュニティによるドキュメントが乏しいものを選んだ場合、貢献者はそのバリエーションを習得しなければなりません。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:96
 msgid "Good, because there is zero upfront cost and no template to learn."
@@ -428,7 +428,7 @@ msgid ""
 "Bad, because records drift in style, omit rationale, and become hard to find"
 " — failing the explicit-rationale and comprehensibility drivers."
 msgstr ""
-"低評価。なぜなら、記録はスタイルが統一されず、根拠が省略され、見つけにくくなってしまうため、「明確な根拠」と「理解しやすさ」という要件を満たせないからです。"
+"低評価。記録はスタイルが統一されず、根拠が省略され、見つけにくくなってしまうため、「明確な根拠」と「理解しやすさ」という要件を満たせないからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:98
 msgid ""
