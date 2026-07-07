@@ -166,14 +166,14 @@ msgid ""
 "Good, because architectural rationale will live alongside the code in "
 "`docs/decisions/` and travel through the same review/PR flow."
 msgstr ""
-"いいですね。そうすれば、設計上の根拠も `docs/decisions/` 内のコードと並んで存在し、同じレビュー/PR フローを経ることになります。"
+"高評価。そうすれば、設計上の根拠も `docs/decisions/` 内のコードと並んで存在し、同じレビュー/PR フローを経ることになります。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:39
 msgid ""
 "Good, because the consistent `NNNN-title-with-dashes.md` filename convention"
 " makes records discoverable and sortable."
 msgstr ""
-"いいですね。 `NNNN-title-with-dashes.md` という一貫したファイル名規則により、レコードの検索や並べ替えが容易になるからです。"
+"高評価。 `NNNN-title-with-dashes.md` という一貫したファイル名規則により、レコードの検索や並べ替えが容易になるからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:40
 msgid ""
@@ -181,7 +181,7 @@ msgid ""
 "and Cons of the Options, Confirmation, More Information) keep short "
 "decisions short while scaling to complex ones."
 msgstr ""
-"いいですね。MADRテンプレートのオプションセクション (意思決定の要因、選択肢の長所と短所、確認、追加情報) "
+"高評価。MADRテンプレートのオプションセクション (意思決定の要因、選択肢の長所と短所、確認、追加情報) "
 "は、簡単な意思決定を簡潔にまとめつつ、複雑な意思決定にも対応できるからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:41
@@ -190,8 +190,8 @@ msgid ""
 "`consulted`, `informed`) gives lightweight metadata for tracking decision "
 "lifecycle."
 msgstr ""
-"いいですね。YAMLのフロントマター (`status`、`date`、`decision-"
-"makers`、`consulted`、`informed`) は、意思決定のライフサイクルを追跡するための軽量なメタデータを提供してくれるからです。"
+"高評価。YAMLのフロントマター (`status`、`date`、`decision-makers`、`consulted`、`informed`) "
+"は、意思決定のライフサイクルを追跡するための軽量なメタデータを提供してくれるからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:42
 msgid ""
@@ -268,7 +268,7 @@ msgstr "[https://adr.github.io/madr/](https://adr.github.io/madr/) を参照"
 msgid ""
 "Good, because it is plain Markdown, satisfying the version-control-"
 "friendliness and low-overhead drivers."
-msgstr "いいですね。これは純粋なMarkdownなので、バージョン管理への適応性やオーバーヘッドの低さといった要件を満たしています。"
+msgstr "高評価。これは純粋なMarkdownなので、バージョン管理への適応性やオーバーヘッドの低さといった要件を満たしています。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:61
 msgid ""
@@ -321,12 +321,12 @@ msgstr ""
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:71
 msgid "Good, because it is the original ADR template and is widely cited."
-msgstr "いいですね。というのも、これはADRのオリジナルのテンプレートであり、広く引用されているからです。"
+msgstr "高評価。というのも、これはADRのオリジナルのテンプレートであり、広く引用されているからです。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:72
 msgid ""
 "Good, because it is minimal: Title, Context, Decision, Status, Consequences."
-msgstr "いいですね。必要最低限の内容だからです: タイトル、背景、決定、状況、結果。"
+msgstr "高評価。必要最低限の内容だからです: タイトル、背景、決定、状況、結果。"
 
 #: ../decisions/0000-use-markdown-architectural-decision-records.md:73
 msgid ""
