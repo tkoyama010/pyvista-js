@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
 
       - name: Lint ADR records with markdownlint-cli2
-        uses: DavidAnson/markdownlint-cli2-action@fa017d9f059acc0a1f6d0711a36d3a50acea73cd  # v24
+        uses: DavidAnson/markdownlint-cli2-action@8de2aa07cae85fd17c0b35642db70cf5495f1d25  # v24
         with:
           globs: 'docs/decisions/**/*.md'
           config: 'docs/decisions/.markdownlint.yml'
