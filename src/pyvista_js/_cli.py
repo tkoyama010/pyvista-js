@@ -366,6 +366,7 @@ def plot(  # noqa: PLR0913
     color: Annotated[
         str | None,
         typer.Option(
+            "--color",
             help="Mesh colour applied to all files (e.g. ``red``, ``#ff0000``).",
             metavar="COLOR",
         ),
@@ -373,6 +374,7 @@ def plot(  # noqa: PLR0913
     background: Annotated[
         str | None,
         typer.Option(
+            "--background",
             help="Background colour (e.g. ``white``, ``black``). Default: renderer default.",
             metavar="COLOR",
         ),
@@ -380,6 +382,7 @@ def plot(  # noqa: PLR0913
     opacity: Annotated[
         float,
         typer.Option(
+            "--opacity",
             help="Mesh opacity in the range [0, 1]. Default: 1.0.",
             metavar="FLOAT",
         ),
@@ -387,6 +390,7 @@ def plot(  # noqa: PLR0913
     pickle: Annotated[
         Path | None,
         typer.Option(
+            "--pickle",
             help="Save the Plotter object to a pickle file for later reuse.",
             metavar="PATH",
         ),
@@ -394,6 +398,7 @@ def plot(  # noqa: PLR0913
     load_pickle: Annotated[
         Path | None,
         typer.Option(
+            "--load-pickle",
             help="Load a pickled Plotter object from file instead of creating a new one. "
             "WARNING: Only load pickle files from trusted sources.",
             metavar="PATH",
@@ -402,6 +407,7 @@ def plot(  # noqa: PLR0913
     screenshot: Annotated[
         Path | None,
         typer.Option(
+            "--screenshot",
             help="Save a screenshot to the specified file (PNG/JPEG). "
             "When provided, the browser window will not open.",
             metavar="PATH",
@@ -410,12 +416,14 @@ def plot(  # noqa: PLR0913
     screenshot_transparent: Annotated[  # noqa: FBT002
         bool,
         typer.Option(
+            "--screenshot-transparent/--no-screenshot-transparent",
             help="Use transparent background for screenshot. Default: False.",
         ),
     ] = False,
     screenshot_scale: Annotated[
         int | None,
         typer.Option(
+            "--screenshot-scale",
             help="Scale factor for screenshot resolution (e.g. 2 for double resolution).",
             metavar="INT",
         ),
@@ -423,6 +431,7 @@ def plot(  # noqa: PLR0913
     screenshot_window_size: Annotated[
         str | None,
         typer.Option(
+            "--screenshot-window-size",
             help="Window size for screenshot as 'width,height' (e.g. '1920,1080').",
             metavar="SIZE",
         ),
@@ -430,6 +439,7 @@ def plot(  # noqa: PLR0913
     azimuth: Annotated[
         float | None,
         typer.Option(
+            "--azimuth",
             help="Rotate camera horizontally around the focal point by this many degrees.",
             metavar="DEGREES",
         ),
@@ -437,6 +447,7 @@ def plot(  # noqa: PLR0913
     elevation: Annotated[
         float | None,
         typer.Option(
+            "--elevation",
             help="Rotate camera vertically around the focal point by this many degrees.",
             metavar="DEGREES",
         ),
@@ -444,6 +455,7 @@ def plot(  # noqa: PLR0913
     zoom: Annotated[
         float | None,
         typer.Option(
+            "--zoom",
             help="Zoom factor relative to current distance (>1 zooms in, <1 zooms out).",
             metavar="FLOAT",
         ),
@@ -451,6 +463,7 @@ def plot(  # noqa: PLR0913
     roll: Annotated[
         float | None,
         typer.Option(
+            "--roll",
             help="Roll camera around its view axis by this many degrees.",
             metavar="DEGREES",
         ),
@@ -766,6 +779,7 @@ def capture_preview(
     output: Annotated[
         Path,
         typer.Option(
+            "--output",
             help="Output path for the GIF. Default: assets/preview.gif.",
             metavar="PATH",
         ),
@@ -773,6 +787,7 @@ def capture_preview(
     url: Annotated[
         str,
         typer.Option(
+            "--url",
             help="URL of the JupyterLite demo.",
             metavar="URL",
         ),
@@ -780,6 +795,7 @@ def capture_preview(
     fps: Annotated[
         int,
         typer.Option(
+            "--fps",
             help="Frames per second for the GIF. Default: 2.",
             metavar="INT",
         ),
@@ -787,6 +803,7 @@ def capture_preview(
     rotate: Annotated[
         bool | None,
         typer.Option(
+            "--rotate/--no-rotate",
             help="Rotate the 3D model by mouse drag while capturing screenshots. "
             "Will become the default in a future version.",
         ),
@@ -971,6 +988,7 @@ def capture_stlite_preview(
     output: Annotated[
         Path,
         typer.Option(
+            "--output",
             help="Output path for the GIF. Default: assets/stlite-preview.gif.",
             metavar="PATH",
         ),
@@ -978,6 +996,7 @@ def capture_stlite_preview(
     url: Annotated[
         str,
         typer.Option(
+            "--url",
             help="URL of the stlite demo.",
             metavar="URL",
         ),
@@ -985,6 +1004,7 @@ def capture_stlite_preview(
     fps: Annotated[
         int,
         typer.Option(
+            "--fps",
             help="Frames per second for the GIF. Default: 2.",
             metavar="INT",
         ),
@@ -992,6 +1012,7 @@ def capture_stlite_preview(
     rotate: Annotated[
         bool | None,
         typer.Option(
+            "--rotate/--no-rotate",
             help="Rotate the 3D model by mouse drag while capturing screenshots. Default: True.",
         ),
     ] = None,
