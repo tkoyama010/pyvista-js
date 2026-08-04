@@ -627,7 +627,7 @@ def _rotate_canvas_with_mouse(page) -> None:  # noqa: ANN001
         page.mouse.up()
 
         logger.info("Performed mouse drag rotation on canvas")
-    except Exception:  # noqa: BLE001
+    except Exception:
         logger.warning("Failed to perform mouse drag rotation", exc_info=True)
 
 
