@@ -140,6 +140,7 @@ constraint-dependencies = [
 [tool.ruff]
 line-length = 100
 lint.select = [ "ALL" ]
+lint.ignore = [ "CPY001", "PLR0917" ]
 lint.per-file-ignores."examples/*" = [
   "INP001", # implicit namespace package
   "T201",   # print statements OK in examples
