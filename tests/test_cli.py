@@ -305,6 +305,19 @@ def test_rotate_canvas_with_mouse_handles_missing_bounding_box() -> None:
     page.mouse.move.assert_not_called()
 
 
+def test_rotate_canvas_with_mouse_handles_exception() -> None:
+    """``_rotate_canvas_with_mouse`` handles exceptions during mouse drag."""
+    canvas = MagicMock()
+    canvas.bounding_box.return_value = {"x": 100, "y": 100, "width": 600, "height": 400}
+    frame = MagicMock()
+    frame.query_selector.return_value = canvas
+    page = MagicMock()
+    page.frames = [frame]
+    page.mouse.move.side_effect = RuntimeError("mouse error")
+
+    _rotate_canvas_with_mouse(page)
+
+
 def test_capture_preview_no_rotate_emits_deprecation_warning(tmp_path) -> None:
     """``capture-preview`` without ``--rotate`` emits a DeprecationWarning."""
     with (
