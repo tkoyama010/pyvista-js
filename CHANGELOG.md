@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.15.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.15.1...pyvista-js-v0.15.2) (2026-08-29)
+
+
+### Bug Fixes
+
+* bump mistune to &gt;=3.3.0 for CVE-2026-49851 ([#560](https://github.com/tkoyama010/pyvista-js/issues/560)) ([19e8988](https://github.com/tkoyama010/pyvista-js/commit/19e89882b2b9d9221cbc9828e8732c8645685a82))
+* bump soupsieve to &gt;=2.8.4 for CVE-2026-49476 ([#561](https://github.com/tkoyama010/pyvista-js/issues/561)) ([f0901ae](https://github.com/tkoyama010/pyvista-js/commit/f0901ae5c9cf3efdc08e105dc93c900585b53255))
+* bump soupsieve to &gt;=2.8.4 for CVE-2026-49477 ([#562](https://github.com/tkoyama010/pyvista-js/issues/562)) ([b94eb30](https://github.com/tkoyama010/pyvista-js/commit/b94eb3078d9470b61a87e8aa3da03fe1533b1035))
+* **cli:** declare explicit option names for typer 0.27.0 compatibility ([#569](https://github.com/tkoyama010/pyvista-js/issues/569)) ([9bf77cf](https://github.com/tkoyama010/pyvista-js/commit/9bf77cf2f11535789734de7c79c80aa8f7474007))
+* **deps:** bump pillow to &gt;=12.3.0 and gitpython to &gt;=3.1.52 ([#577](https://github.com/tkoyama010/pyvista-js/issues/577)) ([32e6742](https://github.com/tkoyama010/pyvista-js/commit/32e6742ebb3bbdaa018c53a96b560e7fe16c2606))
+* resolve ruff v0.16.1 lint errors ([#588](https://github.com/tkoyama010/pyvista-js/issues/588)) ([39f7a67](https://github.com/tkoyama010/pyvista-js/commit/39f7a6734fb4802537fc9bb9b9a29136b9a72169))
+
+
+### Documentation
+
+* add MADR badge to CONTRIBUTING.md ([#551](https://github.com/tkoyama010/pyvista-js/issues/551)) ([24d325d](https://github.com/tkoyama010/pyvista-js/commit/24d325debf5e8e7f4978734fe7a4c2683cc45fe2))
+* add tkoyama010 as a contributor for infra ([#549](https://github.com/tkoyama010/pyvista-js/issues/549)) ([43c0ecb](https://github.com/tkoyama010/pyvista-js/commit/43c0ecbc585cba00d3024662858c01205e296a44))
+* Updates for project pyvista-js-doc and language ja ([#556](https://github.com/tkoyama010/pyvista-js/issues/556)) ([8b671ce](https://github.com/tkoyama010/pyvista-js/commit/8b671ce3a2956e986b0930664a0f175d0de9769d))
+* Updates for project pyvista-js-doc and language ja ([#557](https://github.com/tkoyama010/pyvista-js/issues/557)) ([7523521](https://github.com/tkoyama010/pyvista-js/commit/752352125ee2d0211ad568f4f9202dc2eba4d282))
+
+
+### Continuous Integration
+
+* create PR for .pot files instead of pushing to main ([#553](https://github.com/tkoyama010/pyvista-js/issues/553)) ([90a7aa3](https://github.com/tkoyama010/pyvista-js/commit/90a7aa36a9cfdb4f62631b4364602c797a2557b2))
+
 ## [0.15.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.15.0...pyvista-js-v0.15.1) (2026-07-07)
 
 ### Documentation
