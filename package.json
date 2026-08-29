@@ -13,5 +13,8 @@
     "@biomejs/biome": "2.5.9",
     "esbuild": "^0.28",
     "typescript": "^7.0"
+  },
+  "allowScripts": {
+    "@biomejs/biome@2.5.9": true
   }
 }
