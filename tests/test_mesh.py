@@ -557,6 +557,50 @@ def test_fill_holes_chained_with_shrink() -> None:
     assert scene["filters"][1]["type"] == "fillHoles"
 
 
+def test_triangulate_returns_polydata() -> None:
+    """Test that triangulate returns a PolyData instance."""
+    cube = Cube()
+    triangulated = cube.triangulate()
+    assert isinstance(triangulated, PolyData)
+    assert triangulated.n_points == cube.n_points
+
+
+def test_triangulate_scene_data_contains_filter() -> None:
+    """Test that triangulated mesh scene data includes a triangulate filter."""
+    cube = Cube()
+    triangulated = cube.triangulate()
+    scene = triangulated.to_scene_data()
+    assert "filters" in scene
+    filters = scene["filters"]
+    assert len(filters) >= 1
+    assert filters[-1]["type"] == "triangulate"
+
+
+def test_triangulate_scene_data_has_source_type() -> None:
+    """Test that triangulated mesh scene data preserves the source type."""
+    sphere = Sphere()
+    triangulated = sphere.triangulate()
+    scene = triangulated.to_scene_data()
+    assert scene["type"] == "sphere"
+
+
+def test_triangulate_preserves_faces() -> None:
+    """Test that triangulate preserves face information."""
+    cube = Cube()
+    triangulated = cube.triangulate()
+    assert triangulated.n_faces == cube.n_faces
+
+
+def test_triangulate_can_be_chained() -> None:
+    """Test that triangulate can be chained with other filters."""
+    sphere = Sphere()
+    result = sphere.shrink(shrink_factor=0.8).triangulate()
+    scene = result.to_scene_data()
+    assert len(scene["filters"]) == 2
+    assert scene["filters"][0]["type"] == "shrink"
+    assert scene["filters"][1]["type"] == "triangulate"
+
+
 def test_circle_creation() -> None:
     """Test circle primitive creation."""
     circle = Circle()

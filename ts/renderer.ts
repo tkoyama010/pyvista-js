@@ -888,6 +888,28 @@ function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResul
 }
 
 /**
+ * Try to apply a triangulate filter.
+ * @param current
+ * @param _f
+ * @returns The filtered result with triangles only.
+ */
+function tryTriangulateFilter(current: SourceResult, _f: FilterConfig): SourceResult {
+  return applyTriangulateFilter(current);
+}
+
+/**
+ * Apply a triangle filter to convert polygons to triangles.
+ * @param sourceResult
+ * @returns A {@link SourceResult} with the triangle filter applied.
+ */
+function applyTriangulateFilter(sourceResult: SourceResult): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const triangleFilter = vtk.Filters.General.vtkTriangleFilter.newInstance();
+  connectInput(triangleFilter, sourceResult);
+  return { output: triangleFilter, isFilter: true };
+}
+
+/**
  * Map from filter type to its dispatcher function.
  */
 const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
@@ -897,6 +919,7 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     clip: tryClipFilter,
     contour: tryContourFilter,
     fillHoles: tryFillHolesFilter,
+    triangulate: tryTriangulateFilter,
   };
 
 /**
