@@ -120,6 +120,7 @@ test = [
   "playwright>=1.40.1,<2.0.1",
   "pytest>=7.0.1,<9.1.2",
   "pytest-playwright>=0.4.1,<1.0.1",
+  "pytest-pyodide>=0.59,<1",
 ]
 
 [tool.hatch]
@@ -165,6 +166,10 @@ lint.per-file-ignores."tests/*" = [
   "PLR2004", # magic values - normal for test data
   "S101",    # assert - normal for pytest
   "SLF001",  # private member access - testing private APIs
+]
+lint.per-file-ignores."tests/test_pyodide.py" = [
+  "ARG001",  # unused function argument - selenium is required by run_in_pyodide
+  "PLC0415", # import at top level - imports inside run_in_pyodide must be inside function
 ]
 lint.flake8-pytest-style.parametrize-names-type = "tuple"
 lint.flake8-pytest-style.parametrize-values-row-type = "tuple"
@@ -215,6 +220,7 @@ ini_options.addopts = [
 ]
 ini_options.markers = [
   "playwright: marks tests that use Playwright for browser automation (deselect with '-m \"not playwright\"')",
+  "pyodide: marks tests that run in Pyodide environment using pytest-pyodide",
 ]
 ini_options.xfail_strict = true
 ini_options.filterwarnings = [
