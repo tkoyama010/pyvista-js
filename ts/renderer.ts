@@ -23,6 +23,21 @@ const DEFAULT_HEIGHT = 400;
 /** Scale factor to convert a [0-1] float colour channel to [0-255] integer. */
 const COLOR_BYTE_SCALE = 255;
 
+/** vtk.js colormap presets for the matplotlib names the Python side accepts. */
+const COLORMAP_PRESETS: Record<string, string> = {
+  viridis: "Viridis (matplotlib)",
+  plasma: "Plasma (matplotlib)",
+  inferno: "Inferno (matplotlib)",
+  magma: "Magma (matplotlib)",
+  jet: "jet",
+  hsv: "hsv",
+  gray: "Grayscale",
+  grey: "Grayscale",
+  coolwarm: "Cool to Warm",
+  hot: "Black-Body Radiation",
+};
+const DEFAULT_COLORMAP_PRESET = "Viridis (matplotlib)";
+
 /** Multiplier to convert a normalised fraction to a CSS percentage. */
 const PERCENT = 100;
 
@@ -522,10 +537,15 @@ function injectPointData(
   }
 
   for (const array of pointDataArrays) {
+    // uint8 has to stay uint8: that is what lets a mapper use it as colors directly
+    let values: Float32Array | Uint8Array = Float32Array.from(array.values);
+    if (array.dataType === "Uint8Array") {
+      values = Uint8Array.from(array.values);
+    }
     // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     const dataArray = vtk.Common.Core.vtkDataArray.newInstance({
       numberOfComponents: array.numberOfComponents,
-      values: Float32Array.from(array.values),
+      values,
       name: array.name,
     });
     polydata.getPointData().addArray(dataArray);
@@ -692,6 +712,39 @@ function createMapper(mapperInput: SourceResult, cfg: ActorConfig): VtkMapper {
 }
 
 /**
+ * Color the mapper by a point-data array: directly for a uint8 RGB(A) array,
+ * otherwise through the requested colormap over the given range.
+ * @param mapper
+ * @param scalars
+ */
+function applyScalars(mapper: VtkMapper, scalars: ScalarsConfig | undefined): void {
+  if (!scalars) {
+    return;
+  }
+  mapper.setScalarVisibility(true);
+  mapper.setScalarModeToUsePointFieldData();
+  mapper.setColorByArrayName(scalars.arrayName);
+  if (scalars.direct) {
+    mapper.setColorModeToDirectScalars();
+    return;
+  }
+  mapper.setColorModeToMapScalars();
+  mapper.setScalarRange(scalars.range[0], scalars.range[1]);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const lut = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();
+  const presetName = COLORMAP_PRESETS[scalars.cmap] ?? DEFAULT_COLORMAP_PRESET;
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const colorMaps = vtk.Rendering.Core.vtkColorTransferFunction.vtkColorMaps;
+  const preset = colorMaps.getPresetByName(presetName);
+  if (preset) {
+    lut.applyColorMap(preset);
+  }
+  lut.setMappingRange(scalars.range[0], scalars.range[1]);
+  lut.updateRange();
+  mapper.setLookupTable(lut);
+}
+
+/**
  * Build a complete vtk.js actor from an {@link ActorConfig} and add it to the renderer.
  * @param cfg
  * @param _index
@@ -722,6 +775,7 @@ function setupActor(
 
   const mapperInput = setupNormals(currentResult, cfg.normals);
   const mapper = createMapper(mapperInput, cfg);
+  applyScalars(mapper, cfg.scalars);
 
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const actor = vtk.Rendering.Core.vtkActor.newInstance();

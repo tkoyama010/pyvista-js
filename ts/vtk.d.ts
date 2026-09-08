@@ -23,7 +23,7 @@ interface VtkDataArrayFactory {
   // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
   newInstance: (options: {
     numberOfComponents: number;
-    values: Float32Array;
+    values: Float32Array | Uint8Array;
     name: string;
   }) => VtkDataArray;
 }
@@ -115,6 +115,33 @@ interface VtkMapper {
   setInputConnection: (port: VtkOutputPort) => void;
   setInputData: (data: VtkPolyData) => void;
   setRadius?: (radius: number) => void;
+  setScalarVisibility: (visible: boolean) => void;
+  setScalarModeToUsePointFieldData: () => void;
+  setColorByArrayName: (name: string) => void;
+  setColorModeToDirectScalars: () => void;
+  setColorModeToMapScalars: () => void;
+  setScalarRange: (min: number, max: number) => void;
+  setLookupTable: (lut: VtkColorTransferFunction) => void;
+}
+
+/** A colormap preset as returned by vtkColorMaps.getPresetByName. */
+interface VtkColorMapPreset {
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+  Name: string;
+}
+
+/** Maps scalar values to colors through a piecewise color function. */
+interface VtkColorTransferFunction {
+  applyColorMap: (preset: VtkColorMapPreset) => void;
+  setMappingRange: (min: number, max: number) => void;
+  updateRange: () => void;
+}
+
+/** Factory for {@link VtkColorTransferFunction}, which also carries the colormap presets. */
+interface VtkColorTransferFunctionFactory extends VtkNewInstanceFactory<VtkColorTransferFunction> {
+  vtkColorMaps: {
+    getPresetByName: (name: string) => VtkColorMapPreset | undefined;
+  };
 }
 
 /** An image-based texture applied to actor surfaces. */
@@ -240,6 +267,7 @@ interface VtkGlobal {
       vtkActor: VtkNewInstanceFactory<VtkActor>;
       vtkMapper: VtkNewInstanceFactory<VtkMapper>;
       vtkSphereMapper: VtkNewInstanceFactory<VtkMapper>;
+      vtkColorTransferFunction: VtkColorTransferFunctionFactory;
       vtkTexture: VtkNewInstanceFactory<VtkTexture>;
       vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
     };
@@ -349,6 +377,16 @@ interface PointDataArray {
   numberOfComponents: number;
   values: number[];
   name: string;
+  dataType?: "Float32Array" | "Uint8Array";
+}
+
+/** How an actor is colored by one of its point-data arrays. */
+interface ScalarsConfig {
+  arrayName: string;
+  cmap: string;
+  range: [number, number];
+  /** Use the (uint8 RGB or RGBA) array as colors directly rather than through a colormap. */
+  direct?: boolean;
 }
 
 /** Configuration for a geometry filter. */
@@ -425,6 +463,7 @@ interface ActorConfig {
   renderPointsAsSpheres?: boolean;
   pointSize?: number;
   texture?: TextureConfig;
+  scalars?: ScalarsConfig;
 }
 
 /** Camera position and projection settings. */
