@@ -28,6 +28,7 @@
 ## Install
 
 [![PyPI](https://img.shields.io/pypi/v/pyvista-js.svg)](https://pypi.org/project/pyvista-js/)
+[![Conda](https://img.shields.io/conda/vn/conda-forge/pyvista-js.svg)](https://anaconda.org/conda-forge/pyvista-js)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 ```bash
