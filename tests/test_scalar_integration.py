@@ -100,6 +100,7 @@ def test_no_scalars_no_lut(monkeypatch) -> None:
     with Path(html_path).open(encoding="utf-8") as f:
         html_content = f.read()
 
-    # Verify scalar-related code is NOT present
-    assert "vtkColorTransferFunction" not in html_content
-    assert "setScalarVisibility" not in html_content
+    # Verify scalar-related data is NOT present in the scene JSON
+    scene = extract_scene_data(html_content)
+    actor = scene["actors"][0]
+    assert actor["scalars"] is None
