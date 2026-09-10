@@ -207,6 +207,34 @@ class CellType:
     PYRAMID: int = _CELL_TYPE_PYRAMID
 
 
+def _point_data_to_scene(point_data: PointData) -> list[dict[str, object]]:
+    """Serialize point-data arrays for the vtk.js template.
+
+    Unsigned 8-bit arrays are sent as ``Uint8Array`` so vtk.js can use them
+    directly as RGB(A) colors; everything else becomes ``Float32Array``.
+
+    Parameters
+    ----------
+    point_data : PointData
+        The arrays to serialize.
+
+    Returns
+    -------
+    list of dict
+        One entry per array with its name, component count, data type and values.
+
+    """
+    return [
+        {
+            "name": name,
+            "numberOfComponents": 1 if array.ndim == 1 else array.shape[1],
+            "dataType": "Uint8Array" if array.dtype == np.uint8 else "Float32Array",
+            "values": array.flatten().tolist(),
+        }
+        for name, array in point_data.items()
+    ]
+
+
 class PolyData:
     """Base polygonal mesh class.
 
@@ -1038,17 +1066,7 @@ class PolyData:
 
         # Inject point data arrays
         if len(self._point_data) > 0:
-            point_data_arrays: list[dict[str, object]] = []
-            for name, array in self._point_data.items():
-                n_components = 1 if array.ndim == 1 else array.shape[1]
-                point_data_arrays.append(
-                    {
-                        "name": name,
-                        "numberOfComponents": n_components,
-                        "values": array.flatten().tolist(),
-                    },
-                )
-            data["pointData"] = point_data_arrays
+            data["pointData"] = _point_data_to_scene(self._point_data)
 
         return data
 
@@ -1483,17 +1501,7 @@ class UnstructuredGrid:
 
         # Inject point data arrays
         if len(self._point_data) > 0:
-            point_data_arrays: list[dict[str, object]] = []
-            for name, array in self._point_data.items():
-                n_components = 1 if array.ndim == 1 else array.shape[1]
-                point_data_arrays.append(
-                    {
-                        "name": name,
-                        "numberOfComponents": n_components,
-                        "values": array.flatten().tolist(),
-                    },
-                )
-            data["pointData"] = point_data_arrays
+            data["pointData"] = _point_data_to_scene(self._point_data)
 
         return data
 
