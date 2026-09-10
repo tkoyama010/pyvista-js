@@ -631,10 +631,18 @@ class _BaseHTMLRenderer:
         if scalars_name is not None:
             cmap = actor_info.get("cmap", "viridis")
             scalars_array = mesh.point_data[str(scalars_name)]  # type: ignore[attr-defined]
+            # a uint8 RGB(A) array is used as the colors directly, with no colormap
+            rgb_components = (3, 4)
+            direct = (
+                scalars_array.dtype == "uint8"
+                and scalars_array.ndim == 2  # noqa: PLR2004
+                and scalars_array.shape[1] in rgb_components
+            )
             scalars_data = {
                 "arrayName": scalars_name,
                 "cmap": cmap,
                 "range": [float(scalars_array.min()), float(scalars_array.max())],
+                "direct": direct,
             }
 
         # PBR
