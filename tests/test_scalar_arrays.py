@@ -97,6 +97,27 @@ def test_scene_data_with_scalars() -> None:
     assert "pointData" in scene
     assert len(scene["pointData"]) == 1
     assert scene["pointData"][0]["name"] == "elevation"
+    assert scene["pointData"][0]["dataType"] == "Float32Array"
+
+
+def test_scene_data_with_rgba_colors() -> None:
+    """Test that uint8 RGB(A) arrays are serialized as Uint8Array and drawn directly."""
+    mesh = PolyData(points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+    mesh["colors"] = np.array([[255, 0, 0, 255], [0, 255, 0, 255], [0, 0, 255, 128]], np.uint8)
+    array = mesh.to_scene_data()["pointData"][0]
+    assert (array["dataType"], array["numberOfComponents"]) == ("Uint8Array", 4)
+    assert array["values"][:4] == [255, 0, 0, 255]
+
+    plotter = Plotter()
+    plotter.add_mesh(mesh, scalars="colors")
+    mesh["elevation"] = mesh.points[:, 2]  # a float array goes through the colormap
+    plotter.add_mesh(mesh, scalars="elevation", cmap="plasma")
+    direct, mapped = (a["scalars"] for a in plotter._renderer._build_scene_data()["actors"])
+    assert direct["arrayName"] == "colors"
+    assert direct["direct"] is True
+    assert mapped["arrayName"] == "elevation"
+    assert mapped["direct"] is False
+    assert mapped["cmap"] == "plasma"
 
 
 def test_scene_data_with_multiple_scalars() -> None:
