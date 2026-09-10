@@ -100,6 +100,9 @@ def test_no_scalars_no_lut(monkeypatch) -> None:
     with Path(html_path).open(encoding="utf-8") as f:
         html_content = f.read()
 
-    # Verify scalar-related code is NOT present
-    assert "vtkColorTransferFunction" not in html_content
-    assert "setScalarVisibility" not in html_content
+    # The renderer bundle always contains the lookup table code, so check that the
+    # scene gives it nothing to color by
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
+    scene = extract_scene_data(html_content)
+    assert scene["actors"][0]["scalars"] is None
