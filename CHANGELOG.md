@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.15.2...pyvista-js-v0.16.0) (2026-09-10)
+
+### Features
+
+- add point data coloring ([#617](https://github.com/tkoyama010/pyvista-js/issues/617)) ([3f78299](https://github.com/tkoyama010/pyvista-js/commit/3f78299355972bcaa2c8cb658f674244d3acf64f))
+
+### Documentation
+
+- add conda-forge badge ([#618](https://github.com/tkoyama010/pyvista-js/issues/618)) ([e1b27d8](https://github.com/tkoyama010/pyvista-js/commit/e1b27d89c8679ef99accd471e15dfafc1492c65f))
+- add larsoner as a contributor for code ([#621](https://github.com/tkoyama010/pyvista-js/issues/621)) ([3dd7d88](https://github.com/tkoyama010/pyvista-js/commit/3dd7d88f33f6428ffbc8fe4b8df27a2e37e98bda))
+- add larsoner as a contributor for platform ([#619](https://github.com/tkoyama010/pyvista-js/issues/619)) ([1a2a02c](https://github.com/tkoyama010/pyvista-js/commit/1a2a02c13d8cf16a4e8521c37aaef283df55db7b))
+
 ## [0.15.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.15.1...pyvista-js-v0.15.2) (2026-08-29)
 
 ### Bug Fixes
