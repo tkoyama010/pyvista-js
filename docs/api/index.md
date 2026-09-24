@@ -97,6 +97,7 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.PolyData.fill_holes
    pyvista_js.PolyData.shrink
    pyvista_js.PolyData.texture_map_to_plane
+   pyvista_js.PolyData.triangulate
    pyvista_js.PolyData.tube
 ```
 
