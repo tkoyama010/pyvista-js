@@ -1,0 +1,97 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../howtos/update-in-place.md:1
+msgid "Update a rendered scene in place"
+msgstr ""
+
+#: ../howtos/update-in-place.md:3
+msgid "When data changes over time, such as colors that follow a time slider, rendering the whole scene again re-sends geometry that has not changed and rebuilds the render window. Instead, update just the actors that changed with {meth}`~pyvista_js.Plotter.update_actor`."
+msgstr ""
+
+#: ../howtos/update-in-place.md:8
+msgid "In a notebook"
+msgstr ""
+
+#: ../howtos/update-in-place.md:10
+msgid "Show the scene once:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:24
+msgid "Then, in a later cell, send new colors to it:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:31
+msgid "Actors are numbered in the order they were added. An update can:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:33
+msgid "add or replace point-data arrays with `point_data`,"
+msgstr ""
+
+#: ../howtos/update-in-place.md:34
+msgid "color by a different point-data array with `scalars`,"
+msgstr ""
+
+#: ../howtos/update-in-place.md:35
+msgid "move the points of a mesh given by points and faces with `points`."
+msgstr ""
+
+#: ../howtos/update-in-place.md:37
+msgid "The number of points cannot change. The mesh is updated in Python too, so a page generated later shows the new data."
+msgstr ""
+
+#: ../howtos/update-in-place.md:40
+msgid "In a page you embed yourself"
+msgstr ""
+
+#: ../howtos/update-in-place.md:42
+msgid "If you put the page from {meth}`~pyvista_js.Plotter.generate_standalone_html` somewhere yourself, for example in an `<iframe>`, deliver the updates yourself as well. Pass `send=False` and serialize the message with {func}`~pyvista_js.rendering.scene_to_json`:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:59
+msgid "Then apply the message with `pvjsApplyUpdate`, which the page defines:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:66
+msgid "How the message gets to the page is up to you: a `postMessage` handler, a widget, or any other channel you already have."
+msgstr ""
+
+#: ../howtos/update-in-place.md:69
+msgid "Limitations"
+msgstr ""
+
+#: ../howtos/update-in-place.md:71
+msgid "Updates reach the rendered mesh through smooth-shading normals, but not through filters such as {meth}`~pyvista_js.PolyData.clip` or {meth}`~pyvista_js.PolyData.contour`, which are computed when the page loads."
+msgstr ""
+
+#: ../howtos/update-in-place.md:74
+msgid "`points` can only be updated for meshes given by points and faces, not for generated shapes such as {func}`~pyvista_js.Sphere`."
+msgstr ""
+
+#: ../howtos/update-in-place.md:77
+msgid "Faster serialization"
+msgstr ""
+
+#: ../howtos/update-in-place.md:79
+msgid "Scenes and update messages with large meshes are written several times faster when [orjson](https://github.com/ijl/orjson) is installed:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:86
+msgid "In Pyodide, run `await micropip.install(\"orjson\")`."
+msgstr ""

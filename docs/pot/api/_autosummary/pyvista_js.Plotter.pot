@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-29 00:16+0000\n"
+"POT-Creation-Date: 2026-09-25 19:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,6 +39,7 @@ msgstr ""
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.background_color:11
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.camera:10
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.camera_position:9
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.container_id:7
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter:12
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_axes:9
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_light:7
@@ -53,6 +54,7 @@ msgstr ""
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.screenshot:24
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.set_environment_texture:11
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.show:18
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:25
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_isometric:7
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_vector:9
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_xy:11
@@ -68,7 +70,7 @@ msgstr ""
 msgid "Create a plotter with no default lights:"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.__init__:1
 msgid "Initialize a new Plotter instance."
 msgstr ""
@@ -81,200 +83,209 @@ msgstr ""
 msgid "Methods"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`__init__ <pyvista_js.Plotter.__init__>`\\ \\(\\[lighting\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`add_axes <pyvista_js.Plotter.add_axes>`\\ \\(\\*\\*kwargs\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_axes:1
 msgid "Add an orientation marker (axes indicator) to the viewport."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`add_light <pyvista_js.Plotter.add_light>`\\ \\(light\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_light:1
 msgid "Add a light source to the scene."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`add_mesh <pyvista_js.Plotter.add_mesh>`\\ \\(mesh\\[\\, color\\, opacity\\, pbr\\, ...\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_mesh:1
 msgid "Add a mesh to the plotter."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`add_points <pyvista_js.Plotter.add_points>`\\ \\(points\\[\\, color\\, opacity\\, ...\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_points:1
 msgid "Add a point cloud to the plotter."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`add_scalar_bar <pyvista_js.Plotter.add_scalar_bar>`\\ \\(\\[title\\, vertical\\, n\\_labels\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_scalar_bar:1
 msgid "Add a scalar bar to display the color legend."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`add_text <pyvista_js.Plotter.add_text>`\\ \\(text\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_text:1
 msgid "Add a text annotation to the scene."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`clear <pyvista_js.Plotter.clear>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.clear:1
 msgid "Clear all actors from the plotter."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`disable_parallel_projection <pyvista_js.Plotter.disable_parallel_projection>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.disable_parallel_projection:1
 msgid "Disable parallel projection (use perspective projection)."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`enable_parallel_projection <pyvista_js.Plotter.enable_parallel_projection>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.enable_parallel_projection:1
 msgid "Enable parallel (orthographic) projection."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`generate_standalone_html <pyvista_js.Plotter.generate_standalone_html>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.generate_standalone_html:1
 msgid "Generate a complete standalone HTML page with the current scene."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`screenshot <pyvista_js.Plotter.screenshot>`\\ \\(\\[filename\\, ...\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.screenshot:1
 msgid "Take a screenshot of the current scene."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`set_environment_texture <pyvista_js.Plotter.set_environment_texture>`\\ \\(texture\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.set_environment_texture:1
 msgid "Set the environment texture for image-based lighting (IBL)."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`show <pyvista_js.Plotter.show>`\\ \\(\\[container\\_id\\, cpos\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.show:1
 msgid "Display the visualization."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+msgid ":py:obj:`update_actor <pyvista_js.Plotter.update_actor>`\\ \\(actor\\_index\\, \\*\\[\\, points\\, ...\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:1
+msgid "Update an actor's data in place, without re-rendering the whole scene."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_isometric <pyvista_js.Plotter.view_isometric>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_isometric:1
 msgid "View the scene from an isometric angle."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_vector <pyvista_js.Plotter.view_vector>`\\ \\(vector\\[\\, viewup\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_vector:1
 msgid "Point the camera in the direction of the given vector."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_xy <pyvista_js.Plotter.view_xy>`\\ \\(\\[negative\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_xy:1
 msgid "View the XY plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_xz <pyvista_js.Plotter.view_xz>`\\ \\(\\[negative\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_xz:1
 msgid "View the XZ plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_yx <pyvista_js.Plotter.view_yx>`\\ \\(\\[negative\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_yx:1
 msgid "View the YX plane (inverse of XY)."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_yz <pyvista_js.Plotter.view_yz>`\\ \\(\\[negative\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_yz:1
 msgid "View the YZ plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_zx <pyvista_js.Plotter.view_zx>`\\ \\(\\[negative\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_zx:1
 msgid "View the ZX plane (inverse of XZ)."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 msgid ":py:obj:`view_zy <pyvista_js.Plotter.view_zy>`\\ \\(\\[negative\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:42:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_zy:1
 msgid "View the ZY plane (inverse of YZ)."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:44
+#: ../api/_autosummary/pyvista_js.Plotter.rst:45
 msgid "Attributes"
 msgstr ""
 
@@ -312,6 +323,15 @@ msgstr ""
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.camera_position:1
 #: ../:1:<autosummary>:1
 msgid "Get the camera position."
+msgstr ""
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`container_id <pyvista_js.Plotter.container_id>`"
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.container_id:1
+#: ../:1:<autosummary>:1
+msgid "Return the ID of the HTML element that the scene renders into."
 msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_axes:3
@@ -504,6 +524,10 @@ msgstr ""
 msgid "If a camera is set, returns a 3-tuple of 3-tuples: (position, focal_point, view_up). Otherwise returns None."
 msgstr ""
 
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.container_id:3
+msgid "Pass it to ``window.pvjsApplyUpdate`` along with a message from :meth:`update_actor` to update the rendered page in place."
+msgstr ""
+
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.disable_parallel_projection:3
 msgid "Switches the camera from parallel projection to perspective projection."
 msgstr ""
@@ -618,6 +642,34 @@ msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.show:41
 msgid "With full camera specification:"
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:3
+msgid "In a notebook, the update is sent to the scene shown by :meth:`show`. To apply it some other way, such as in a page you embedded yourself, pass ``send=False`` and hand the returned message, serialized with :func:`pyvista_js.rendering.scene_to_json`, to ``window.pvjsApplyUpdate(plotter.container_id, message)`` in the page."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:9
+msgid "Index of the actor, in the order it was added."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:11
+msgid "New ``(n_points, 3)`` coordinates. The number of points cannot change."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:13
+msgid "Point-data arrays to add or replace, by name."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:15
+msgid "Name of the point-data array to color by."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:17
+msgid "Whether to send the update to the scene shown by :meth:`show` in a notebook. The mesh is updated either way."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.update_actor:21
+msgid "The update message."
 msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.view_isometric:3

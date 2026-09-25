@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-20 00:14+0000\n"
+"POT-Creation-Date: 2026-09-25 19:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,67 +133,71 @@ msgid "Python"
 msgstr ""
 
 #: ../../README.md:39
+msgid "To generate scenes with large meshes several times faster, also install the optional [orjson](https://github.com/ijl/orjson) dependency:"
+msgstr ""
+
+#: ../../README.md:46
 msgid "For Pyodide/stlite:"
 msgstr ""
 
-#: ../../README.md:47
+#: ../../README.md:55
 msgid "Usage"
 msgstr ""
 
-#: ../../README.md:57
+#: ../../README.md:65
 msgid "Citation"
 msgstr ""
 
-#: ../../README.md:59
+#: ../../README.md:67
 msgid "[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19092335.svg)](https://doi.org/10.5281/zenodo.19092335)"
 msgstr ""
 
-#: ../../README.md:59
+#: ../../README.md:67
 msgid "DOI"
 msgstr ""
 
-#: ../../README.md:61
+#: ../../README.md:69
 msgid "If you use pyvista-js in your research or projects, please cite it using the following:"
 msgstr ""
 
-#: ../../README.md:74
+#: ../../README.md:82
 msgid "Alternatively, you can use the [CITATION.cff](CITATION.cff) file in this repository, which follows the [Citation File Format](https://citation-file-format.github.io/) standard."
 msgstr ""
 
-#: ../../README.md:76
+#: ../../README.md:84
 msgid "Contributing"
 msgstr ""
 
-#: ../../README.md:78
+#: ../../README.md:86
 msgid "![All Contributors](https://img.shields.io/github/all-contributors/tkoyama010/pyvista-js?color=ee8449)"
 msgstr ""
 
-#: ../../README.md:78
+#: ../../README.md:86
 msgid "All Contributors"
 msgstr ""
 
-#: ../../README.md:80
+#: ../../README.md:88
 msgid "Enjoying pyvista-js? Show your support with a GitHub star — it's a simple click that means the world to us and helps others discover it, too!"
 msgstr ""
 
-#: ../../README.md:88
+#: ../../README.md:96
 msgid "Contributions are welcome! Please open an issue or pull request on [GitHub](https://github.com/tkoyama010/pyvista-js/issues)."
 msgstr ""
 
-#: ../../README.md:90
+#: ../../README.md:98
 msgid "This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!"
 msgstr ""
 
-#: ../../README.md:118
-#: ../../README.md:120
+#: ../../README.md:126
+#: ../../README.md:128
 msgid "License"
 msgstr ""
 
-#: ../../README.md:120
+#: ../../README.md:128
 msgid "[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)"
 msgstr ""
 
-#: ../../README.md:122
+#: ../../README.md:130
 msgid "[BSD 3-Clause](LICENSE) © Tetsuo Koyama"
 msgstr ""
 

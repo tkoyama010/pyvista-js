@@ -1,0 +1,49 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../api/_autosummary/pyvista_js.rendering.scene_to_json.rst:2
+msgid "pyvista\\_js.rendering.scene\\_to\\_json"
+msgstr ""
+
+#: ../../src/pyvista_js/rendering.py:docstring of pyvista_js.rendering.scene_to_json:1
+msgid "Serialize scene or update data, as built by pyvista-js, to JSON."
+msgstr ""
+
+#: ../../src/pyvista_js/rendering.py:docstring of pyvista_js.rendering.scene_to_json:3
+msgid "Float arrays are written with the fewest digits that give back the same float32 values, which is what vtk.js stores."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.rendering.scene_to_json.rst:0
+msgid "Parameters"
+msgstr ""
+
+#: ../../src/pyvista_js/rendering.py:docstring of pyvista_js.rendering.scene_to_json:6
+msgid "The data, such as the output of ``build_update_data``."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.rendering.scene_to_json.rst:0
+msgid "Returns"
+msgstr ""
+
+#: ../../src/pyvista_js/rendering.py:docstring of pyvista_js.rendering.scene_to_json:9
+msgid "The JSON text."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.rendering.scene_to_json.rst:0
+msgid "Return type"
+msgstr ""
