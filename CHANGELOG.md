@@ -2,10 +2,9 @@
 
 ## [0.17.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.16.0...pyvista-js-v0.17.0) (2026-09-25)
 
-
 ### Features
 
-* **rendering:** update actors in place and shrink scene JSON ([#634](https://github.com/tkoyama010/pyvista-js/issues/634)) ([3d87660](https://github.com/tkoyama010/pyvista-js/commit/3d87660c1a485cae8f0d49da6f5dc5031d624ae4))
+- **rendering:** update actors in place and shrink scene JSON ([#634](https://github.com/tkoyama010/pyvista-js/issues/634)) ([3d87660](https://github.com/tkoyama010/pyvista-js/commit/3d87660c1a485cae8f0d49da6f5dc5031d624ae4))
 
 ## [0.16.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.15.2...pyvista-js-v0.16.0) (2026-09-10)
 
