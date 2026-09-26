@@ -1,0 +1,14 @@
+name: Add issues to Scrum Board
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v1.0.0
+        with:
+          project-url: https://github.com/users/tkoyama010/projects/6
+          github-token: ${{ secrets.PROJECT_TOKEN }}
