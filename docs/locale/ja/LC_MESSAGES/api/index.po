@@ -1,292 +1,445 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../api/index.md:1
+#: ../api/index.md:1
 msgid "API Reference"
-msgstr ""
+msgstr "APIリファレンス"
 
-#: ../../api/index.md:3
+#: ../api/index.md:3
 msgid ""
-"This section provides detailed documentation for the pyvista-js public "
-"API."
-msgstr ""
+"This section provides detailed documentation for the pyvista-js public API."
+msgstr "このセクションでは、pyvista-js の公開 API の詳細なドキュメントを提供します。"
 
-#: ../../api/index.md:5
+#: ../api/index.md:5
 msgid "Plotting"
-msgstr ""
+msgstr "プロット"
 
-#: ../../api/index.md:12:<autosummary>:1
+#: ../api/index.md:12:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Plotter <pyvista_js.Plotter>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Plotter <pyvista_js.Plotter>`"
 
-#: ../../api/index.md:12:<autosummary>:1
+#: ../api/index.md:12:<autosummary>:1
 msgid "Main plotting interface for pyvista-js."
-msgstr ""
+msgstr "pyvista-js のメインのプロットインターフェイス。"
 
-#: ../../api/index.md:15
+#: ../api/index.md:15
+msgid "Updating a Scene"
+msgstr "シーンの更新"
+
+#: ../api/index.md:17
+msgid ""
+"Update a rendered scene in place with "
+"{meth}`pyvista_js.Plotter.update_actor`, and see {doc}`/howtos/update-in-"
+"place` for pages you embed yourself."
+msgstr ""
+"{meth}`pyvista_js.Plotter.update_actor` で描画済みのシーンをその場で更新します。自分で埋め込んだページについては"
+" {doc}`/howtos/update-in-place` を参照してください。"
+
+#: ../api/index.md:25:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.rendering.scene_to_json "
+"<pyvista_js.rendering.scene_to_json>`"
+msgstr ""
+":py:obj:`pyvista_js.rendering.scene_to_json "
+"<pyvista_js.rendering.scene_to_json>`"
+
+#: ../api/index.md:25:<autosummary>:1
+msgid "Serialize scene or update data, as built by pyvista-js, to JSON."
+msgstr "pyvista-js が構築したシーンまたは更新データを JSON にシリアライズします。"
+
+#: ../api/index.md:28
 msgid "Camera"
-msgstr ""
+msgstr "カメラ"
 
-#: ../../api/index.md:22:<autosummary>:1
+#: ../api/index.md:35:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Camera <pyvista_js.Camera>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Camera <pyvista_js.Camera>`"
 
-#: ../../api/index.md:22:<autosummary>:1
+#: ../api/index.md:35:<autosummary>:1
 msgid "Represents a virtual camera in a 3D scene."
-msgstr ""
+msgstr "3D シーンにおける仮想カメラを表します。"
 
-#: ../../api/index.md:25
+#: ../api/index.md:38
 msgid "Lighting"
-msgstr ""
+msgstr "ライティング"
 
-#: ../../api/index.md:32:<autosummary>:1
+#: ../api/index.md:45:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Light <pyvista_js.Light>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Light <pyvista_js.Light>`"
 
-#: ../../api/index.md:32:<autosummary>:1
-msgid "A light source for 3D rendering."
-msgstr ""
+#: ../api/index.md:45:<autosummary>:1
+msgid "Light class."
+msgstr "Light クラス。"
 
-#: ../../api/index.md:35
+#: ../api/index.md:48
 msgid "Data"
-msgstr ""
+msgstr "データ"
 
-#: ../../api/index.md:42:<autosummary>:1
+#: ../api/index.md:55:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PointData <pyvista_js.PointData>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PointData <pyvista_js.PointData>`"
 
-#: ../../api/index.md:42:<autosummary>:1
+#: ../api/index.md:55:<autosummary>:1
 msgid "Dict-like container for point data arrays."
-msgstr ""
+msgstr "点データ配列の辞書風コンテナ。"
 
-#: ../../api/index.md:45
+#: ../api/index.md:58
 msgid "Mesh"
-msgstr ""
+msgstr "メッシュ"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData <pyvista_js.PolyData>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PolyData <pyvista_js.PolyData>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Base polygonal mesh class."
-msgstr ""
+msgstr "ポリゴンメッシュの基底クラス。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
+msgid ":py:obj:`pyvista_js.UnstructuredGrid <pyvista_js.UnstructuredGrid>`"
+msgstr ":py:obj:`pyvista_js.UnstructuredGrid <pyvista_js.UnstructuredGrid>`"
+
+#: ../api/index.md:77:<autosummary>:1
+msgid "Unstructured grid dataset."
+msgstr "非構造格子データセット。"
+
+#: ../api/index.md:77:<autosummary>:1
+msgid ":py:obj:`pyvista_js.CellType <pyvista_js.CellType>`"
+msgstr ":py:obj:`pyvista_js.CellType <pyvista_js.CellType>`"
+
+#: ../api/index.md:77:<autosummary>:1
+msgid "VTK cell type constants."
+msgstr "VTK セルタイプの定数。"
+
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Arrow <pyvista_js.Arrow>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Arrow <pyvista_js.Arrow>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create an arrow mesh."
-msgstr ""
+msgstr "矢印のメッシュを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Sphere <pyvista_js.Sphere>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Sphere <pyvista_js.Sphere>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a sphere mesh."
-msgstr ""
+msgstr "球のメッシュを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Cube <pyvista_js.Cube>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Cube <pyvista_js.Cube>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a cube mesh."
-msgstr ""
+msgstr "立方体のメッシュを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Cylinder <pyvista_js.Cylinder>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Cylinder <pyvista_js.Cylinder>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a cylinder mesh."
-msgstr ""
+msgstr "円柱のメッシュを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Cone <pyvista_js.Cone>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Cone <pyvista_js.Cone>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a cone mesh."
-msgstr ""
+msgstr "円錐のメッシュを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Plane <pyvista_js.Plane>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Plane <pyvista_js.Plane>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a plane mesh."
-msgstr ""
+msgstr "平面のメッシュを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Disc <pyvista_js.Disc>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Disc <pyvista_js.Disc>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a disc (annular ring) geometric primitive."
-msgstr ""
+msgstr "円板 (リング状) のジオメトリプリミティブを作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Circle <pyvista_js.Circle>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Circle <pyvista_js.Circle>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a circle defined by a set of points in the XY plane."
-msgstr ""
+msgstr "XY 平面内の一連の点で定義される円を作成します。"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Line <pyvista_js.Line>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Line <pyvista_js.Line>`"
 
-#: ../../api/index.md:62:<autosummary>:1
+#: ../api/index.md:77:<autosummary>:1
 msgid "Create a line segment between two points."
-msgstr ""
+msgstr "2 点間の線分を作成します。"
 
-#: ../../api/index.md:65
+#: ../api/index.md:80
+msgid "Text"
+msgstr "テキスト"
+
+#: ../api/index.md:88:<autosummary>:1
+msgid ":py:obj:`pyvista_js.Text <pyvista_js.Text>`"
+msgstr ":py:obj:`pyvista_js.Text <pyvista_js.Text>`"
+
+#: ../api/index.md:88:<autosummary>:1
+msgid "A text annotation actor for 3D rendering."
+msgstr "3D レンダリング用のテキスト注釈アクター。"
+
+#: ../api/index.md:88:<autosummary>:1
+msgid ":py:obj:`pyvista_js.TextProperty <pyvista_js.TextProperty>`"
+msgstr ":py:obj:`pyvista_js.TextProperty <pyvista_js.TextProperty>`"
+
+#: ../api/index.md:88:<autosummary>:1
+msgid "Properties for text rendering."
+msgstr "テキスト描画のプロパティ。"
+
+#: ../api/index.md:91
 msgid "Texture"
-msgstr ""
+msgstr "テクスチャ"
 
-#: ../../api/index.md:72:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid ":py:obj:`pyvista_js.Texture <pyvista_js.Texture>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.Texture <pyvista_js.Texture>`"
 
-#: ../../api/index.md:72:<autosummary>:1
+#: ../api/index.md:98:<autosummary>:1
 msgid "Surface texture wrapping an image URL."
-msgstr ""
+msgstr "画像 URL をラップする表面テクスチャ。"
 
-#: ../../api/index.md:75
+#: ../api/index.md:101
 msgid "Filters"
-msgstr ""
+msgstr "フィルタ"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.clip <pyvista_js.PolyData.clip>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PolyData.clip <pyvista_js.PolyData.clip>`"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid "Clip the mesh with a plane."
-msgstr ""
+msgstr "平面でメッシュをクリップします。"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
+msgid ":py:obj:`pyvista_js.PolyData.contour <pyvista_js.PolyData.contour>`"
+msgstr ":py:obj:`pyvista_js.PolyData.contour <pyvista_js.PolyData.contour>`"
+
+#: ../api/index.md:113:<autosummary>:1
+msgid "Generate contour lines at constant scalar values."
+msgstr "一定のスカラー値で等高線を生成します。"
+
+#: ../api/index.md:113:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.PolyData.fill_holes <pyvista_js.PolyData.fill_holes>`"
+msgstr ""
+":py:obj:`pyvista_js.PolyData.fill_holes <pyvista_js.PolyData.fill_holes>`"
+
+#: ../api/index.md:113:<autosummary>:1
+msgid "Fill holes in a polygonal mesh."
+msgstr "ポリゴンメッシュの穴を埋めます。"
+
+#: ../api/index.md:113:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.shrink <pyvista_js.PolyData.shrink>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PolyData.shrink <pyvista_js.PolyData.shrink>`"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid "Shrink the cells of a mesh towards their centroid."
-msgstr ""
+msgstr "メッシュのセルを重心に向かって縮小します。"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid ""
 ":py:obj:`pyvista_js.PolyData.texture_map_to_plane "
 "<pyvista_js.PolyData.texture_map_to_plane>`"
 msgstr ""
+":py:obj:`pyvista_js.PolyData.texture_map_to_plane "
+"<pyvista_js.PolyData.texture_map_to_plane>`"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid "Generate texture coordinates by projecting points onto the XY plane."
-msgstr ""
+msgstr "点を XY 平面に投影してテクスチャ座標を生成します。"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyData.tube <pyvista_js.PolyData.tube>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PolyData.tube <pyvista_js.PolyData.tube>`"
 
-#: ../../api/index.md:85:<autosummary>:1
+#: ../api/index.md:113:<autosummary>:1
 msgid "Generate a tube around a line polydata."
-msgstr ""
+msgstr "ラインポリデータの周囲にチューブを生成します。"
 
-#: ../../api/index.md:88
+#: ../api/index.md:116
 msgid "Readers"
-msgstr ""
+msgstr "リーダー"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
+msgid ":py:obj:`pyvista_js.GLTFReader <pyvista_js.GLTFReader>`"
+msgstr ":py:obj:`pyvista_js.GLTFReader <pyvista_js.GLTFReader>`"
+
+#: ../api/index.md:127:<autosummary>:1
+msgid ""
+"Reader for glTF (GL Transmission Format) files (``.gltf`` or ``.glb``)."
+msgstr "glTF (GL Transmission Format) ファイル (``.gltf`` または ``.glb``) 用のリーダー。"
+
+#: ../api/index.md:127:<autosummary>:1
 msgid ":py:obj:`pyvista_js.OBJReader <pyvista_js.OBJReader>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.OBJReader <pyvista_js.OBJReader>`"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid "Reader for Wavefront OBJ files (``.obj``)."
-msgstr ""
+msgstr "Wavefront OBJ ファイル (``.obj``) 用のリーダー。"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PLYReader <pyvista_js.PLYReader>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PLYReader <pyvista_js.PLYReader>`"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid "Reader for PLY (Polygon File Format) files (``.ply``)."
-msgstr ""
+msgstr "PLY (Polygon File Format) ファイル (``.ply``) 用のリーダー。"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid ":py:obj:`pyvista_js.PolyDataReader <pyvista_js.PolyDataReader>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.PolyDataReader <pyvista_js.PolyDataReader>`"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid "Reader for legacy VTK PolyData files (``.vtk``)."
-msgstr ""
+msgstr "従来形式の VTK PolyData ファイル (``.vtk``) 用のリーダー。"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid ":py:obj:`pyvista_js.STLReader <pyvista_js.STLReader>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.STLReader <pyvista_js.STLReader>`"
 
-#: ../../api/index.md:98:<autosummary>:1
+#: ../api/index.md:127:<autosummary>:1
 msgid "Reader for STL (STereoLithography) files (``.stl``)."
-msgstr ""
+msgstr "STL (STereoLithography) ファイル (``.stl``) 用のリーダー。"
 
-#: ../../api/index.md:101
+#: ../api/index.md:130
 msgid "Examples"
-msgstr ""
+msgstr "例"
 
-#: ../../api/index.md:110:<autosummary>:1
+#: ../api/index.md:144:<autosummary>:1
 msgid ":py:obj:`pyvista_js.examples.CubeMap <pyvista_js.examples.CubeMap>`"
-msgstr ""
+msgstr ":py:obj:`pyvista_js.examples.CubeMap <pyvista_js.examples.CubeMap>`"
 
-#: ../../api/index.md:110:<autosummary>:1
+#: ../api/index.md:144:<autosummary>:1
 msgid "Cubemap texture holding six face image URLs."
-msgstr ""
+msgstr "6 枚の面画像 URL を保持するキューブマップテクスチャ。"
 
-#: ../../api/index.md:110:<autosummary>:1
+#: ../api/index.md:144:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.examples.download_bunny "
+"<pyvista_js.examples.download_bunny>`"
+msgstr ""
+":py:obj:`pyvista_js.examples.download_bunny "
+"<pyvista_js.examples.download_bunny>`"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid "Download the Stanford Bunny dataset."
+msgstr "Stanford Bunny データセットをダウンロードします。"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.examples.download_lucy "
+"<pyvista_js.examples.download_lucy>`"
+msgstr ""
+":py:obj:`pyvista_js.examples.download_lucy "
+"<pyvista_js.examples.download_lucy>`"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid "Download the Lucy Angel dataset."
+msgstr "Lucy Angel データセットをダウンロードします。"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.examples.download_cad_model "
+"<pyvista_js.examples.download_cad_model>`"
+msgstr ""
+":py:obj:`pyvista_js.examples.download_cad_model "
+"<pyvista_js.examples.download_cad_model>`"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid "Download the CAD model dataset."
+msgstr "CAD モデルのデータセットをダウンロードします。"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.examples.download_damaged_helmet "
+"<pyvista_js.examples.download_damaged_helmet>`"
+msgstr ""
+":py:obj:`pyvista_js.examples.download_damaged_helmet "
+"<pyvista_js.examples.download_damaged_helmet>`"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid "Download the damaged helmet glTF example."
+msgstr "破損したヘルメットの glTF サンプルをダウンロードします。"
+
+#: ../api/index.md:144:<autosummary>:1
 msgid ""
 ":py:obj:`pyvista_js.examples.download_masonry_texture "
 "<pyvista_js.examples.download_masonry_texture>`"
 msgstr ""
+":py:obj:`pyvista_js.examples.download_masonry_texture "
+"<pyvista_js.examples.download_masonry_texture>`"
 
-#: ../../api/index.md:110:<autosummary>:1
+#: ../api/index.md:144:<autosummary>:1
 msgid "Download the masonry texture dataset."
-msgstr ""
+msgstr "レンガ積みテクスチャのデータセットをダウンロードします。"
 
-#: ../../api/index.md:110:<autosummary>:1
+#: ../api/index.md:144:<autosummary>:1
 msgid ""
 ":py:obj:`pyvista_js.examples.download_sky_box_cube_map "
 "<pyvista_js.examples.download_sky_box_cube_map>`"
 msgstr ""
+":py:obj:`pyvista_js.examples.download_sky_box_cube_map "
+"<pyvista_js.examples.download_sky_box_cube_map>`"
 
-#: ../../api/index.md:110:<autosummary>:1
+#: ../api/index.md:144:<autosummary>:1
 msgid "Download the skybox cube map dataset."
-msgstr ""
+msgstr "スカイボックスのキューブマップデータセットをダウンロードします。"
 
-#: ../../api/index.md:113
+#: ../api/index.md:144:<autosummary>:1
+msgid ""
+":py:obj:`pyvista_js.examples.download_trumpet "
+"<pyvista_js.examples.download_trumpet>`"
+msgstr ""
+":py:obj:`pyvista_js.examples.download_trumpet "
+"<pyvista_js.examples.download_trumpet>`"
+
+#: ../api/index.md:144:<autosummary>:1
+msgid "Download the trumpet dataset."
+msgstr "トランペットのデータセットをダウンロードします。"
+
+#: ../api/index.md:147
 msgid "CLI"
-msgstr ""
+msgstr "CLI"
 
-#: ../../api/index.md:120:<autosummary>:1
-msgid ":py:obj:`pyvista_js._cli.main <pyvista_js._cli.main>`"
-msgstr ""
-
-#: ../../api/index.md:120:<autosummary>:1
-msgid "PyVista-like CLI for browser-based 3-D visualization with vtk.js."
-msgstr ""
+#: ../api/index.md:149
+msgid ""
+"See the {doc}`CLI reference </cli/index>` for command-line usage "
+"documentation."
+msgstr "コマンドラインの使い方は {doc}`CLI リファレンス </cli/index>` を参照してください。"
