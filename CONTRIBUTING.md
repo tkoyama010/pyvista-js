@@ -345,6 +345,8 @@ To use it:
 
 Japanese (`ja`) is the current target language; translations land in `docs/locale/<lang>/LC_MESSAGES` via the Transifex GitHub integration.
 
+The extension imports `typebox`, one of pi's built-in extension imports (see the "Available Imports" section of the pi extension docs); it is also declared in `package.json` so module resolution works in clean checkouts.
+
 ### Community
 
 - Answering questions in [GitHub Discussions](https://github.com/tkoyama010/pyvista-js/discussions)

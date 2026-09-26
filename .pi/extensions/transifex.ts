@@ -2,6 +2,9 @@ import fs from "node:fs";
 import os from "node:os";
 import process from "node:process";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+// "typebox" is one of pi's built-in extension imports (see pi docs,
+// "Available Imports"), and it is also declared in package.json so that
+// module resolution works in clean checkouts.
 import { Type } from "typebox";
 
 // Transifex API v3 extension: lets the agent list untranslated strings and
@@ -70,6 +73,11 @@ function resourceId(org: string, project: string, resource: string): string {
 	return `o:${org}:p:${project}:r:${resource}`;
 }
 
+/** Narrow the unknown `strings` attribute into a plural-form map. */
+function stringsOf(item: JsonApiItem): Record<string, string> {
+	return (item.attributes.strings as Record<string, string> | undefined) ?? {};
+}
+
 /** Return the (slot id, key, source) triples of untranslated strings from a resource_translations response. */
 export function pickUntranslated(
 	response: JsonApiResponse,
@@ -81,11 +89,8 @@ export function pickUntranslated(
 	for (const item of response.data) {
 		// Untranslated slots have strings null or all forms empty. Any populated
 		// plural form counts as translated.
-		const forms = item.attributes.strings as
-			| Record<string, string>
-			| null
-			| undefined;
-		if (forms && Object.values(forms).some(Boolean)) continue;
+		const forms = stringsOf(item);
+		if (Object.values(forms).some(Boolean)) continue;
 		const resourceString = includedById.get(
 			item.relationships?.resource_string?.data?.id ?? "",
 		);
@@ -93,7 +98,7 @@ export function pickUntranslated(
 		result.push({
 			id: item.id,
 			key: String(resourceString.attributes.key ?? ""),
-			source: String(resourceString.attributes.strings?.other ?? ""),
+			source: String(stringsOf(resourceString).other ?? ""),
 		});
 	}
 	return result;
@@ -213,34 +218,50 @@ export default function (pi: ExtensionAPI) {
 						const json = await txGet(
 							`/resource_translations/${id}?include=resource_string`,
 						);
-						value = String(json.included?.[0]?.attributes.strings?.other ?? "");
+						value =
+							stringsOf(json.included?.[0] ?? ({} as JsonApiItem)).other ?? "";
 					} catch (error) {
 						failed.push({ id, error: String(error) });
 						continue;
 					}
-				}
-				const response = await fetch(`${API}/resource_translations/${id}`, {
-					method: "PATCH",
-					headers: {
-						"Content-Type": "application/vnd.api+json",
-						Accept: "application/vnd.api+json",
-						Authorization: `Bearer ${token()}`,
-					},
-					body: JSON.stringify({
-						data: {
+					// Fail closed: never PATCH an empty source (it would wipe the
+					// translation slot).
+					if (!value) {
+						failed.push({
 							id,
-							type: "resource_translations",
-							attributes: { strings: { other: value } },
+							error: "source string is missing or empty; not overwritten",
+						});
+						continue;
+					}
+				}
+				try {
+					const response = await fetch(`${API}/resource_translations/${id}`, {
+						method: "PATCH",
+						headers: {
+							"Content-Type": "application/vnd.api+json",
+							Accept: "application/vnd.api+json",
+							Authorization: `Bearer ${token()}`,
 						},
-					}),
-				});
-				if (response.ok) {
-					saved.push(id);
-				} else {
-					failed.push({
-						id,
-						error: `${response.status}: ${await response.text()}`,
+						body: JSON.stringify({
+							data: {
+								id,
+								type: "resource_translations",
+								attributes: { strings: { other: value } },
+							},
+						}),
 					});
+					if (response.ok) {
+						saved.push(id);
+					} else {
+						failed.push({
+							id,
+							error: `${response.status}: ${await response.text()}`,
+						});
+					}
+				} catch (error) {
+					// Network/auth failures must not reject the whole batch; keep
+					// earlier partial results reportable.
+					failed.push({ id, error: String(error) });
 				}
 			}
 			const text = JSON.stringify({ saved, failed }, null, 2);
