@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"POT-Creation-Date: 2026-09-26 16:43+0000\n"
 "PO-Revision-Date: 2026-03-21 10:39+0000\n"
 "Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
@@ -76,6 +76,8 @@ msgstr ""
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.generate_standalone_html:7
 #: ../../src/pyvista_js/plotter.pydocstring of
+#: pyvista_js.plotter.Plotter.remove_actor:13
+#: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.screenshot:24
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.set_environment_texture:11
@@ -105,7 +107,7 @@ msgstr "例"
 msgid "Create a plotter with no default lights:"
 msgstr "既定のライトなしでプロッターを作成します:"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.__init__:1
 msgid "Initialize a new Plotter instance."
@@ -124,31 +126,31 @@ msgstr ""
 msgid "Methods"
 msgstr "メソッド"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`__init__ <pyvista_js.Plotter.__init__>`\\ \\(\\[lighting\\]\\)"
 msgstr ":py:obj:`__init__ <pyvista_js.Plotter.__init__>`\\ \\(\\[lighting\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`add_axes <pyvista_js.Plotter.add_axes>`\\ \\(\\*\\*kwargs\\)"
 msgstr ":py:obj:`add_axes <pyvista_js.Plotter.add_axes>`\\ \\(\\*\\*kwargs\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_axes:1
 msgid "Add an orientation marker (axes indicator) to the viewport."
 msgstr "ビューポートに方向マーカー (軸インジケーター) を追加します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`add_light <pyvista_js.Plotter.add_light>`\\ \\(light\\)"
 msgstr ":py:obj:`add_light <pyvista_js.Plotter.add_light>`\\ \\(light\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_light:1
 msgid "Add a light source to the scene."
 msgstr "シーンに光源を追加します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`add_mesh <pyvista_js.Plotter.add_mesh>`\\ \\(mesh\\[\\, color\\, "
 "opacity\\, pbr\\, ...\\]\\)"
@@ -156,13 +158,13 @@ msgstr ""
 ":py:obj:`add_mesh <pyvista_js.Plotter.add_mesh>`\\ \\(mesh\\[\\, color\\, "
 "opacity\\, pbr\\, ...\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_mesh:1
 msgid "Add a mesh to the plotter."
 msgstr "プロッターにメッシュを追加します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`add_points <pyvista_js.Plotter.add_points>`\\ \\(points\\[\\, "
 "color\\, opacity\\, ...\\]\\)"
@@ -170,13 +172,13 @@ msgstr ""
 ":py:obj:`add_points <pyvista_js.Plotter.add_points>`\\ \\(points\\[\\, "
 "color\\, opacity\\, ...\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_points:1
 msgid "Add a point cloud to the plotter."
 msgstr "プロッターに点群を追加します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`add_scalar_bar <pyvista_js.Plotter.add_scalar_bar>`\\ "
 "\\(\\[title\\, vertical\\, n\\_labels\\]\\)"
@@ -184,33 +186,33 @@ msgstr ""
 ":py:obj:`add_scalar_bar <pyvista_js.Plotter.add_scalar_bar>`\\ "
 "\\(\\[title\\, vertical\\, n\\_labels\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_scalar_bar:1
 msgid "Add a scalar bar to display the color legend."
 msgstr "カラーレジェンドを表示するためのスカラーバーを追加します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`add_text <pyvista_js.Plotter.add_text>`\\ \\(text\\)"
 msgstr ":py:obj:`add_text <pyvista_js.Plotter.add_text>`\\ \\(text\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_text:1
 msgid "Add a text annotation to the scene."
 msgstr "シーンにテキスト注釈を追加します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`clear <pyvista_js.Plotter.clear>`\\ \\(\\)"
 msgstr ":py:obj:`clear <pyvista_js.Plotter.clear>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.clear:1
 msgid "Clear all actors from the plotter."
 msgstr "プロッターからすべてのアクターを削除します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`disable_parallel_projection "
 "<pyvista_js.Plotter.disable_parallel_projection>`\\ \\(\\)"
@@ -218,13 +220,13 @@ msgstr ""
 ":py:obj:`disable_parallel_projection "
 "<pyvista_js.Plotter.disable_parallel_projection>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.disable_parallel_projection:1
 msgid "Disable parallel projection (use perspective projection)."
 msgstr "平行投影を無効にします (透視投影を使用します)。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`enable_parallel_projection "
 "<pyvista_js.Plotter.enable_parallel_projection>`\\ \\(\\)"
@@ -232,13 +234,13 @@ msgstr ""
 ":py:obj:`enable_parallel_projection "
 "<pyvista_js.Plotter.enable_parallel_projection>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.enable_parallel_projection:1
 msgid "Enable parallel (orthographic) projection."
 msgstr "平行 (正射影) 投影を有効にします。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`generate_standalone_html "
 "<pyvista_js.Plotter.generate_standalone_html>`\\ \\(\\)"
@@ -246,25 +248,35 @@ msgstr ""
 ":py:obj:`generate_standalone_html "
 "<pyvista_js.Plotter.generate_standalone_html>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.generate_standalone_html:1
 msgid "Generate a complete standalone HTML page with the current scene."
 msgstr "現在のシーンを含む完全なスタンドアロン HTML ページを生成します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
+msgid ":py:obj:`remove_actor <pyvista_js.Plotter.remove_actor>`\\ \\(actor\\)"
+msgstr ":py:obj:`remove_actor <pyvista_js.Plotter.remove_actor>`\\ \\(actor\\)"
+
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
+#: ../../src/pyvista_js/plotter.pydocstring of
+#: pyvista_js.plotter.Plotter.remove_actor:1
+msgid "Remove an actor from the plotter."
+msgstr "プロッターからアクターを削除します。"
+
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`screenshot <pyvista_js.Plotter.screenshot>`\\ \\(\\[filename\\, ...\\]\\)"
 msgstr ""
 ":py:obj:`screenshot <pyvista_js.Plotter.screenshot>`\\ \\(\\[filename\\, "
 "...\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.screenshot:1
 msgid "Take a screenshot of the current scene."
 msgstr "現在のシーンのスクリーンショットを撮影します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`set_environment_texture "
 "<pyvista_js.Plotter.set_environment_texture>`\\ \\(texture\\)"
@@ -272,23 +284,23 @@ msgstr ""
 ":py:obj:`set_environment_texture "
 "<pyvista_js.Plotter.set_environment_texture>`\\ \\(texture\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.set_environment_texture:1
 msgid "Set the environment texture for image-based lighting (IBL)."
 msgstr "イメージベースドライティング (IBL) 用の環境テクスチャを設定します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`show <pyvista_js.Plotter.show>`\\ \\(\\[container\\_id\\, cpos\\]\\)"
 msgstr ":py:obj:`show <pyvista_js.Plotter.show>`\\ \\(\\[container\\_id\\, cpos\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.show:1
 msgid "Display the visualization."
 msgstr "可視化を表示します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`update_actor <pyvista_js.Plotter.update_actor>`\\ "
 "\\(actor\\_index\\, \\*\\[\\, points\\, ...\\]\\)"
@@ -296,23 +308,23 @@ msgstr ""
 ":py:obj:`update_actor <pyvista_js.Plotter.update_actor>`\\ "
 "\\(actor\\_index\\, \\*\\[\\, points\\, ...\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.update_actor:1
 msgid "Update an actor's data in place, without re-rendering the whole scene."
 msgstr "シーン全体を再描画せずにアクターのデータをその場で更新します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_isometric <pyvista_js.Plotter.view_isometric>`\\ \\(\\)"
 msgstr ":py:obj:`view_isometric <pyvista_js.Plotter.view_isometric>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_isometric:1
 msgid "View the scene from an isometric angle."
 msgstr "アイソメトリック (等角) の角度からシーンを表示します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ""
 ":py:obj:`view_vector <pyvista_js.Plotter.view_vector>`\\ \\(vector\\[\\, "
 "viewup\\]\\)"
@@ -320,73 +332,73 @@ msgstr ""
 ":py:obj:`view_vector <pyvista_js.Plotter.view_vector>`\\ \\(vector\\[\\, "
 "viewup\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_vector:1
 msgid "Point the camera in the direction of the given vector."
 msgstr "指定したベクトルの方向にカメラを向けます。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_xy <pyvista_js.Plotter.view_xy>`\\ \\(\\[negative\\]\\)"
 msgstr ":py:obj:`view_xy <pyvista_js.Plotter.view_xy>`\\ \\(\\[negative\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_xy:1
 msgid "View the XY plane."
 msgstr "XY 平面を表示します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_xz <pyvista_js.Plotter.view_xz>`\\ \\(\\[negative\\]\\)"
 msgstr ":py:obj:`view_xz <pyvista_js.Plotter.view_xz>`\\ \\(\\[negative\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_xz:1
 msgid "View the XZ plane."
 msgstr "XZ 平面を表示します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_yx <pyvista_js.Plotter.view_yx>`\\ \\(\\[negative\\]\\)"
 msgstr ":py:obj:`view_yx <pyvista_js.Plotter.view_yx>`\\ \\(\\[negative\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_yx:1
 msgid "View the YX plane (inverse of XY)."
 msgstr "YX 平面を表示します (XY の逆)。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_yz <pyvista_js.Plotter.view_yz>`\\ \\(\\[negative\\]\\)"
 msgstr ":py:obj:`view_yz <pyvista_js.Plotter.view_yz>`\\ \\(\\[negative\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_yz:1
 msgid "View the YZ plane."
 msgstr "YZ 平面を表示します。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_zx <pyvista_js.Plotter.view_zx>`\\ \\(\\[negative\\]\\)"
 msgstr ":py:obj:`view_zx <pyvista_js.Plotter.view_zx>`\\ \\(\\[negative\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_zx:1
 msgid "View the ZX plane (inverse of XZ)."
 msgstr "ZX 平面を表示します (XZ の逆)。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 msgid ":py:obj:`view_zy <pyvista_js.Plotter.view_zy>`\\ \\(\\[negative\\]\\)"
 msgstr ":py:obj:`view_zy <pyvista_js.Plotter.view_zy>`\\ \\(\\[negative\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:43:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Plotter.rst:44:<autosummary>:1
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.view_zy:1
 msgid "View the ZY plane (inverse of YZ)."
 msgstr "ZY 平面を表示します (YZ の逆)。"
 
-#: ../api/_autosummary/pyvista_js.Plotter.rst:45
+#: ../api/_autosummary/pyvista_js.Plotter.rst:46
 msgid "Attributes"
 msgstr "属性"
 
@@ -764,6 +776,23 @@ msgstr "カメラが設定されていない場合、平行投影を有効にし
 #: pyvista_js.plotter.Plotter.generate_standalone_html:3
 msgid "A full HTML document string containing the visualization."
 msgstr "可視化を含む完全な HTML ドキュメント文字列。"
+
+#: ../../src/pyvista_js/plotter.pydocstring of
+#: pyvista_js.plotter.Plotter.remove_actor:3
+msgid ""
+"Scenes already shown are not changed; the actor is left out of those shown "
+"or generated afterwards."
+msgstr "すでに表示済みのシーンは変更されません。その後表示または生成されるシーンには、そのアクターは含まれません。"
+
+#: ../../src/pyvista_js/plotter.pydocstring of
+#: pyvista_js.plotter.Plotter.remove_actor:6
+msgid "The actor, as returned by :meth:`add_mesh` or :meth:`add_points`."
+msgstr ":meth:`add_mesh` または :meth:`add_points` が返すアクターです。"
+
+#: ../../src/pyvista_js/plotter.pydocstring of
+#: pyvista_js.plotter.Plotter.remove_actor:9
+msgid "Whether the actor was in the plotter."
+msgstr "アクターがプロッターに含まれていたかどうか。"
 
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.screenshot:3
