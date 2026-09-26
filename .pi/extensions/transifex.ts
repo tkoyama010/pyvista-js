@@ -240,6 +240,11 @@ export default function (pi: ExtensionAPI) {
 					// PATCH replaces the whole plural-form map, so fetch the current
 					// slot first and merge into it (json.data is the target slot;
 					// included holds the source resource_string).
+					// ponytail: read-merge-PATCH has a small lost-update window; the
+					// Transifex API v3 does not support ETag/If-Match conditional
+					// updates, so conflicts cannot be rejected server-side. Retry
+					// failed-looking saves if another translator edited the slot
+					// concurrently.
 					json = await txGet(
 						`/resource_translations/${id}?include=resource_string`,
 					);
