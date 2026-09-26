@@ -222,9 +222,13 @@ export default function (pi: ExtensionAPI) {
 			const saved: string[] = [];
 			const failed: Array<{ id: string; error: string }> = [];
 			for (const { id, text, form } of params.translations) {
-				// Caller-controlled id goes into a URL path segment; reject
-				// anything that could escape the intended endpoint.
-				if (!/^[0-9A-Za-z_-]+$/.test(id)) {
+				// Caller-controlled id goes into a URL path segment; validate it
+				// against the official Transifex resource-translation id format
+				// (o:org:p:project:r:resource:s:hash:l:language) so nothing that
+				// could escape the endpoint is accepted.
+				const TRANSLATION_ID_RE =
+					/^o:[a-zA-Z0-9._-]+:p:[a-zA-Z0-9_-]+:r:[a-zA-Z0-9_-]+:s:[0-9a-fA-F]{32}:l:[a-zA-Z0-9@_-]+$/;
+				if (!TRANSLATION_ID_RE.test(id)) {
 					failed.push({ id, error: "invalid resource translation id" });
 					continue;
 				}
