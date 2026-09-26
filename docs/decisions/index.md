@@ -17,4 +17,5 @@ worked example.
 :hidden:
 
 0000-use-markdown-architectural-decision-records
+0001-add-three-js-rendering-option
 ```
