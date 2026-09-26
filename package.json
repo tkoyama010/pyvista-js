@@ -12,6 +12,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
     "esbuild": "^0.28",
+    "typebox": "^1.3.34",
     "typescript": "^7.0"
   },
   "allowScripts": {
