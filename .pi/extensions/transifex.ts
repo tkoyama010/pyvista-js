@@ -223,18 +223,19 @@ export default function (pi: ExtensionAPI) {
 			const failed: Array<{ id: string; error: string }> = [];
 			for (const { id, text, form } of params.translations) {
 				let strings: Record<string, string>;
+				try {
+					// Fetch the current plural-form map first: PATCH replaces the
+					// whole map, so it must be merged, not overwritten.
+					const json = await txGet(
+						`/resource_translations/${id}?include=resource_string`,
+					);
+					strings = stringsOf(json.included?.[0] ?? ({} as JsonApiItem));
+				} catch (error) {
+					failed.push({ id, error: String(error) });
+					continue;
+				}
 				if (text === undefined) {
-					// Copy source: fetch the slot with its resource_string and copy
-					// every plural form unchanged.
-					try {
-						const json = await txGet(
-							`/resource_translations/${id}?include=resource_string`,
-						);
-						strings = stringsOf(json.included?.[0] ?? ({} as JsonApiItem));
-					} catch (error) {
-						failed.push({ id, error: String(error) });
-						continue;
-					}
+					// Copy source: keep every plural form unchanged.
 					// Fail closed: never PATCH an empty source (it would wipe the
 					// translation slot).
 					if (!Object.values(strings).some(Boolean)) {
@@ -251,7 +252,7 @@ export default function (pi: ExtensionAPI) {
 						failed.push({ id, error: "empty translation text; not saved" });
 						continue;
 					}
-					strings = { [form ?? "other"]: text };
+					strings = { ...strings, [form ?? "other"]: text };
 				}
 				try {
 					const response = await fetch(`${API}/resource_translations/${id}`, {
