@@ -37,6 +37,7 @@ Thank you for your interest in contributing to pyvista-js! This document provide
 - [Types of Contributions](#types-of-contributions)
   - [Code Contributions](#code-contributions)
   - [Documentation](#documentation-1)
+  - [Translation](#translation)
   - [Community](#community)
   - [Recognition](#recognition)
 - [Scientific Python Standards](#scientific-python-standards)
