@@ -1,98 +1,102 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../api/_autosummary/pyvista_js.Arrow.rst:2
+#: ../api/_autosummary/pyvista_js.Arrow.rst:2
 msgid "pyvista\\_js.Arrow"
-msgstr ""
+msgstr "pyvista\\_js.Arrow"
 
-#: of pyvista_js.mesh.Arrow:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:1
 msgid "Create an arrow mesh."
-msgstr ""
+msgstr "矢印のメッシュを作成します。"
 
-#: of pyvista_js.mesh.Arrow:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:3
 msgid ""
-"Returns a :class:`PolyData` representing an arrow starting at ``start`` "
-"and pointing in ``direction``, backed by vtk.js ``vtkArrowSource``."
+"Returns a :class:`PolyData` representing an arrow starting at ``start`` and "
+"pointing in ``direction``, backed by vtk.js ``vtkArrowSource``."
 msgstr ""
+"``start`` を始点とし ``direction`` を向く、vtk.js の ``vtkArrowSource`` に基づく "
+":class:`PolyData` を返します。"
 
-#: ../../api/_autosummary/pyvista_js.Arrow.rst
+#: ../api/_autosummary/pyvista_js.Arrow.rst:0
 msgid "Parameters"
-msgstr ""
+msgstr "パラメータ"
 
-#: of pyvista_js.mesh.Arrow:6
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:6
 msgid "Starting point of the arrow ``(x, y, z)``. Default is ``(0, 0, 0)``."
-msgstr ""
+msgstr "矢印の始点 ``(x, y, z)``。デフォルトは ``(0, 0, 0)`` です。"
 
-#: of pyvista_js.mesh.Arrow:8
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:8
 msgid "Direction vector of the arrow. Default is ``(1, 0, 0)``."
-msgstr ""
+msgstr "矢印の方向ベクトル。デフォルトは ``(1, 0, 0)`` です。"
 
-#: of pyvista_js.mesh.Arrow:10
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:10
 msgid ""
-"Length of the conical tip as a fraction of the total arrow length. "
-"Default is 0.25."
-msgstr ""
+"Length of the conical tip as a fraction of the total arrow length. Default "
+"is 0.25."
+msgstr "円錐状の先端部分の全長に対する割合。デフォルトは 0.25 です。"
 
-#: of pyvista_js.mesh.Arrow:13
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:13
 msgid "Radius of the base of the tip. Default is 0.1."
-msgstr ""
+msgstr "先端部分の底面の半径。デフォルトは 0.1 です。"
 
-#: of pyvista_js.mesh.Arrow:15
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:15
 msgid "Number of faces around the tip cone. Default is 20."
-msgstr ""
+msgstr "先端の円錐周囲の面数。デフォルトは 20 です。"
 
-#: of pyvista_js.mesh.Arrow:17
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:17
 msgid "Radius of the cylindrical shaft. Default is 0.05."
-msgstr ""
+msgstr "円筒状の軸の半径。デフォルトは 0.05 です。"
 
-#: of pyvista_js.mesh.Arrow:19
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:19
 msgid "Number of faces around the shaft cylinder. Default is 20."
-msgstr ""
+msgstr "軸の円筒周囲の面数。デフォルトは 20 です。"
 
-#: of pyvista_js.mesh.Arrow:21
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:21
 msgid ""
-"Scaling factor applied to the entire arrow. When ``None`` the arrow is "
-"not scaled."
-msgstr ""
+"Scaling factor applied to the entire arrow. When ``None`` the arrow is not "
+"scaled."
+msgstr "矢印全体に適用する倍率。``None`` の場合はスケールしません。"
 
-#: ../../api/_autosummary/pyvista_js.Arrow.rst
+#: ../api/_autosummary/pyvista_js.Arrow.rst:0
 msgid "Returns"
-msgstr ""
+msgstr "戻り値"
 
-#: of pyvista_js.mesh.Arrow:25
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:25
 msgid "An arrow mesh."
-msgstr ""
+msgstr "矢印のメッシュ。"
 
-#: ../../api/_autosummary/pyvista_js.Arrow.rst
+#: ../api/_autosummary/pyvista_js.Arrow.rst:0
 msgid "Return type"
-msgstr ""
+msgstr "戻り値の型"
 
-#: of pyvista_js.mesh.Arrow:29
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:29
 msgid "Examples"
-msgstr ""
+msgstr "例"
 
-#: of pyvista_js.mesh.Arrow:38
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:38
 msgid "Create an arrow with a custom start point and direction:"
-msgstr ""
+msgstr "カスタムの始点と方向で矢印を作成します:"
 
-#: of pyvista_js.mesh.Arrow:44
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.Arrow:44
 msgid "Plot the arrow:"
-msgstr ""
+msgstr "矢印をプロットします:"
