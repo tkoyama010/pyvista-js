@@ -1,0 +1,151 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-21 12:16+0000\n"
+"PO-Revision-Date: 2026-03-21 12:16+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:2
+msgid "pyvista\\_js.GLTFReader"
+msgstr "pyvista\\_js.GLTFReader"
+
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.GLTFReader:1
+msgid ""
+"Reader for glTF (GL Transmission Format) files (``.gltf`` or ``.glb``)."
+msgstr "glTF (GL Transmission Format) ファイル (``.gltf`` または ``.glb``) 用のリーダー。"
+
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.GLTFReader:3
+msgid ""
+"Reads a glTF file and produces a :class:`Mesh` that delegates parsing to "
+"vtk.js's ``vtkGLTFImporter`` at render time. Python extracts vertex "
+"coordinates from the JSON structure so that camera framing and bounding-"
+"sphere queries work before rendering."
+msgstr ""
+"glTF ファイルを読み込み、描画時に vtk.js の ``vtkGLTFImporter`` にパースを委譲する :class:`Mesh` "
+"を生成します。Python 側では JSON "
+"構造から頂点座標を抽出するため、描画前でもカメラのフレーミングやバウンディングスフィアの問い合わせが機能します。"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:0
+msgid "Parameters"
+msgstr "パラメータ"
+
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.GLTFReader:8
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.__init__:3
+msgid "Path to the ``.gltf`` or ``.glb`` file."
+msgstr "``.gltf`` または ``.glb`` ファイルへのパス。"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader:13
+msgid ":ref:`using-download-damaged-helmet`"
+msgstr ":ref:`using-download-damaged-helmet`"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader:14
+msgid "Interactive browser tutorial for glTF rendering."
+msgstr "glTF 描画のインタラクティブなブラウザチュートリアル。"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader:17
+msgid "Examples"
+msgstr "例"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:22:<autosummary>:1
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.__init__:1
+msgid "Initialize the reader with a file path."
+msgstr "ファイルパスでリーダーを初期化します。"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.__init__:5
+msgid ""
+"Source URL of the glTF file. When provided, the returned mesh will render "
+"using the URL directly (avoiding large base64 embedding)."
+msgstr ""
+"glTF ファイルのソース URL。指定すると、返されるメッシュはその URL を直接使用して描画されます (大きな base64 "
+"埋め込みを避けます)。"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:13
+msgid "Methods"
+msgstr "メソッド"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:22:<autosummary>:1
+msgid ":py:obj:`__init__ <pyvista_js.GLTFReader.__init__>`\\ \\(path\\[\\, gltf\\_url\\]\\)"
+msgstr ""
+":py:obj:`__init__ <pyvista_js.GLTFReader.__init__>`\\ \\(path\\[\\, "
+"gltf\\_url\\]\\)"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:22:<autosummary>:1
+msgid ":py:obj:`read <pyvista_js.GLTFReader.read>`\\ \\(\\)"
+msgstr ":py:obj:`read <pyvista_js.GLTFReader.read>`\\ \\(\\)"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:22:<autosummary>:1
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.read:1
+msgid "Read the glTF file and return a Mesh."
+msgstr "glTF ファイルを読み込み Mesh を返します。"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:24
+msgid "Attributes"
+msgstr "属性"
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`path <pyvista_js.GLTFReader.path>`"
+msgstr ":py:obj:`path <pyvista_js.GLTFReader.path>`"
+
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.GLTFReader.path:1
+#: ../:1:<autosummary>:1
+msgid "Return the file path."
+msgstr "ファイルパスを返します。"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:0
+msgid "Returns"
+msgstr "戻り値"
+
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.GLTFReader.path:3
+msgid "The path to the glTF file."
+msgstr "glTF ファイルへのパス。"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:0
+msgid "Return type"
+msgstr "戻り値の型"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.read:3
+msgid ""
+"The full file content is base64-encoded and stored so that vtk.js can parse "
+"it at render time.  Vertex coordinates are extracted on the Python side for "
+"bounding-sphere and camera-framing calculations."
+msgstr ""
+"ファイルの全内容は base64 エンコードして保存され、描画時に vtk.js がパースできるようになります。頂点座標は Python "
+"側で抽出され、バウンディングスフィアやカメラのフレーミング計算に使用されます。"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.read:7
+msgid "A mesh backed by the glTF file content."
+msgstr "glTF ファイルの内容に基づくメッシュ。"
+
+#: ../api/_autosummary/pyvista_js.GLTFReader.rst:0
+msgid "Raises"
+msgstr "例外"
+
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.GLTFReader.read:10
+msgid "If the file format is invalid."
+msgstr "ファイル形式が不正な場合。"
