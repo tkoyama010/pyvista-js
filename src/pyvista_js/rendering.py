@@ -85,6 +85,7 @@ if TYPE_CHECKING:
 
     import numpy as np
     from numpy.typing import ArrayLike
+    from playwright.sync_api import Browser, Playwright
 
     from .camera import Camera
     from .light import Light
@@ -145,11 +146,13 @@ else:
     VTK_AVAILABLE = False
     document = None  # type: ignore[assignment]
 
-# Check if IPython is available
+# Check if running in IPython (Jupyter, JupyterLite, the IPython shell)
 try:
+    from IPython import get_ipython
     from IPython.display import HTML, Javascript, display
 
-    IPYTHON_AVAILABLE = True
+    # installed is not enough: a plain script still needs the browser renderer
+    IPYTHON_AVAILABLE = get_ipython() is not None
 except ImportError:
     IPYTHON_AVAILABLE = False
     HTML = None  # type: ignore[assignment]
@@ -467,6 +470,7 @@ class _BaseHTMLRenderer:
         Examples
         --------
         >>> import pyvista_js as pv
+        >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
         >>> renderer.add_light(pv.Light(position=(1, 1, 1), intensity=2.0))
 
@@ -484,6 +488,7 @@ class _BaseHTMLRenderer:
         Examples
         --------
         >>> import pyvista_js as pv
+        >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
         >>> renderer.add_text_actor(pv.Text("Hello", position=(0.5, 0.9)))
 
@@ -1182,6 +1187,28 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             self.renderer.removeAllActors()
 
 
+def _launch_chromium(playwright: Playwright) -> Browser:
+    """Launch headless Chromium, or an installed Google Chrome if Playwright has none.
+
+    Parameters
+    ----------
+    playwright : playwright.sync_api.Playwright
+        The running Playwright.
+
+    Returns
+    -------
+    playwright.sync_api.Browser
+        The browser.
+
+    """
+    from playwright.sync_api import Error  # noqa: PLC0415
+
+    try:
+        return playwright.chromium.launch(headless=True)
+    except Error:  # no ``playwright install chromium``
+        return playwright.chromium.launch(headless=True, channel="chrome")
+
+
 def _playwright_capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:  # noqa: FBT001
     """Capture a screenshot of an HTML file using Playwright in a thread.
 
@@ -1205,7 +1232,7 @@ def _playwright_capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:
     from playwright.sync_api import sync_playwright  # noqa: PLC0415
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _launch_chromium(p)
         pg = browser.new_page(viewport={"width": w, "height": h})
         pg.goto(f"file://{html_path}")
         pg.wait_for_timeout(2000)

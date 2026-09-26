@@ -894,6 +894,41 @@ class Plotter:
         self._scalar_bar = None
         self._renderer.clear()
 
+    def remove_actor(self, actor: object) -> bool:
+        """Remove an actor from the plotter.
+
+        Scenes already shown are not changed; the actor is left out of those
+        shown or generated afterwards.
+
+        Parameters
+        ----------
+        actor : object
+            The actor, as returned by :meth:`add_mesh` or :meth:`add_points`.
+
+        Returns
+        -------
+        bool
+            Whether the actor was in the plotter.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> actor = plotter.add_mesh(pv.Sphere())
+        >>> plotter.remove_actor(actor)
+        True
+        >>> len(plotter.actors)
+        0
+
+        """
+        # by identity, since actors are dicts, which compare equal by value
+        n_actors = len(self._actors)
+        self._actors = [
+            info for info in self._actors if "actor" not in info or info["actor"] is not actor
+        ]
+        self._renderer.actors = [info for info in self._renderer.actors if info is not actor]
+        return len(self._actors) < n_actors
+
     @property
     def actors(self) -> list[dict[str, Any]]:
         """Return the list of actors in the plotter."""

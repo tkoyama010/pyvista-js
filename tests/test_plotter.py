@@ -3,11 +3,13 @@
 import pathlib
 import tempfile
 import webbrowser
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
 from pyvista_js import Camera, Cube, Cylinder, Plotter, PolyData, Sphere
+from pyvista_js.rendering import _launch_chromium
 
 
 def test_plotter_creation() -> None:
@@ -39,6 +41,21 @@ def test_clear() -> None:
 
     plotter.clear()
     assert len(plotter.actors) == 0
+
+
+def test_remove_actor() -> None:
+    """Test removing one actor leaves the others, even ones equal to it."""
+    plotter = Plotter()
+    mesh = Sphere()
+    first = plotter.add_mesh(mesh)
+    second = plotter.add_mesh(mesh)
+    assert first == second  # so removal must go by identity
+
+    assert plotter.remove_actor(first)
+    assert not plotter.remove_actor(first)
+    assert len(plotter.actors) == 1
+    assert plotter.actors[0]["actor"] is second
+    assert plotter.generate_standalone_html().count('"id":') == 1
 
 
 def test_multiple_meshes() -> None:
@@ -1193,6 +1210,20 @@ def test_screenshot_returns_array() -> None:
     assert isinstance(img, np.ndarray)
     assert img.ndim == 3
     assert img.shape[2] in (3, 4)  # RGB or RGBA
+
+
+def test_screenshot_falls_back_to_chrome() -> None:
+    """Test screenshots use an installed Chrome without ``playwright install``."""
+    error = pytest.importorskip("playwright.sync_api").Error
+
+    def launch(**kwargs: object) -> object:
+        if "channel" not in kwargs:
+            msg = "Executable doesn't exist"
+            raise error(msg)
+        return kwargs
+
+    playwright = SimpleNamespace(chromium=SimpleNamespace(launch=launch))
+    assert _launch_chromium(playwright) == {"headless": True, "channel": "chrome"}
 
 
 def test_screenshot_with_filename(tmp_path) -> None:

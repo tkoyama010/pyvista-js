@@ -1,5 +1,6 @@
 """Test vtk.js rendering backend."""
 
+import importlib.util
 import json
 import logging
 import re
@@ -18,6 +19,22 @@ def test_get_renderer_returns_browser() -> None:
     """Test that get_renderer returns BrowserRenderer in standard Python env."""
     renderer = get_renderer()
     assert isinstance(renderer, BrowserRenderer)
+
+
+@pytest.mark.parametrize("shell", [None, object()])
+def test_ipython_needs_a_running_shell(shell, monkeypatch) -> None:
+    """Test IPython counts as available only when running, not just installed."""
+    ipython = types.ModuleType("IPython")
+    ipython.get_ipython = lambda: shell  # type: ignore[attr-defined]
+    display = types.ModuleType("IPython.display")
+    display.HTML = display.Javascript = display.display = None  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "IPython", ipython)
+    monkeypatch.setitem(sys.modules, "IPython.display", display)
+    # a fresh copy, since reloading the module would swap classes under other tests
+    spec = importlib.util.spec_from_file_location("pyvista_js._rendering_copy", rendering.__file__)
+    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    assert module.IPYTHON_AVAILABLE is (shell is not None)
 
 
 def test_mock_renderer_creation() -> None:

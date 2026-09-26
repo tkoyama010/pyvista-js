@@ -69,27 +69,15 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(scope="session")
-def browser_type_launch_args() -> dict[str, bool]:
-    """Configure Playwright browser launch arguments.
-
-    By default, launches browser in headless mode for CI/automated testing.
-    Set PLAYWRIGHT_HEADLESS=0 environment variable to run in headed mode
-    for debugging.
-
-    Returns
-    -------
-    dict
-        Browser launch arguments dictionary.
-
-    """
-    return {
-        "headless": True,  # Always headless for CI and automated testing
-    }
-
-
-@pytest.fixture(scope="session")
-def browser_context_args() -> dict[str, dict[str, int]]:
+def browser_context_args(browser_context_args: dict) -> dict:
     """Configure Playwright browser context arguments.
+
+    Extends pytest-playwright's, so its command-line options still apply.
+
+    Parameters
+    ----------
+    browser_context_args : dict
+        pytest-playwright's browser context arguments.
 
     Returns
     -------
@@ -97,9 +85,7 @@ def browser_context_args() -> dict[str, dict[str, int]]:
         Browser context arguments including viewport size.
 
     """
-    return {
-        "viewport": {"width": 1200, "height": 800},
-    }
+    return {**browser_context_args, "viewport": {"width": 1200, "height": 800}}
 
 
 @pytest.fixture
