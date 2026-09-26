@@ -18,7 +18,7 @@ pyvista-js renders in the browser through [vtk.js](https://vtk.org/), which is t
 * **Maintenance cost**: A second rendering backend means a second code path in `ts/renderer.ts`, double the testing surface, and tracking a second upstream project's releases.
 * **Bundle size**: The browser client is loaded per session; shipping two rendering libraries increases download size unless backends are lazy-loaded.
 * **Ecosystem risk**: vtk.js is the canonical JavaScript continuation of the VTK ecosystem, which keeps pyvista-js aligned with upstream VTK development.
-* **Mesh structure simplicity**: three.js models scenes with a small set of primitive object types (`Mesh`, `Points`, `Line`, `LineSegments`, `Sprite`). The current vtk.js path already bridges scenes through a generic `vtkActor` + `vtkMapper` pair (with `vtkSphereMapper` as the only special case in `ts/renderer.ts`), but vtk.js also offers representation-specific mappers (`vtkPolyDataMapper`, `vtkVolumeMapper`, `vtkGlyph3DMapper`, and so on) that such a bridge could grow into. Preferring a backend whose scene graph needs fewer structural concepts to bridge is therefore a potential simplification that lowers the per-feature translation cost and the surface area for backend-specific bugs.
+* **Mesh structure simplicity**: three.js models surface geometry with a small set of primitive object types (`Mesh`, `Points`, `Line`, `LineSegments`, `Sprite`), which matches the current bridge: a generic `vtkActor` + `vtkMapper` pair (with `vtkSphereMapper` as the only special case in `ts/renderer.ts`) over `VtkPolyData`. This advantage is limited to PolyData-style geometry: vtk.js treats dataset types such as `vtkImageData` and volumes (`vtkVolume`) as first-class data structures with dedicated mappers, while three.js has no native counterpart and would require texture- or shader-based translation. The current pyvista-js mesh model (`PolyData`, `UnstructuredGrid`) stays within PolyData-style geometry, so the fewer-concepts benefit holds for the data pyvista-js renders today, but the per-dataset-type translation cost must be reweighed if dataset support grows (for example, adding `ImageData`).
 * **User choice**: An optional backend lets users trade consistency with VTK for rendering features and quality that three.js offers.
 
 ## Considered Options
@@ -59,7 +59,7 @@ Implement a small renderer backend interface; vtk.js stays the default, three.js
 
 * Good, because rendering capabilities that vtk.js currently lacks can be delivered through three.js translations, instead of users waiting on upstream vtk.js.
 * Good, because opt-in plus lazy-loading keeps the default bundle and behavior unchanged.
-* Good, because the small set of three.js primitive object types keeps the per-feature scene translation simple.
+* Good, because the small set of three.js primitive object types keeps the per-feature scene translation simple for the PolyData-style geometry pyvista-js renders today.
 * Neutral, because three.js does not implement the VTK pipeline, so the backend must translate PyVista scene descriptions rather than share vtk.js objects.
 * Bad, because it doubles the testing surface and adds a second upstream dependency to track.
 
