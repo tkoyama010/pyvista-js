@@ -28,11 +28,11 @@ pyvista-js renders in the browser through [vtk.js](https://vtk.org/), which is t
 
 ## Decision Outcome
 
-Chosen option: "Add three.js as an optional, opt-in rendering backend alongside vtk.js" (proposed, not yet accepted), because it closes the practical gap in VTK features that vtk.js has not yet implemented while preserving the vtk.js path that keeps pyvista-js aligned with desktop VTK semantics. Making three.js opt-in keeps the default behavior unchanged, and lazy-loading the backend keeps the extra bundle cost off users who do not need it.
+Chosen option: "Add three.js as an optional, opt-in rendering backend alongside vtk.js" (proposed, not yet accepted), because it offers a path to rendering capabilities that vtk.js has not yet implemented from VTK, delivered by translating the PyVista scene into three.js, while preserving the vtk.js path that keeps pyvista-js aligned with desktop VTK semantics. Making three.js opt-in keeps the default behavior unchanged, and lazy-loading the backend keeps the extra bundle cost off users who do not need it.
 
 ### Consequences
 
-* Good, because users get access to VTK-equivalent features that vtk.js does not yet implement, instead of waiting on upstream.
+* Good, because users get access to rendering capabilities beyond what vtk.js currently implements, delivered through per-feature scene translation work, instead of waiting on upstream.
 * Good, because the default vtk.js path stays intact, so existing users and tests see no behavior change.
 * Bad, because rendering-dependent code in `ts/renderer.ts` must be abstracted behind a backend interface, which is real refactoring work.
 * Bad, because two backends must be tested against the same scene features, and drift between them is a permanent maintenance tax.
@@ -56,7 +56,7 @@ Keep the current single-backend architecture and file issues upstream for missin
 
 Implement a small renderer backend interface; vtk.js stays the default, three.js is opt-in and lazy-loaded.
 
-* Good, because gaps in vtk.js VTK coverage stop blocking users who need those features.
+* Good, because rendering capabilities that vtk.js currently lacks can be delivered through three.js translations, instead of users waiting on upstream vtk.js.
 * Good, because opt-in plus lazy-loading keeps the default bundle and behavior unchanged.
 * Neutral, because three.js does not implement the VTK pipeline, so the backend must translate PyVista scene descriptions rather than share vtk.js objects.
 * Bad, because it doubles the testing surface and adds a second upstream dependency to track.
