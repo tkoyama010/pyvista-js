@@ -222,29 +222,42 @@ export default function (pi: ExtensionAPI) {
 			const saved: string[] = [];
 			const failed: Array<{ id: string; error: string }> = [];
 			for (const { id, text, form } of params.translations) {
+				// Caller-controlled id goes into a URL path segment; reject
+				// anything that could escape the intended endpoint.
+				if (!/^[0-9A-Za-z_-]+$/.test(id)) {
+					failed.push({ id, error: "invalid resource translation id" });
+					continue;
+				}
 				let strings: Record<string, string>;
+				let json: JsonApiResponse;
 				try {
-					// Fetch the current plural-form map first: PATCH replaces the
-					// whole map, so it must be merged, not overwritten.
-					const json = await txGet(
+					// PATCH replaces the whole plural-form map, so fetch the current
+					// slot first and merge into it (json.data is the target slot;
+					// included holds the source resource_string).
+					json = await txGet(
 						`/resource_translations/${id}?include=resource_string`,
 					);
-					strings = stringsOf(json.included?.[0] ?? ({} as JsonApiItem));
+					const slot = Array.isArray(json.data) ? json.data[0] : json.data;
+					strings = stringsOf(slot ?? ({} as JsonApiItem));
 				} catch (error) {
 					failed.push({ id, error: String(error) });
 					continue;
 				}
 				if (text === undefined) {
-					// Copy source: keep every plural form unchanged.
+					// Copy source: take every plural form from the source string.
+					const source = stringsOf(
+						(json.included?.[0] ?? ({} as JsonApiItem)) as JsonApiItem,
+					);
 					// Fail closed: never PATCH an empty source (it would wipe the
 					// translation slot).
-					if (!Object.values(strings).some(Boolean)) {
+					if (!Object.values(source).some(Boolean)) {
 						failed.push({
 							id,
 							error: "source string is missing or empty; not overwritten",
 						});
 						continue;
 					}
+					Object.assign(strings, source);
 				} else {
 					// Fail closed: never PATCH an empty translation either; a blank
 					// model result would erase the slot.
