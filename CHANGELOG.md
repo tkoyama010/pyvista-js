@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.18.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.17.0...pyvista-js-v0.18.0) (2026-09-26)
+
+### Features
+
+- add pi Transifex extension for AI-assisted doc translation ([#642](https://github.com/tkoyama010/pyvista-js/issues/642)) ([9f1068f](https://github.com/tkoyama010/pyvista-js/commit/9f1068f7e351e12717201bea8ff9915e87e721ab))
+- add Plotter.remove_actor and fall back to an installed Chrome ([#638](https://github.com/tkoyama010/pyvista-js/issues/638)) ([1e0d038](https://github.com/tkoyama010/pyvista-js/commit/1e0d03852ee37e201b3c3158638bd9a54f1f5781))
+
+### Documentation
+
+- add ADR-0001 on optional three.js rendering backend ([#640](https://github.com/tkoyama010/pyvista-js/issues/640)) ([6a22471](https://github.com/tkoyama010/pyvista-js/commit/6a22471c8eb2176d9f0bba6a41beda0ed7cc8ffc))
+- Updates for project pyvista-js-doc and language ja ([#637](https://github.com/tkoyama010/pyvista-js/issues/637)) ([2475d84](https://github.com/tkoyama010/pyvista-js/commit/2475d845666fe63731d9eab88cef4467ef3babe9))
+
+### Continuous Integration
+
+- add issues to pyvista-js Scrum Board ([#643](https://github.com/tkoyama010/pyvista-js/issues/643)) ([c03352b](https://github.com/tkoyama010/pyvista-js/commit/c03352bb3008721546237841a8b0c9db244f1569))
+
 ## [0.17.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.16.0...pyvista-js-v0.17.0) (2026-09-25)
 
 ### Features
