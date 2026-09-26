@@ -1,421 +1,582 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-04-02 22:55+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:2
+#: ../api/_autosummary/pyvista_js.PolyData.rst:2
 msgid "pyvista\\_js.PolyData"
-msgstr ""
+msgstr "pyvista\\_js.PolyData"
 
-#: of pyvista_js.mesh.PolyData:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData:1
 msgid "Base polygonal mesh class."
-msgstr ""
+msgstr "ポリゴンメッシュの基底クラス。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst
+#: ../api/_autosummary/pyvista_js.PolyData.rst:0
 msgid "Parameters"
-msgstr ""
+msgstr "パラメータ"
 
-#: of pyvista_js.mesh.PolyData:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData:3
 msgid "Vertex coordinates as an (n, 3) array."
-msgstr ""
+msgstr "(n, 3) 配列としての頂点座標。"
 
-#: of pyvista_js.mesh.PolyData:5
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData:5
 msgid "Cell connectivity information."
-msgstr ""
+msgstr "セルの接続情報。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of
 #: pyvista_js.mesh.PolyData.__init__:1
 msgid "Initialize a PolyData mesh."
-msgstr ""
+msgstr "PolyData メッシュを初期化します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:13
+#: ../api/_autosummary/pyvista_js.PolyData.rst:13
 msgid "Methods"
-msgstr ""
+msgstr "メソッド"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
 msgid ""
-":py:obj:`__init__ <pyvista_js.PolyData.__init__>`\\ \\(points\\[\\, "
-"faces\\, t\\_coords\\, ...\\]\\)"
+":py:obj:`__init__ <pyvista_js.PolyData.__init__>`\\ \\(points\\[\\, faces\\,"
+" t\\_coords\\, scalars\\, ...\\]\\)"
 msgstr ""
+":py:obj:`__init__ <pyvista_js.PolyData.__init__>`\\ \\(points\\[\\, faces\\,"
+" t\\_coords\\, scalars\\, ...\\]\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
-msgid ""
-":py:obj:`clip <pyvista_js.PolyData.clip>`\\ \\(\\[normal\\, origin\\, "
-"invert\\]\\)"
-msgstr ""
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+msgid ":py:obj:`clip <pyvista_js.PolyData.clip>`\\ \\(\\[normal\\, origin\\, invert\\]\\)"
+msgstr ":py:obj:`clip <pyvista_js.PolyData.clip>`\\ \\(\\[normal\\, origin\\, invert\\]\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.clip:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:1
 msgid "Clip the mesh with a plane."
-msgstr ""
+msgstr "平面でメッシュをクリップします。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
 msgid ""
-":py:obj:`generate_vtk_js_source "
-"<pyvista_js.PolyData.generate_vtk_js_source>`\\ \\(idx\\)"
+":py:obj:`contour <pyvista_js.PolyData.contour>`\\ \\(\\[isosurfaces\\, "
+"scalars\\, scalar\\_name\\]\\)"
 msgstr ""
+":py:obj:`contour <pyvista_js.PolyData.contour>`\\ \\(\\[isosurfaces\\, "
+"scalars\\, scalar\\_name\\]\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.generate_vtk_js_source:1
-msgid "Generate vtk.js source code for this mesh."
-msgstr ""
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.contour:1
+msgid "Generate contour lines at constant scalar values."
+msgstr "一定のスカラー値で等高線を生成します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+msgid ":py:obj:`fill_holes <pyvista_js.PolyData.fill_holes>`\\ \\(\\[hole\\_size\\]\\)"
+msgstr ":py:obj:`fill_holes <pyvista_js.PolyData.fill_holes>`\\ \\(\\[hole\\_size\\]\\)"
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:1
+msgid "Fill holes in a polygonal mesh."
+msgstr "ポリゴンメッシュの穴を埋めます。"
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
 msgid ""
-":py:obj:`get_mapper_setup <pyvista_js.PolyData.get_mapper_setup>`\\ "
-"\\(idx\\)"
+":py:obj:`plot <pyvista_js.PolyData.plot>`\\ \\(\\[color\\, opacity\\, pbr\\,"
+" metallic\\, roughness\\]\\)"
 msgstr ""
+":py:obj:`plot <pyvista_js.PolyData.plot>`\\ \\(\\[color\\, opacity\\, pbr\\,"
+" metallic\\, roughness\\]\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.get_mapper_setup:1
-msgid "Get the mapper setup code for this mesh."
-msgstr ""
-
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
-msgid ""
-":py:obj:`plot <pyvista_js.PolyData.plot>`\\ \\(\\[color\\, opacity\\, "
-"pbr\\, metallic\\, roughness\\]\\)"
-msgstr ""
-
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.plot:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:1
 msgid "Plot this mesh."
-msgstr ""
+msgstr "このメッシュをプロットします。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
 msgid ":py:obj:`save <pyvista_js.PolyData.save>`\\ \\(filename\\)"
-msgstr ""
+msgstr ":py:obj:`save <pyvista_js.PolyData.save>`\\ \\(filename\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.save:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:1
 msgid "Write this mesh to disk using meshio."
-msgstr ""
+msgstr "meshio を使用してこのメッシュをディスクに書き出します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
-msgid ""
-":py:obj:`shrink <pyvista_js.PolyData.shrink>`\\ "
-"\\(\\[shrink\\_factor\\]\\)"
-msgstr ""
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+msgid ":py:obj:`shrink <pyvista_js.PolyData.shrink>`\\ \\(\\[shrink\\_factor\\]\\)"
+msgstr ":py:obj:`shrink <pyvista_js.PolyData.shrink>`\\ \\(\\[shrink\\_factor\\]\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.shrink:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:1
 msgid "Shrink the cells of a mesh towards their centroid."
-msgstr ""
+msgstr "メッシュのセルを重心に向かって縮小します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
 msgid ""
-":py:obj:`texture_map_to_plane "
-"<pyvista_js.PolyData.texture_map_to_plane>`\\ \\(\\)"
+":py:obj:`texture_map_to_plane <pyvista_js.PolyData.texture_map_to_plane>`\\ "
+"\\(\\)"
 msgstr ""
+":py:obj:`texture_map_to_plane <pyvista_js.PolyData.texture_map_to_plane>`\\ "
+"\\(\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of
 #: pyvista_js.mesh.PolyData.texture_map_to_plane:1
 msgid "Generate texture coordinates by projecting points onto the XY plane."
-msgstr ""
+msgstr "点を XY 平面に投影してテクスチャ座標を生成します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+msgid ":py:obj:`to_scene_data <pyvista_js.PolyData.to_scene_data>`\\ \\(\\)"
+msgstr ":py:obj:`to_scene_data <pyvista_js.PolyData.to_scene_data>`\\ \\(\\)"
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.to_scene_data:1
+msgid "Return a JSON-serializable dict describing this mesh source."
+msgstr "このメッシュソースを記述する JSON にシリアライズ可能な dict を返します。"
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
 msgid ""
 ":py:obj:`tube <pyvista_js.PolyData.tube>`\\ \\(\\*\\[\\, radius\\, "
 "n\\_sides\\, capping\\]\\)"
 msgstr ""
+":py:obj:`tube <pyvista_js.PolyData.tube>`\\ \\(\\*\\[\\, radius\\, "
+"n\\_sides\\, capping\\]\\)"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:29:<autosummary>:1 of
-#: pyvista_js.mesh.PolyData.tube:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:1
 msgid "Generate a tube around a line polydata."
-msgstr ""
+msgstr "ラインポリデータの周囲にチューブを生成します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst:31
+#: ../api/_autosummary/pyvista_js.PolyData.rst:32
 msgid "Attributes"
-msgstr ""
+msgstr "属性"
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`bounding_sphere <pyvista_js.PolyData.bounding_sphere>`"
-msgstr ""
+msgstr ":py:obj:`bounding_sphere <pyvista_js.PolyData.bounding_sphere>`"
 
-#: ../../:1:<autosummary>:1 of pyvista_js.PolyData.bounding_sphere:1
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.PolyData.bounding_sphere:1 ../:1:<autosummary>:1
 msgid "Compute the radius and center of a bounding sphere."
-msgstr ""
+msgstr "バウンディングスフィアの半径と中心を計算します。"
 
-#: ../../:1:<autosummary>:1
-msgid ":py:obj:`is_primitive <pyvista_js.PolyData.is_primitive>`"
-msgstr ""
-
-#: ../../:1:<autosummary>:1 of pyvista_js.PolyData.is_primitive:1
-msgid "Return whether this mesh is backed by a vtk.js source primitive."
-msgstr ""
-
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`n_faces <pyvista_js.PolyData.n_faces>`"
-msgstr ""
+msgstr ":py:obj:`n_faces <pyvista_js.PolyData.n_faces>`"
 
-#: ../../:1:<autosummary>:1 of pyvista_js.PolyData.n_faces:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.PolyData.n_faces:1
+#: ../:1:<autosummary>:1
 msgid "Return the number of faces."
-msgstr ""
+msgstr "面の数を返します。"
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`n_points <pyvista_js.PolyData.n_points>`"
-msgstr ""
+msgstr ":py:obj:`n_points <pyvista_js.PolyData.n_points>`"
 
-#: ../../:1:<autosummary>:1 of pyvista_js.PolyData.n_points:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.PolyData.n_points:1
+#: ../:1:<autosummary>:1
 msgid "Return the number of points."
-msgstr ""
+msgstr "点の数を返します。"
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`point_data <pyvista_js.PolyData.point_data>`"
-msgstr ""
+msgstr ":py:obj:`point_data <pyvista_js.PolyData.point_data>`"
 
-#: ../../:1:<autosummary>:1 of pyvista_js.PolyData.point_data:1
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.PolyData.point_data:1
+#: ../:1:<autosummary>:1
 msgid "Access point data arrays."
-msgstr ""
+msgstr "点データ配列にアクセスします。"
 
-#: of pyvista_js.PolyData.bounding_sphere:3
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.PolyData.bounding_sphere:3
 msgid ""
-"Uses Ritter's algorithm to approximate the minimum bounding sphere. "
-"Returns NaN values if there are no points."
-msgstr ""
+"Uses Ritter's algorithm to approximate the minimum bounding sphere. Returns "
+"NaN values if there are no points."
+msgstr "Ritter のアルゴリズムを使用して最小バウンディングスフィアを近似します。点が存在しない場合は NaN を返します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst
+#: ../api/_autosummary/pyvista_js.PolyData.rst:0
 msgid "Returns"
-msgstr ""
+msgstr "戻り値"
 
-#: of pyvista_js.PolyData.bounding_sphere:6
-msgid "Sphere radius as a float and center as a tuple of floats ``(x, y, z)``."
-msgstr ""
-
-#: ../../api/_autosummary/pyvista_js.PolyData.rst
-msgid "Return type"
-msgstr ""
-
-#: of pyvista_js.PolyData.bounding_sphere:10 pyvista_js.PolyData.point_data:7
-#: pyvista_js.mesh.PolyData.clip:31 pyvista_js.mesh.PolyData.plot:18
-#: pyvista_js.mesh.PolyData.save:27 pyvista_js.mesh.PolyData.shrink:24
-#: pyvista_js.mesh.PolyData.texture_map_to_plane:10
-#: pyvista_js.mesh.PolyData.tube:27
-msgid "Examples"
-msgstr ""
-
-#: of pyvista_js.mesh.PolyData.clip:3
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.PolyData.bounding_sphere:6
 msgid ""
-"This filter clips the mesh with a plane defined by a normal vector and an"
-" origin point. Points on one side of the plane are removed. It mirrors "
-"the PyVista ``clip`` filter API."
-msgstr ""
+"Sphere radius as a float and center as a tuple of floats ``(x, y, z)``."
+msgstr "球の半径は float、中心は float のタプル ``(x, y, z)``。"
 
-#: of pyvista_js.mesh.PolyData.clip:9
+#: ../api/_autosummary/pyvista_js.PolyData.rst:0
+msgid "Return type"
+msgstr "戻り値の型"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.PolyData.bounding_sphere:10
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.PolyData.point_data:7
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:31
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:33 ../../src/pyvista_js/mesh.pydocstring
+#: of pyvista_js.mesh.PolyData.fill_holes:29
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:18
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:27
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:24
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.texture_map_to_plane:10
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:27
+msgid "Examples"
+msgstr "例"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:3
+msgid ""
+"This filter clips the mesh with a plane defined by a normal vector and an "
+"origin point. Points on one side of the plane are removed. It mirrors the "
+"PyVista ``clip`` filter API."
+msgstr ""
+"このフィルタは、法線ベクトルと原点で定義される平面でメッシュをクリップします。平面の片側にある点は削除されます。PyVista の ``clip`` "
+"フィルタ API と同じです。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:9
 msgid ""
 "The clipping is computed in JavaScript at render time by evaluating the "
-"signed distance of each vertex from the clip plane. Cells with all "
-"vertices on the clipped side are removed. ``vtk.js`` does not include a "
-"built-in clipping filter with the exact PyVista API, so this filter is "
-"implemented as a custom JavaScript pass."
+"signed distance of each vertex from the clip plane. Cells with all vertices "
+"on the clipped side are removed. ``vtk.js`` does not include a built-in "
+"clipping filter with the exact PyVista API, so this filter is implemented as"
+" a custom JavaScript pass."
 msgstr ""
+"クリッピングは、描画時に各頂点のクリップ平面からの符号付き距離を評価することで JavaScript "
+"で計算されます。すべての頂点がクリップ側にあるセルは削除されます。``vtk.js`` には PyVista API "
+"と完全に一致する組み込みのクリッピングフィルタが含まれていないため、このフィルタはカスタムの JavaScript パスとして実装されています。"
 
-#: of pyvista_js.mesh.PolyData.clip:16
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:16
 msgid ""
 "The normal vector of the clipping plane. Can be a string specifying a "
-"cardinal direction ('x', 'y', 'z', '-x', '-y', '-z') or a 3-tuple of "
-"floats (nx, ny, nz). Default is 'x'."
+"cardinal direction ('x', 'y', 'z', '-x', '-y', '-z') or a 3-tuple of floats "
+"(nx, ny, nz). Default is 'x'."
 msgstr ""
+"クリッピング平面の法線ベクトル。基本方向を指定する文字列 ('x', 'y', 'z', '-x', '-y', '-z') または float の 3"
+" つ組 (nx, ny, nz) を指定できます。デフォルトは 'x' です。"
 
-#: of pyvista_js.mesh.PolyData.clip:20
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:20
 msgid ""
 "The origin point of the clipping plane as (x, y, z). If not provided, "
 "defaults to the center of the mesh's bounding box."
-msgstr ""
+msgstr "クリッピング平面の原点 (x, y, z)。指定しない場合はメッシュのバウンディングボックスの中心がデフォルトです。"
 
-#: of pyvista_js.mesh.PolyData.clip:23
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:23
 msgid ""
-"If True, flip the clipping direction to keep the part that would normally"
-" be removed. Default is False."
-msgstr ""
+"If True, flip the clipping direction to keep the part that would normally be"
+" removed. Default is False."
+msgstr "True の場合、クリッピングの方向を反転して通常は削除される部分を残します。デフォルトは False です。"
 
-#: of pyvista_js.mesh.PolyData.clip:27
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:27
 msgid "A new mesh with clipped cells removed."
-msgstr ""
+msgstr "クリップされたセルを削除した新しいメッシュ。"
 
-#: of pyvista_js.mesh.PolyData.clip:41
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:41
 msgid "Clip along the negative Y axis:"
-msgstr ""
+msgstr "Y の負の方向に沿ってクリップ:"
 
-#: of pyvista_js.mesh.PolyData.clip:47
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:47
 msgid "Clip with a custom normal vector:"
-msgstr ""
+msgstr "カスタムの法線ベクトルでクリップ:"
 
-#: of pyvista_js.mesh.PolyData.clip:53
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.clip:53
 msgid "Render the clipped mesh:"
-msgstr ""
+msgstr "クリップされたメッシュを描画:"
 
-#: of pyvista_js.mesh.PolyData.generate_vtk_js_source:3
-#: pyvista_js.mesh.PolyData.get_mapper_setup:3
-msgid "Index of this mesh in the rendering pipeline."
-msgstr ""
-
-#: of pyvista_js.mesh.PolyData.generate_vtk_js_source:6
-msgid "JavaScript code to create the vtk.js source for this mesh."
-msgstr ""
-
-#: of pyvista_js.mesh.PolyData.get_mapper_setup:6
-msgid "JavaScript code to set up the mapper for this mesh."
-msgstr ""
-
-#: of pyvista_js.PolyData.is_primitive:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.contour:3
 msgid ""
-"``True`` if the mesh was created from a primitive factory (e.g. "
-":func:`Sphere`, :func:`Cube`), ``False`` otherwise."
+"This filter extracts isolines from the mesh at specified scalar values using"
+" a marching triangles algorithm implemented in JavaScript. It mirrors the "
+"PyVista ``contour`` filter API."
 msgstr ""
+"このフィルタは、JavaScript "
+"で実装されたマーチングトライアングル法を使用して、指定したスカラー値でメッシュからアイソラインを抽出します。PyVista の ``contour`` "
+"フィルタ API と同じです。"
 
-#: of pyvista_js.mesh.PolyData.plot:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.contour:9
 msgid ""
-"This is a convenience method that creates a :class:`~pyvista_js.Plotter`,"
-" adds this mesh, and calls :func:`~pyvista_js.Plotter.show`."
+"The contour is computed in JavaScript at render time by applying the "
+"marching triangles algorithm to each triangle of the mesh, interpolating "
+"edge crossings at the specified iso-values. ``vtk.js`` does not support "
+"``vtkPolyData`` input for ``vtkContourFilter``, so this filter is "
+"implemented as a custom JavaScript pass."
 msgstr ""
+"等高線は、描画時にメッシュの各三角形にマーチングトライアングル法を適用し、指定したアイソ値でのエッジの交点を補間することで JavaScript "
+"で計算されます。``vtk.js`` は ``vtkContourFilter`` への ``vtkPolyData`` "
+"入力に対応していないため、このフィルタはカスタムの JavaScript パスとして実装されています。"
 
-#: of pyvista_js.mesh.PolyData.plot:6
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:16
+msgid ""
+"Number of evenly spaced contours to generate, or a list of explicit scalar "
+"values at which to generate contours. Default is 10."
+msgstr "生成する等間隔の等高線の数、または等高線を生成する明示的なスカラー値のリスト。デフォルトは 10 です。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:19
+msgid ""
+"Scalar values per point to use for contouring. If not provided, uses the "
+"mesh's existing ``scalars`` attribute. Must have length equal to "
+"``n_points``."
+msgstr ""
+"等高線生成に使用する点ごとのスカラー値。指定しない場合はメッシュの既存の ``scalars`` 属性を使用します。``n_points`` "
+"と同じ長さである必要があります。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:23
+msgid ""
+"Name for the scalar array in vtk.js. If not provided, uses the mesh's "
+"existing ``scalar_name`` attribute or defaults to \"scalars\"."
+msgstr ""
+"vtk.js におけるスカラー配列の名前。指定しない場合はメッシュの既存の ``scalar_name`` 属性を使用し、それもなければ "
+"\"scalars\" がデフォルトです。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:27
+msgid "A new mesh containing the contour lines."
+msgstr "等高線を含む新しいメッシュ。"
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:0
+msgid "Raises"
+msgstr "例外"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:30
+msgid ""
+"If no scalars are provided and the mesh has no scalar data, or if     "
+"isosurfaces parameter is invalid."
+msgstr "スカラーが指定されておらずメッシュにスカラーデータがない場合、または isosurfaces パラメータが不正な場合。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:44
+msgid "Generate contours at specific values:"
+msgstr "特定の値で等高線を生成:"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:48
+msgid "Render the contours:"
+msgstr "等高線を描画:"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:3
+msgid ""
+"This filter identifies and fills holes in the mesh by locating boundary "
+"edges, linking them together into loops, and then triangulating the "
+"resulting loops. A hole size threshold controls which holes are filled."
+msgstr ""
+"このフィルタは、境界エッジを特定してループに連結し、その結果生じたループを三角形分割することでメッシュ内の穴を特定して埋めます。どの穴を埋めるかは穴サイズのしきい値で制御します。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:8
+msgid ""
+"It mirrors the PyVista ``fill_holes`` filter API and replicates the behavior"
+" of the vtk.js FillHolesFilter example."
+msgstr ""
+"PyVista の ``fill_holes`` フィルタ API と同じで、vtk.js の FillHolesFilter の例の動作を再現します。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:13
+msgid ""
+"The hole filling is computed in JavaScript at render time by finding "
+"boundary edges (edges belonging to only one polygon), linking them into "
+"loops, and fan-triangulating each loop whose perimeter is smaller than "
+"``hole_size``."
+msgstr ""
+"穴の埋め立ては、描画時に境界エッジ (1 つのポリゴンのみに属するエッジ) を見つけてループに連結し、周囲長が ``hole_size`` "
+"より小さい各ループを扇形に三角形分割することで JavaScript で計算されます。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:18
+msgid ""
+"The maximum hole size to fill, specified as the length of the perimeter of "
+"the hole. Holes with a perimeter larger than this value will not be filled. "
+"Default is 1000.0."
+msgstr "埋める穴の最大サイズ。穴の周囲長で指定します。この値より周囲長が大きい穴は埋められません。デフォルトは 1000.0 です。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:23
+msgid "A new mesh with holes filled."
+msgstr "穴を埋めた新しいメッシュ。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:26
+msgid "If ``hole_size`` is not positive."
+msgstr "``hole_size`` が正でない場合。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:39
+msgid "Create a sphere with a hole and fill it:"
+msgstr "穴のある球を作成して埋めます:"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.fill_holes:50
+msgid "Render the filled mesh:"
+msgstr "穴を埋めたメッシュを描画:"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:3
+msgid ""
+"This is a convenience method that creates a :class:`~pyvista_js.Plotter`, "
+"adds this mesh, and calls :func:`~pyvista_js.Plotter.show`."
+msgstr ""
+":class:`~pyvista_js.Plotter` を作成し、このメッシュを追加して "
+":func:`~pyvista_js.Plotter.show` を呼び出す便利なメソッドです。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:6
 msgid "Color of the mesh. Can be a color name or RGB tuple."
-msgstr ""
+msgstr "メッシュの色。色名または RGB タプルを指定できます。"
 
-#: of pyvista_js.mesh.PolyData.plot:8
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:8
 msgid "Opacity of the mesh, between 0 (transparent) and 1 (opaque)."
-msgstr ""
+msgstr "メッシュの不透明度。0 (透明) から 1 (不透明) の間。"
 
-#: of pyvista_js.mesh.PolyData.plot:10
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:10
 msgid "Enable physically based rendering (PBR). Default is False."
-msgstr ""
+msgstr "物理ベースレンダリング (PBR) を有効にします。デフォルトは False です。"
 
-#: of pyvista_js.mesh.PolyData.plot:12
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:12
 msgid "Metallic factor for PBR, between 0 and 1. Default is 0.0."
-msgstr ""
+msgstr "PBR の金属度。0 から 1 の間。デフォルトは 0.0 です。"
 
-#: of pyvista_js.mesh.PolyData.plot:14
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.plot:14
 msgid "Roughness factor for PBR, between 0 and 1. Default is 0.5."
-msgstr ""
+msgstr "PBR の粗さ。0 から 1 の間。デフォルトは 0.5 です。"
 
-#: of pyvista_js.PolyData.point_data:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.PolyData.point_data:3
 msgid "Dict-like container for point data arrays."
-msgstr ""
+msgstr "点データ配列の辞書風コンテナ。"
 
-#: of pyvista_js.PolyData.point_data:18
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.PolyData.point_data:18
 msgid "Render with scalar coloring:"
-msgstr ""
+msgstr "スカラーによる着色で描画:"
 
-#: of pyvista_js.mesh.PolyData.save:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:3
 msgid ""
-"The file format is inferred from the extension of ``filename``. Any "
-"format supported by `meshio <https://github.com/nschloe/meshio>`_ can be "
-"used (e.g. ``'.obj'``, ``'.vtk'``, ``'.ply'``, ``'.stl'``)."
+"The file format is inferred from the extension of ``filename``. Any format "
+"supported by `meshio <https://github.com/nschloe/meshio>`_ can be used (e.g."
+" ``'.obj'``, ``'.vtk'``, ``'.ply'``, ``'.stl'``)."
 msgstr ""
+"ファイル形式は ``filename`` の拡張子から推測されます。`meshio "
+"<https://github.com/nschloe/meshio>`_ が対応する任意のフォーマットを使用できます (例: "
+"``'.obj'``、``'.vtk'``、``'.ply'``、``'.stl'``)。"
 
-#: of pyvista_js.mesh.PolyData.save:9
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:9
 msgid "Requires ``meshio`` to be installed::"
-msgstr ""
+msgstr "``meshio`` のインストールが必要です::"
 
-#: of pyvista_js.mesh.PolyData.save:13
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:13
 msgid ""
 "In Pyodide / JupyterLite, install it with micropip before calling this "
 "method::"
-msgstr ""
+msgstr "Pyodide / JupyterLite では、このメソッドを呼び出す前に micropip でインストールしてください::"
 
-#: of pyvista_js.mesh.PolyData.save:19
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:19
 msgid "Output path. The extension determines the file format."
-msgstr ""
+msgstr "出力パス。拡張子がファイル形式を決定します。"
 
-#: ../../api/_autosummary/pyvista_js.PolyData.rst
-msgid "Raises"
-msgstr ""
-
-#: of pyvista_js.mesh.PolyData.save:24
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.save:24
 msgid "If ``meshio`` is not installed."
-msgstr ""
+msgstr "``meshio`` がインストールされていない場合。"
 
-#: of pyvista_js.mesh.PolyData.shrink:3
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:3
 msgid ""
-"This filter shrinks the individual cells of a mesh towards their "
-"centroids, producing visual separation between adjacent cells. It mirrors"
-" the PyVista ``shrink`` filter API."
+"This filter shrinks the individual cells of a mesh towards their centroids, "
+"producing visual separation between adjacent cells. It mirrors the PyVista "
+"``shrink`` filter API."
 msgstr ""
+"このフィルタはメッシュの個々のセルをその重心に向かって縮小し、隣接するセルの間に視覚的な分離を作ります。PyVista の ``shrink`` "
+"フィルタ API と同じです。"
 
-#: of pyvista_js.mesh.PolyData.shrink:9
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:9
 msgid ""
-"The shrink is computed in JavaScript at render time by iterating over the"
-" cell array from the vtk.js source, moving each vertex toward its cell's "
-"centroid. ``vtk.js`` does not include ``vtkShrinkFilter``, so this filter"
-" is implemented as a custom JavaScript pass."
+"The shrink is computed in JavaScript at render time by iterating over the "
+"cell array from the vtk.js source, moving each vertex toward its cell's "
+"centroid. ``vtk.js`` does not include ``vtkShrinkFilter``, so this filter is"
+" implemented as a custom JavaScript pass."
 msgstr ""
+"縮小は、描画時に vtk.js ソースのセル配列を反復処理し、各頂点をそのセルの重心に向かって移動することで JavaScript "
+"で計算されます。``vtk.js`` には ``vtkShrinkFilter`` が含まれていないため、このフィルタはカスタムの JavaScript"
+" パスとして実装されています。"
 
-#: of pyvista_js.mesh.PolyData.shrink:15
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:15
 msgid ""
-"The factor to shrink each cell by, between 0 and 1. A value of 1.0 "
-"produces no change; lower values produce more shrinkage. Default is 0.8."
-msgstr ""
+"The factor to shrink each cell by, between 0 and 1. A value of 1.0 produces "
+"no change; lower values produce more shrinkage. Default is 0.8."
+msgstr "各セルを縮小する係数。0 から 1 の間。1.0 で変化なし、小さいほど強く縮小します。デフォルトは 0.8 です。"
 
-#: of pyvista_js.mesh.PolyData.shrink:20
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:20
 msgid "A new mesh with shrunk cells."
-msgstr ""
+msgstr "縮小されたセルを含む新しいメッシュ。"
 
-#: of pyvista_js.mesh.PolyData.shrink:34
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.shrink:34
 msgid "Render the shrunk mesh:"
-msgstr ""
+msgstr "縮小したメッシュを描画:"
 
-#: of pyvista_js.mesh.PolyData.texture_map_to_plane:3
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.texture_map_to_plane:3
 msgid ""
-"Maps the mesh's X and Y extents to UV coordinates in the [0, 1] range. "
-"This mirrors the PyVista :meth:`pyvista.DataSet.texture_map_to_plane` "
-"API."
+"Maps the mesh's X and Y extents to UV coordinates in the [0, 1] range. This "
+"mirrors the PyVista :meth:`pyvista.DataSet.texture_map_to_plane` API."
 msgstr ""
+"メッシュの X と Y の範囲を [0, 1] の範囲の UV 座標にマッピングします。PyVista の "
+":meth:`pyvista.DataSet.texture_map_to_plane` API と同じです。"
 
-#: of pyvista_js.mesh.PolyData.texture_map_to_plane:6
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.texture_map_to_plane:6
 msgid "A new mesh with texture coordinates (``t_coords``) set."
-msgstr ""
+msgstr "テクスチャ座標 (``t_coords``) を設定した新しいメッシュ。"
 
-#: of pyvista_js.mesh.PolyData.tube:3
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.to_scene_data:3
+msgid "Source configuration with ``\"type\"`` key and type-specific parameters."
+msgstr "``\"type\"`` キーとタイプ固有のパラメータを持つソース設定。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:3
 msgid ""
 "This filter creates a tube representation around lines in the mesh by "
-"sweeping a polygonal cross-section along each line. It mirrors the "
-"PyVista ``tube`` filter API and is backed by vtk.js's ``vtkTubeFilter``."
+"sweeping a polygonal cross-section along each line. It mirrors the PyVista "
+"``tube`` filter API and is backed by vtk.js's ``vtkTubeFilter``."
 msgstr ""
+"このフィルタは、各ラインに沿って多角形の断面を押し出すことで、メッシュ内のラインの周囲にチューブ表現を作成します。PyVista の ``tube`` "
+"フィルタ API と同じで、vtk.js の ``vtkTubeFilter`` に基づいています。"
 
-#: of pyvista_js.mesh.PolyData.tube:10
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:10
 msgid ""
-"This filter is intended for use with line-based polydata (such as the "
-"output of :class:`Line`). It uses vtk.js's ``vtkTubeFilter``, which "
-"generates a tube by sweeping a circle with ``n_sides`` sides along the "
-"line segments."
+"This filter is intended for use with line-based polydata (such as the output"
+" of :class:`Line`). It uses vtk.js's ``vtkTubeFilter``, which generates a "
+"tube by sweeping a circle with ``n_sides`` sides along the line segments."
 msgstr ""
+"このフィルタは、ラインベースのポリデータ (例: :class:`Line` の出力) での使用を想定しています。vtk.js の "
+"``vtkTubeFilter`` を使用し、ラインセグメントに沿って ``n_sides`` 辺の円を押し出すことでチューブを生成します。"
 
-#: of pyvista_js.mesh.PolyData.tube:15
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:15
 msgid "The radius of the tube. Default is 0.5."
-msgstr ""
+msgstr "チューブの半径。デフォルトは 0.5 です。"
 
-#: of pyvista_js.mesh.PolyData.tube:17
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:17
 msgid ""
 "The number of sides for the tube cross-section. Higher values produce "
 "smoother tubes. Default is 20."
-msgstr ""
+msgstr "チューブ断面の辺の数。大きいほど滑らかなチューブになります。デフォルトは 20 です。"
 
-#: of pyvista_js.mesh.PolyData.tube:20
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:20
 msgid "Whether to cap the ends of the tube. Default is True."
-msgstr ""
+msgstr "チューブの端に蓋をするかどうか。デフォルトは True です。"
 
-#: of pyvista_js.mesh.PolyData.tube:23
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:23
 msgid "A new mesh representing the tube."
-msgstr ""
+msgstr "チューブを表す新しいメッシュ。"
 
-#: of pyvista_js.mesh.PolyData.tube:37
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.tube:37
 msgid "Render the tube:"
-msgstr ""
+msgstr "チューブを描画:"
