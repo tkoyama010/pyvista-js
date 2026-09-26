@@ -59,6 +59,7 @@ Implement a small renderer backend interface; vtk.js stays the default, three.js
 
 * Good, because rendering capabilities that vtk.js currently lacks can be delivered through three.js translations, instead of users waiting on upstream vtk.js.
 * Good, because opt-in plus lazy-loading keeps the default bundle and behavior unchanged.
+* Good, because the small set of three.js primitive object types keeps the per-feature scene translation simple.
 * Neutral, because three.js does not implement the VTK pipeline, so the backend must translate PyVista scene descriptions rather than share vtk.js objects.
 * Bad, because it doubles the testing surface and adds a second upstream dependency to track.
 
