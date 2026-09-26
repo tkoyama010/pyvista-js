@@ -18,6 +18,7 @@ pyvista-js renders in the browser through [vtk.js](https://vtk.org/), which is t
 * **Maintenance cost**: A second rendering backend means a second code path in `ts/renderer.ts`, double the testing surface, and tracking a second upstream project's releases.
 * **Bundle size**: The browser client is loaded per session; shipping two rendering libraries increases download size unless backends are lazy-loaded.
 * **Ecosystem risk**: vtk.js is the canonical JavaScript continuation of the VTK ecosystem, which keeps pyvista-js aligned with upstream VTK development.
+* **Mesh structure simplicity**: three.js models scenes with a small set of primitive object types (`Mesh`, `Points`, `Line`, `LineSegments`, `Sprite`), so a PyVista/VTK scene translates onto fewer structural concepts than vtk.js's class-per-representation mapping (`vtkPolyDataMapper`, `vtkVolumeMapper`, `vtkGlyph3DMapper`, and so on). A backend with fewer mesh structure concepts to bridge lowers the per-feature translation cost and the surface area for backend-specific bugs.
 * **User choice**: An optional backend lets users trade consistency with VTK for rendering features and quality that three.js offers.
 
 ## Considered Options
