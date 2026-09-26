@@ -1,0 +1,60 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../api/_autosummary/pyvista_js.examples.download_cad_model.rst:2
+msgid "pyvista\\_js.examples.download\\_cad\\_model"
+msgstr "pyvista\\_js.examples.download\\_cad\\_model"
+
+#: ../../src/pyvista_js/examples.pydocstring of
+#: pyvista_js.examples.download_cad_model:1
+msgid "Download the CAD model dataset."
+msgstr "CAD モデルのデータセットをダウンロードします。"
+
+#: ../../src/pyvista_js/examples.pydocstring of
+#: pyvista_js.examples.download_cad_model:3
+msgid ""
+"Downloads ``42400-IDGH.stl`` from the PyVista vtk-data repository and "
+"returns it as a :class:`~pyvista_js.PolyData` mesh, mirroring the "
+"``pyvista.examples.download_cad_model`` API."
+msgstr ""
+"PyVista の vtk-data リポジトリから ``42400-IDGH.stl`` "
+"をダウンロードし、``pyvista.examples.download_cad_model`` API と同様に "
+":class:`~pyvista_js.PolyData` メッシュとして返します。"
+
+#: ../api/_autosummary/pyvista_js.examples.download_cad_model.rst:0
+msgid "Returns"
+msgstr "戻り値"
+
+#: ../../src/pyvista_js/examples.pydocstring of
+#: pyvista_js.examples.download_cad_model:7
+msgid "The CAD model mesh."
+msgstr "CAD モデルのメッシュ。"
+
+#: ../api/_autosummary/pyvista_js.examples.download_cad_model.rst:0
+msgid "Return type"
+msgstr "戻り値の型"
+
+#: ../../src/pyvista_js/examples.pydocstring of
+#: pyvista_js.examples.download_cad_model:11
+msgid "Examples"
+msgstr "例"
