@@ -1,0 +1,135 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"PO-Revision-Date: 2026-09-26 01:09+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../howtos/update-in-place.md:1
+msgid "Update a rendered scene in place"
+msgstr "描画済みシーンをその場で更新する"
+
+#: ../howtos/update-in-place.md:3
+msgid ""
+"When data changes over time, such as colors that follow a time slider, "
+"rendering the whole scene again re-sends geometry that has not changed and "
+"rebuilds the render window. Instead, update just the actors that changed "
+"with {meth}`~pyvista_js.Plotter.update_actor`."
+msgstr ""
+"タイムスライダーに追従する色のようにデータが時間的に変化する場合、シーン全体を再描画すると変更のないジオメトリを再送信し、描画ウィンドウを再構築することになります。代わりに、{meth}`~pyvista_js.Plotter.update_actor`"
+" で変更のあったアクターだけを更新してください。"
+
+#: ../howtos/update-in-place.md:8
+msgid "In a notebook"
+msgstr "ノートブックの場合"
+
+#: ../howtos/update-in-place.md:10
+msgid "Show the scene once:"
+msgstr "シーンを一度表示します:"
+
+#: ../howtos/update-in-place.md:24
+msgid "Then, in a later cell, send new colors to it:"
+msgstr "その後、後のセルで新しい色を送ります:"
+
+#: ../howtos/update-in-place.md:31
+msgid "Actors are numbered in the order they were added. An update can:"
+msgstr "アクターは追加された順に番号が付けられます。更新では次のことができます:"
+
+#: ../howtos/update-in-place.md:33
+msgid "add or replace point-data arrays with `point_data`,"
+msgstr "`point_data` で点データ配列を追加または置換する"
+
+#: ../howtos/update-in-place.md:34
+msgid "color by a different point-data array with `scalars`,"
+msgstr "`scalars` で別の点データ配列を使って着色する"
+
+#: ../howtos/update-in-place.md:35
+msgid "move the points of a mesh given by points and faces with `points`."
+msgstr "`points` で points と faces から与えられたメッシュの点を移動する"
+
+#: ../howtos/update-in-place.md:37
+msgid ""
+"The number of points cannot change. The mesh is updated in Python too, so a "
+"page generated later shows the new data."
+msgstr "点の数は変更できません。メッシュは Python 側でも更新されるため、後で生成したページには新しいデータが表示されます。"
+
+#: ../howtos/update-in-place.md:40
+msgid "In a page you embed yourself"
+msgstr "自分で埋め込むページの場合"
+
+#: ../howtos/update-in-place.md:42
+msgid ""
+"If you put the page from "
+"{meth}`~pyvista_js.Plotter.generate_standalone_html` somewhere yourself, for"
+" example in an `<iframe>`, deliver the updates yourself as well. Pass "
+"`send=False` and serialize the message with "
+"{func}`~pyvista_js.rendering.scene_to_json`:"
+msgstr ""
+"{meth}`~pyvista_js.Plotter.generate_standalone_html` のページを `<iframe>` "
+"などに自分で配置した場合は、更新も自分で配信してください。`send=False` を渡し、メッセージを "
+"{func}`~pyvista_js.rendering.scene_to_json` でシリアライズします:"
+
+#: ../howtos/update-in-place.md:59
+msgid "Then apply the message with `pvjsApplyUpdate`, which the page defines:"
+msgstr "その後、ページが定義する `pvjsApplyUpdate` でメッセージを適用します:"
+
+#: ../howtos/update-in-place.md:66
+msgid ""
+"How the message gets to the page is up to you: a `postMessage` handler, a "
+"widget, or any other channel you already have."
+msgstr "メッセージをページに届かせる方法は自由です: `postMessage` ハンドラ、ウィジェット、既存の任意のチャネルを使用できます。"
+
+#: ../howtos/update-in-place.md:69
+msgid "Limitations"
+msgstr "制限事項"
+
+#: ../howtos/update-in-place.md:71
+msgid ""
+"Updates reach the rendered mesh through smooth-shading normals, but not "
+"through filters such as {meth}`~pyvista_js.PolyData.clip` or "
+"{meth}`~pyvista_js.PolyData.contour`, which are computed when the page "
+"loads."
+msgstr ""
+"更新はスムーズシェーディングの法線を通じて描画済みメッシュに届きますが、ページの読み込み時に計算される "
+"{meth}`~pyvista_js.PolyData.clip` や {meth}`~pyvista_js.PolyData.contour` "
+"などのフィルタには届きません。"
+
+#: ../howtos/update-in-place.md:74
+msgid ""
+"`points` can only be updated for meshes given by points and faces, not for "
+"generated shapes such as {func}`~pyvista_js.Sphere`."
+msgstr ""
+"`points` は points と faces から与えられたメッシュにのみ更新でき、{func}`~pyvista_js.Sphere` "
+"のような生成された形状には使用できません。"
+
+#: ../howtos/update-in-place.md:77
+msgid "Faster serialization"
+msgstr "高速なシリアライズ"
+
+#: ../howtos/update-in-place.md:79
+msgid ""
+"Scenes and update messages with large meshes are written several times "
+"faster when [orjson](https://github.com/ijl/orjson) is installed:"
+msgstr ""
+"大きなメッシュを含むシーンや更新メッセージは、[orjson](https://github.com/ijl/orjson) "
+"がインストールされていると数倍高速に書き出されます:"
+
+#: ../howtos/update-in-place.md:86
+msgid "In Pyodide, run `await micropip.install(\"orjson\")`."
+msgstr "Pyodide では `await micropip.install(\"orjson\")` を実行します。"
