@@ -78,6 +78,13 @@ function stringsOf(item: JsonApiItem): Record<string, string> {
 	return (item.attributes.strings as Record<string, string> | undefined) ?? {};
 }
 
+/** Only follow pagination links on the Transifex API origin, so the bearer token is never sent to another host. */
+function nextPath(next: string | undefined | null): string | undefined {
+	if (!next) return undefined;
+	const url = next.startsWith("http") ? next : `${API}${next}`;
+	return url.startsWith(`${API}/`) ? url : undefined;
+}
+
 /** Return the (slot id, key, source) triples of untranslated strings from a resource_translations response. */
 export function pickUntranslated(
 	response: JsonApiResponse,
@@ -129,8 +136,7 @@ export default function (pi: ExtensionAPI) {
 			while (path) {
 				const json = await txGet(path);
 				resources.push(...json.data);
-				path = json.links?.next ?? undefined;
-				if (path) path = path.startsWith("http") ? path : `${API}${path}`;
+				path = nextPath(json.links?.next);
 			}
 			const text = JSON.stringify(
 				resources.map((r) => ({
@@ -182,8 +188,7 @@ export default function (pi: ExtensionAPI) {
 			while (path && untranslated.length < limit) {
 				const json = await txGet(path);
 				untranslated.push(...pickUntranslated(json));
-				path = json.links?.next ?? undefined;
-				if (path) path = path.startsWith("http") ? path : `${API}${path}`;
+				path = nextPath(json.links?.next);
 			}
 			const text = JSON.stringify(untranslated.slice(0, limit), null, 2);
 			return { content: [{ type: "text", text }], details: {} };
@@ -204,35 +209,49 @@ export default function (pi: ExtensionAPI) {
 							description: "Translated text; omit to copy the source string",
 						}),
 					),
+					form: Type.Optional(
+						Type.String({
+							description:
+								'Plural form key to set when text is given (default: "other")',
+						}),
+					),
 				}),
 			),
 		}),
 		async execute(_toolCallId, params) {
 			const saved: string[] = [];
 			const failed: Array<{ id: string; error: string }> = [];
-			for (const { id, text } of params.translations) {
-				let value = text;
-				if (value === undefined) {
-					// Copy source: fetch the slot with its resource_string.
+			for (const { id, text, form } of params.translations) {
+				let strings: Record<string, string>;
+				if (text === undefined) {
+					// Copy source: fetch the slot with its resource_string and copy
+					// every plural form unchanged.
 					try {
 						const json = await txGet(
 							`/resource_translations/${id}?include=resource_string`,
 						);
-						value =
-							stringsOf(json.included?.[0] ?? ({} as JsonApiItem)).other ?? "";
+						strings = stringsOf(json.included?.[0] ?? ({} as JsonApiItem));
 					} catch (error) {
 						failed.push({ id, error: String(error) });
 						continue;
 					}
 					// Fail closed: never PATCH an empty source (it would wipe the
 					// translation slot).
-					if (!value) {
+					if (!Object.values(strings).some(Boolean)) {
 						failed.push({
 							id,
 							error: "source string is missing or empty; not overwritten",
 						});
 						continue;
 					}
+				} else {
+					// Fail closed: never PATCH an empty translation either; a blank
+					// model result would erase the slot.
+					if (!text) {
+						failed.push({ id, error: "empty translation text; not saved" });
+						continue;
+					}
+					strings = { [form ?? "other"]: text };
 				}
 				try {
 					const response = await fetch(`${API}/resource_translations/${id}`, {
@@ -246,7 +265,7 @@ export default function (pi: ExtensionAPI) {
 							data: {
 								id,
 								type: "resource_translations",
-								attributes: { strings: { other: value } },
+								attributes: { strings },
 							},
 						}),
 					});
