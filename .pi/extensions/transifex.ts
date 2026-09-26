@@ -170,7 +170,9 @@ export default function (pi: ExtensionAPI) {
 			),
 		}),
 		async execute(_toolCallId, params) {
-			const limit = params.limit ?? 50;
+			// Normalize: reject negative/fractional values so slice(0, limit)
+			// cannot violate the stated maximum.
+			const limit = Math.max(1, Math.floor(params.limit ?? 50));
 			const query = new URLSearchParams({
 				"filter[resource]": resourceId(
 					params.org ?? DEFAULT_ORG,
