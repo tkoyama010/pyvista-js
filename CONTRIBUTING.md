@@ -332,6 +332,18 @@ We welcome various types of contributions:
 - Fixing typos and clarifications
 - Translating documentation (via [Transifex](https://app.transifex.com/tkoyama010/pyvista-js/))
 
+### Translation
+
+Documentation is translated on [Transifex](https://app.transifex.com/tkoyama010/pyvista-js/translate/). The repository ships a [pi](https://pi.dev) coding-agent extension at `.pi/extensions/transifex.ts` that lets the agent translate untranslated strings directly against the Transifex API v3. It is preconfigured for `tkoyama010/pyvista-js`.
+
+To use it:
+
+1. Generate an API token at <https://app.transifex.com/user/settings/> and either export it as `TX_TOKEN` or store it in `~/.tx-token`
+1. Start `pi` in the repository and accept the project-trust prompt (project-local extensions only load for trusted projects)
+1. Ask pi to translate, for example: "Translate the untranslated strings in the `index` resource to Japanese" — the agent uses the `transifex_list_resources`, `transifex_get_untranslated`, and `transifex_translate` tools
+
+Japanese (`ja`) is the current target language; translations land in `docs/locale/<lang>/LC_MESSAGES` via the Transifex GitHub integration.
+
 ### Community
 
 - Answering questions in [GitHub Discussions](https://github.com/tkoyama010/pyvista-js/discussions)
