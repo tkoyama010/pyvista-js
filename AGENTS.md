@@ -50,7 +50,7 @@ def test_add_mesh() -> None:
     plotter = Plotter()
     mesh = Sphere()
     plotter.add_mesh(mesh)
-    assert mesh in plotter.meshes
+    assert len(plotter.actors) == 1
 ```
 
 - Name tests after the function under test: `test_<function_name>`, one test per behavior.
