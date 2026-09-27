@@ -18,7 +18,7 @@ pyvista-js renders in the browser through [vtk.js](https://vtk.org/), which is t
 * **Maintenance cost**: A second rendering backend means a second code path in `ts/renderer.ts`, double the testing surface, and tracking a second upstream project's releases.
 * **Bundle size**: The browser client is loaded per session; shipping two rendering libraries increases download size unless backends are lazy-loaded.
 * **Ecosystem risk**: vtk.js is the canonical JavaScript continuation of the VTK ecosystem, which keeps pyvista-js aligned with upstream VTK development.
-* **Mesh structure simplicity**: three.js models surface geometry with a small set of primitive object types (`Mesh`, `Points`, `Line`, `LineSegments`, `Sprite`), which matches the current bridge: a generic `vtkActor` + `vtkMapper` pair (with `vtkSphereMapper` as the only special case in `ts/renderer.ts`) over `VtkPolyData`. This advantage is limited to PolyData-style geometry: vtk.js treats dataset types such as `vtkImageData` and volumes (`vtkVolume`) as first-class data structures with dedicated mappers, while three.js has no native counterpart and would require texture- or shader-based translation. The current pyvista-js mesh model (`PolyData`, `UnstructuredGrid`) stays within PolyData-style geometry, so the fewer-concepts benefit holds for the data pyvista-js renders today, but the per-dataset-type translation cost must be reweighed if dataset support grows (for example, adding `ImageData`).
+* **Mesh structure simplicity**: three.js models surface geometry with a small set of primitive object types (`Mesh`, `Points`, `Line`, `LineSegments`, `Sprite`), which matches the current bridge: a generic `vtkActor` + `vtkMapper` pair (with `vtkSphereMapper` as the only special case in `ts/renderer.ts`) over `VtkPolyData`. This advantage is limited to PolyData-style geometry: vtk.js additionally treats `ImageData` (+ volume rendering via `Volume`/`VolumeMapper`), `Molecule`, and composite `MultiBlock`/`Table` JSON structures as first-class data structures with dedicated mappers or readers, while three.js has no native counterpart and would require texture-, shader-, or primitive-based translation. Conversely, `StructuredGrid` and `RectilinearGrid` are not implemented in vtk.js either, so they do not differentiate the backends. The current pyvista-js mesh model (`PolyData`, `UnstructuredGrid`) stays within PolyData-style geometry — `UnstructuredGrid` is converted to polygon data before rendering — so the fewer-concepts benefit holds for the data pyvista-js renders today, but the per-dataset-type translation cost must be reweighed if dataset support grows (for example, adding `ImageData`).
 * **User choice**: An optional backend lets users trade consistency with VTK for rendering features and quality that three.js offers.
 
 ## Considered Options
@@ -73,7 +73,7 @@ Drop vtk.js and render everything through three.js.
 
 ## More Information
 
-* [vtk.js](https://vtk.js.org/) and its [VTK feature coverage](https://kitware.github.io/vtk-js/docs/intro_vtk_as_js_library.html)
+* [vtk.js](https://vtk.js.org/), its [VTK data structures](https://kitware.github.io/vtk-js/docs/structures.html), and its [API documentation](https://kitware.github.io/vtk-js/api/)
 * [three.js](https://threejs.org/docs/)
 * pyvista-js renderer implementation: `ts/renderer.ts`
 * ADR-0000 for the record format used here.
