@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-26 16:43+0000\n"
+"POT-Creation-Date: 2026-09-27 03:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,149 +49,245 @@ msgid "**Ecosystem risk**: vtk.js is the canonical JavaScript continuation of th
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:21
-msgid "**User choice**: An optional backend lets users trade consistency with VTK for rendering features and quality that three.js offers."
+msgid "**Mesh structure simplicity**: three.js models surface geometry with a small set of primitive object types such as `Mesh`, `Points`, `Line`, `LineSegments`, and `Sprite`, which matches the current bridge over `VtkPolyData`: a generic `vtkActor` plus `vtkMapper` pair, with `vtkSphereMapper` as the only special case in `ts/renderer.ts`. The advantage is limited to PolyData-style geometry, so the criterion is weighed per vtk.js dataset type in the table below. The current pyvista-js mesh model stays within that style: `PolyData` is rendered directly and `UnstructuredGrid` is converted to polygon data before rendering. The fewer-concepts benefit therefore holds for the data pyvista-js renders today, but the per-dataset-type translation cost must be reweighed when dataset support grows."
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:23
-msgid "Considered Options"
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "vtk.js dataset type"
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:25
-msgid "Stay vtk.js-only and wait for upstream vtk.js to implement missing VTK features."
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "vtk.js support"
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:26
-msgid "Add three.js as an optional, opt-in rendering backend alongside vtk.js."
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "three.js counterpart"
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:27
-msgid "Replace vtk.js with three.js entirely."
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Impact on the decision"
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:29
-msgid "Decision Outcome"
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`PolyData`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Class with dedicated mapper"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Direct match with `Mesh`, `Points`, `Line`, and `LineSegments`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Fewer concepts to bridge; favors three.js"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`ImageData` and volumes"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "First-class classes with `VolumeMapper`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "None; texture- or shader-based translation"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Translation cost must be reweighed when support is added"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`Molecule`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Class used by the PDB reader"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "None; built from primitives"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Additional translation work"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`MultiBlock` and `Table`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Composite JSON structures with readers"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "None"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`StructuredGrid` and `RectilinearGrid`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Not implemented"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "No differentiator between the backends"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:31
-msgid "Chosen option: \"Add three.js as an optional, opt-in rendering backend alongside vtk.js\" (proposed, not yet accepted), because it offers a path to rendering capabilities that vtk.js has not yet implemented from VTK, delivered by translating the PyVista scene into three.js, while preserving the vtk.js path that keeps pyvista-js aligned with desktop VTK semantics. Making three.js opt-in keeps the default behavior unchanged, and lazy-loading the backend keeps the extra bundle cost off users who do not need it."
+msgid "**User choice**: An optional backend lets users trade consistency with VTK for rendering features and quality that three.js offers."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:33
-msgid "Consequences"
+msgid "Considered Options"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:35
-msgid "Good, because users get access to rendering capabilities beyond what vtk.js currently implements, delivered through per-feature scene translation work, instead of waiting on upstream."
+msgid "Stay vtk.js-only and wait for upstream vtk.js to implement missing VTK features."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:36
-msgid "Good, because the default vtk.js path stays intact, so existing users and tests see no behavior change."
+msgid "Add three.js as an optional, opt-in rendering backend alongside vtk.js."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:37
-msgid "Bad, because rendering-dependent code in `ts/renderer.ts` must be abstracted behind a backend interface, which is real refactoring work."
-msgstr ""
-
-#: ../decisions/0001-add-three-js-rendering-option.md:38
-msgid "Bad, because two backends must be tested against the same scene features, and drift between them is a permanent maintenance tax."
+msgid "Replace vtk.js with three.js entirely."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:39
-msgid "Bad, because results (camera state, picking, screenshots) may differ subtly between backends unless conformance tests are written."
+msgid "Decision Outcome"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:41
-msgid "Confirmation"
+msgid "Chosen option: \"Add three.js as an optional, opt-in rendering backend alongside vtk.js\" (proposed, not yet accepted), because it offers a path to rendering capabilities that vtk.js has not yet implemented from VTK, delivered by translating the PyVista scene into three.js, while preserving the vtk.js path that keeps pyvista-js aligned with desktop VTK semantics. Making three.js opt-in keeps the default behavior unchanged, and lazy-loading the backend keeps the extra bundle cost off users who do not need it."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:43
-msgid "Compliance is confirmed by review of the renderer abstraction and by a conformance test that renders the same scene features on both backends and compares outputs. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record."
+msgid "Consequences"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:45
-msgid "Pros and Cons of the Options"
+msgid "Good, because users get access to rendering capabilities beyond what vtk.js currently implements, delivered through per-feature scene translation work, instead of waiting on upstream."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:46
+msgid "Good, because the default vtk.js path stays intact, so existing users and tests see no behavior change."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:47
-msgid "Stay vtk.js-only"
+msgid "Bad, because rendering-dependent code in `ts/renderer.ts` must be abstracted behind a backend interface, which is real refactoring work."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:48
+msgid "Bad, because two backends must be tested against the same scene features, and drift between them is a permanent maintenance tax."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:49
-msgid "Keep the current single-backend architecture and file issues upstream for missing VTK features."
+msgid "Bad, because results (camera state, picking, screenshots) may differ subtly between backends unless conformance tests are written."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:51
-msgid "Good, because there is no new code path, no bundle growth, and no second upstream to track."
-msgstr ""
-
-#: ../decisions/0001-add-three-js-rendering-option.md:52
-msgid "Good, because pyvista-js stays closest to desktop VTK semantics, which is the project's core promise."
+msgid "Confirmation"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:53
-msgid "Bad, because pyvista-js cannot offer VTK features that vtk.js has not implemented, on a timeline pyvista-js does not control."
+msgid "Compliance is confirmed by review of the renderer abstraction and by a conformance test that renders the same scene features on both backends and compares outputs. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:55
-msgid "Add three.js as an optional backend (proposed)"
+msgid "Pros and Cons of the Options"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:57
-msgid "Implement a small renderer backend interface; vtk.js stays the default, three.js is opt-in and lazy-loaded."
+msgid "Stay vtk.js-only"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:59
-msgid "Good, because rendering capabilities that vtk.js currently lacks can be delivered through three.js translations, instead of users waiting on upstream vtk.js."
-msgstr ""
-
-#: ../decisions/0001-add-three-js-rendering-option.md:60
-msgid "Good, because opt-in plus lazy-loading keeps the default bundle and behavior unchanged."
+msgid "Keep the current single-backend architecture and file issues upstream for missing VTK features."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:61
-msgid "Neutral, because three.js does not implement the VTK pipeline, so the backend must translate PyVista scene descriptions rather than share vtk.js objects."
+msgid "Good, because there is no new code path, no bundle growth, and no second upstream to track."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:62
-msgid "Bad, because it doubles the testing surface and adds a second upstream dependency to track."
+msgid "Good, because pyvista-js stays closest to desktop VTK semantics, which is the project's core promise."
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:64
-msgid "Replace vtk.js with three.js entirely"
+#: ../decisions/0001-add-three-js-rendering-option.md:63
+msgid "Bad, because pyvista-js cannot offer VTK features that vtk.js has not implemented, on a timeline pyvista-js does not control."
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:66
-msgid "Drop vtk.js and render everything through three.js."
+#: ../decisions/0001-add-three-js-rendering-option.md:65
+msgid "Add three.js as an optional backend (proposed)"
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:68
-msgid "Good, because there is only one backend and three.js has a very large ecosystem and community."
+#: ../decisions/0001-add-three-js-rendering-option.md:67
+msgid "Implement a small renderer backend interface; vtk.js stays the default, three.js is opt-in and lazy-loaded."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:69
-msgid "Bad, because three.js has no notion of the VTK pipeline, so VTK-specific semantics would have to be rebuilt and would drift from desktop VTK."
+msgid "Good, because rendering capabilities that vtk.js currently lacks can be delivered through three.js translations, instead of users waiting on upstream vtk.js."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:70
-msgid "Bad, because it discards working, tested vtk.js integration for no feature gain on the happy path."
+msgid "Good, because opt-in plus lazy-loading keeps the default bundle and behavior unchanged."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:71
+msgid "Good, because the small set of three.js primitive object types keeps the per-feature scene translation simple for the PolyData-style geometry pyvista-js renders today."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:72
-msgid "More Information"
+msgid "Neutral, because three.js does not implement the VTK pipeline, so the backend must translate PyVista scene descriptions rather than share vtk.js objects."
 msgstr ""
 
-#: ../decisions/0001-add-three-js-rendering-option.md:74
-msgid "[vtk.js](https://vtk.js.org/) and its [VTK feature coverage](https://kitware.github.io/vtk-js/docs/intro_vtk_as_js_library.html)"
+#: ../decisions/0001-add-three-js-rendering-option.md:73
+msgid "Bad, because it doubles the testing surface and adds a second upstream dependency to track."
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:75
-msgid "[three.js](https://threejs.org/docs/)"
-msgstr ""
-
-#: ../decisions/0001-add-three-js-rendering-option.md:76
-msgid "pyvista-js renderer implementation: `ts/renderer.ts`"
+msgid "Replace vtk.js with three.js entirely"
 msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:77
+msgid "Drop vtk.js and render everything through three.js."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:79
+msgid "Good, because there is only one backend and three.js has a very large ecosystem and community."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:80
+msgid "Bad, because three.js has no notion of the VTK pipeline, so VTK-specific semantics would have to be rebuilt and would drift from desktop VTK."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:81
+msgid "Bad, because it discards working, tested vtk.js integration for no feature gain on the happy path."
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:83
+msgid "More Information"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:85
+msgid "[vtk.js](https://vtk.js.org/), its [VTK data structures](https://kitware.github.io/vtk-js/docs/structures.html), and its [API documentation](https://kitware.github.io/vtk-js/api/)"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:86
+msgid "[three.js](https://threejs.org/docs/)"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:87
+msgid "pyvista-js renderer implementation: `ts/renderer.ts`"
+msgstr ""
+
+#: ../decisions/0001-add-three-js-rendering-option.md:88
 msgid "ADR-0000 for the record format used here."
 msgstr ""
