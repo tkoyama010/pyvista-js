@@ -66,7 +66,7 @@ def test_add_mesh() -> None:
 - `tests/` — pytest suite; `tests/data/` holds test fixtures.
 - `docs/` — Sphinx docs (MyST, jupytext tutorials, `docs/decisions/` for ADRs, `docs/locale/` + `docs/pot/` for translations via Transifex).
 - `jupyterlite/`, `stlite/` — browser notebook and Streamlit demos.
-- `.pre-commit-config.yaml`, `biome.jsonc`, `pyproject.toml` — tooling configuration.
+- [`.pre-commit-config.yaml`](.pre-commit-config.yaml), `biome.jsonc`, `pyproject.toml` — tooling configuration.
 
 ## Code style
 
