@@ -110,6 +110,7 @@ and see {doc}`/howtos/update-in-place` for pages you embed yourself.
    pyvista_js.PolyData.fill_holes
    pyvista_js.PolyData.shrink
    pyvista_js.PolyData.texture_map_to_plane
+   pyvista_js.PolyData.triangulate
    pyvista_js.PolyData.tube
 ```
 

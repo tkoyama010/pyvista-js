@@ -299,6 +299,7 @@ interface VtkGlobal {
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
       vtkTubeFilter: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkTriangleFilter: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkClipClosedSurface?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkContourTriangulator?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
