@@ -78,9 +78,11 @@ def _load_plotter_html(page: Page, plotter: Plotter) -> None:
         temp_path = f.name
 
     try:
-        # Navigate to the file
-        page.goto(Path(temp_path).as_uri())
-        page.wait_for_load_state("networkidle")
+        # Navigate to the file. wait_until="domcontentloaded" returns immediately for
+        # a local file; CDN script loading is awaited below via networkidle. The
+        # default 30s timeout is too short for slow CI runner networks.
+        page.goto(Path(temp_path).as_uri(), wait_until="domcontentloaded", timeout=120000)
+        page.wait_for_load_state("networkidle", timeout=120000)
         # Wait for vtk.js to load and render
         page.wait_for_timeout(2000)
     finally:
