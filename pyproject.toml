@@ -4,7 +4,7 @@ requires = [ "hatch-build-scripts", "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.16.0"
+version = "0.17.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -95,6 +95,9 @@ optional-dependencies.docs = [
   "sphinx-intl>=2.2.1,<3.0.1; python_version>='3.12' and python_version<'3.14'",
   "sphinxcontrib-typer>=0.5.1,<1.0.1; python_version>='3.12'",
 ]
+optional-dependencies.fast = [
+  "orjson>=3.10.1,<4.0.1",
+]
 optional-dependencies.io = [
   "meshio>=5.3.5,<6.0.1",
 ]
@@ -117,6 +120,7 @@ dev = [
   { include-group = "test" },
 ]
 test = [
+  "orjson>=3.10.1,<4.0.1",
   "playwright>=1.40.1,<2.0.1",
   "pytest>=7.0.1,<9.1.2",
   "pytest-playwright>=0.4.1,<1.0.1",

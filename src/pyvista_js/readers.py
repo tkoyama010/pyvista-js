@@ -34,7 +34,7 @@ class _OBJMesh(PolyData):
         super().__init__(points)
         self._obj_base64 = obj_base64
 
-    def to_scene_data(self) -> dict[str, object]:
+    def _to_scene_data(self) -> dict[str, object]:
         """Return scene data using vtk.js OBJ reader."""
         return {"type": "objReader", "data": self._obj_base64}
 
@@ -53,7 +53,7 @@ class _GLTFMesh(PolyData):
         self._gltf_base64 = gltf_base64
         self._gltf_url = gltf_url
 
-    def to_scene_data(self) -> dict[str, object]:
+    def _to_scene_data(self) -> dict[str, object]:
         """Return scene data using vtk.js GLTF importer."""
         data: dict[str, object] = {"type": "gltfReader", "data": self._gltf_base64}
         if self._gltf_url is not None:
@@ -69,7 +69,7 @@ class _PolyDataMesh(PolyData):
         super().__init__(points)
         self._vtk_text = vtk_text
 
-    def to_scene_data(self) -> dict[str, object]:
+    def _to_scene_data(self) -> dict[str, object]:
         """Return scene data using vtk.js VTK reader."""
         return {
             "type": "vtkReader",
@@ -85,7 +85,7 @@ class _PLYMesh(PolyData):
         super().__init__(points)
         self._ply_base64 = ply_base64
 
-    def to_scene_data(self) -> dict[str, object]:
+    def _to_scene_data(self) -> dict[str, object]:
         """Return scene data using vtk.js PLY reader."""
         return {"type": "plyReader", "data": self._ply_base64}
 
@@ -98,7 +98,7 @@ class _STLMesh(PolyData):
         super().__init__(points)
         self._stl_base64 = stl_base64
 
-    def to_scene_data(self) -> dict[str, object]:
+    def _to_scene_data(self) -> dict[str, object]:
         """Return scene data using vtk.js STL reader."""
         return {"type": "stlReader", "data": self._stl_base64}
 

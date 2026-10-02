@@ -1,6 +1,7 @@
 """Test mesh creation and properties."""
 
 import builtins
+import json
 import webbrowser
 from pathlib import Path
 
@@ -21,6 +22,8 @@ from pyvista_js import (
     Sphere,
     UnstructuredGrid,
 )
+from pyvista_js import mesh as mesh_module
+from pyvista_js.mesh import _dumps_scene, _Float32Array
 
 
 def test_mesh_creation() -> None:
@@ -1121,3 +1124,99 @@ def test_unstructured_grid_mixed_cells() -> None:
     polys = data["polys"]
     # tetra: 4 tri faces (16 entries) + 1 triangle (4 entries) = 20
     assert len(polys) == 20
+
+
+@pytest.fixture(params=["orjson", "json"])
+def json_backend(request, monkeypatch) -> None:
+    """Serialize scene JSON with orjson, or with the standard-library fallback."""
+    if request.param == "orjson":
+        pytest.importorskip("orjson")
+    else:
+        monkeypatch.setattr(mesh_module, "orjson", None)
+
+
+def _emitted_source(mesh: PolyData) -> dict:
+    """Return the mesh source as parsed back from the emitted scene JSON."""
+    return json.loads(_dumps_scene(mesh._to_scene_data()))
+
+
+@pytest.mark.usefixtures("json_backend")
+def test_scene_json_float32_round_trip() -> None:
+    """Test that emitted float text round-trips to the identical float32 values."""
+    rng = np.random.default_rng(0)
+    points = rng.standard_normal((1000, 3)) * [1e-3, 50.0, 1e6]
+    mesh = PolyData(points, [3, 0, 1, 2])
+    mesh.point_data["values"] = rng.standard_normal(1000)
+    source = _emitted_source(mesh)
+    for got, want in (
+        (source["points"], points),
+        (source["pointData"][0]["values"], mesh.point_data["values"]),
+    ):
+        np.testing.assert_array_equal(
+            np.array(got, np.float32),
+            np.asarray(want, np.float32).ravel(),
+        )
+    assert source["polys"] == [3, 0, 1, 2]
+
+
+def test_scene_json_float32_size() -> None:
+    """Test that float32 points text is about half of the ``tolist()`` text."""
+    points = np.random.default_rng(0).uniform(-100, 100, (100_000, 3)).astype(np.float32)
+    points_text = _Float32Array(points).to_json()
+    assert len(points_text) < len(json.dumps(points.ravel().tolist())) * 0.55
+
+
+@pytest.mark.usefixtures("json_backend")
+def test_scene_json_is_compact() -> None:
+    """Test that scene JSON has no separator whitespace, and uint8 data stays integers."""
+    mesh = PolyData(np.zeros((2, 3)), [3, 0, 1, 1])
+    mesh.point_data["colors"] = np.array([[255, 0, 0, 255], [0, 128, 0, 255]], np.uint8)
+    text = _dumps_scene(mesh._to_scene_data())
+    assert '"polys":[3,0,1,1]' in text
+    assert '"dataType":"Uint8Array","values":[255,0,0,255,0,128,0,255]' in text
+    assert ", " not in text
+    assert '": ' not in text
+
+
+@pytest.mark.usefixtures("json_backend")
+@pytest.mark.parametrize("name", ["\x00pvjs-f32-0\x00", "\x00pvjs-f32-999\x00", "pvjs-f32-0"])
+def test_scene_json_keeps_placeholder_like_strings(name: str) -> None:
+    """Test that strings in the data are never taken for float-array placeholders."""
+    mesh = PolyData(np.zeros((2, 3)))
+    mesh.point_data[name] = np.array([1.5, 2.5])
+    source = _emitted_source(mesh)
+    assert source["pointData"][0]["name"] == name
+    assert source["pointData"][0]["values"] == [1.5, 2.5]
+
+
+@pytest.mark.usefixtures("json_backend")
+def test_scene_json_unserializable_raises() -> None:
+    """Test that objects JSON cannot represent raise a TypeError."""
+    with pytest.raises(TypeError):
+        _dumps_scene({"source": object()})
+    mesh = PolyData(np.zeros((2, 3)))
+    mesh.point_data["z"] = np.array([1 + 2j, 3j])
+    with pytest.raises(TypeError, match="complex"):
+        mesh.to_scene_data()
+
+
+@pytest.mark.usefixtures("json_backend")
+@pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
+def test_scene_json_non_finite_raises(bad: float) -> None:
+    """Test that NaN and infinite values are rejected rather than emitted."""
+    mesh = PolyData(np.array([[0.0, 0.0, 0.0], [1.0, bad, 0.0]]))
+    with pytest.raises(ValueError, match="NaN or infinite"):
+        _dumps_scene(mesh._to_scene_data())
+
+
+def test_to_scene_data_is_json_serializable() -> None:
+    """Test that the public scene data has plain lists, for ``json.dumps``."""
+    sphere = Sphere()
+    contours = sphere.contour(isosurfaces=3, scalars=sphere.points[:, 2])
+    grid = _make_tetra_grid()
+    grid.point_data["values"] = np.arange(4.0)
+    for mesh in (sphere, contours, grid):
+        json.dumps(mesh.to_scene_data())
+    scene = grid.to_scene_data()
+    assert scene["points"] == grid.points.astype(np.float32).ravel().tolist()
+    assert scene["pointData"][0]["values"] == [0.0, 1.0, 2.0, 3.0]

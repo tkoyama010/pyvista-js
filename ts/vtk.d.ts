@@ -34,6 +34,7 @@ interface VtkPointData {
   setTcoords: (array: VtkDataArray) => void;
   setActiveScalars: (name: string) => void;
   getArrayByName: (name: string) => VtkDataArray | undefined;
+  removeArray: (name: string) => void;
 }
 
 /** A set of 3D points. */
@@ -57,6 +58,7 @@ interface VtkPolyData {
   getPolys: () => VtkCellArray;
   getLines: () => VtkCellArray;
   getPointData: () => VtkPointData;
+  modified: () => void;
 }
 
 /** An implicit plane defined by origin and normal. */
@@ -207,6 +209,7 @@ interface VtkInteractor {
   setView: (view: VtkOpenGlRenderWindow) => void;
   initialize: () => void;
   bindEvents: (container: HTMLElement) => void;
+  unbindEvents: () => void;
 }
 
 /** A trackball camera interaction style. */
@@ -451,6 +454,8 @@ interface TextureConfig {
 
 /** Full configuration for a single actor in the scene. */
 interface ActorConfig {
+  /** Stable ID of the actor, which updates use to find it. */
+  id: string;
   source: SourceConfig;
   color: [number, number, number];
   opacity: number;
@@ -500,12 +505,46 @@ interface SceneData {
   camera?: CameraConfig;
 }
 
+/** The vtk.js objects behind one scene actor, kept so updates can reach them. */
+interface ActorHandle {
+  id: string;
+  polydata: VtkPolyData;
+  mapper: VtkMapper;
+  actor: VtkActor;
+}
+
+/** The vtk.js objects of one rendered scene, listed by container ID on `window.__pvjs`. */
+interface SceneHandle {
+  container: HTMLElement;
+  /** Whether the container has been seen in the page, so its removal can be detected. */
+  wasConnected: boolean;
+  interactor: VtkInteractor;
+  renderWindow: VtkRenderWindow;
+  renderer: VtkRenderer;
+  /** In the order of `SceneData.actors`; undefined where an actor could not be built. */
+  actors: (ActorHandle | undefined)[];
+}
+
+/** An in-place update of one actor, as built by `build_update_data` in Python. */
+interface ActorUpdate {
+  /** ID of the actor, as in `ActorConfig.id`. */
+  actor: string;
+  points?: number[];
+  pointData?: PointDataArray[];
+  scalars?: ScalarsConfig;
+}
+
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, jsdoc/require-jsdoc -- global interface augmentation requires interface, not type
 interface Window {
-  renderer: VtkRenderer;
-  renderWindow: VtkRenderWindow;
-  openGlRenderWindow: VtkOpenGlRenderWindow;
-  interactor: VtkInteractor;
+  /** The most recent scene's objects, until that scene is released. */
+  renderer?: VtkRenderer | undefined;
+  renderWindow?: VtkRenderWindow | undefined;
+  openGlRenderWindow?: VtkOpenGlRenderWindow | undefined;
+  interactor?: VtkInteractor | undefined;
+  /** The live scenes by container ID; showing a plotter again adds another. */
+  __pvjs?: Record<string, SceneHandle[]>;
+  __pvjsObserver?: MutationObserver | undefined;
+  pvjsApplyUpdate: (containerId: string, update: ActorUpdate) => void;
 }
 
 /** Maps reader type names to their vtk.js factory and parse method. */

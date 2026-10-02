@@ -13,15 +13,18 @@ In production use, vtk.js could be vendored locally to avoid this dependency.
 
 from __future__ import annotations
 
+import json
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import numpy as np
 import pytest
 
-from pyvista_js import Line, Plotter, Sphere, Text
+from pyvista_js import Cube, Line, Plotter, PolyData, Sphere, Text
 from pyvista_js.examples import download_bunny, download_trumpet
 from pyvista_js.readers import OBJReader, PLYReader, PolyDataReader, STLReader
+from pyvista_js.rendering import BrowserRenderer, scene_to_json
 
 if TYPE_CHECKING:
     from playwright.sync_api import Page
@@ -75,9 +78,11 @@ def _load_plotter_html(page: Page, plotter: Plotter) -> None:
         temp_path = f.name
 
     try:
-        # Navigate to the file
-        page.goto(Path(temp_path).as_uri())
-        page.wait_for_load_state("networkidle")
+        # Navigate to the file. wait_until="domcontentloaded" returns immediately for
+        # a local file; CDN script loading is awaited below via networkidle. The
+        # default 30s timeout is too short for slow CI runner networks.
+        page.goto(Path(temp_path).as_uri(), wait_until="domcontentloaded", timeout=120000)
+        page.wait_for_load_state("networkidle", timeout=120000)
         # Wait for vtk.js to load and render
         page.wait_for_timeout(2000)
     finally:
@@ -571,3 +576,159 @@ def test_ply_reader_from_file_renders_in_browser(page: Page) -> None:
     canvas = page.query_selector("canvas")
     assert canvas is not None, "Canvas element not found for PLY reader mesh"
     assert len(js_errors) == 0, f"JavaScript errors during PLY rendering: {js_errors}"
+
+
+def _plain_quad_plotter() -> Plotter:
+    """Return a plotter showing a plain quad mesh given by its points and faces."""
+    points = np.array([[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]], float)
+    plotter = Plotter()
+    plotter._renderer = BrowserRenderer()
+    plotter.add_mesh(PolyData(points, [3, 0, 1, 2, 3, 0, 2, 3]))
+    return plotter
+
+
+def _apply_update(page: Page, plotter: Plotter, update: dict) -> None:
+    """Apply an update message in the page, as a notebook would."""
+    page.evaluate(
+        "([id, update]) => window.pvjsApplyUpdate(id, update)",
+        [plotter.container_id, json.loads(scene_to_json(update))],
+    )
+
+
+def _output_points(page: Page, plotter: Plotter) -> list[list[float]]:
+    """Return the first actor's points in each output of the plotter's container."""
+    return page.evaluate(
+        "id => window.__pvjs[id].map("
+        "scene => Array.from(scene.actors[0].polydata.getPoints().getData()))",
+        plotter.container_id,
+    )
+
+
+def _show_again(page: Page, plotter: Plotter) -> None:
+    """Render the plotter as another output, reusing its container ID like a notebook."""
+    page.evaluate(plotter._renderer._generate_render_js())  # type: ignore[attr-defined]
+    page.wait_for_timeout(500)
+
+
+@pytest.mark.playwright
+@pytest.mark.parametrize("kind", ["plain", "sphere", "cube"])
+def test_update_actor_colors_in_place(page: Page, kind: str) -> None:
+    """Test that pvjsApplyUpdate recolors a mesh without rebuilding the scene.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+    kind : str
+        Whether to use a mesh given by points and faces, or a sphere or cube source.
+
+    """
+    plotter = _plain_quad_plotter() if kind == "plain" else Plotter()
+    if kind != "plain":
+        plotter._renderer = BrowserRenderer()
+        plotter.add_mesh(Sphere() if kind == "sphere" else Cube())
+    mesh = plotter._renderer.actors[0]["mesh"]  # type: ignore[attr-defined]
+    red = np.tile(np.array([255, 0, 0], np.uint8), (mesh.n_points, 1))
+    plotter.update_actor(0, point_data={"colors": red}, scalars="colors", send=False)
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+    _load_plotter_html(page, plotter)
+    before = page.locator("canvas").screenshot()
+
+    blue = red[:, ::-1].copy()
+    _apply_update(page, plotter, plotter.update_actor(0, point_data={"colors": blue}, send=False))
+    page.wait_for_timeout(500)
+
+    assert page.locator("canvas").screenshot() != before, "Canvas did not change"
+    assert page.locator("canvas").count() == 1
+    assert page.evaluate("id => window.__pvjs[id].length", plotter.container_id) == 1
+    assert js_errors == []
+
+
+@pytest.mark.playwright
+def test_update_points_in_every_output(page: Page) -> None:
+    """Test that showing a plotter again keeps the first output, and updates reach both.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = _plain_quad_plotter()
+    # an ID that names a property of plain objects must still work
+    plotter._container_id = "constructor"
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+    _load_plotter_html(page, plotter)
+    page.evaluate(
+        "id => { window.__first = window.__pvjs[id][0].renderWindow; }",
+        plotter.container_id,
+    )
+    before = page.locator("canvas").screenshot()
+    _show_again(page, plotter)
+    assert page.locator("canvas").count() == 2
+
+    # shrink the quad and move it toward the camera, past the original near plane
+    points = plotter._renderer.actors[0]["mesh"].points * 0.25 + [0, 0, 3]  # type: ignore[attr-defined]
+    _apply_update(page, plotter, plotter.update_actor(0, points=points, send=False))
+    page.wait_for_timeout(500)
+
+    assert _output_points(page, plotter) == [points.ravel().tolist()] * 2
+    near, far = page.evaluate(
+        "id => window.__pvjs[id][0].renderer.getActiveCamera().getClippingRange()",
+        plotter.container_id,
+    )
+    camera_z = page.evaluate(
+        "id => window.__pvjs[id][0].renderer.getActiveCamera().getPosition()[2]",
+        plotter.container_id,
+    )
+    assert near < camera_z - 3 < far
+    assert page.locator("canvas").first.screenshot() != before, "Canvas did not change"
+    # the first output was updated in place, not rebuilt
+    assert page.evaluate(
+        "id => window.__pvjs[id][0].renderWindow === window.__first",
+        plotter.container_id,
+    )
+    assert js_errors == []
+
+
+@pytest.mark.playwright
+def test_update_after_clear_and_release(page: Page) -> None:
+    """Test that updates skip outputs shown before clear(), and removed outputs are freed.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = _plain_quad_plotter()
+    first_points = plotter._renderer.actors[0]["mesh"].points.ravel().tolist()  # type: ignore[attr-defined]
+    _load_plotter_html(page, plotter)
+    # an unrelated mesh at the same index, shown as a second output
+    plotter.clear()
+    triangle = PolyData(np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], float), [3, 0, 1, 2])
+    plotter.add_mesh(triangle)
+    _show_again(page, plotter)
+
+    moved = triangle.points * 0.5
+    _apply_update(page, plotter, plotter.update_actor(0, points=moved, send=False))
+    assert _output_points(page, plotter) == [first_points, moved.ravel().tolist()]
+
+    # removing the outputs frees them, with no later pyvista-js call
+    released = page.evaluate(
+        """async id => {
+            for (const scene of window.__pvjs[id]) scene.container.remove();
+            await new Promise(resolve => setTimeout(resolve));
+            return [
+                Object.keys(window.__pvjs).length,
+                window.__pvjsObserver === undefined,
+                window.renderWindow === undefined,
+            ];
+        }""",
+        plotter.container_id,
+    )
+    assert released == [0, True, True]
+    with pytest.raises(Exception, match="No pyvista-js scene in container"):
+        _apply_update(page, plotter, {"actor": "gone"})

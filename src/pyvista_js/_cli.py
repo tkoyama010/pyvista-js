@@ -667,13 +667,15 @@ def _capture_screenshots(output_dir: Path, demo_url: str, *, rotate: bool = Fals
 
     from playwright.sync_api import sync_playwright  # noqa: PLC0415
 
+    from .rendering import _launch_chromium  # noqa: PLC0415
+
     screenshots_dir = output_dir / "screenshots"
     screenshots_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("Capturing demo from: %s", demo_url)
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _launch_chromium(p)
         context = browser.new_context(viewport={"width": 1200, "height": 800})
         page = context.new_page()
 
@@ -915,13 +917,15 @@ def _capture_stlite_screenshots(output_dir: Path, demo_url: str, *, rotate: bool
 
     from playwright.sync_api import sync_playwright  # noqa: PLC0415
 
+    from .rendering import _launch_chromium  # noqa: PLC0415
+
     screenshots_dir = output_dir / "screenshots"
     screenshots_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("Capturing stlite demo from: %s", demo_url)
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _launch_chromium(p)
         context = browser.new_context(viewport={"width": 1200, "height": 800})
         page = context.new_page()
 

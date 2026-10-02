@@ -1,113 +1,125 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: pyvista-js \n"
+"Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 13:08+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: ja\n"
-"Language-Team: ja <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"POT-Creation-Date: 2026-03-21 08:18+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.18.0\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:2
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:2
 msgid "pyvista\\_js.PLYReader"
-msgstr ""
+msgstr "pyvista\\_js.PLYReader"
 
-#: of pyvista_js.readers.PLYReader:1
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.PLYReader:1
 msgid "Reader for PLY (Polygon File Format) files (``.ply``)."
-msgstr ""
+msgstr "PLY (Polygon File Format) ファイル (``.ply``) 用のリーダー。"
 
-#: of pyvista_js.readers.PLYReader:3
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.PLYReader:3
 msgid ""
-"Reads a PLY ASCII file and produces a :class:`Mesh` that delegates "
-"parsing to vtk.js's ``vtkPLYReader`` at render time. Python extracts only"
-" the vertex coordinates so that camera framing and bounding-sphere "
-"queries work before rendering."
+"Reads a PLY ASCII file and produces a :class:`Mesh` that delegates parsing "
+"to vtk.js's ``vtkPLYReader`` at render time. Python extracts only the vertex"
+" coordinates so that camera framing and bounding-sphere queries work before "
+"rendering."
 msgstr ""
+"PLY の ASCII ファイルを読み込み、描画時に vtk.js の ``vtkPLYReader`` にパースを委譲する :class:`Mesh`"
+" を生成します。Python 側では頂点座標のみを抽出するため、描画前でもカメラのフレーミングやバウンディングスフィアの問い合わせが機能します。"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:0
 msgid "Parameters"
-msgstr ""
+msgstr "パラメータ"
 
-#: of pyvista_js.readers.PLYReader:8
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.PLYReader:8
 msgid "Path to the ``.ply`` file."
-msgstr ""
+msgstr "``.ply`` ファイルへのパス。"
 
-#: of pyvista_js.readers.PLYReader:12
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.readers.PLYReader:12
 msgid "Examples"
-msgstr ""
+msgstr "例"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1 of
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1
+#: ../../src/pyvista_js/readers.pydocstring of
 #: pyvista_js.readers.PLYReader.__init__:1
 msgid "Initialize the reader with a file path."
-msgstr ""
+msgstr "ファイルパスでリーダーを初期化します。"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:13
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:13
 msgid "Methods"
-msgstr ""
+msgstr "メソッド"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1
 msgid ":py:obj:`__init__ <pyvista_js.PLYReader.__init__>`\\ \\(path\\)"
-msgstr ""
+msgstr ":py:obj:`__init__ <pyvista_js.PLYReader.__init__>`\\ \\(path\\)"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1
 msgid ":py:obj:`read <pyvista_js.PLYReader.read>`\\ \\(\\)"
-msgstr ""
+msgstr ":py:obj:`read <pyvista_js.PLYReader.read>`\\ \\(\\)"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1 of
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:22:<autosummary>:1
+#: ../../src/pyvista_js/readers.pydocstring of
 #: pyvista_js.readers.PLYReader.read:1
 msgid "Read the PLY file and return a Mesh."
-msgstr ""
+msgstr "PLY ファイルを読み込み Mesh を返します。"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst:24
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:24
 msgid "Attributes"
-msgstr ""
+msgstr "属性"
 
-#: ../../:1:<autosummary>:1
+#: ../:1:<autosummary>:1
 msgid ":py:obj:`path <pyvista_js.PLYReader.path>`"
-msgstr ""
+msgstr ":py:obj:`path <pyvista_js.PLYReader.path>`"
 
-#: ../../:1:<autosummary>:1 of pyvista_js.PLYReader.path:1
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.PLYReader.path:1
+#: ../:1:<autosummary>:1
 msgid "Return the file path."
-msgstr ""
+msgstr "ファイルパスを返します。"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:0
 msgid "Returns"
-msgstr ""
+msgstr "戻り値"
 
-#: of pyvista_js.PLYReader.path:3
+#: ../../src/pyvista_js/readers.pydocstring of pyvista_js.PLYReader.path:3
 msgid "The path to the PLY file."
-msgstr ""
+msgstr "PLY ファイルへのパス。"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:0
 msgid "Return type"
-msgstr ""
+msgstr "戻り値の型"
 
-#: of pyvista_js.readers.PLYReader.read:3
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.PLYReader.read:3
 msgid ""
-"The full file content is base64-encoded and stored so that vtk.js can "
-"parse it at render time.  Vertex coordinates are extracted on the Python "
-"side for bounding-sphere and camera-framing calculations."
+"The full file content is base64-encoded and stored so that vtk.js can parse "
+"it at render time.  Vertex coordinates are extracted on the Python side for "
+"bounding-sphere and camera-framing calculations."
 msgstr ""
+"ファイルの全内容は base64 エンコードして保存され、描画時に vtk.js がパースできるようになります。頂点座標は Python "
+"側で抽出され、バウンディングスフィアやカメラのフレーミング計算に使用されます。"
 
-#: of pyvista_js.readers.PLYReader.read:7
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.PLYReader.read:7
 msgid "A mesh backed by the PLY file content."
-msgstr ""
+msgstr "PLY ファイルの内容に基づくメッシュ。"
 
-#: ../../api/_autosummary/pyvista_js.PLYReader.rst
+#: ../api/_autosummary/pyvista_js.PLYReader.rst:0
 msgid "Raises"
-msgstr ""
+msgstr "例外"
 
-#: of pyvista_js.readers.PLYReader.read:10
+#: ../../src/pyvista_js/readers.pydocstring of
+#: pyvista_js.readers.PLYReader.read:10
 msgid "If the file format is invalid or unsupported."
-msgstr ""
+msgstr "ファイル形式が不正または未対応の場合。"

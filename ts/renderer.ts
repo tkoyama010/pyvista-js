@@ -180,9 +180,37 @@ if (sceneData.lightingMode === null && sceneData.lights.length === 0) {
   setupLights(sceneData.lights, renderer);
 }
 
-for (const [index, actorConfig] of sceneData.actors.entries()) {
-  setupActor(actorConfig, index, renderer, renderWindow);
-}
+const sceneHandle: SceneHandle = {
+  container,
+  wasConnected: container.isConnected,
+  interactor,
+  renderWindow,
+  renderer,
+  actors: sceneData.actors.map((actorConfig, index) =>
+    setupActor(actorConfig, index, renderer, renderWindow),
+  ),
+};
+// no prototype, so container IDs such as "constructor" are not taken for its properties
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+const liveScenes = pruneScenes(window.__pvjs ?? Object.create(null));
+// showing a plotter again reuses its container ID, and the earlier outputs stay live
+liveScenes[sceneData.containerId] = [...(liveScenes[sceneData.containerId] ?? []), sceneHandle];
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+window.__pvjs = liveScenes;
+watchScenes();
+// biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+window.pvjsApplyUpdate = (containerId: string, update: ActorUpdate): void => {
+  // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+  const scenes = pruneScenes(window.__pvjs ?? {})[containerId];
+  if (!scenes) {
+    throw new Error(`No pyvista-js scene in container ${containerId}`);
+  }
+  // an output shown before the actor was added, or before a clear(), does not have it
+  const updated = scenes.filter((scene) => applyActorUpdate(scene, update));
+  if (updated.length === 0) {
+    throw new Error(`No actor ${update.actor} in container ${containerId}`);
+  }
+};
 
 if (sceneData.textActors) {
   for (const textConfig of sceneData.textActors) {
@@ -355,7 +383,7 @@ function createCubeSource(cfg: SourceConfig): SourceResult {
     yLength: cfg.yLength,
     zLength: cfg.zLength,
   });
-  return { output: source, isFilter: false };
+  return { output: source, isFilter: true };
 }
 
 /**
@@ -750,23 +778,22 @@ function applyScalars(mapper: VtkMapper, scalars: ScalarsConfig | undefined): vo
  * @param _index
  * @param ren
  * @param renWin
+ * @returns The actor's vtk.js objects, or undefined if its source could not be built.
  */
 function setupActor(
   cfg: ActorConfig,
   _index: number,
   ren: VtkRenderer,
   renWin: VtkRenderWindow,
-): void {
+): ActorHandle | undefined {
   const sourceResult = createSource(cfg.source);
   if (!sourceResult?.output) {
-    return;
+    return undefined;
   }
 
-  if (cfg.source.pointData ?? cfg.source.tCoords) {
-    const pd = getPolyData(sourceResult);
-    injectPointData(pd, cfg.source.pointData);
-    injectTcoords(pd, cfg.source.tCoords);
-  }
+  const polydata = getPolyData(sourceResult);
+  injectPointData(polydata, cfg.source.pointData);
+  injectTcoords(polydata, cfg.source.tCoords);
 
   let currentResult = sourceResult;
   if (cfg.source.filters && cfg.source.filters.length > 0) {
@@ -789,6 +816,113 @@ function setupActor(
   applyTexture(actor, renWin, cfg.texture);
 
   ren.addActor(actor);
+  return { id: cfg.id, polydata, mapper, actor };
+}
+
+/**
+ * Stop a scene's interactor listening for events, so the scene can be freed.
+ * @param scene
+ */
+function releaseScene(scene: SceneHandle): void {
+  scene.interactor.unbindEvents();
+  // the legacy globals point at the most recent scene, and would keep it alive
+  // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+  if (window.renderWindow === scene.renderWindow) {
+    // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+    window.renderer = undefined;
+    // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+    window.renderWindow = undefined;
+    // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+    window.openGlRenderWindow = undefined;
+    // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+    window.interactor = undefined;
+  }
+}
+
+/**
+ * Release and forget the scenes whose containers have left the page.
+ *
+ * Notebook outputs are removed without notice, so this runs whenever the page
+ * changes and whenever a scene is added or updated. A container that has not
+ * been in the page yet (e.g. a JupyterLab output that is not attached yet) is
+ * kept.
+ * @param scenes
+ * @returns `scenes`, without the removed scenes.
+ */
+function pruneScenes(scenes: Record<string, SceneHandle[]>): Record<string, SceneHandle[]> {
+  for (const [containerId, handles] of Object.entries(scenes)) {
+    const kept = handles.filter((scene) => {
+      if (scene.container.isConnected) {
+        scene.wasConnected = true;
+      } else if (scene.wasConnected) {
+        releaseScene(scene);
+        return false;
+      }
+      return true;
+    });
+    if (kept.length === 0) {
+      delete scenes[containerId];
+    } else {
+      scenes[containerId] = kept;
+    }
+  }
+  return scenes;
+}
+
+/**
+ * Prune the scenes whenever the page changes, so removing an output frees its
+ * scene even if no other scene is added or updated afterwards.
+ *
+ * One observer serves all scenes, and it stops once none are left.
+ */
+function watchScenes(): void {
+  // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+  if (window.__pvjsObserver) {
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+    if (Object.keys(pruneScenes(window.__pvjs ?? {})).length === 0) {
+      observer.disconnect();
+      // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+      window.__pvjsObserver = undefined;
+    }
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
+  window.__pvjsObserver = observer;
+}
+
+/**
+ * Replace an actor's points and point-data arrays in place and re-render.
+ *
+ * Changes reach the mapper through the live vtk.js pipeline (e.g. normals),
+ * but not through the filters that `applyFilters` computes once up front.
+ * @param scene
+ * @param update
+ * @returns Whether the scene has the actor; if not, nothing is done.
+ */
+function applyActorUpdate(scene: SceneHandle, update: ActorUpdate): boolean {
+  const handle = scene.actors.find((actorHandle) => actorHandle?.id === update.actor);
+  if (!handle) {
+    return false;
+  }
+  const { polydata, mapper } = handle;
+  if (update.points) {
+    polydata.getPoints().setData(Float32Array.from(update.points), XYZ_COMPONENTS);
+  }
+  for (const array of update.pointData ?? []) {
+    polydata.getPointData().removeArray(array.name);
+  }
+  injectPointData(polydata, update.pointData);
+  applyScalars(mapper, update.scalars);
+  polydata.modified();
+  if (update.points) {
+    // keep moved geometry from falling outside the near and far planes
+    scene.renderer.resetCameraClippingRange();
+  }
+  scene.renderWindow.render();
+  return true;
 }
 
 /**

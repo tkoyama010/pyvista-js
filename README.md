@@ -35,12 +35,20 @@
 pip install pyvista-js
 ```
 
+To generate scenes with large meshes several times faster, also install the
+optional [orjson](https://github.com/ijl/orjson) dependency:
+
+```bash
+pip install "pyvista-js[fast]"
+```
+
 For Pyodide/stlite:
 
 ```python
 import micropip
 
 await micropip.install("pyvista-js")
+await micropip.install("orjson")  # optional, for speed
 ```
 
 ## Usage

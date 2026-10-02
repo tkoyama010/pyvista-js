@@ -146,10 +146,8 @@ def test_plotter_camera_updates_renderer() -> None:
     assert plotter._renderer._camera.clipping_range == (0.1, 200.0)
 
 
-def test_camera_generates_html(monkeypatch) -> None:
+def test_camera_generates_html() -> None:
     """Test that setting a camera generates correct vtk.js camera code in HTML."""
-    monkeypatch.setenv("PYVISTA_JS_NO_BROWSER", "1")
-
     renderer = MockRenderer()
     camera = Camera(
         position=(5.0, 5.0, 5.0),
@@ -236,10 +234,8 @@ def test_camera_repr_includes_parallel_projection() -> None:
     assert "parallel_projection=True" in r
 
 
-def test_camera_parallel_projection_in_renderer(monkeypatch) -> None:
+def test_camera_parallel_projection_in_renderer() -> None:
     """Test that parallel projection setting is propagated to renderer."""
-    monkeypatch.setenv("PYVISTA_JS_NO_BROWSER", "1")
-
     renderer = MockRenderer()
     camera = Camera(parallel_projection=True)
     renderer.camera = camera
@@ -298,10 +294,8 @@ def test_camera_repr_includes_elevation() -> None:
     assert "elevation=45.0" in r
 
 
-def test_camera_elevation_in_renderer(monkeypatch) -> None:
+def test_camera_elevation_in_renderer() -> None:
     """Test that elevation setting is propagated to renderer."""
-    monkeypatch.setenv("PYVISTA_JS_NO_BROWSER", "1")
-
     renderer = MockRenderer()
     camera = Camera(elevation=45.0)
     renderer.camera = camera

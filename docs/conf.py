@@ -36,7 +36,7 @@ if dest_dir.exists():
     shutil.rmtree(dest_dir)
 shutil.copytree(src_dir, dest_dir)
 
-# Configure JupyterLite to pre-load jinja2 and set up sys.path
+# Configure JupyterLite to pre-load jinja2 and orjson and set up sys.path
 # so that examples work without explicit micropip or sys.path calls.
 _jupyterlite_config = docs_dir / "content" / "jupyter-lite.json"
 _jupyterlite_config.write_text(
@@ -46,7 +46,7 @@ _jupyterlite_config.write_text(
             "jupyter-config-data": {
                 "litePluginSettings": {
                     "@jupyterlite/pyodide-kernel-extension:kernel": {
-                        "loadPyodideOptions": {"packages": ["Jinja2"]},
+                        "loadPyodideOptions": {"packages": ["Jinja2", "orjson"]},
                         "pipliteUrls": [],
                     },
                 },
@@ -127,6 +127,7 @@ try_examples_global_warning_text = (
 try_examples_preamble = (
     "import micropip\n"
     "await micropip.install('jinja2')\n"
+    "await micropip.install('orjson')\n"
     "await micropip.install('lazy-loader')\n"
     "import sys\n"
     "sys.path.insert(0, '/drive/src')\n"

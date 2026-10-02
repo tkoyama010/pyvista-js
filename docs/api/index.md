@@ -12,6 +12,19 @@ This section provides detailed documentation for the pyvista-js public API.
    pyvista_js.Plotter
 ```
 
+## Updating a Scene
+
+Update a rendered scene in place with {meth}`pyvista_js.Plotter.update_actor`,
+and see {doc}`/howtos/update-in-place` for pages you embed yourself.
+
+```{eval-rst}
+.. autosummary::
+   :toctree: _autosummary
+   :nosignatures:
+
+   pyvista_js.rendering.scene_to_json
+```
+
 ## Camera
 
 ```{eval-rst}

@@ -5,9 +5,17 @@ Provides geometric primitives and mesh handling compatible with PyVista API.
 
 from __future__ import annotations
 
+import json
+import re
+import secrets
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+
+try:
+    import orjson
+except ImportError:  # pragma: no cover
+    orjson = None  # type: ignore[assignment]
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -207,7 +215,122 @@ class CellType:
     PYRAMID: int = _CELL_TYPE_PYRAMID
 
 
-def _point_data_to_scene(point_data: PointData) -> list[dict[str, object]]:
+class _Float32Array:
+    """A float array that scene JSON emits as the shortest float32 text.
+
+    vtk.js stores these values in a ``Float32Array``, so printing each one
+    with the fewest digits that round-trip to the same float32 is lossless
+    and about half the size of the 17-digit float64 text of ``tolist()``.
+
+    Parameters
+    ----------
+    array : array-like
+        The values, flattened and cast to float32.
+
+    """
+
+    __slots__ = ("array",)
+
+    def __init__(self, array: ArrayLike) -> None:
+        array = np.asarray(array)
+        if np.iscomplexobj(array):
+            # casting would silently drop the imaginary parts
+            msg = "Cannot serialize complex values to scene JSON"
+            raise TypeError(msg)
+        self.array = array.astype(np.float32).ravel()
+
+    def __len__(self) -> int:
+        return self.array.size
+
+    def tolist(self) -> list[float]:
+        """Return the values as a list of Python floats."""
+        return self.array.tolist()
+
+    def finite(self) -> np.ndarray:
+        """Return the values, checking that JSON can represent them."""
+        if not np.isfinite(self.array).all():
+            msg = "Cannot serialize NaN or infinite values to scene JSON"
+            raise ValueError(msg)
+        return self.array
+
+    def to_json(self) -> str:
+        """Return the values as a JSON array of shortest float32 text."""
+        return "[" + ",".join(self.finite().astype(str).tolist()) + "]"
+
+
+def _plain_scene(obj: object) -> object:
+    """Return scene data with each ``_Float32Array`` replaced by a list of floats.
+
+    Parameters
+    ----------
+    obj : object
+        Scene data that may contain ``_Float32Array`` values.
+
+    Returns
+    -------
+    object
+        The same data, serializable by :func:`json.dumps`.
+
+    """
+    if isinstance(obj, _Float32Array):
+        return obj.tolist()
+    if isinstance(obj, dict):
+        return {key: _plain_scene(value) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [_plain_scene(value) for value in obj]
+    return obj
+
+
+def _dumps_scene(obj: object) -> str:
+    """Serialize scene data to compact JSON, splicing in ``_Float32Array`` text.
+
+    Uses orjson when it is installed, which is several times faster and
+    writes the same values.
+
+    Parameters
+    ----------
+    obj : object
+        JSON-serializable data that may contain ``_Float32Array`` values.
+
+    Returns
+    -------
+    str
+        The JSON text.
+
+    """
+    if orjson is not None:
+
+        def to_array(value: object) -> np.ndarray:
+            if not isinstance(value, _Float32Array):
+                raise TypeError
+            return value.finite()
+
+        try:
+            return orjson.dumps(obj, default=to_array, option=orjson.OPT_SERIALIZE_NUMPY).decode()
+        except TypeError as err:
+            # orjson wraps errors from ``default``; surface the NaN check as is
+            if isinstance(err.__cause__, ValueError):
+                raise err.__cause__ from None
+            raise
+
+    # each array is written as a placeholder string, then swapped for its text;
+    # a random nonce keeps strings in the data from being taken for placeholders
+    fragments: list[str] = []  # type: ignore[unreachable]
+    nonce = secrets.token_hex(16)
+
+    def default(value: object) -> str:
+        if not isinstance(value, _Float32Array):
+            msg = f"Object of type {type(value).__name__} is not JSON serializable"
+            raise TypeError(msg)
+        fragments.append(value.to_json())
+        return f"pvjs-f32-{nonce}-{len(fragments) - 1}"
+
+    text = json.dumps(obj, default=default, separators=(",", ":"))
+    token = re.compile(rf'"pvjs-f32-{nonce}-(\d+)"')
+    return token.sub(lambda match: fragments[int(match.group(1))], text)
+
+
+def _point_data_to_scene(point_data: PointData | dict[str, np.ndarray]) -> list[dict[str, object]]:
     """Serialize point-data arrays for the vtk.js template.
 
     Unsigned 8-bit arrays are sent as ``Uint8Array`` so vtk.js can use them
@@ -215,8 +338,8 @@ def _point_data_to_scene(point_data: PointData) -> list[dict[str, object]]:
 
     Parameters
     ----------
-    point_data : PointData
-        The arrays to serialize.
+    point_data : PointData or dict
+        The arrays to serialize, by name.
 
     Returns
     -------
@@ -229,7 +352,7 @@ def _point_data_to_scene(point_data: PointData) -> list[dict[str, object]]:
             "name": name,
             "numberOfComponents": 1 if array.ndim == 1 else array.shape[1],
             "dataType": "Uint8Array" if array.dtype == np.uint8 else "Float32Array",
-            "values": array.flatten().tolist(),
+            "values": array.flatten().tolist() if array.dtype == np.uint8 else _Float32Array(array),
         }
         for name, array in point_data.items()
     ]
@@ -552,7 +675,7 @@ class PolyData:
             if self._scene_data
             else {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
             }
         )
         base_scene.setdefault("filters", [])
@@ -679,7 +802,7 @@ class PolyData:
             if self._scene_data
             else {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
             }
         )
         base_scene.setdefault("filters", [])
@@ -760,7 +883,7 @@ class PolyData:
             if self._scene_data
             else {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
             }
         )
         base_scene.setdefault("filters", [])
@@ -856,7 +979,7 @@ class PolyData:
             if self._scene_data
             else {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
             }
         )
         base_scene.setdefault("filters", [])
@@ -866,7 +989,7 @@ class PolyData:
                 "type": "contour",
                 "values": contour_values,
                 "scalarName": scalar_name_final,
-                "scalarData": scalar_data.flatten().tolist(),
+                "scalarData": _Float32Array(scalar_data),
             },
         )
 
@@ -982,7 +1105,7 @@ class PolyData:
             if self._scene_data
             else {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
             }
         )
         base_scene.setdefault("filters", [])
@@ -1050,19 +1173,27 @@ class PolyData:
             Source configuration with ``"type"`` key and type-specific parameters.
 
         """
+        return _plain_scene(self._to_scene_data())  # type: ignore[return-value]
+
+    def _to_scene_data(self) -> dict[str, object]:
+        """Return the source description, with float arrays as ``_Float32Array``.
+
+        Serialize it with ``_dumps_scene``.
+
+        """
         if self._scene_data is not None:
             data: dict[str, object] = dict(self._scene_data)
         else:
             data = {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
             }
             if self.faces is not None:
                 data["polys"] = self.faces.tolist()
 
         # Inject texture coordinates
         if self.t_coords is not None:
-            data["tCoords"] = self.t_coords.flatten().tolist()
+            data["tCoords"] = _Float32Array(self.t_coords)
 
         # Inject point data arrays
         if len(self._point_data) > 0:
@@ -1489,13 +1620,21 @@ class UnstructuredGrid:
             Source configuration with ``"type": "mesh"``.
 
         """
+        return _plain_scene(self._to_scene_data())  # type: ignore[return-value]
+
+    def _to_scene_data(self) -> dict[str, object]:
+        """Return the grid description, with float arrays as ``_Float32Array``.
+
+        Serialize it with ``_dumps_scene``.
+
+        """
         if self._scene_data is not None:
             data: dict[str, object] = dict(self._scene_data)
         else:
             polys = self._extract_surface_polys()
             data = {
                 "type": "mesh",
-                "points": self.points.flatten().tolist(),
+                "points": _Float32Array(self.points),
                 "polys": polys,
             }
 
@@ -1504,6 +1643,55 @@ class UnstructuredGrid:
             data["pointData"] = _point_data_to_scene(self._point_data)
 
         return data
+
+
+def _scene_source(mesh: object) -> dict[str, object]:
+    """Return a mesh's scene source, for serializing with ``_dumps_scene``.
+
+    Meshes that use the built-in ``to_scene_data`` give the compact form with
+    ``_Float32Array`` values. A mesh whose class overrides the public
+    ``to_scene_data`` gets that override, as before the compact form existed.
+
+    Parameters
+    ----------
+    mesh : object
+        The mesh.
+
+    Returns
+    -------
+    dict
+        The source configuration.
+
+    """
+    if getattr(type(mesh), "to_scene_data", None) in _COMPACT_TO_SCENE_DATA:
+        return mesh._to_scene_data()  # type: ignore[attr-defined, no-any-return]  # noqa: SLF001
+    return mesh.to_scene_data()  # type: ignore[attr-defined, no-any-return]
+
+
+def _has_plain_points(mesh: object) -> bool:
+    """Return whether pages build the mesh from its points, so they can be replaced in place.
+
+    Parameters
+    ----------
+    mesh : object
+        The mesh.
+
+    Returns
+    -------
+    bool
+        False for meshes given by a source, filter, reader, or custom ``to_scene_data``.
+
+    """
+    cls = type(mesh)
+    return (
+        getattr(mesh, "_scene_data", True) is None
+        and getattr(cls, "to_scene_data", None) in _COMPACT_TO_SCENE_DATA
+        and getattr(cls, "_to_scene_data", None) in _PLAIN_TO_SCENE_DATA
+    )
+
+
+_COMPACT_TO_SCENE_DATA = (PolyData.to_scene_data, UnstructuredGrid.to_scene_data)
+_PLAIN_TO_SCENE_DATA = (PolyData._to_scene_data, UnstructuredGrid._to_scene_data)  # noqa: SLF001
 
 
 def Sphere(  # noqa: N802

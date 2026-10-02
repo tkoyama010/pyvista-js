@@ -71,6 +71,7 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import secrets
 import sys
 import tempfile
 import time
@@ -78,10 +79,13 @@ import webbrowser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from pathlib import Path
     from typing import Self
 
     import numpy as np
+    from numpy.typing import ArrayLike
+    from playwright.sync_api import Browser, Playwright
 
     from .camera import Camera
     from .light import Light
@@ -93,6 +97,28 @@ if TYPE_CHECKING:
 from jinja2 import Environment, StrictUndefined
 
 from .examples import CubeMap
+from .mesh import _dumps_scene, _has_plain_points, _scene_source
+
+
+def scene_to_json(data: object) -> str:
+    """Serialize scene or update data, as built by pyvista-js, to JSON.
+
+    Float arrays are written with the fewest digits that give back the same
+    float32 values, which is what vtk.js stores.
+
+    Parameters
+    ----------
+    data : object
+        The data, such as the output of ``build_update_data``.
+
+    Returns
+    -------
+    str
+        The JSON text.
+
+    """
+    return _dumps_scene(data)
+
 
 # Load JavaScript templates
 _TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
@@ -120,11 +146,13 @@ else:
     VTK_AVAILABLE = False
     document = None  # type: ignore[assignment]
 
-# Check if IPython is available
+# Check if running in IPython (Jupyter, JupyterLite, the IPython shell)
 try:
+    from IPython import get_ipython
     from IPython.display import HTML, Javascript, display
 
-    IPYTHON_AVAILABLE = True
+    # installed is not enough: a plain script still needs the browser renderer
+    IPYTHON_AVAILABLE = get_ipython() is not None
 except ImportError:
     IPYTHON_AVAILABLE = False
     HTML = None  # type: ignore[assignment]
@@ -205,6 +233,30 @@ def _color_name_to_rgb(color_name: str) -> tuple[float, float, float]:
         "black": (0.0, 0.0, 0.0),
     }
     return colors.get(color_name.lower(), (0.5, 0.5, 0.5))
+
+
+def _validate_update(
+    mesh: object,
+    points: np.ndarray | None,
+    arrays: dict[str, np.ndarray],
+    scalars: str | None,
+) -> None:
+    """Check that an actor update fits its mesh, raising ``ValueError`` if not."""
+    if points is not None and (
+        not _has_plain_points(mesh) or points.shape != mesh.points.shape  # type: ignore[attr-defined]
+    ):
+        msg = f"points must replace the {mesh.points.shape} points of a plain mesh"  # type: ignore[attr-defined]
+        raise ValueError(msg)
+    for name, array in arrays.items():
+        if array.ndim not in (1, 2) or 0 in array.shape[1:]:
+            msg = f"point_data[{name!r}] must be (n_points,) or (n_points, k>0), got {array.shape}"
+            raise ValueError(msg)
+        if len(array) != mesh.n_points:  # type: ignore[attr-defined]
+            msg = f"point_data[{name!r}] has {len(array)} rows, expected {mesh.n_points}"  # type: ignore[attr-defined]
+            raise ValueError(msg)
+    if scalars is not None and scalars not in arrays and scalars not in mesh.point_data:  # type: ignore[attr-defined]
+        msg = f"scalars {scalars!r} is not a point-data array of the mesh"
+        raise ValueError(msg)
 
 
 class _BaseHTMLRenderer:
@@ -418,6 +470,7 @@ class _BaseHTMLRenderer:
         Examples
         --------
         >>> import pyvista_js as pv
+        >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
         >>> renderer.add_light(pv.Light(position=(1, 1, 1), intensity=2.0))
 
@@ -435,6 +488,7 @@ class _BaseHTMLRenderer:
         Examples
         --------
         >>> import pyvista_js as pv
+        >>> from pyvista_js.rendering import get_renderer
         >>> renderer = get_renderer()
         >>> renderer.add_text_actor(pv.Text("Hello", position=(0.5, 0.9)))
 
@@ -601,6 +655,118 @@ class _BaseHTMLRenderer:
             )
         return lights_data
 
+    @staticmethod
+    def _build_scalars_data(actor_info: dict[str, object]) -> dict[str, object] | None:
+        """Build the scalar-coloring configuration of an actor, if it has one."""
+        scalars_name = actor_info.get("scalars")
+        if scalars_name is None:
+            return None
+        scalars_array = actor_info["mesh"].point_data[str(scalars_name)]  # type: ignore[attr-defined]
+        # a uint8 RGB(A) array is used as the colors directly, with no colormap
+        rgb_components = (3, 4)
+        direct = (
+            scalars_array.dtype == "uint8"
+            and scalars_array.ndim == 2  # noqa: PLR2004
+            and scalars_array.shape[1] in rgb_components
+        )
+        return {
+            "arrayName": scalars_name,
+            "cmap": actor_info.get("cmap", "viridis"),
+            "range": [float(scalars_array.min()), float(scalars_array.max())],
+            "direct": direct,
+        }
+
+    @staticmethod
+    def _actor_id(actor_info: dict[str, object]) -> str:
+        """Return the actor's ID, which pages use to find it for updates.
+
+        Unlike the actor's index, it is not reused after :meth:`clear`, so an
+        update never reaches an unrelated actor in an earlier output.
+        """
+        return str(actor_info.setdefault("id", secrets.token_hex(8)))
+
+    def build_update_data(
+        self,
+        actor_index: int,
+        *,
+        points: ArrayLike | None = None,
+        point_data: Mapping[str, ArrayLike] | None = None,
+        scalars: str | None = None,
+    ) -> dict[str, object]:
+        """Update an actor's data and build the message that applies it in the page.
+
+        The actor's mesh is updated too, so HTML generated afterwards shows the
+        new data. Apply the message in a rendered page with
+        ``window.pvjsApplyUpdate(containerId, message)``, after serializing it
+        with :func:`scene_to_json`. Updates reach the rendered mesh through
+        smooth-shading normals, but not through filters such as ``clip``.
+
+        Parameters
+        ----------
+        actor_index : int
+            Index of the actor in :attr:`actors`, in the order it was added.
+        points : array-like, optional
+            New ``(n_points, 3)`` coordinates. The number of points cannot change.
+        point_data : mapping, optional
+            Point-data arrays to add or replace, by name.
+        scalars : str, optional
+            Name of the point-data array to color by. Without it, the coloring
+            is re-sent only when its array is in ``point_data``.
+
+        Returns
+        -------
+        dict
+            The update message, with the ``"actor"`` ID and whichever of ``"points"``,
+            ``"pointData"`` and ``"scalars"`` changed.
+
+        Raises
+        ------
+        IndexError
+            If there is no actor ``actor_index``.
+        TypeError
+            If an array has complex values. Nothing is changed when this is raised.
+        ValueError
+            If an array does not have one row per point or has NaN or
+            infinite values, ``points`` is given for a mesh that is not
+            defined by its points, or ``scalars`` names no point-data array.
+            Nothing is changed when this is raised.
+
+        """
+        import numpy as np  # noqa: PLC0415
+
+        from .mesh import _Float32Array, _point_data_to_scene  # noqa: PLC0415
+
+        # normalize the index, as the page looks actors up by a non-negative one
+        actor_index = range(len(self.actors))[actor_index]
+        actor_info = self.actors[actor_index]
+        mesh = actor_info["mesh"]
+        if points is not None:
+            # built first, as it rejects complex values that the cast would mangle
+            sent_points = _Float32Array(points)
+            points = np.asarray(points, dtype=float)
+        arrays = {name: np.asarray(array) for name, array in (point_data or {}).items()}
+        # validate the whole request, and build what is sent, before changing anything
+        _validate_update(mesh, points, arrays, scalars)
+        update: dict[str, object] = {"actor": self._actor_id(actor_info)}
+        if points is not None:
+            update["points"] = sent_points
+        if arrays:
+            update["pointData"] = _point_data_to_scene(arrays)
+        sent = [update.get("points"), *(a["values"] for a in update.get("pointData", []))]  # type: ignore[attr-defined]
+        for values in sent:
+            if isinstance(values, _Float32Array):
+                values.finite()
+
+        if points is not None:
+            mesh.points = points  # type: ignore[attr-defined]
+        for name, array in arrays.items():
+            mesh.point_data[name] = array  # type: ignore[attr-defined]
+        if scalars is not None:
+            actor_info["scalars"] = scalars
+        if scalars is not None or actor_info.get("scalars") in arrays:
+            update["scalars"] = self._build_scalars_data(actor_info)
+        return update
+
     def _build_actor_data(self, actor_info: dict[str, object]) -> dict[str, object]:
         """Build JSON-serializable actor configuration."""
         mesh = actor_info["mesh"]
@@ -609,7 +775,7 @@ class _BaseHTMLRenderer:
         smooth_shading = bool(actor_info.get("smooth_shading", True))
         style = str(actor_info.get("style", "surface"))
 
-        source_data = mesh.to_scene_data()  # type: ignore[attr-defined]
+        source_data = _scene_source(mesh)
 
         # Normals configuration
         normals_data = None
@@ -625,25 +791,7 @@ class _BaseHTMLRenderer:
         if texture is not None:
             texture_data = {"url": getattr(texture, "url", "")}
 
-        # Scalars
-        scalars_data = None
-        scalars_name = actor_info.get("scalars")
-        if scalars_name is not None:
-            cmap = actor_info.get("cmap", "viridis")
-            scalars_array = mesh.point_data[str(scalars_name)]  # type: ignore[attr-defined]
-            # a uint8 RGB(A) array is used as the colors directly, with no colormap
-            rgb_components = (3, 4)
-            direct = (
-                scalars_array.dtype == "uint8"
-                and scalars_array.ndim == 2  # noqa: PLR2004
-                and scalars_array.shape[1] in rgb_components
-            )
-            scalars_data = {
-                "arrayName": scalars_name,
-                "cmap": cmap,
-                "range": [float(scalars_array.min()), float(scalars_array.max())],
-                "direct": direct,
-            }
+        scalars_data = self._build_scalars_data(actor_info)
 
         # PBR
         pbr_data = None
@@ -670,6 +818,7 @@ class _BaseHTMLRenderer:
         actor_type = actor_info.get("type", "mesh")
 
         result: dict[str, object] = {
+            "id": self._actor_id(actor_info),
             "source": source_data,
             "normals": normals_data,
             "mapper": {"class": "vtkMapper"},
@@ -737,17 +886,16 @@ class _BaseHTMLRenderer:
         ]
 
     def _build_scene_data(self) -> dict[str, object]:
-        """Build a complete JSON-serializable scene description.
+        """Build a complete scene description.
 
         Returns
         -------
         dict
             Scene configuration including container, background, lights,
-            actors, camera, etc.
+            actors, camera, etc. Serialize it with ``_dumps_scene``, which
+            handles the ``_Float32Array`` values in it.
 
         """
-        import json as _json  # noqa: PLC0415
-
         actors_data = [self._build_actor_data(info) for info in self.actors]
 
         text_actors_data = self._build_text_actors_data()
@@ -763,17 +911,11 @@ class _BaseHTMLRenderer:
             "lightingMode": self.lighting,
         }
 
-        # Validate JSON serializable
-        _json.dumps(scene)
-
         return scene
 
     def _generate_html(self) -> str:
         """Generate HTML fragment with embedded vtk.js JavaScript."""
-        import json as _json  # noqa: PLC0415
-
-        scene_data = self._build_scene_data()
-        scene_json = _json.dumps(scene_data)
+        scene_json = _dumps_scene(self._build_scene_data())
 
         return _jinja_env.from_string(_RENDERING_TEMPLATE).render(
             VTKJS_CDN=_VTKJS_CDN,
@@ -796,6 +938,14 @@ class _BaseHTMLRenderer:
             "</html>\n"
         )
 
+    def _generate_update_js(self, update: dict[str, object]) -> str:
+        """Generate JavaScript that applies an update message to the rendered scene."""
+        import json as _json  # noqa: PLC0415
+
+        return (
+            f"window.pvjsApplyUpdate({_json.dumps(self.container_id)}, {scene_to_json(update)});\n"
+        )
+
     def _generate_render_js(self) -> str:
         """Generate pure JavaScript for display(Javascript(...)) in JupyterLite.
 
@@ -805,8 +955,7 @@ class _BaseHTMLRenderer:
         """
         import json as _json  # noqa: PLC0415
 
-        scene_data = self._build_scene_data()
-        scene_json = _json.dumps(scene_data)
+        scene_json = _dumps_scene(self._build_scene_data())
 
         # For JupyterLite: pass scene data and container via JS variables
         # so renderer.js can use them directly without DOM lookups.
@@ -1038,6 +1187,28 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             self.renderer.removeAllActors()
 
 
+def _launch_chromium(playwright: Playwright) -> Browser:
+    """Launch headless Chromium, or an installed Google Chrome if Playwright has none.
+
+    Parameters
+    ----------
+    playwright : playwright.sync_api.Playwright
+        The running Playwright.
+
+    Returns
+    -------
+    playwright.sync_api.Browser
+        The browser.
+
+    """
+    from playwright.sync_api import Error  # noqa: PLC0415
+
+    try:
+        return playwright.chromium.launch(headless=True)
+    except Error:  # no ``playwright install chromium``
+        return playwright.chromium.launch(headless=True, channel="chrome")
+
+
 def _playwright_capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:  # noqa: FBT001
     """Capture a screenshot of an HTML file using Playwright in a thread.
 
@@ -1061,7 +1232,7 @@ def _playwright_capture(html_path: str, w: int, h: int, omit_bg: bool) -> bytes:
     from playwright.sync_api import sync_playwright  # noqa: PLC0415
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = _launch_chromium(p)
         pg = browser.new_page(viewport={"width": w, "height": h})
         pg.goto(f"file://{html_path}")
         pg.wait_for_timeout(2000)

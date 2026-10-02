@@ -107,10 +107,8 @@ def test_add_mesh_with_texture(monkeypatch) -> None:
     assert actor["texture"] is texture
 
 
-def test_generated_html_contains_texture_code(monkeypatch) -> None:
+def test_generated_html_contains_texture_code() -> None:
     """Test that HTML output contains texture loading code when texture is set."""
-    monkeypatch.setattr(webbrowser, "open", lambda _: None)
-
     plotter = pv.Plotter()
     sphere = pv.Sphere()
     texture = examples.download_masonry_texture()
@@ -122,11 +120,9 @@ def test_generated_html_contains_texture_code(monkeypatch) -> None:
     assert "vtkTexture" in html
 
 
-def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
+def test_generated_html_no_texture_code_without_texture() -> None:
     """Test that scene data has no texture when no texture is set."""
     from tests.conftest import extract_scene_data  # noqa: PLC0415
-
-    monkeypatch.setattr(webbrowser, "open", lambda _: None)
 
     plotter = pv.Plotter()
     sphere = pv.Sphere()
@@ -137,10 +133,8 @@ def test_generated_html_no_texture_code_without_texture(monkeypatch) -> None:
     assert scene["actors"][0]["texture"] is None
 
 
-def test_texture_with_primitive_sphere(monkeypatch) -> None:
+def test_texture_with_primitive_sphere() -> None:
     """Test texture applied to a Sphere (primitive with auto UV coords)."""
-    monkeypatch.setattr(webbrowser, "open", lambda _: None)
-
     plotter = pv.Plotter()
     sphere = pv.Sphere()
     texture = Texture("https://example.com/earth.jpg")
@@ -148,10 +142,8 @@ def test_texture_with_primitive_sphere(monkeypatch) -> None:
     plotter.show()
 
 
-def test_texture_with_custom_polydata_and_tcoords(monkeypatch) -> None:
+def test_texture_with_custom_polydata_and_tcoords() -> None:
     """Test texture on custom PolyData with explicit texture coordinates."""
-    monkeypatch.setattr(webbrowser, "open", lambda _: None)
-
     points = np.array(
         [
             [0.0, 0.0, 0.0],

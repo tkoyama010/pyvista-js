@@ -1,0 +1,121 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-21 08:59+0000\n"
+"PO-Revision-Date: 2026-03-21 10:39+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../api/_autosummary/pyvista_js.PolyData.contour.rst:2
+msgid "pyvista\\_js.PolyData.contour"
+msgstr "pyvista\\_js.PolyData.contour"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.contour:1
+msgid "Generate contour lines at constant scalar values."
+msgstr "一定のスカラー値で等高線を生成します。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.contour:3
+msgid ""
+"This filter extracts isolines from the mesh at specified scalar values using"
+" a marching triangles algorithm implemented in JavaScript. It mirrors the "
+"PyVista ``contour`` filter API."
+msgstr ""
+"このフィルタは、JavaScript "
+"で実装されたマーチングトライアングル法を使用して、指定したスカラー値でメッシュからアイソラインを抽出します。PyVista の ``contour`` "
+"フィルタ API と同じです。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.contour:9
+msgid ""
+"The contour is computed in JavaScript at render time by applying the "
+"marching triangles algorithm to each triangle of the mesh, interpolating "
+"edge crossings at the specified iso-values. ``vtk.js`` does not support "
+"``vtkPolyData`` input for ``vtkContourFilter``, so this filter is "
+"implemented as a custom JavaScript pass."
+msgstr ""
+"等高線は、描画時にメッシュの各三角形にマーチングトライアングル法を適用し、指定したアイソ値でのエッジの交点を補間することで JavaScript "
+"で計算されます。``vtk.js`` は ``vtkContourFilter`` への ``vtkPolyData`` "
+"入力に対応していないため、このフィルタはカスタムの JavaScript パスとして実装されています。"
+
+#: ../api/_autosummary/pyvista_js.PolyData.contour.rst:0
+msgid "Parameters"
+msgstr "パラメータ"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:16
+msgid ""
+"Number of evenly spaced contours to generate, or a list of explicit scalar "
+"values at which to generate contours. Default is 10."
+msgstr "生成する等間隔の等高線の数、または等高線を生成する明示的なスカラー値のリスト。デフォルトは 10 です。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:19
+msgid ""
+"Scalar values per point to use for contouring. If not provided, uses the "
+"mesh's existing ``scalars`` attribute. Must have length equal to "
+"``n_points``."
+msgstr ""
+"等高線生成に使用する点ごとのスカラー値。指定しない場合はメッシュの既存の ``scalars`` 属性を使用します。``n_points`` "
+"と同じ長さである必要があります。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:23
+msgid ""
+"Name for the scalar array in vtk.js. If not provided, uses the mesh's "
+"existing ``scalar_name`` attribute or defaults to \"scalars\"."
+msgstr ""
+"vtk.js におけるスカラー配列の名前。指定しない場合はメッシュの既存の ``scalar_name`` 属性を使用し、それもなければ "
+"\"scalars\" がデフォルトです。"
+
+#: ../api/_autosummary/pyvista_js.PolyData.contour.rst:0
+msgid "Returns"
+msgstr "戻り値"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:27
+msgid "A new mesh containing the contour lines."
+msgstr "等高線を含む新しいメッシュ。"
+
+#: ../api/_autosummary/pyvista_js.PolyData.contour.rst:0
+msgid "Return type"
+msgstr "戻り値の型"
+
+#: ../api/_autosummary/pyvista_js.PolyData.contour.rst:0
+msgid "Raises"
+msgstr "例外"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:30
+msgid ""
+"If no scalars are provided and the mesh has no scalar data, or if     "
+"isosurfaces parameter is invalid."
+msgstr "スカラーが指定されておらずメッシュにスカラーデータがない場合、または isosurfaces パラメータが不正な場合。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:33
+msgid "Examples"
+msgstr "例"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:44
+msgid "Generate contours at specific values:"
+msgstr "特定の値で等高線を生成:"
+
+#: ../../src/pyvista_js/mesh.pydocstring of
+#: pyvista_js.mesh.PolyData.contour:48
+msgid "Render the contours:"
+msgstr "等高線を描画:"

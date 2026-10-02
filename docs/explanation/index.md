@@ -22,3 +22,5 @@ pyvista-js separates concerns between Python and JavaScript:
 - Support for JupyterLite and Streamlit
 - Physically Based Rendering (PBR) with metallic and roughness controls
 - Environment textures for image-based lighting
+- In-place updates of rendered actors' points and point data, without
+  re-rendering the scene
