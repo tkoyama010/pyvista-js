@@ -38,8 +38,15 @@ authors = [
 # prevent breaking changes from major version updates. All core dependencies
 # use upper bounds (e.g., package>=1.0.0,<2.0.0).
 #
-# SPEC 6 — Keys to the Castle (https://scientific-python.org/specs/spec-0006/)
-# is not currently adopted.
+# SPEC 6 — Keys to the Castle
+# https://scientific-python.org/specs/spec-0006/
+#
+# This project follows SPEC 6 for access control and secret management:
+# - Restricted resources (PyPI, Transifex, Read the Docs, GitHub) are documented
+#   in docs/decisions/0002-adopt-spec-0006-keys-to-the-castle.md
+# - Publishing uses OIDC trusted publishing, so no PyPI token is stored
+# - Shared secrets live in encrypted, revocable GitHub environment secrets
+# - Two-factor authentication is required for all service logins
 #
 # SPEC 7 — Seeding Pseudo-Random Number Generation
 # https://scientific-python.org/specs/spec-0007/
