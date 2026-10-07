@@ -74,6 +74,7 @@ class Plotter:
         self._container_id = f"pyvista-container-{uuid.uuid4().hex[:8]}"
         self._camera: Camera | None = None
         self._scalar_bar: dict[str, Any] | None = None
+        self._shown = False  # whether show() rendered the scene that render=True updates
 
     def add_mesh(  # noqa: PLR0913
         self,
@@ -90,6 +91,7 @@ class Plotter:
         style: str = "surface",
         scalars: str | None = None,
         cmap: str = "viridis",
+        render: bool = True,  # noqa: FBT001 FBT002
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a mesh to the plotter.
@@ -136,6 +138,9 @@ class Plotter:
             Name of the colormap to use when rendering scalars. Default is 'viridis'.
             Supported colormaps: 'viridis', 'plasma', 'inferno', 'magma', 'jet',
             'rainbow', 'turbo', 'coolwarm'.
+        render : bool, default=True
+            Whether to add the actor to the scene already shown by :meth:`show`
+            in a notebook as well.
         **kwargs
             Additional rendering options.
 
@@ -251,15 +256,18 @@ class Plotter:
             },
         )
 
+        if render and self._renders_changes():
+            self.update_actor(-1, add=True)
         return actor
 
-    def add_points(
+    def add_points(  # noqa: PLR0913
         self,
         points: object,
         color: str | tuple[float, float, float] | None = None,
         opacity: float = 1.0,
         point_size: float = 5.0,
         render_points_as_spheres: bool = False,  # noqa: FBT001 FBT002
+        render: bool = True,  # noqa: FBT001 FBT002
         **kwargs: object,
     ) -> dict[str, object]:
         """Add a point cloud to the plotter.
@@ -277,6 +285,9 @@ class Plotter:
         render_points_as_spheres : bool, optional
             Render points as spheres instead of screen-space squares.
             Default is False.
+        render : bool, default=True
+            Whether to add the actor to the scene already shown by :meth:`show`
+            in a notebook as well.
         **kwargs
             Additional rendering options.
 
@@ -327,6 +338,8 @@ class Plotter:
             },
         )
 
+        if render and self._renders_changes():
+            self.update_actor(-1, add=True)
         return actor
 
     def show(
@@ -399,6 +412,7 @@ class Plotter:
 
         # Render the scene
         self._renderer.render()
+        self._shown = True
 
     def generate_standalone_html(self) -> str:
         """Generate a complete standalone HTML page with the current scene.
@@ -438,16 +452,20 @@ class Plotter:
         """
         return str(getattr(self._renderer, "container_id", self._container_id))
 
-    def update_actor(
+    def update_actor(  # noqa: PLR0913
         self,
         actor_index: int,
         *,
         points: ArrayLike | None = None,
         point_data: Mapping[str, ArrayLike] | None = None,
         scalars: str | None = None,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float | None = None,
+        add: bool = False,
+        remove: bool = False,
         send: bool = True,
     ) -> dict[str, object]:
-        """Update an actor's data in place, without re-rendering the whole scene.
+        """Update an actor in place, without re-rendering the whole scene.
 
         In a notebook, the update is sent to the scene shown by :meth:`show`.
         To apply it some other way, such as in a page you embedded yourself,
@@ -465,9 +483,19 @@ class Plotter:
             Point-data arrays to add or replace, by name.
         scalars : str, optional
             Name of the point-data array to color by.
+        color : str or tuple, optional
+            New solid color, as an RGB tuple (0-1) or a color name.
+        opacity : float, optional
+            New opacity, between 0 and 1.
+        add : bool, default=False
+            Send the whole actor, to add it to a scene shown before it was
+            added. :meth:`add_mesh` does this itself unless ``render=False``.
+        remove : bool, default=False
+            Remove the actor from the plotter and the scene, as
+            :meth:`remove_actor` does unless ``render=False``.
         send : bool, default=True
             Whether to send the update to the scene shown by :meth:`show` in a
-            notebook. The mesh is updated either way.
+            notebook. The actor is updated either way.
 
         Returns
         -------
@@ -488,26 +516,89 @@ class Plotter:
         'colors'
 
         """
-        renderer = self._renderer
-        if not isinstance(renderer, _BaseHTMLRenderer):
-            msg = f"{type(renderer).__name__} does not support in-place updates"
-            raise NotImplementedError(msg)
+        renderer = self._html_renderer()
+        actor = renderer.actors[actor_index]
         update = renderer.build_update_data(
             actor_index,
             points=points,
             point_data=point_data,
             scalars=scalars,
+            color=color,
+            opacity=opacity,
+            add=add,
+            remove=remove,
         )
-        if send and IPYTHON_AVAILABLE and getattr(renderer, "use_ipython", False):
+        if remove:
+            self._actors = [info for info in self._actors if info.get("actor") is not actor]
+        for info in self._actors:
+            if info.get("actor") is actor and color is not None:
+                info["color"] = color
+            if info.get("actor") is actor and opacity is not None:
+                info["opacity"] = opacity
+        if send:
+            self._send(update)
+        return update
+
+    def update_camera(self, *, send: bool = True) -> dict[str, object]:
+        """Send the camera to the scene shown, without re-rendering the whole scene.
+
+        The camera is the one set by :meth:`view_vector`, :attr:`camera` or
+        :attr:`camera_position`, which send it themselves once the scene is
+        shown. Like :meth:`update_actor`, pass ``send=False`` to get the
+        message for a page you embedded yourself.
+
+        Parameters
+        ----------
+        send : bool, default=True
+            Whether to send the update to the scene shown by :meth:`show` in a
+            notebook.
+
+        Returns
+        -------
+        dict
+            The update message.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> plotter.view_vector((1, 0, 0))
+        >>> plotter.update_camera(send=False)["camera"]["viewVector"]
+        [1.0, 0.0, 0.0]
+
+        """
+        update = self._html_renderer().build_camera_update_data()
+        if send:
+            self._send(update)
+        return update
+
+    def _html_renderer(self) -> _BaseHTMLRenderer:
+        """Return the renderer, if it renders pages that can be updated in place."""
+        renderer = self._renderer
+        if not isinstance(renderer, _BaseHTMLRenderer):
+            msg = f"{type(renderer).__name__} does not support in-place updates"
+            raise NotImplementedError(msg)
+        return renderer
+
+    def _send(self, update: dict[str, object]) -> None:
+        """Apply an update message to the scene shown in a notebook, if any."""
+        renderer = self._html_renderer()
+        if IPYTHON_AVAILABLE and getattr(renderer, "use_ipython", False):
             from IPython.display import Javascript, display  # noqa: PLC0415
 
             display(Javascript(renderer._generate_update_js(update)))  # noqa: SLF001
-        return update
+
+    def _renders_changes(self) -> bool:
+        """Return whether render=True sends changes to a scene shown in a notebook."""
+        return self._shown and isinstance(self._renderer, _BaseHTMLRenderer)
 
     def view_vector(
         self,
         vector: tuple[float, float, float],
         viewup: tuple[float, float, float] | None = None,
+        *,
+        render: bool = True,
     ) -> None:
         """Point the camera in the direction of the given vector.
 
@@ -517,6 +608,9 @@ class Plotter:
             Direction to point the camera in, given as (vx, vy, vz).
         viewup : tuple of float, optional
             View-up vector. Defaults to (0, 1, 0).
+        render : bool, default=True
+            Whether to point the camera of the scene already shown by
+            :meth:`show` in a notebook as well.
 
         Examples
         --------
@@ -536,6 +630,8 @@ class Plotter:
 
         """
         self._renderer.view_vector(vector, viewup=viewup)
+        if render and self._renders_changes():
+            self.update_camera()
 
     def view_xy(self, negative: bool = False) -> None:  # noqa: FBT001 FBT002
         """View the XY plane.
@@ -893,17 +989,19 @@ class Plotter:
         self._actors = []
         self._scalar_bar = None
         self._renderer.clear()
+        # the scenes already shown keep what they had, so changes must not reach them
+        self._shown = False
 
-    def remove_actor(self, actor: object) -> bool:
+    def remove_actor(self, actor: object, *, render: bool = True) -> bool:
         """Remove an actor from the plotter.
-
-        Scenes already shown are not changed; the actor is left out of those
-        shown or generated afterwards.
 
         Parameters
         ----------
         actor : object
             The actor, as returned by :meth:`add_mesh` or :meth:`add_points`.
+        render : bool, default=True
+            Whether to remove it from the scene already shown by :meth:`show`
+            in a notebook as well.
 
         Returns
         -------
@@ -923,6 +1021,11 @@ class Plotter:
         """
         # by identity, since actors are dicts, which compare equal by value
         n_actors = len(self._actors)
+        if render and self._renders_changes():
+            for index, info in enumerate(self._renderer.actors):
+                if info is actor:
+                    self.update_actor(index, remove=True)
+                    break
         self._actors = [
             info for info in self._actors if "actor" not in info or info["actor"] is not actor
         ]
@@ -967,6 +1070,8 @@ class Plotter:
         """Set the camera."""
         self._camera = cam
         self._renderer.camera = cam
+        if self._renders_changes():
+            self.update_camera()
 
     @property
     def camera_position(
@@ -1387,6 +1492,7 @@ class Plotter:
         self._background_color = state["_background_color"]  # type: ignore[assignment]
         self._container_id = state["_container_id"]  # type: ignore[assignment]
         self._camera = state["_camera"]  # type: ignore[assignment]
+        self._shown = False
 
         # Recreate the renderer
         self._renderer = get_renderer()

@@ -32,10 +32,28 @@ Actors are numbered in the order they were added. An update can:
 
 - add or replace point-data arrays with `point_data`,
 - color by a different point-data array with `scalars`,
-- move the points of a mesh given by points and faces with `points`.
+- move the points of a mesh given by points and faces with `points`,
+- change the solid `color` and the `opacity`.
 
 The number of points cannot change. The mesh is updated in Python too, so a
 page generated later shows the new data.
+
+## Adding and removing actors, and moving the camera
+
+As in PyVista, once a scene is shown, {meth}`~pyvista_js.Plotter.add_mesh`,
+{meth}`~pyvista_js.Plotter.add_points` and
+{meth}`~pyvista_js.Plotter.remove_actor` add and remove actors in it too, and
+{meth}`~pyvista_js.Plotter.view_vector`, {attr}`~pyvista_js.Plotter.camera`
+and {attr}`~pyvista_js.Plotter.camera_position` move its camera:
+
+```python
+plotter.add_mesh(pv.Cube(center=(2, 0, 0)))
+plotter.view_vector((1, 1, 1))
+```
+
+Pass `render=False` to change only the plotter. Scenes shown before
+{meth}`~pyvista_js.Plotter.clear` keep what they had, and later changes reach
+only the scenes shown after it.
 
 ## In a page you embed yourself
 
@@ -65,6 +83,11 @@ iframe.contentWindow.pvjsApplyUpdate(containerId, JSON.parse(message));
 
 How the message gets to the page is up to you: a `postMessage` handler, a
 widget, or any other channel you already have.
+
+The other changes have messages too:
+`plotter.update_actor(index, add=True, send=False)` for an actor added after
+the page was generated, `plotter.update_actor(index, remove=True, send=False)`
+to remove one, and `plotter.update_camera(send=False)` for the camera.
 
 ## Limitations
 

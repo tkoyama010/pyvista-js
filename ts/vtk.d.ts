@@ -182,6 +182,7 @@ interface VtkLight {
 interface VtkRenderer {
   setBackground: (r: number, g: number, b: number) => void;
   addActor: (actor: VtkActor) => void;
+  removeActor: (actor: VtkActor) => void;
   addLight: (light: VtkLight) => void;
   removeAllLights: () => void;
   setAutomaticLightCreation: (value: boolean) => void;
@@ -532,6 +533,18 @@ interface ActorUpdate {
   points?: number[];
   pointData?: PointDataArray[];
   scalars?: ScalarsConfig;
+  color?: [number, number, number];
+  opacity?: number;
+  /** The whole actor, to add to a scene that does not have it yet. */
+  add?: ActorConfig;
+  /** Whether to remove the actor from the scene. */
+  remove?: boolean;
+}
+
+/** An in-place update of the camera, as built by `build_camera_update_data` in Python. */
+interface CameraUpdate {
+  /** The camera to set, or undefined to frame the scene from the current direction. */
+  camera?: CameraConfig;
 }
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, jsdoc/require-jsdoc -- global interface augmentation requires interface, not type
@@ -544,7 +557,7 @@ interface Window {
   /** The live scenes by container ID; showing a plotter again adds another. */
   __pvjs?: Record<string, SceneHandle[]>;
   __pvjsObserver?: MutationObserver | undefined;
-  pvjsApplyUpdate: (containerId: string, update: ActorUpdate) => void;
+  pvjsApplyUpdate: (containerId: string, update: ActorUpdate | CameraUpdate) => void;
 }
 
 /** Maps reader type names to their vtk.js factory and parse method. */
