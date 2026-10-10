@@ -75,10 +75,19 @@ repos:
         pass_filenames: false
 
       - id: jscpd
-        name: jscpd - copy/paste detector
+        name: jscpd - copy/paste detector (node)
         entry: jscpd
         language: node
         additional_dependencies: ['jscpd@5.4.1']
+        args: [--changed, --fail-on-new-clones, --reporters, 'console,silent', '.']
+        pass_filenames: false
+        always_run: true
+
+      - id: jscpd-python
+        name: jscpd - copy/paste detector (python)
+        entry: jscpd
+        language: python
+        additional_dependencies: ['jscpd==5.4.1']
         args: [--changed, --fail-on-new-clones, --reporters, 'console,silent', '.']
         pass_filenames: false
         always_run: true
