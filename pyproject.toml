@@ -32,12 +32,14 @@ authors = [
 #
 # This project follows SPEC 1 for lazy loading of submodules and functions
 #
-# SPEC 6 — Upper Bound Constraints on Dependencies
-# https://scientific-python.org/specs/spec-0006/
+# Dependency upper bounds (project policy, not a SPEC):
 #
-# This project follows SPEC 6 by using upper bound version constraints on
-# dependencies to prevent breaking changes from major version updates.
-# All core dependencies use upper bounds (e.g., package>=1.0.0,<2.0.0).
+# This project uses upper bound version constraints on dependencies to
+# prevent breaking changes from major version updates. All core dependencies
+# use upper bounds (e.g., package>=1.0.0,<2.0.0).
+#
+# SPEC 6 — Keys to the Castle (https://scientific-python.org/specs/spec-0006/)
+# is not currently adopted.
 #
 # SPEC 7 — Seeding Pseudo-Random Number Generation
 # https://scientific-python.org/specs/spec-0007/
