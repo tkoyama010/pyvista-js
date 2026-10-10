@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.18.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.17.0...pyvista-js-v0.18.0) (2026-10-06)
+
+### Features
+
+- add pi Transifex extension for AI-assisted doc translation ([#642](https://github.com/tkoyama010/pyvista-js/issues/642)) ([9f1068f](https://github.com/tkoyama010/pyvista-js/commit/9f1068f7e351e12717201bea8ff9915e87e721ab))
+- add Plotter.remove_actor and fall back to an installed Chrome ([#638](https://github.com/tkoyama010/pyvista-js/issues/638)) ([1e0d038](https://github.com/tkoyama010/pyvista-js/commit/1e0d03852ee37e201b3c3158638bd9a54f1f5781))
+
+### Bug Fixes
+
+- **deps:** resolve Dependabot alerts — bump jupyterlite-pyodide-kernel and jupyterlite-sphinx ([#659](https://github.com/tkoyama010/pyvista-js/issues/659)) ([b7da521](https://github.com/tkoyama010/pyvista-js/commit/b7da52154a4d8959debe68bbe8ef61590e850397))
+
+### Documentation
+
+- add ADR-0001 on optional three.js rendering backend ([#640](https://github.com/tkoyama010/pyvista-js/issues/640)) ([6a22471](https://github.com/tkoyama010/pyvista-js/commit/6a22471c8eb2176d9f0bba6a41beda0ed7cc8ffc))
+- add AGENTS.md following GitHub's lessons from 2,500+ repositories ([#649](https://github.com/tkoyama010/pyvista-js/issues/649)) ([89db36f](https://github.com/tkoyama010/pyvista-js/commit/89db36f5ef9b5352372987be87b65917a0c0c770))
+- **adr:** add mesh structure simplicity as a decision driver in ADR-0001 ([#645](https://github.com/tkoyama010/pyvista-js/issues/645)) ([63de991](https://github.com/tkoyama010/pyvista-js/commit/63de99125be4dc64c517010165e95ef6157cc713))
+- Updates for project pyvista-js-doc and language ja ([#637](https://github.com/tkoyama010/pyvista-js/issues/637)) ([2475d84](https://github.com/tkoyama010/pyvista-js/commit/2475d845666fe63731d9eab88cef4467ef3babe9))
+- Updates for project pyvista-js-doc and language ja ([#644](https://github.com/tkoyama010/pyvista-js/issues/644)) ([ded552f](https://github.com/tkoyama010/pyvista-js/commit/ded552f40eb1c903e0a6e4e760487c3ec4a79159))
+
+### Continuous Integration
+
+- add issues to pyvista-js Scrum Board ([#643](https://github.com/tkoyama010/pyvista-js/issues/643)) ([c03352b](https://github.com/tkoyama010/pyvista-js/commit/c03352bb3008721546237841a8b0c9db244f1569))
+
 ## [0.17.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.16.0...pyvista-js-v0.17.0) (2026-09-25)
 
 ### Features
