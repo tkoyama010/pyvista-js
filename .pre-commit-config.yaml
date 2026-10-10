@@ -136,5 +136,7 @@ ci:
   autoupdate_branch: ''
   autoupdate_commit_msg: 'chore: pre-commit autoupdate'
   autoupdate_schedule: weekly
-  skip: [biome]
+  # jscpd uses --changed vs HEAD, which is always empty on pre-commit.ci's
+  # clean checkout — the hook is local-only.
+  skip: [biome, jscpd, jscpd-python]
   submodules: false
