@@ -71,5 +71,8 @@ node_modules/
 src/pyvista_js/templates/renderer.js
 .aider*
 
+# jscpd baseline (built from HEAD on first hook run)
+.jscpd-baseline.json
+
 # direnv (contains secrets)
 .envrc

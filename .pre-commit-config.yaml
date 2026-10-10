@@ -74,6 +74,15 @@ repos:
         types_or: [javascript, ts]
         pass_filenames: false
 
+      - id: jscpd
+        name: jscpd - copy/paste detector
+        entry: jscpd
+        language: node
+        additional_dependencies: ['jscpd@5.4.1']
+        args: [--changed, --fail-on-new-clones, --reporters, 'console,silent', '.']
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/scientific-python/cookie
     rev: 2026.08.14
     hooks:
