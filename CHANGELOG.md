@@ -2,11 +2,10 @@
 
 ## [0.18.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.18.0...pyvista-js-v0.18.1) (2026-10-10)
 
-
 ### Documentation
 
-* add larsoner as a contributor for review ([#664](https://github.com/tkoyama010/pyvista-js/issues/664)) ([f42c2d9](https://github.com/tkoyama010/pyvista-js/commit/f42c2d9ea292be61a7bd13ee4d04736a8291e9a5))
-* correct SPEC 6 labeling and add SPEC 8 badge ([#666](https://github.com/tkoyama010/pyvista-js/issues/666)) ([67c4e09](https://github.com/tkoyama010/pyvista-js/commit/67c4e096e178b0d973323a5df58a442742661d30))
+- add larsoner as a contributor for review ([#664](https://github.com/tkoyama010/pyvista-js/issues/664)) ([f42c2d9](https://github.com/tkoyama010/pyvista-js/commit/f42c2d9ea292be61a7bd13ee4d04736a8291e9a5))
+- correct SPEC 6 labeling and add SPEC 8 badge ([#666](https://github.com/tkoyama010/pyvista-js/issues/666)) ([67c4e09](https://github.com/tkoyama010/pyvista-js/commit/67c4e096e178b0d973323a5df58a442742661d30))
 
 ## [0.18.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.17.0...pyvista-js-v0.18.0) (2026-10-06)
 
