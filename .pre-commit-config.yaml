@@ -79,7 +79,8 @@ repos:
         entry: jscpd
         language: node
         additional_dependencies: ['jscpd@5.4.1']
-        args: [--changed, --fail-on-new-clones, --reporters, 'console,silent', '.']
+        args: [--changed, --fail-on-new-clones, --reporters, 'console,silent', --format,
+            'abap,abnf,actionscript,ada,agda,antlr4,apacheconf,apex,apl,applescript,aql,arduino,arff,armasm,asciidoc,asm6502,aspnet,astro,autohotkey,autoit,awk,bash,basic,batch,bicep,bison,bnf,brainfuck,bro,c,c-header,cfml,cfscript,clike,clojure,cmake,cobol,coffeescript,comments,cpp,cpp-header,crystal,csharp,csp,css,css-extras,csv,cypher,d,dart,dhall,diff,django,dns-zone-file,docker,dot,ebnf,editorconfig,eiffel,elixir,elm,erb,erlang,excel-formula,factor,flow,fortran,fsharp,ftl,gcode,gdscript,gedcom,gettext,gherkin,git,glsl,gml,go,go-module,graphql,groovy,haml,handlebars,haskell,haxe,hcl,hlsl,hpkp,hsts,http,ichigojam,icon,idris,ignore,inform7,ini,io,j,java,javascript,jolie,jq,json,json5,jsx,julia,keymap,kotlin,kusto,latex,less,lilypond,linker-script,liquid,lisp,livescript,llvm,log,lolcode,lua,makefile,markdown,markup,matlab,mel,mermaid,mizar,mongodb,monkey,n1ql,n4js,nasm,nginx,nim,nix,nsis,objectivec,ocaml,odin,opencl,openqasm,oz,parigp,pascal,perl,php,plant-uml,plsql,powerquery,powershell,processing,prolog,promql,properties,protobuf,pug,puppet,pure,purescript,python,q,qore,qsharp,r,racket,razor,reason,regex,rego,renpy,rescript,rest,rip,roboconf,robotframework,ruby,rust,sas,sass,scala,scheme,scss,shell-session,smali,smalltalk,smarty,solidity,soy,sparql,sql,stata,stylus,svelte,swift,tap,tcl,textile,toml,tsx,tt2,turtle,twig,txt,typescript,typoscript,unrealscript,uri,vala,vbnet,velocity,verilog,vhdl,vim,visual-basic,vue,wasm,wgsl,wiki,wolfram,xeora,xojo,xquery,yaml,zig', '.']
         pass_filenames: false
         always_run: true
 
