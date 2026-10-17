@@ -73,7 +73,7 @@ def test_add_mesh() -> None:
 - Python: `ruff` with `lint.select = ["ALL"]` (line length 100), formatted with `ruff format`. Type hints with `mypy src/` passing.
 - TypeScript/JavaScript: Biome (`npm run lint`, `npm run format`), type-checked with `npm run typecheck` (`tsc --noEmit -p ts/tsconfig.json`).
 - Markdown: mdformat (except `docs/decisions/`, which keeps MADR formatting as-is).
-- Follow the scientific-python SPECs declared in `pyproject.toml`: SPEC 0 (minimum versions), SPEC 1 (lazy loading — never import `pyvista_js` submodules eagerly at module top level), SPEC 7 (`numpy.random.default_rng()` for any random generation), SPEC 8 (GitHub Actions pinned to commit SHAs). Dependency upper bounds are project policy, not a SPEC.
+- Follow the scientific-python SPECs declared in `pyproject.toml`: SPEC 0 (minimum versions), SPEC 1 (lazy loading — never import `pyvista_js` submodules eagerly at module top level), SPEC 6 (Keys to the Castle — restricted resources documented in `docs/decisions/0002-adopt-spec-0006-keys-to-the-castle.md`), SPEC 7 (`numpy.random.default_rng()` for any random generation), SPEC 8 (GitHub Actions pinned to commit SHAs). Dependency upper bounds are project policy, not a SPEC.
 - Use the standard `logging` module with a module-level `logger = logging.getLogger(__name__)` (see `src/pyvista_js/_cli.py`); the deprecated `logging.warn` is banned by pre-commit.
 
 ## Git workflow
