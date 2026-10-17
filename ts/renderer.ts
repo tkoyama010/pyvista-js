@@ -20,6 +20,9 @@ const DEFAULT_WIDTH = 600;
 /** Default fallback height (px) when the container has no intrinsic size. */
 const DEFAULT_HEIGHT = 400;
 
+/** vtk.js's default camera view angle, in degrees. */
+const DEFAULT_VIEW_ANGLE = 30;
+
 /** Scale factor to convert a [0-1] float colour channel to [0-255] integer. */
 const COLOR_BYTE_SCALE = 255;
 
@@ -199,11 +202,17 @@ liveScenes[sceneData.containerId] = [...(liveScenes[sceneData.containerId] ?? []
 window.__pvjs = liveScenes;
 watchScenes();
 // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
-window.pvjsApplyUpdate = (containerId: string, update: ActorUpdate): void => {
+window.pvjsApplyUpdate = (containerId: string, update: ActorUpdate | CameraUpdate): void => {
   // biome-ignore lint/style/useGlobalThis: window augmentation requires window, not globalThis
   const scenes = pruneScenes(window.__pvjs ?? {})[containerId];
   if (!scenes) {
     throw new Error(`No pyvista-js scene in container ${containerId}`);
+  }
+  if (!("actor" in update)) {
+    for (const scene of scenes) {
+      applyCameraUpdate(scene, update);
+    }
+    return;
   }
   // an output shown before the actor was added, or before a clear(), does not have it
   const updated = scenes.filter((scene) => applyActorUpdate(scene, update));
@@ -894,20 +903,42 @@ function watchScenes(): void {
 }
 
 /**
- * Replace an actor's points and point-data arrays in place and re-render.
+ * Add, remove or change an actor in place and re-render.
  *
  * Changes reach the mapper through the live vtk.js pipeline (e.g. normals),
  * but not through the filters that `applyFilters` computes once up front.
  * @param scene
  * @param update
- * @returns Whether the scene has the actor; if not, nothing is done.
+ * @returns Whether the scene has the actor (or, when adding it, now has it); if not, nothing is done.
  */
 function applyActorUpdate(scene: SceneHandle, update: ActorUpdate): boolean {
   const handle = scene.actors.find((actorHandle) => actorHandle?.id === update.actor);
+  if (update.add) {
+    // a page generated after the actor was added has it already
+    if (!handle) {
+      scene.actors.push(
+        setupActor(update.add, scene.actors.length, scene.renderer, scene.renderWindow),
+      );
+      scene.renderWindow.render();
+    }
+    return true;
+  }
   if (!handle) {
     return false;
   }
-  const { polydata, mapper } = handle;
+  if (update.remove) {
+    scene.renderer.removeActor(handle.actor);
+    scene.actors.splice(scene.actors.indexOf(handle), 1);
+    scene.renderWindow.render();
+    return true;
+  }
+  const { polydata, mapper, actor } = handle;
+  if (update.color) {
+    actor.getProperty().setColor(update.color[0], update.color[1], update.color[2]);
+  }
+  if (update.opacity !== undefined) {
+    actor.getProperty().setOpacity(update.opacity);
+  }
   if (update.points) {
     polydata.getPoints().setData(Float32Array.from(update.points), XYZ_COMPONENTS);
   }
@@ -923,6 +954,23 @@ function applyActorUpdate(scene: SceneHandle, update: ActorUpdate): boolean {
   }
   scene.renderWindow.render();
   return true;
+}
+
+/**
+ * Set the camera as a new page would, from the current direction, and re-render.
+ * @param scene
+ * @param update
+ */
+function applyCameraUpdate(scene: SceneHandle, update: CameraUpdate): void {
+  // what a new page starts from, since setupCamera sets only what the camera gives
+  const cam = scene.renderer.getActiveCamera();
+  cam.setViewAngle(DEFAULT_VIEW_ANGLE);
+  cam.setParallelProjection(false);
+  scene.renderer.resetCamera();
+  if (update.camera) {
+    setupCamera(scene.renderer, update.camera);
+  }
+  scene.renderWindow.render();
 }
 
 /**

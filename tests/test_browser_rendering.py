@@ -732,3 +732,35 @@ def test_update_after_clear_and_release(page: Page) -> None:
     assert released == [0, True, True]
     with pytest.raises(Exception, match="No pyvista-js scene in container"):
         _apply_update(page, plotter, {"actor": "gone"})
+
+
+@pytest.mark.playwright
+def test_update_actor_add_remove_and_camera(page: Page) -> None:
+    """Test that actors are added, removed and restyled, and the camera set, in place.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = _plain_quad_plotter()
+    _load_plotter_html(page, plotter)
+    plotter.add_mesh(Sphere(), render=False)
+    plotter.view_vector((1, 0, 0), render=False)
+    for update in (
+        plotter.update_actor(1, add=True, send=False),
+        plotter.update_actor(0, remove=True, send=False),
+        plotter.update_actor(0, color="red", send=False),
+        plotter.update_camera(send=False),
+    ):
+        _apply_update(page, plotter, update)
+    n_actors, color, direction = page.evaluate(
+        "id => { const scene = window.__pvjs[id][0];"
+        " return [scene.renderer.getActors().length,"
+        " scene.actors[0].actor.getProperty().getColor(),"
+        " scene.renderer.getActiveCamera().getDirectionOfProjection()]; }",
+        plotter.container_id,
+    )
+    assert (n_actors, color) == (1, [1, 0, 0])
+    np.testing.assert_allclose(direction, [-1, 0, 0], atol=1e-6)

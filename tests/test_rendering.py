@@ -583,10 +583,13 @@ def test_build_update_data_matches_ts_schema() -> None:
                 0,
                 points=points,
                 point_data={"colors": np.full((4, 3), 255, np.uint8), "t": np.arange(4.0)},
+                color="red",
+                opacity=0.5,
             ),
         ),
     )
-    assert set(update) == _ts_interface_fields("ActorUpdate")
+    # adding and removing an actor take the whole message
+    assert set(update) == _ts_interface_fields("ActorUpdate") - {"add", "remove"}
     for array in update["pointData"]:
         assert set(array) == _ts_interface_fields("PointDataArray")
     assert set(update["scalars"]) == _ts_interface_fields("ScalarsConfig")
@@ -601,6 +604,9 @@ def test_build_update_data_matches_ts_schema() -> None:
         "range": [255.0, 255.0],
         "direct": True,
     }
+    assert set(renderer.build_update_data(0, add=True)) == {"actor", "add"}
+    assert set(renderer.build_update_data(0, remove=True)) == {"actor", "remove"}
+    assert set(renderer.build_camera_update_data()) <= _ts_interface_fields("CameraUpdate")
 
 
 def test_build_update_data_updates_mesh_and_scene() -> None:
@@ -636,7 +642,7 @@ def test_plotter_update_actor_requires_html_renderer() -> None:
 
 
 def test_plotter_update_actor_send(monkeypatch) -> None:
-    """Test that update_actor sends to the notebook scene unless told not to."""
+    """Test that changes are sent to the notebook scene, once shown, unless told not to."""
     from pyvista_js import plotter as plotter_module  # noqa: PLC0415
 
     shown: list[str] = []
@@ -657,6 +663,18 @@ def test_plotter_update_actor_send(monkeypatch) -> None:
     plotter.update_actor(0, point_data=colors)
     assert len(shown) == 1
     assert shown[0].startswith(f'window.pvjsApplyUpdate("{plotter.container_id}",')
+
+    shown.clear()
+    sphere = plotter.add_mesh(Sphere())  # nothing shown yet to send it to
+    plotter.show()
+    plotter.add_mesh(Cube())
+    plotter.add_mesh(Cube(), render=False)
+    plotter.remove_actor(sphere)
+    plotter.view_vector((1, 0, 0))
+    plotter.clear()  # the scene shown keeps what it had, so nothing more is sent
+    plotter.add_mesh(Sphere())
+    sent = [set(json.loads(js.split(", ", 1)[1][: -len(");\n")])) for js in shown]
+    assert sent == [{"actor", "add"}, {"actor", "remove"}, {"camera"}]
 
 
 def test_build_update_data_actor_ids() -> None:
@@ -693,6 +711,7 @@ _POINTS = np.ones((4, 3))
         ({"points": np.full((4, 3), np.nan), "point_data": _COLORS}, "NaN"),
         ({"points": _POINTS * 1j, "point_data": _COLORS}, "complex"),
         ({"point_data": {**_COLORS, "t": np.ones(4) * 1j}}, "complex"),
+        ({"remove": True, "opacity": 0.5}, "cannot be combined"),
     ],
 )
 def test_build_update_data_invalid_changes_nothing(kwargs: dict, match: str) -> None:
@@ -707,6 +726,7 @@ def test_build_update_data_invalid_changes_nothing(kwargs: dict, match: str) -> 
     np.testing.assert_array_equal(mesh.point_data["colors"], colors)
     assert mesh.point_data.keys() == ["colors"]
     assert actor["scalars"] == "colors"
+    assert renderer.actors == [actor]
 
 
 def test_to_scene_data_override_is_rendered() -> None:
