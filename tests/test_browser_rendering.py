@@ -68,6 +68,9 @@ def _load_plotter_html(page: Page, plotter: Plotter) -> None:
         The plotter to render.
 
     """
+    if not _check_cdn_access(page):
+        pytest.skip("unpkg.com CDN not accessible")
+
     # Simulate what show() does
     plotter._renderer.create_container(plotter._container_id)
     html = plotter.generate_standalone_html()
