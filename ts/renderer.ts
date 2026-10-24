@@ -328,6 +328,7 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     plane: createPlaneSource,
     pointSource: createPointSource,
     glyph: createGlyphSource,
+    image: createImageSource,
     platonicSolid: createPlatonicSolidSource,
     regularPolygon: createRegularPolygonSource,
     mesh: createMeshSource,
@@ -584,6 +585,39 @@ function createGlyphSource(cfg: SourceConfig): SourceResult {
   vtkPts.setData(pointsArray, XYZ_COMPONENTS);
   polydata.setPoints(vtkPts);
   return { output: polydata, isFilter: false };
+}
+
+/**
+ * Create an image dataset scene source rendered as an outline.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the image outline poly data.
+ */
+function createImageSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Common.DataModel.vtkImageData;
+  if (!factory) {
+    return createGlyphSource({ type: "glyph", points: [] });
+  }
+  const dimensions = cfg.dimensions ?? [1, 1, 1];
+  const spacing = cfg.spacing ?? [1, 1, 1];
+  const origin = cfg.origin ?? [0, 0, 0];
+  const image = factory.newInstance();
+  const [nx, ny, nz] = dimensions;
+  image.setExtent(0, nx - 1, 0, ny - 1, 0, nz - 1);
+  image.setSpacing(spacing[0], spacing[1], spacing[2]);
+  image.setOrigin(origin[0], origin[1], origin[2]);
+
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const outlineFactory = vtk.Filters.General.vtkImageDataOutlineFilter;
+  if (!outlineFactory) {
+    return createGlyphSource({
+      type: "glyph",
+      points: [...origin],
+    });
+  }
+  const outline = outlineFactory.newInstance({ imageData: image });
+  outline.update();
+  return { output: outline, isFilter: true };
 }
 
 /**
