@@ -9,13 +9,14 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import numpy as np
+
 from .rendering import IPYTHON_AVAILABLE, _BaseHTMLRenderer, get_renderer
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    import numpy as np
     from numpy.typing import ArrayLike
 
     from .camera import Camera
@@ -399,6 +400,59 @@ class Plotter:
 
         # Render the scene
         self._renderer.render()
+
+    def add_bounding_box(
+        self,
+        color: str | tuple[float, float, float] = "white",
+        opacity: float = 1.0,
+    ) -> PolyData:
+        """Add an outline of the bounds for all meshes in the scene.
+
+        Mirrors the PyVista ``Plotter.add_bounding_box`` API. The outline is
+        the bounding box of all meshes added so far and is displayed as line
+        segments along the box edges.
+
+        Parameters
+        ----------
+        color : str or tuple, optional
+            Color of the outline. Default is white.
+        opacity : float, optional
+            Opacity of the outline, between 0 (transparent) and 1 (opaque).
+            Default is 1.0.
+
+        Returns
+        -------
+        PolyData
+            The bounding box outline mesh that was added.
+
+        Raises
+        ------
+        ValueError
+            If no meshes have been added yet.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_bounding_box(color='red')  # doctest: +SKIP
+
+        """
+        meshes = [
+            entry["mesh"]
+            for entry in self._actors
+            if "mesh" in entry and hasattr(entry["mesh"], "points")
+        ]
+        if not meshes:
+            msg = "No meshes have been added; cannot create a bounding box"
+            raise ValueError(msg)
+
+        points = np.concatenate([np.asarray(mesh.points) for mesh in meshes])
+        from .mesh import PolyData  # noqa: PLC0415
+
+        outline = PolyData(points).outline(generate_faces=False)
+        self.add_mesh(outline, color=color, opacity=opacity)
+        return outline
 
     def generate_standalone_html(self) -> str:
         """Generate a complete standalone HTML page with the current scene.
