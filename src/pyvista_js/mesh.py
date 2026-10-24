@@ -1776,6 +1776,91 @@ class PolyData:
             _scene_data=self._scene_data,
         )
 
+    def texture_map_to_sphere(
+        self,
+        center: tuple[float, float, float] | None = None,
+        prevent_seam: bool = True,  # noqa: ARG002, FBT001, FBT002
+    ) -> PolyData:
+        """Texture map a mesh to a sphere.
+
+        This mirrors the PyVista ``texture_map_to_sphere`` filter API and
+        is backed by vtk.js's ``vtkTextureMapToSphere`` used by the
+        sphere source pipeline.
+
+        .. note::
+
+            The texture coordinates are computed in JavaScript at render
+            time by mapping each point onto a sphere.
+
+        Parameters
+        ----------
+        center : tuple, optional
+            Center of the sphere used for the mapping. Default uses the
+            center of the mesh's bounding sphere.
+        prevent_seam : bool, optional
+            If True, controls whether or not to prevent seam artifacts.
+            Default is True.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with sphere texture coordinates.
+
+        Raises
+        ------
+        ValueError
+            If ``center`` is provided with the wrong size.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> textured = sphere.texture_map_to_sphere()
+        >>> isinstance(textured, pv.PolyData)
+        True
+
+        Render the textured mesh:
+
+        >>> textured.plot()  # doctest: +SKIP
+
+        """
+        mapped_center: tuple[float, float, float]
+        if center is None:
+            radius, sph_center = self.bounding_sphere
+            mapped_center = sph_center
+            mapped_radius = radius
+        else:
+            if len(center) != _VECTOR_COMPONENTS:
+                msg = f"center must have {_VECTOR_COMPONENTS} components, got {len(center)}"
+                raise ValueError(msg)
+            mapped_center = (float(center[0]), float(center[1]), float(center[2]))
+            mapped_radius = self.bounding_sphere[0]
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "textureSphere",
+                "center": list(mapped_center),
+                "radius": mapped_radius,
+            },
+        )
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
+            _scene_data=base_scene,
+        )
+
     def to_scene_data(self) -> dict[str, object]:
         """Return a JSON-serializable dict describing this mesh source.
 
