@@ -293,6 +293,7 @@ interface VtkGlobal {
       vtkLineSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPlaneSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPointSource?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkPlatonicSolidSource?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkRegularPolygonSource?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
@@ -432,6 +433,7 @@ interface SourceConfig {
   origin?: [number, number, number];
   normal?: [number, number, number];
   nPoints?: number;
+  kind?: string;
   nSides?: number;
   points?: number[];
   polys?: number[];
