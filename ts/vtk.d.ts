@@ -74,6 +74,8 @@ interface VtkOutputPort {
 
 /** A vtk.js algorithm (filter or source) with input/output pipeline. */
 interface VtkAlgorithm {
+  setCutFunction?: (cutFunction: VtkPlane) => void;
+  setCutValue?: (value: number) => void;
   getOutputPort: () => VtkOutputPort;
   getOutputData: () => VtkPolyData;
   update: () => void;
@@ -389,6 +391,7 @@ interface VtkGlobal {
     Core: {
       vtkPolyDataNormals: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkThresholdPoints?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkCutter?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
