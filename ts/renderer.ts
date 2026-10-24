@@ -302,6 +302,11 @@ function getReaderMap(): ReaderFactoryMap {
       factory: vtk.IO.Legacy.vtkPolyDataReader,
       parseMethod: "parseAsText",
     },
+    vtpReader: {
+      // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+      factory: vtk.IO.XML.vtkXMLPolyDataReader as VtkReaderFactory,
+      parseMethod: "parseAsText",
+    },
   };
 }
 
@@ -330,6 +335,7 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     stlReader: createReaderSource,
     objReader: createReaderSource,
     vtkReader: createReaderSource,
+    vtpReader: createReaderSource,
   };
 
   const factory = sourceFactoryMap[cfg.type];

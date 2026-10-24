@@ -9,6 +9,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import re
 import struct
 from pathlib import Path
 
@@ -219,6 +220,124 @@ class PolyDataReader:
                 return np.array(values[: n_points * 3]).reshape(n_points, 3)
             i += 1
         return np.empty((0, 3))
+
+
+class _VTPMesh(PolyData):
+    """Mesh loaded from a VTK XML PolyData file, rendered via vtk.js reader."""
+
+    def __init__(self, points: np.ndarray, vtp_base64: str) -> None:
+        """Initialize with points and base64-encoded VTP file content."""
+        super().__init__(points)
+        self._vtp_base64 = vtp_base64
+
+    def _to_scene_data(self) -> dict[str, object]:
+        """Return scene data using vtk.js VTP reader."""
+        return {"type": "vtpReader", "data": self._vtp_base64}
+
+
+class XMLPolyDataReader:
+    """Reader for VTK XML PolyData files (``.vtp``).
+
+    Reads a ``.vtp`` file and produces a :class:`Mesh` that delegates
+    parsing to vtk.js's ``vtkXMLPolyDataReader`` at render time. Python
+    extracts only the point coordinates so that camera framing and
+    bounding-sphere queries work before rendering.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the ``.vtp`` file.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> reader = pv.XMLPolyDataReader("mesh.vtp")  # doctest: +SKIP
+    >>> mesh = reader.read()  # doctest: +SKIP
+
+    """
+
+    def __init__(self, path: str | Path) -> None:
+        """Initialize the reader with a file path."""
+        self._path = Path(path)
+        if not self._path.exists():
+            msg = f"File not found: {self._path}"
+            raise FileNotFoundError(msg)
+        if self._path.suffix.lower() != ".vtp":
+            msg = f"Expected a .vtp file, got: {self._path.suffix}"
+            raise ValueError(msg)
+
+    @property
+    def path(self) -> Path:
+        """Return the file path.
+
+        Returns
+        -------
+        Path
+            The path to the VTP file.
+
+        """
+        return self._path
+
+    def read(self) -> _VTPMesh:
+        """Read the VTP file and return a Mesh.
+
+        The full file content is base64-encoded and stored so that vtk.js
+        can parse it at render time.  Point coordinates are extracted on
+        the Python side for bounding-sphere and camera-framing calculations.
+
+        Returns
+        -------
+        Mesh
+            A mesh backed by the VTP file content.
+
+        Raises
+        ------
+        ValueError
+            If the file format is invalid or unsupported.
+
+        """
+        raw = self._path.read_bytes()
+        text = raw.decode("utf-8", errors="replace")
+        points = self._extract_points(text)
+        vtp_base64 = base64.b64encode(raw).decode("ascii")
+        logger.info("Read %d points from %s", len(points), self._path)
+        return _VTPMesh(points=points, vtp_base64=vtp_base64)
+
+    @staticmethod
+    def _extract_points(text: str) -> np.ndarray:
+        """Extract point coordinates from VTK XML PolyData ASCII content.
+
+        Only used for Python-side bounding-sphere computation.
+        The actual geometry is parsed by vtk.js at render time.
+
+        Parameters
+        ----------
+        text : str
+            The full text of the ``.vtp`` file.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape (N, 3).
+
+        """
+        points_section = re.search(
+            r"<Points>(.*?)</Points>",
+            text,
+            re.DOTALL,
+        )
+        if points_section is None:
+            return np.empty((0, 3))
+        data_arrays = re.findall(
+            r"<DataArray[^>]*\bformat=\"ascii\"[^>]*>(.*?)</DataArray>",
+            points_section.group(1),
+            re.DOTALL,
+        )
+        values: list[float] = []
+        for array in data_arrays:
+            values.extend(float(v) for v in array.split())
+            break
+        return np.array(values).reshape(-1, _N_COORDS) if values else np.empty((0, 3))
 
 
 class PLYReader:
