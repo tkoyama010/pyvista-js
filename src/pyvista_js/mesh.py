@@ -136,6 +136,10 @@ class PointData:
 _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _TUBE_MIN_SIDES = 3
+_TUBE_DEFAULT_RADIUS = 0.5
+_TUBE_MAX_RADIUS = 100.0
+_TUBE_SIDES_FOR_TUBES = 20
+_FACE_DIMENSIONS = 2  # faces stored as (n_cells, n_corners) rows
 
 # VTK cell type constants
 _CELL_TYPE_VERTEX = 1
@@ -511,6 +515,108 @@ class PolyData:
     def n_faces(self) -> int:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
+
+    def _iter_face_cells(self) -> list[np.ndarray]:
+        """Return the faces as a list of index arrays, one per cell."""
+        if self.faces is None:
+            return []
+        if self.faces.ndim == _FACE_DIMENSIONS:
+            return [np.asarray(row) for row in self.faces]
+        cells: list[np.ndarray] = []
+        flat = self.faces.reshape(-1)
+        i = 0
+        while i < len(flat):
+            n_cell = int(flat[i])
+            cells.append(flat[i + 1 : i + 1 + n_cell])
+            i += n_cell + 1
+        return cells
+
+    def __add__(self, other: PolyData) -> PolyData:
+        """Combine two meshes with dictionary-style ``+`` operator.
+
+        Mirrors the PyVista ``PolyData.__add__`` API: point and cell arrays of
+        both meshes are concatenated and the point indices of cells in
+        ``other`` are shifted by ``n_points`` of this mesh.
+
+        Parameters
+        ----------
+        other : PolyData
+            The second mesh to append.
+
+        Returns
+        -------
+        PolyData
+            A new mesh containing points and cells from both meshes.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> combined = pv.Cube() + pv.Cube(x_length=2.0)
+        >>> isinstance(combined, pv.PolyData)
+        True
+
+        """
+        other._validate_same_points_dims(self)
+        points = np.vstack([self.points, other.points])
+        offset = len(self.points)
+        cells = [*self._iter_face_cells(), *[cell + offset for cell in other._iter_face_cells()]]
+        faces: np.ndarray | None
+        if cells and all(len(cell) == len(cells[0]) for cell in cells):
+            faces = np.array(cells)
+        elif cells:
+            faces = np.concatenate(
+                [np.concatenate([[len(cell)], cell]) for cell in cells],
+            )
+        else:
+            faces = None
+
+        scalars: np.ndarray | None = None
+        if self.scalars is not None and other.scalars is not None:
+            scalars = np.concatenate([self.scalars, other.scalars])
+        elif self.scalars is not None:
+            scalars = np.concatenate(
+                [self.scalars, np.full(len(other.points), np.nan)],
+            )
+        elif other.scalars is not None:
+            scalars = np.concatenate(
+                [np.full(len(self.points), np.nan), other.scalars],
+            )
+
+        combined = PolyData(
+            points=points,
+            faces=faces,
+            scalars=scalars,
+            scalar_name=self.scalar_name if scalars is not None else "scalars",
+        )
+        for name in (*self._point_data.keys(), *other._point_data.keys()):
+            if name in self._point_data and name in other._point_data:
+                combined.point_data[name] = np.concatenate(
+                    [
+                        np.asarray(self._point_data[name]),
+                        np.asarray(other._point_data[name]),
+                    ],
+                )
+            elif name in self._point_data:
+                combined.point_data[name] = np.concatenate(
+                    [
+                        np.asarray(self._point_data[name]),
+                        np.full(len(other.points), np.nan),
+                    ],
+                )
+            else:
+                combined.point_data[name] = np.concatenate(
+                    [
+                        np.full(len(self.points), np.nan),
+                        np.asarray(other._point_data[name]),
+                    ],
+                )
+        return combined
+
+    def _validate_same_points_dims(self, expected: PolyData) -> None:
+        """Check that another mesh has the same point dimensionality."""
+        if self.points.shape[1:] != expected.points.shape[1:]:
+            msg = "Both meshes must have 3D points to combine with '+'"
+            raise ValueError(msg)
 
     def plot(
         self,
