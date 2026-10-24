@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12, <3.15"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -12,6 +12,7 @@ constraints = [
     { name = "mistune", specifier = ">=3.3.0" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "soupsieve", specifier = ">=2.8.4" },
+    { name = "virtualenv", specifier = ">=21.14.13" },
 ]
 
 [[package]]
