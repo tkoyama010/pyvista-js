@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-26 16:43+0000\n"
+"POT-Creation-Date: 2026-09-27 03:11+0000\n"
 "PO-Revision-Date: 2026-09-26 16:53+0000\n"
 "Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
@@ -92,36 +92,148 @@ msgstr ""
 
 #: ../decisions/0001-add-three-js-rendering-option.md:21
 msgid ""
+"**Mesh structure simplicity**: three.js models surface geometry with a small"
+" set of primitive object types such as `Mesh`, `Points`, `Line`, "
+"`LineSegments`, and `Sprite`, which matches the current bridge over "
+"`VtkPolyData`: a generic `vtkActor` plus `vtkMapper` pair, with "
+"`vtkSphereMapper` as the only special case in `ts/renderer.ts`. The "
+"advantage is limited to PolyData-style geometry, so the criterion is weighed"
+" per vtk.js dataset type in the table below. The current pyvista-js mesh "
+"model stays within that style: `PolyData` is rendered directly and "
+"`UnstructuredGrid` is converted to polygon data before rendering. The fewer-"
+"concepts benefit therefore holds for the data pyvista-js renders today, but "
+"the per-dataset-type translation cost must be reweighed when dataset support"
+" grows."
+msgstr ""
+"**メッシュ構造の単純さ**: three.js は `Mesh`、`Points`、`Line`、`LineSegments`、`Sprite` "
+"などの少数のプリミティブオブジェクト型でサーフェスジオメトリを表現します。これは `ts/renderer.ts` において、汎用の "
+"`vtkActor` と `vtkMapper` のペアを橋渡しとし、`vtkSphereMapper` を唯一の特殊ケースとする現在の "
+"`VtkPolyData` 上のブリッジと一致します。この利点は PolyData 形式のジオメトリに限定されるため、基準は以下の表で vtk.js "
+"のデータセット型ごとに評価します。現在の pyvista-js のメッシュモデルはこの方式に収まっています。すなわち `PolyData` "
+"は直接レンダリングされ、`UnstructuredGrid` "
+"はレンダリング前にポリゴンデータへ変換されます。したがって「概念が少ない」という利点は、今日 pyvista-js "
+"がレンダリングするデータについては成立しますが、データセット対応が拡大する際にはデータセット型ごとの変換コストを再評価する必要があります。"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "vtk.js dataset type"
+msgstr "vtk.js のデータセット型"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "vtk.js support"
+msgstr "vtk.js でのサポート"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "three.js counterpart"
+msgstr "three.js での対応物"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Impact on the decision"
+msgstr "決定への影響"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`PolyData`"
+msgstr "`PolyData`"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Class with dedicated mapper"
+msgstr "専用マッパーを持つクラス"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Direct match with `Mesh`, `Points`, `Line`, and `LineSegments`"
+msgstr "`Mesh`、`Points`、`Line`、`LineSegments` と直接対応"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Fewer concepts to bridge; favors three.js"
+msgstr "ブリッジすべき概念が少なく、three.js に有利"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`ImageData` and volumes"
+msgstr "`ImageData` とボリューム"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "First-class classes with `VolumeMapper`"
+msgstr "`VolumeMapper` を持つ第一級のクラス"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "None; texture- or shader-based translation"
+msgstr "なし。テクスチャまたはシェーダーベースの変換"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Translation cost must be reweighed when support is added"
+msgstr "サポート追加時には変換コストを再評価する必要がある"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`Molecule`"
+msgstr "`Molecule`"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Class used by the PDB reader"
+msgstr "PDB リーダーが使用するクラス"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "None; built from primitives"
+msgstr "なし。プリミティブから構築"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Additional translation work"
+msgstr "追加の変換作業"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`MultiBlock` and `Table`"
+msgstr "`MultiBlock` and `Table`"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Composite JSON structures with readers"
+msgstr "リーダーを持つ複合 JSON 構造"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "None"
+msgstr "なし"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "`StructuredGrid` and `RectilinearGrid`"
+msgstr "`StructuredGrid` and `RectilinearGrid`"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "Not implemented"
+msgstr "未実装"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:0
+msgid "No differentiator between the backends"
+msgstr "バックエンド間で差はない"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:31
+msgid ""
 "**User choice**: An optional backend lets users trade consistency with VTK "
 "for rendering features and quality that three.js offers."
 msgstr ""
 "**ユーザーの選択肢**: オプションのバックエンドにより、ユーザーは VTK との一貫性と、three.js "
 "が提供する描画機能や品質を引き換えに選べます。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:23
+#: ../decisions/0001-add-three-js-rendering-option.md:33
 msgid "Considered Options"
 msgstr "検討した選択肢"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:25
+#: ../decisions/0001-add-three-js-rendering-option.md:35
 msgid ""
 "Stay vtk.js-only and wait for upstream vtk.js to implement missing VTK "
 "features."
 msgstr "vtk.js のみに留まり、未実装の VTK 機能が上流の vtk.js で実装されるのを待ちます。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:26
+#: ../decisions/0001-add-three-js-rendering-option.md:36
 msgid ""
 "Add three.js as an optional, opt-in rendering backend alongside vtk.js."
 msgstr "vtk.js に加えて、three.js をオプトインの任意の描画バックエンドとして追加します。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:27
+#: ../decisions/0001-add-three-js-rendering-option.md:37
 msgid "Replace vtk.js with three.js entirely."
 msgstr "vtk.js を完全に three.js に置き換えます。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:29
+#: ../decisions/0001-add-three-js-rendering-option.md:39
 msgid "Decision Outcome"
 msgstr "決定結果"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:31
+#: ../decisions/0001-add-three-js-rendering-option.md:41
 msgid ""
 "Chosen option: \"Add three.js as an optional, opt-in rendering backend "
 "alongside vtk.js\" (proposed, not yet accepted), because it offers a path to"
@@ -138,11 +250,11 @@ msgstr ""
 "VTK のセマンティクスに合わせたままにする vtk.js の経路を維持できるためです。three.js "
 "をオプトインにすることでデフォルトの動作は変更されず、バックエンドを遅延ロードすることで、必要としないユーザーに追加のバンドルコストがかかりません。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:33
+#: ../decisions/0001-add-three-js-rendering-option.md:43
 msgid "Consequences"
 msgstr "結果"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:35
+#: ../decisions/0001-add-three-js-rendering-option.md:45
 msgid ""
 "Good, because users get access to rendering capabilities beyond what vtk.js "
 "currently implements, delivered through per-feature scene translation work, "
@@ -150,13 +262,13 @@ msgid ""
 msgstr ""
 "高評価。vtk.js が現在実装している範囲を超える描画機能を、上流を待つのではなく機能ごとのシーン変換作業を通じてユーザーに提供できるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:36
+#: ../decisions/0001-add-three-js-rendering-option.md:46
 msgid ""
 "Good, because the default vtk.js path stays intact, so existing users and "
 "tests see no behavior change."
 msgstr "高評価。デフォルトの vtk.js の経路はそのまま維持されるため、既存のユーザーやテストで動作の変更はありません。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:37
+#: ../decisions/0001-add-three-js-rendering-option.md:47
 msgid ""
 "Bad, because rendering-dependent code in `ts/renderer.ts` must be abstracted"
 " behind a backend interface, which is real refactoring work."
@@ -164,23 +276,23 @@ msgstr ""
 "低評価。`ts/renderer.ts` "
 "内の描画に依存するコードをバックエンドインターフェースの背後で抽象化する必要があり、実際のリファクタリング作業になるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:38
+#: ../decisions/0001-add-three-js-rendering-option.md:48
 msgid ""
 "Bad, because two backends must be tested against the same scene features, "
 "and drift between them is a permanent maintenance tax."
 msgstr "低評価。2つのバックエンドを同じシーン機能に対してテストする必要があり、両者の間の乖離は恒久的な保守コストになるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:39
+#: ../decisions/0001-add-three-js-rendering-option.md:49
 msgid ""
 "Bad, because results (camera state, picking, screenshots) may differ subtly "
 "between backends unless conformance tests are written."
 msgstr "低評価。適合テストを作成しない限り、結果（カメラ状態、ピッキング、スクリーンショット）がバックエンド間で微妙に異なる可能性があるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:41
+#: ../decisions/0001-add-three-js-rendering-option.md:51
 msgid "Confirmation"
 msgstr "確認"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:43
+#: ../decisions/0001-add-three-js-rendering-option.md:53
 msgid ""
 "Compliance is confirmed by review of the renderer abstraction and by a "
 "conformance test that renders the same scene features on both backends and "
@@ -190,50 +302,50 @@ msgstr ""
 "適合性は、レンダラー抽象化のレビューと、両方のバックエンドで同じシーン機能を描画して出力を比較する適合テストによって確認します。この記録を運ぶ PR "
 "での議論の後、ADR のステータスは `proposed` から `accepted` または `rejected` に移ります。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:45
+#: ../decisions/0001-add-three-js-rendering-option.md:55
 msgid "Pros and Cons of the Options"
 msgstr "各選択肢のメリットとデメリット"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:47
+#: ../decisions/0001-add-three-js-rendering-option.md:57
 msgid "Stay vtk.js-only"
 msgstr "vtk.js のみに留まる"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:49
+#: ../decisions/0001-add-three-js-rendering-option.md:59
 msgid ""
 "Keep the current single-backend architecture and file issues upstream for "
 "missing VTK features."
 msgstr "現在のシングルバックエンド構成を維持し、未実装の VTK 機能については上流に issue を報告します。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:51
+#: ../decisions/0001-add-three-js-rendering-option.md:61
 msgid ""
 "Good, because there is no new code path, no bundle growth, and no second "
 "upstream to track."
 msgstr "高評価。新しいコードパスがなく、バンドルも増えず、追跡すべき2つ目の上流もないためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:52
+#: ../decisions/0001-add-three-js-rendering-option.md:62
 msgid ""
 "Good, because pyvista-js stays closest to desktop VTK semantics, which is "
 "the project's core promise."
 msgstr "高評価。pyvista-js がデスクトップ VTK のセマンティクスに最も近く保たれ、これはプロジェクトの中心的な約束であるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:53
+#: ../decisions/0001-add-three-js-rendering-option.md:63
 msgid ""
 "Bad, because pyvista-js cannot offer VTK features that vtk.js has not "
 "implemented, on a timeline pyvista-js does not control."
 msgstr "低評価。vtk.js が実装していない VTK 機能を、pyvista-js が制御できないタイムラインで提供できないままになるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:55
+#: ../decisions/0001-add-three-js-rendering-option.md:65
 msgid "Add three.js as an optional backend (proposed)"
 msgstr "three.js をオプションのバックエンドとして追加する（提案中）"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:57
+#: ../decisions/0001-add-three-js-rendering-option.md:67
 msgid ""
 "Implement a small renderer backend interface; vtk.js stays the default, "
 "three.js is opt-in and lazy-loaded."
 msgstr ""
 "小さなレンダラーバックエンドインターフェースを実装します。vtk.js がデフォルトのまま、three.js はオプトインで遅延ロードされます。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:59
+#: ../decisions/0001-add-three-js-rendering-option.md:69
 msgid ""
 "Good, because rendering capabilities that vtk.js currently lacks can be "
 "delivered through three.js translations, instead of users waiting on "
@@ -242,13 +354,22 @@ msgstr ""
 "高評価。vtk.js に現在不足している描画機能を、ユーザーが上流の vtk.js を待つ代わりに three.js "
 "への変換を通じて提供できるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:60
+#: ../decisions/0001-add-three-js-rendering-option.md:70
 msgid ""
 "Good, because opt-in plus lazy-loading keeps the default bundle and behavior"
 " unchanged."
 msgstr "高評価。オプトインと遅延ロードにより、デフォルトのバンドルと動作が変更されないためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:61
+#: ../decisions/0001-add-three-js-rendering-option.md:71
+msgid ""
+"Good, because the small set of three.js primitive object types keeps the "
+"per-feature scene translation simple for the PolyData-style geometry "
+"pyvista-js renders today."
+msgstr ""
+"良い点。three.js の少数のプリミティブオブジェクト型により、今日 pyvista-js がレンダリングする PolyData "
+"形式のジオメトリに対する機能ごとのシーン変換が単純に保たれるため。"
+
+#: ../decisions/0001-add-three-js-rendering-option.md:72
 msgid ""
 "Neutral, because three.js does not implement the VTK pipeline, so the "
 "backend must translate PyVista scene descriptions rather than share vtk.js "
@@ -257,27 +378,27 @@ msgstr ""
 "中間。three.js は VTK パイプラインを実装していないため、バックエンドは vtk.js のオブジェクトを共有するのではなく、PyVista "
 "のシーン記述を変換する必要があるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:62
+#: ../decisions/0001-add-three-js-rendering-option.md:73
 msgid ""
 "Bad, because it doubles the testing surface and adds a second upstream "
 "dependency to track."
 msgstr "低評価。テスト対象が倍増し、追跡すべき2つ目の上流依存関係が加わるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:64
+#: ../decisions/0001-add-three-js-rendering-option.md:75
 msgid "Replace vtk.js with three.js entirely"
 msgstr "vtk.js を完全に three.js に置き換える"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:66
+#: ../decisions/0001-add-three-js-rendering-option.md:77
 msgid "Drop vtk.js and render everything through three.js."
 msgstr "vtk.js を廃止し、すべてを three.js で描画します。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:68
+#: ../decisions/0001-add-three-js-rendering-option.md:79
 msgid ""
 "Good, because there is only one backend and three.js has a very large "
 "ecosystem and community."
 msgstr "高評価。バックエンドが1つになり、three.js は非常に大きなエコシステムとコミュニティを持っているためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:69
+#: ../decisions/0001-add-three-js-rendering-option.md:80
 msgid ""
 "Bad, because three.js has no notion of the VTK pipeline, so VTK-specific "
 "semantics would have to be rebuilt and would drift from desktop VTK."
@@ -285,33 +406,34 @@ msgstr ""
 "低評価。three.js には VTK パイプラインの概念がないため、VTK 固有のセマンティクスを作り直す必要があり、デスクトップ VTK "
 "から乖離してしまうためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:70
+#: ../decisions/0001-add-three-js-rendering-option.md:81
 msgid ""
 "Bad, because it discards working, tested vtk.js integration for no feature "
 "gain on the happy path."
 msgstr "低評価。正常系で機能上の利得がないまま、動作実績のあるテスト済みの vtk.js 統合を捨てることになるためです。"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:72
+#: ../decisions/0001-add-three-js-rendering-option.md:83
 msgid "More Information"
 msgstr "詳細情報"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:74
+#: ../decisions/0001-add-three-js-rendering-option.md:85
 msgid ""
-"[vtk.js](https://vtk.js.org/) and its [VTK feature "
-"coverage](https://kitware.github.io/vtk-"
-"js/docs/intro_vtk_as_js_library.html)"
+"[vtk.js](https://vtk.js.org/), its [VTK data "
+"structures](https://kitware.github.io/vtk-js/docs/structures.html), and its "
+"[API documentation](https://kitware.github.io/vtk-js/api/)"
 msgstr ""
-"[vtk.js](https://vtk.js.org/) とその [VTK "
-"機能カバレッジ](https://kitware.github.io/vtk-js/docs/intro_vtk_as_js_library.html)"
+"[vtk.js](https://vtk.js.org/)、その [VTK データ構造](https://kitware.github.io/vtk-"
+"js/docs/structures.html)、および [API ドキュメント](https://kitware.github.io/vtk-"
+"js/api/)"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:75
+#: ../decisions/0001-add-three-js-rendering-option.md:86
 msgid "[three.js](https://threejs.org/docs/)"
 msgstr "[three.js](https://threejs.org/docs/)"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:76
+#: ../decisions/0001-add-three-js-rendering-option.md:87
 msgid "pyvista-js renderer implementation: `ts/renderer.ts`"
 msgstr "pyvista-js のレンダラー実装: `ts/renderer.ts`"
 
-#: ../decisions/0001-add-three-js-rendering-option.md:77
+#: ../decisions/0001-add-three-js-rendering-option.md:88
 msgid "ADR-0000 for the record format used here."
 msgstr "ここで使用している記録形式は ADR-0000 を参照。"
