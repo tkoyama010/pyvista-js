@@ -140,6 +140,7 @@ _TUBE_DEFAULT_RADIUS = 0.5
 _TUBE_MAX_RADIUS = 100.0
 _TUBE_SIDES_FOR_TUBES = 20
 _FACE_DIMENSIONS = 2  # faces stored as (n_cells, n_corners) rows
+_TRIANGLE_VERTICES = 3  # a triangle has three corners
 
 # VTK cell type constants
 _CELL_TYPE_VERTEX = 1
@@ -1229,6 +1230,68 @@ class PolyData:
             msg = "isosurfaces list must contain at least one value"
             raise ValueError(msg)
         return contour_values
+
+    def triangulate(self) -> PolyData:
+        """Convert all polygon cells into triangles.
+
+        This filter replaces every polygon of more than three vertices with
+        a fan of triangles sharing its first vertex, and leaves lines and
+        vertices unchanged. It mirrors the PyVista ``triangulate`` filter
+        API.
+
+        .. note::
+
+            The triangulation is computed in Python with NumPy.
+
+        Returns
+        -------
+        PolyData
+            A new mesh whose polygons are all triangles.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> cube = pv.Cube()
+        >>> triangles = cube.triangulate()
+        >>> triangles.n_points
+        24
+
+        Render the triangulated mesh:
+
+        >>> triangles.plot()  # doctest: +SKIP
+
+        """
+        cells = self._iter_face_cells()
+        triangulated: list[list[np.int64]] = []
+        for cell in cells:
+            if len(cell) == _TRIANGLE_VERTICES:
+                triangulated.append(cell.tolist())
+            elif len(cell) > _TRIANGLE_VERTICES:
+                triangulated.extend(
+                    [cell[0], cell[i], cell[i + 1]].copy() for i in range(1, len(cell) - 1)
+                )
+            else:
+                triangulated.append(cell.tolist())
+
+        faces: np.ndarray | None
+        triangulated_array = np.asarray(triangulated) if triangulated else None
+        if triangulated_array is not None and all(
+            len(row) == len(triangulated[0]) for row in triangulated
+        ):
+            faces = triangulated_array
+        elif triangulated_array is not None:
+            faces = np.concatenate(
+                [np.concatenate([[len(cell)], cell]) for cell in triangulated],
+            )
+        else:
+            faces = None
+        return PolyData(
+            points=self.points,
+            faces=faces,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
+            t_coords=self.t_coords,
+        )
 
     def fill_holes(self, hole_size: float = 1000.0) -> PolyData:
         """Fill holes in a polygonal mesh.
