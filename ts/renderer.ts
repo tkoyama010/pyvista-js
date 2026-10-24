@@ -321,6 +321,7 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     arrow: createArrowSource,
     line: createLineSource,
     plane: createPlaneSource,
+    pointSource: createPointSource,
     mesh: createMeshSource,
     points: createPointsSource,
     plyReader: createReaderSource,
@@ -482,6 +483,26 @@ function createPlaneSource(cfg: SourceConfig): SourceResult {
     source.setNormal?.(cfg.normal[0], cfg.normal[1], cfg.normal[2]);
   }
 
+  return { output: source, isFilter: true };
+}
+
+/**
+ * Create a random point cloud inside a sphere.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the point source filter.
+ */
+function createPointSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Sources.vtkPointSource;
+  if (!factory) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    return { output: vtk.Common.DataModel.vtkPolyData.newInstance(), isFilter: true };
+  }
+  const source = factory.newInstance({
+    center: cfg.center,
+    radius: cfg.radius,
+    numberOfPoints: cfg.nPoints,
+  });
   return { output: source, isFilter: true };
 }
 
