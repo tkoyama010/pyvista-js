@@ -1164,6 +1164,7 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     fillHoles: tryFillHolesFilter,
     threshold: tryThresholdFilter,
     warpByScalar: tryWarpByScalarFilter,
+    smoothTaubin: trySmoothTaubinFilter,
   };
 
 /**
@@ -1862,6 +1863,51 @@ function applyWarpByScalarFilter(
   warp.setInputData(inputPd);
   warp.update();
   return { output: warp, isFilter: true };
+}
+
+/**
+ * Try to apply a Taubin smoothing filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function trySmoothTaubinFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (f.passBand === undefined || f.nIterations === undefined) {
+    return current;
+  }
+  return applySmoothTaubinFilter(current, f.passBand, f.nIterations);
+}
+
+/**
+ * Apply vtkWindowedSincPolyDataFilter for Laplacian smoothing, mirroring
+ * the PyVista smooth_taubin filter (Taubin = pass band smoothing that
+ * avoids surface shrinkage).
+ * @param sourceResult
+ * @param passBand
+ * @param numberOfIterations
+ * @returns A {@link SourceResult} with the smoothed geometry.
+ */
+function applySmoothTaubinFilter(
+  sourceResult: SourceResult,
+  passBand: number,
+  numberOfIterations: number,
+): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.General.vtkWindowedSincPolyDataFilter;
+  if (!factory) {
+    return sourceResult;
+  }
+  const smoother = factory.newInstance({
+    passBand,
+    numberOfIterations,
+    featureAngle: 60,
+    edgeAngle: 15,
+    boundarySmoothing: true,
+    nonManifoldBoundarySmoothing: true,
+  });
+  smoother.setInputData(getPolyData(sourceResult));
+  smoother.update();
+  return { output: smoother, isFilter: true };
 }
 
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {
