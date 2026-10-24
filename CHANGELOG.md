@@ -2,10 +2,9 @@
 
 ## [0.20.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.19.0...pyvista-js-v0.20.0) (2026-10-24)
 
-
 ### Features
 
-* support Python 3.15 ([#739](https://github.com/tkoyama010/pyvista-js/issues/739)) ([8c117e7](https://github.com/tkoyama010/pyvista-js/commit/8c117e71bced833d0faef150a211d7500d4e38ea))
+- support Python 3.15 ([#739](https://github.com/tkoyama010/pyvista-js/issues/739)) ([8c117e7](https://github.com/tkoyama010/pyvista-js/commit/8c117e71bced833d0faef150a211d7500d4e38ea))
 
 ## [0.19.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.18.1...pyvista-js-v0.19.0) (2026-10-24)
 
