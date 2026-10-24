@@ -2,16 +2,16 @@
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Tetsuo Koyama <tkoyama010@gmail.com>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-29 00:16+0000\n"
+"POT-Creation-Date: 2026-10-24 11:43+0000\n"
 "PO-Revision-Date: 2026-03-21 10:39+0000\n"
 "Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
@@ -68,31 +68,49 @@ msgid ""
 msgstr "透視投影の代わりに平行 (正射影) 投影を有効にします。デフォルトは False です。"
 
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera:20
+msgid "Scale used in parallel projection mode. Default is 1.0."
+msgstr "平行投影モードで使用されるスケール。デフォルトは 1.0。"
+
+#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera:22
 msgid "Camera elevation angle in degrees. Default is 0.0."
 msgstr "カメラの仰角 (度)。デフォルトは 0.0 です。"
 
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.Camera.clipping_range:10 ../../src/pyvista_js/camera.pydocstring
-#: of pyvista_js.Camera.elevation:15 ../../src/pyvista_js/camera.pydocstring
-#: of pyvista_js.Camera.focal_point:10 ../../src/pyvista_js/camera.pydocstring
-#: of pyvista_js.Camera.parallel_projection:15
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.position:10
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_angle:10
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_up:10
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera:24
+#: of pyvista_js.Camera.distance:10 ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.elevation:15 ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.focal_point:10 ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.parallel_projection:15
 #: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.parallel_scale:14 ../../src/pyvista_js/camera.pydocstring
+#: of pyvista_js.Camera.position:10 ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.view_angle:10 ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.view_up:10 ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera:26 ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.azimuth:8 ../../src/pyvista_js/camera.pydocstring
 #: of pyvista_js.camera.Camera.disable_parallel_projection:7
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.enable_parallel_projection:7
 #: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.from_dict:10
+#: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.orbit_elevation:11
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.reset_clipping_range:9
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera.roll:7
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera.zoom:11
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_focal_point:7
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_position:7
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_view_up:7
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.to_dict:7 ../../src/pyvista_js/camera.pydocstring
+#: of pyvista_js.camera.Camera.zoom:11
 msgid "Examples"
 msgstr "例"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.__init__:1
 msgid "Initialize a Camera instance."
@@ -102,7 +120,7 @@ msgstr "Camera インスタンスを初期化します。"
 msgid "Methods"
 msgstr "メソッド"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ""
 ":py:obj:`__init__ <pyvista_js.Camera.__init__>`\\ \\(\\[position\\, "
 "focal\\_point\\, view\\_up\\, ...\\]\\)"
@@ -110,17 +128,17 @@ msgstr ""
 ":py:obj:`__init__ <pyvista_js.Camera.__init__>`\\ \\(\\[position\\, "
 "focal\\_point\\, view\\_up\\, ...\\]\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ":py:obj:`azimuth <pyvista_js.Camera.azimuth>`\\ \\(angle\\)"
 msgstr ":py:obj:`azimuth <pyvista_js.Camera.azimuth>`\\ \\(angle\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.azimuth:1
 msgid "Rotate the camera position horizontally around the focal point."
 msgstr "注視点の周囲でカメラ位置を水平方向に回転します。"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ""
 ":py:obj:`disable_parallel_projection "
 "<pyvista_js.Camera.disable_parallel_projection>`\\ \\(\\)"
@@ -128,13 +146,13 @@ msgstr ""
 ":py:obj:`disable_parallel_projection "
 "<pyvista_js.Camera.disable_parallel_projection>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.disable_parallel_projection:1
 msgid "Disable parallel projection (use perspective projection)."
 msgstr "平行投影を無効にします (透視投影を使用します)。"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ""
 ":py:obj:`enable_parallel_projection "
 "<pyvista_js.Camera.enable_parallel_projection>`\\ \\(\\)"
@@ -142,41 +160,109 @@ msgstr ""
 ":py:obj:`enable_parallel_projection "
 "<pyvista_js.Camera.enable_parallel_projection>`\\ \\(\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.enable_parallel_projection:1
 msgid "Enable parallel (orthographic) projection."
 msgstr "平行 (正射影) 投影を有効にします。"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+msgid ":py:obj:`from_dict <pyvista_js.Camera.from_dict>`\\ \\(state\\)"
+msgstr ":py:obj:`from_dict <pyvista_js.Camera.from_dict>`\\ \\(state\\)"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.from_dict:1
+msgid "Create a Camera from a dictionary produced by :meth:`to_dict`."
+msgstr ":meth:`to_dict` が生成した辞書から Camera を作成します。"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ":py:obj:`orbit_elevation <pyvista_js.Camera.orbit_elevation>`\\ \\(angle\\)"
 msgstr ":py:obj:`orbit_elevation <pyvista_js.Camera.orbit_elevation>`\\ \\(angle\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.orbit_elevation:1
 msgid "Rotate the camera position vertically around the focal point."
 msgstr "注視点の周囲でカメラ位置を垂直方向に回転します。"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+msgid ""
+":py:obj:`reset_clipping_range <pyvista_js.Camera.reset_clipping_range>`\\ "
+"\\(\\)"
+msgstr ""
+":py:obj:`reset_clipping_range <pyvista_js.Camera.reset_clipping_range>`\\ "
+"\\(\\)"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.reset_clipping_range:1
+msgid "Reset the clipping range to the default value."
+msgstr "クリッピング範囲を既定値にリセットします。"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ":py:obj:`roll <pyvista_js.Camera.roll>`\\ \\(angle\\)"
 msgstr ":py:obj:`roll <pyvista_js.Camera.roll>`\\ \\(angle\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera.roll:1
 msgid "Roll the camera around the view direction axis."
 msgstr "視線軸の周囲でカメラを回転 (ロール) します。"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+msgid ""
+":py:obj:`set_focal_point <pyvista_js.Camera.set_focal_point>`\\ "
+"\\(focal\\_point\\)"
+msgstr ""
+":py:obj:`set_focal_point <pyvista_js.Camera.set_focal_point>`\\ "
+"\\(focal\\_point\\)"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_focal_point:1
+msgid "Set the camera focal point."
+msgstr "カメラの焦点を設定します。"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+msgid ":py:obj:`set_position <pyvista_js.Camera.set_position>`\\ \\(position\\)"
+msgstr ":py:obj:`set_position <pyvista_js.Camera.set_position>`\\ \\(position\\)"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_position:1
+msgid "Set the camera position."
+msgstr "カメラの位置を設定します。"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+msgid ":py:obj:`set_view_up <pyvista_js.Camera.set_view_up>`\\ \\(view\\_up\\)"
+msgstr ":py:obj:`set_view_up <pyvista_js.Camera.set_view_up>`\\ \\(view\\_up\\)"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_view_up:1
+msgid "Set the view-up vector."
+msgstr "ビューアップベクトルを設定します。"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+msgid ":py:obj:`to_dict <pyvista_js.Camera.to_dict>`\\ \\(\\)"
+msgstr ":py:obj:`to_dict <pyvista_js.Camera.to_dict>`\\ \\(\\)"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.to_dict:1
+msgid "Serialize the camera state to a dictionary."
+msgstr "カメラの状態を辞書にシリアライズします。"
+
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 msgid ":py:obj:`zoom <pyvista_js.Camera.zoom>`\\ \\(factor\\)"
 msgstr ":py:obj:`zoom <pyvista_js.Camera.zoom>`\\ \\(factor\\)"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:27:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.Camera.rst:33:<autosummary>:1
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera.zoom:1
 msgid "Move the camera closer to or farther from the focal point."
 msgstr "カメラを注視点に近づけたり遠ざけたりします。"
 
-#: ../api/_autosummary/pyvista_js.Camera.rst:29
+#: ../api/_autosummary/pyvista_js.Camera.rst:35
 msgid "Attributes"
 msgstr "属性"
 
@@ -188,6 +274,15 @@ msgstr ":py:obj:`clipping_range <pyvista_js.Camera.clipping_range>`"
 #: pyvista_js.Camera.clipping_range:1 ../:1:<autosummary>:1
 msgid "Get or set the clipping range (near, far)."
 msgstr "クリッピング範囲 (near, far) を取得または設定します。"
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`distance <pyvista_js.Camera.distance>`"
+msgstr ":py:obj:`distance <pyvista_js.Camera.distance>`"
+
+#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.distance:1
+#: ../:1:<autosummary>:1
+msgid "Get or set the distance from the camera position to the focal point."
+msgstr "カメラ位置から焦点までの距離を取得または設定します。"
 
 #: ../:1:<autosummary>:1
 msgid ":py:obj:`elevation <pyvista_js.Camera.elevation>`"
@@ -215,6 +310,15 @@ msgstr ":py:obj:`parallel_projection <pyvista_js.Camera.parallel_projection>`"
 #: pyvista_js.Camera.parallel_projection:1 ../:1:<autosummary>:1
 msgid "Get or set parallel projection mode."
 msgstr "平行投影モードを取得または設定します。"
+
+#: ../:1:<autosummary>:1
+msgid ":py:obj:`parallel_scale <pyvista_js.Camera.parallel_scale>`"
+msgstr ":py:obj:`parallel_scale <pyvista_js.Camera.parallel_scale>`"
+
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.parallel_scale:1 ../:1:<autosummary>:1
+msgid "Get or set the parallel projection scale."
+msgstr "平行投影のスケールを取得または設定します。"
 
 #: ../:1:<autosummary>:1
 msgid ":py:obj:`position <pyvista_js.Camera.position>`"
@@ -276,6 +380,16 @@ msgid ""
 msgstr ""
 "カメラを平行投影から透視投影に切り替えます。これは ``parallel_projection = False`` を設定することと同じです。"
 
+#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.distance:3
+msgid ""
+"Setting this property moves the camera position along the view direction "
+"while keeping the focal point and view direction fixed."
+msgstr "このプロパティを設定すると、焦点と視線方向を固定したままカメラ位置が視線方向に沿って移動します。"
+
+#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.distance:6
+msgid "Distance from the camera position to the focal point."
+msgstr "カメラ位置から焦点までの距離。"
+
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.elevation:3
 msgid ""
 "The elevation angle controls the vertical rotation of the camera. It rotates"
@@ -300,8 +414,20 @@ msgstr ""
 
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.focal_point:3
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.focal_point:6
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_focal_point:3
 msgid "Focal point as (x, y, z)."
 msgstr "注視点 (x, y, z)。"
+
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.from_dict:3
+msgid "Camera state as returned by :meth:`to_dict`."
+msgstr ":meth:`to_dict` が返すカメラの状態。"
+
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.from_dict:6
+msgid "A new camera with the serialized state."
+msgstr "シリアライズされた状態を持つ新しいカメラ。"
 
 #: ../../src/pyvista_js/camera.pydocstring of
 #: pyvista_js.camera.Camera.orbit_elevation:3
@@ -338,14 +464,53 @@ msgstr "平行投影を有効 (True) または無効 (False) にします。"
 msgid "Whether parallel projection is enabled."
 msgstr "平行投影が有効かどうか。"
 
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.parallel_scale:3
+msgid ""
+"This property only has an effect when ``parallel_projection`` is True. The "
+"scale sets the height of the viewport in world coordinates."
+msgstr ""
+"このプロパティは ``parallel_projection`` が True "
+"の場合にのみ有効です。スケールはワールド座標におけるビューポートの高さを設定します。"
+
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.Camera.parallel_scale:7 ../../src/pyvista_js/camera.pydocstring
+#: of pyvista_js.Camera.parallel_scale:10
+msgid "Parallel scale in world coordinates."
+msgstr "ワールド座標における平行投影のスケール。"
+
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.position:3
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.position:6
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_position:3
 msgid "Camera position as (x, y, z)."
 msgstr "カメラの位置 (x, y, z)。"
+
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.reset_clipping_range:3
+msgid ""
+"Resets the near/far clipping planes to ``(0.01, 1000.01)``.  The vtk.js "
+"renderer also recomputes the clipping range from actor bounds on every "
+"render, so manual adjustment is rarely needed."
+msgstr ""
+"ニア/ファークリッピング平面を ``(0.01, 1000.01)`` にリセットします。vtk.js "
+"レンダラーは描画のたびにアクターの境界からクリッピング範囲を再計算するため、手動調整はほとんど必要ありません。"
 
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera.roll:3
 msgid "Roll angle in degrees."
 msgstr "ロール角 (度)。"
+
+#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_up:3
+#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_up:6
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.set_view_up:3
+msgid "View-up vector as (x, y, z)."
+msgstr "ビューアップベクトル (x, y, z)。"
+
+#: ../../src/pyvista_js/camera.pydocstring of
+#: pyvista_js.camera.Camera.to_dict:3
+msgid "Camera state as keyword arguments accepted by ``Camera``."
+msgstr "``Camera`` が受け入れるキーワード引数としてのカメラの状態。"
 
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_angle:3
 msgid "View angle in degrees (field of view)."
@@ -354,11 +519,6 @@ msgstr "視野角 (field of view) の度数。"
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_angle:6
 msgid "View angle in degrees."
 msgstr "視野角の度数。"
-
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_up:3
-#: ../../src/pyvista_js/camera.pydocstring of pyvista_js.Camera.view_up:6
-msgid "View-up vector as (x, y, z)."
-msgstr "ビューアップベクトル (x, y, z)。"
 
 #: ../../src/pyvista_js/camera.pydocstring of pyvista_js.camera.Camera.zoom:3
 msgid ""
