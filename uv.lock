@@ -13,6 +13,7 @@ constraints = [
     { name = "mistune", specifier = ">=3.3.0" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "soupsieve", specifier = ">=2.8.4" },
+    { name = "virtualenv", specifier = ">=21.14.13" },
 ]
 
 [[package]]
