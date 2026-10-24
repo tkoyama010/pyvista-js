@@ -576,6 +576,17 @@ function createRegularPolygonSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the glyph point cloud.
  */
+function createGlyphSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
+  polydata.setPoints(vtkPts);
+  return { output: polydata, isFilter: false };
+}
+
 /**
  * Create an image dataset scene source rendered as an outline.
  * @param cfg
@@ -607,17 +618,6 @@ function createImageSource(cfg: SourceConfig): SourceResult {
   const outline = outlineFactory.newInstance({ imageData: image });
   outline.update();
   return { output: outline, isFilter: true };
-}
-
-function createGlyphSource(cfg: SourceConfig): SourceResult {
-  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
-  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
-  const pointsArray = Float32Array.from(cfg.points ?? []);
-  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
-  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
-  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
-  polydata.setPoints(vtkPts);
-  return { output: polydata, isFilter: false };
 }
 
 /**
