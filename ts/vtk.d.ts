@@ -292,6 +292,7 @@ interface VtkGlobal {
       vtkArrowSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkLineSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPlaneSource: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkPointSource?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Core: {
@@ -429,6 +430,7 @@ interface SourceConfig {
   point2?: [number, number, number];
   origin?: [number, number, number];
   normal?: [number, number, number];
+  nPoints?: number;
   points?: number[];
   polys?: number[];
   data?: string;
