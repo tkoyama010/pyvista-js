@@ -252,6 +252,21 @@ interface VtkReader {
   parseAsText: (text: string) => void;
 }
 
+/** A vtk.js structured image dataset. */
+interface VtkImageData {
+  setExtent: (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number) => boolean;
+  setSpacing: (x: number, y: number, z: number) => boolean;
+  setOrigin: (x: number, y: number, z: number) => boolean;
+  getPointData: () => VtkPointData;
+  getDimensions: () => [number, number, number];
+}
+
+/** Factory for creating {@link VtkImageData} instances. */
+interface VtkImageDataFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkImageData;
+}
+
 /** A vtk.js mapper that renders per-point glyph geometry. */
 // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
 interface VtkGlyph3DMapper {
@@ -324,6 +339,7 @@ interface VtkGlobal {
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
+      vtkImageDataOutlineFilter?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkWindowedSincPolyDataFilter?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkWarpScalar?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkTubeFilter: VtkNewInstanceFactory<VtkAlgorithm>;
@@ -346,6 +362,7 @@ interface VtkGlobal {
     DataModel: {
       vtkPolyData: VtkNewInstanceFactory<VtkPolyData>;
       vtkPlane: VtkNewInstanceFactory<VtkPlane>;
+      vtkImageData?: VtkImageDataFactory;
     };
   };
   // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
@@ -475,6 +492,8 @@ interface SourceConfig {
   orientationArray?: string;
   geometryPoints?: number[];
   geometryPolys?: number[];
+  dimensions?: [number, number, number];
+  spacing?: [number, number, number];
   points?: number[];
   polys?: number[];
   data?: string;

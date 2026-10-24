@@ -2025,6 +2025,166 @@ class PolyData:
         self._scene_data = state.get("_scene_data")  # type: ignore[assignment]
 
 
+class ImageData:
+    """Uniformly spaced image (structured mesh) dataset.
+
+    Mirrors the PyVista ``ImageData`` class backed by
+    ``vtk.Common.DataModel.vtkImageData`` at render time.
+
+    Parameters
+    ----------
+    dimensions : tuple, optional
+        Number of points in each (x, y, z) direction. Default is (1, 1, 1).
+    spacing : tuple, optional
+        Distance between points in each direction. Default is (1, 1, 1).
+    origin : tuple, optional
+        World coordinates of the (0, 0, 0) corner. Default is (0, 0, 0).
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> grid = pv.ImageData(dimensions=(8, 8, 8), spacing=(1, 1, 1))
+    >>> grid.n_points
+    512
+
+    """
+
+    def __init__(
+        self,
+        dimensions: tuple[int, int, int] = (1, 1, 1),
+        spacing: tuple[float, float, float] = (1.0, 1.0, 1.0),
+        origin: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    ) -> None:
+        """Initialize the image data."""
+        if any(dim < 1 for dim in dimensions):
+            msg = f"dimensions must be at least 1 in each direction, got {dimensions}"
+            raise ValueError(msg)
+        self.dimensions = tuple(int(dim) for dim in dimensions)
+        self.spacing = tuple(float(s) for s in spacing)
+        self.origin = tuple(float(o) for o in origin)
+        self._point_data = PointData()
+
+    @property
+    def point_data(self) -> PointData:
+        """Access point data arrays.
+
+        Returns
+        -------
+        PointData
+            Dict-like container for point data arrays.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(4, 4, 4))
+        >>> grid.point_data['data'] = np.zeros(grid.n_points)
+        >>> 'data' in grid.point_data
+        True
+
+        """
+        return self._point_data
+
+    @property
+    def n_points(self) -> int:
+        """Return the total number of points."""
+        return int(np.prod(self.dimensions))
+
+    @property
+    def n_cells(self) -> int:
+        """Return the total number of cells."""
+        cells = [dim - 1 for dim in self.dimensions]
+        return int(np.prod([max(cell, 0) for cell in cells]))
+
+    @property
+    def points(self) -> np.ndarray:
+        """Return the point coordinates of the image.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape ``(n_points, 3)``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(2, 2, 2))
+        >>> grid.points.tolist()  # doctest: +NORMALIZE_WHITESPACE
+        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0],
+         [0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [0.0, 1.0, 1.0], [1.0, 1.0, 1.0]]
+
+        """
+        n_x, n_y, n_z = self.dimensions
+        d_x, d_y, d_z = self.spacing
+        o_x, o_y, o_z = self.origin
+        points = [
+            [o_x + i * d_x, o_y + j * d_y, o_z + k * d_z]
+            for k in range(n_z)
+            for j in range(n_y)
+            for i in range(n_x)
+        ]
+        return np.array(points)
+
+    def to_scene_data(self) -> dict[str, object]:
+        """Return a JSON-serializable dict describing this image.
+
+        Returns
+        -------
+        dict
+            Source configuration with ``"type": "image"``.
+
+        """
+        scene: dict[str, object] = {
+            "type": "image",
+            "dimensions": list(self.dimensions),
+            "spacing": list(self.spacing),
+            "origin": list(self.origin),
+        }
+        if len(self._point_data) > 0:
+            scene["pointData"] = _point_data_to_scene(self._point_data)
+        return scene
+
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling."""
+        return {
+            "dimensions": self.dimensions,
+            "spacing": self.spacing,
+            "origin": self.origin,
+            "_point_data": self._point_data,
+        }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle."""
+        self.dimensions = state["dimensions"]  # type: ignore[assignment]
+        self.spacing = state["spacing"]  # type: ignore[assignment]
+        self.origin = state["origin"]  # type: ignore[assignment]
+        self._point_data = state["_point_data"]  # type: ignore[assignment]
+
+    def plot(self, color: str | tuple[float, float, float] | None = None) -> None:
+        """Plot this image as an outline.
+
+        This is a convenience method that creates a :class:`~pyvista_js.Plotter`,
+        adds this image, and calls :func:`~pyvista_js.Plotter.show`.
+
+        Parameters
+        ----------
+        color : str or tuple, optional
+            Color of the image outline.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(4, 4, 4))
+        >>> grid.plot(color='red')  # doctest: +SKIP
+
+        """
+        from .plotter import Plotter  # noqa: PLC0415
+
+        plotter = Plotter()
+        plotter.add_image(self, color=color)
+        plotter.show()
+
+
 class UnstructuredGrid:
     """Unstructured grid dataset.
 

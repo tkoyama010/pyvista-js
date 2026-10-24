@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from .camera import Camera
     from .examples import CubeMap
     from .light import Light
-    from .mesh import PolyData, UnstructuredGrid
+    from .mesh import ImageData, PolyData, UnstructuredGrid
     from .text import Text
     from .texture import Texture
 
@@ -316,6 +316,63 @@ class Plotter:
         kwargs.setdefault("color", "white")
         cast_kwargs = cast("dict[str, Any]", kwargs)
         return self.add_mesh(glyphed, **cast_kwargs)
+
+    def add_image(
+        self,
+        image: ImageData,
+        color: str | tuple[float, float, float] | None = None,
+    ) -> dict[str, object]:
+        """Add an :class:`~pyvista_js.ImageData` to the scene.
+
+        Mirrors the PyVista ``Plotter.add_image`` API. The image is
+        rendered as the outline of its bounding box; per-point data
+        coloring and volume rendering follow in dedicated APIs.
+
+        Parameters
+        ----------
+        image : ImageData
+            The image dataset to add.
+        color : str or tuple, optional
+            Color of the outline.
+
+        Returns
+        -------
+        dict
+            Actor information for the image.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_image(pv.ImageData(dimensions=(4, 4, 4)))  # doctest: +SKIP
+
+        """
+        actor = self._renderer.add_mesh_actor(
+            image,  # type: ignore[arg-type]
+            color=color or "white",
+            opacity=1.0,
+            pbr=False,
+            metallic=0.0,
+            roughness=0.5,
+            smooth_shading=False,
+            texture=None,
+            show_edges=False,
+            edge_color=None,
+            style="surface",
+            scalars=None,
+            cmap="",
+        )
+        self._actors.append(
+            {
+                "mesh": image,
+                "color": color or "white",
+                "opacity": 1.0,
+                "style": "surface",
+                "actor": actor,
+                "kwargs": {},
+            },
+        )
+        return actor
 
     def add_points(
         self,
