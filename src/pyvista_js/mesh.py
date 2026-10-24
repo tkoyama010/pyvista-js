@@ -137,6 +137,7 @@ _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _POINT_CLOUD_COMPONENTS = 3  # Points of a point cloud have x, y, and z coordinates
 _POINT_PAIR_LENGTH = 2  # A threshold range is a pair of values
+_MIN_SMOOTH_ITERATIONS = 1  # smoothing needs at least one pass
 _TUBE_MIN_SIDES = 3
 _TUBE_DEFAULT_RADIUS = 0.5
 _TUBE_MAX_RADIUS = 100.0
@@ -1657,6 +1658,82 @@ class PolyData:
         )
         warped.point_data[scalar_name] = scalar_data
         return warped
+
+    def smooth_taubin(
+        self,
+        pass_band: float = 0.001,
+        n_iter: int = 15,
+    ) -> PolyData:
+        """Smooth the mesh surface using a Taubin smoothing filter.
+
+        This mirrors the PyVista ``smooth_taubin`` filter API and is backed
+        by vtk.js's ``vtkWindowedSincPolyDataFilter``. Taubin smoothing
+        avoids the surface shrinkage of Laplacian smoothing.
+
+        .. note::
+
+            The smoothing is applied in JavaScript at render time.
+
+        Parameters
+        ----------
+        pass_band : float, optional
+            Pass band frequency for the smoothing filter. The closer to
+            zero, the greater the smoothing effect. Default is 0.001.
+        n_iter : int, optional
+            Number of iterations for the smoothing filter.
+            Default is 15.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with smoothed points.
+
+        Raises
+        ------
+        ValueError
+            If ``n_iter`` is less than 1.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> smoothed = sphere.smooth_taubin(pass_band=0.001, n_iter=15)
+        >>> isinstance(smoothed, pv.PolyData)
+        True
+
+        Render the smoothed mesh:
+
+        >>> smoothed.plot()  # doctest: +SKIP
+
+        """
+        if n_iter < _MIN_SMOOTH_ITERATIONS:
+            msg = f"n_iter must be at least {_MIN_SMOOTH_ITERATIONS}, got {n_iter}"
+            raise ValueError(msg)
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "smoothTaubin",
+                "passBand": float(pass_band),
+                "nIterations": int(n_iter),
+            },
+        )
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
+            _scene_data=base_scene,
+        )
 
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.
