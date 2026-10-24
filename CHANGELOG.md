@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.19.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.18.1...pyvista-js-v0.19.0) (2026-10-24)
+
+
+### Features
+
+* add ImageData data object using vtkImageData ([#728](https://github.com/tkoyama010/pyvista-js/issues/728)) ([c2c557b](https://github.com/tkoyama010/pyvista-js/commit/c2c557b29ac8596814436e150643ac59fdbd0d07))
+* add PlatonicSolid() factory using vtkPlatonicSolidSource ([#720](https://github.com/tkoyama010/pyvista-js/issues/720)) ([ef20c9f](https://github.com/tkoyama010/pyvista-js/commit/ef20c9fb897e7424ffec8586382c5326fee21e23))
+* add Plotter.add_volume() using vtkVolume/vtkVolumeMapper ([#729](https://github.com/tkoyama010/pyvista-js/issues/729)) ([5fb6dc2](https://github.com/tkoyama010/pyvista-js/commit/5fb6dc26790aa7a77237a7eb04689c42b1384e43))
+* add PointSource() factory using vtkPointSource ([#719](https://github.com/tkoyama010/pyvista-js/issues/719)) ([641cf6b](https://github.com/tkoyama010/pyvista-js/commit/641cf6b4018221a5d850b0c26d8e92971ada4276))
+* add PolyData.__add__ for mesh concatenation ([#716](https://github.com/tkoyama010/pyvista-js/issues/716)) ([7cfbca9](https://github.com/tkoyama010/pyvista-js/commit/7cfbca947d53336c359a64f0cd2d03badea8fb99))
+* add PolyData.clean() merging duplicate points ([#715](https://github.com/tkoyama010/pyvista-js/issues/715)) ([d968f5e](https://github.com/tkoyama010/pyvista-js/commit/d968f5eb5f2646fa9a6e31148c30ebfec06c6b5b))
+* add PolyData.glyph() and Plotter.add_arrows() using vtkGlyph3DMapper ([#727](https://github.com/tkoyama010/pyvista-js/issues/727)) ([67ab3c9](https://github.com/tkoyama010/pyvista-js/commit/67ab3c9124da56dcb88eceb5752a5afa977f1000))
+* add PolyData.outline() and Plotter.add_bounding_box() ([#718](https://github.com/tkoyama010/pyvista-js/issues/718)) ([93171d4](https://github.com/tkoyama010/pyvista-js/commit/93171d4fa3bae11e1fc0647ecb2d751a2c9054ab))
+* add PolyData.slice() using vtkCutter ([#731](https://github.com/tkoyama010/pyvista-js/issues/731)) ([8dc47d3](https://github.com/tkoyama010/pyvista-js/commit/8dc47d3279c7cc2185963b511f023dd8193ec2ac))
+* add PolyData.smooth_taubin() using vtkWindowedSincPolyDataFilter ([#724](https://github.com/tkoyama010/pyvista-js/issues/724)) ([882d672](https://github.com/tkoyama010/pyvista-js/commit/882d672e8ecbd19edef43e3b690cd4640d470593))
+* add PolyData.texture_map_to_sphere() using vtkTextureMapToSphere ([#725](https://github.com/tkoyama010/pyvista-js/issues/725)) ([110dbf9](https://github.com/tkoyama010/pyvista-js/commit/110dbf9b88a0565cd98a0689d98fbd86e3220b18))
+* add PolyData.threshold() using vtkThresholdPoints ([#722](https://github.com/tkoyama010/pyvista-js/issues/722)) ([6ab09c8](https://github.com/tkoyama010/pyvista-js/commit/6ab09c87d0e961af45f05492f9c04bc5327db6f6))
+* add PolyData.triangulate() converting polygons to triangles ([#717](https://github.com/tkoyama010/pyvista-js/issues/717)) ([653a3c3](https://github.com/tkoyama010/pyvista-js/commit/653a3c365d11937f9740f6bee5c7fa70f4fcf2b5))
+* add PolyData.warp_by_scalar() using vtkWarpScalar ([#723](https://github.com/tkoyama010/pyvista-js/issues/723)) ([35b7dc8](https://github.com/tkoyama010/pyvista-js/commit/35b7dc871f028d44dd5d52a93cd74dd07ef0136e))
+* add RegularPolygon() factory using vtkRegularPolygonSource ([#721](https://github.com/tkoyama010/pyvista-js/issues/721)) ([a6535cf](https://github.com/tkoyama010/pyvista-js/commit/a6535cf29e86f3eb9f84db1e1052b7688c33228e))
+* add XMLPolyDataReader for .vtp files ([#726](https://github.com/tkoyama010/pyvista-js/issues/726)) ([655d12d](https://github.com/tkoyama010/pyvista-js/commit/655d12d3203ec1fb24235a9ac3c5b1b62b96224c))
+* wrap vtk.js Camera with pyvista-compatible API ([#696](https://github.com/tkoyama010/pyvista-js/issues/696)) ([60eb790](https://github.com/tkoyama010/pyvista-js/commit/60eb79025315ba3d353812a6237f473dc370cdcb))
+
+
+### Bug Fixes
+
+* restore missing vtkVolumeProperty.setRGBTransferFunction declaration ([#730](https://github.com/tkoyama010/pyvista-js/issues/730)) ([23ea3e1](https://github.com/tkoyama010/pyvista-js/commit/23ea3e1f33feaa3f07ec168187515550b3885a2f))
+
+
+### Documentation
+
+* Updates for project pyvista-js-doc and language ja ([#733](https://github.com/tkoyama010/pyvista-js/issues/733)) ([ad841fa](https://github.com/tkoyama010/pyvista-js/commit/ad841fac6b37b9ef329ca57de71457904e8e2cbe))
+* Updates for project pyvista-js-doc and language ja ([#735](https://github.com/tkoyama010/pyvista-js/issues/735)) ([8500e84](https://github.com/tkoyama010/pyvista-js/commit/8500e8480906721e55da418a456e8f4e4f037ddc))
+
 ## [0.18.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.18.0...pyvista-js-v0.18.1) (2026-10-21)
 
 ### Documentation
