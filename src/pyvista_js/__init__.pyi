@@ -19,6 +19,7 @@ __all__ = [
     "PointSource",
     "PolyData",
     "PolyDataReader",
+    "RegularPolygon",
     "STLReader",
     "Sphere",
     "Text",
@@ -52,6 +53,7 @@ from .mesh import (
     PointData,
     PointSource,
     PolyData,
+    RegularPolygon,
     Sphere,
     UnstructuredGrid,
 )
