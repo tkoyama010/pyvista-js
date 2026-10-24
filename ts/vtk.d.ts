@@ -280,6 +280,8 @@ interface VtkVolumeMapperFactory {
 
 /** A vtk.js volume appearance property (color/opacity mapping). */
 interface VtkVolumeProperty {
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+  setRGBTransferFunction: (component: number, ctf: VtkColorTransferFunction) => void;
   setScalarOpacity: (component: number, ctf: VtkPiecewiseFunction) => void;
 }
 
