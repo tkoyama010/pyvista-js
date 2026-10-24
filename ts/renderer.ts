@@ -322,6 +322,7 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     line: createLineSource,
     plane: createPlaneSource,
     pointSource: createPointSource,
+    platonicSolid: createPlatonicSolidSource,
     mesh: createMeshSource,
     points: createPointsSource,
     plyReader: createReaderSource,
@@ -511,6 +512,36 @@ function createPointSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the constructed mesh PolyData.
  */
+/**
+ * Create a Platonic solid (tetrahedron, cube, octahedron, icosahedron, or
+ * dodecahedron).
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the Platonic solid source filter.
+ */
+function createPlatonicSolidSource(cfg: SourceConfig): SourceResult {
+  // PyVista kind names mapped to the vtk.js numeric solid types.
+  const solidTypeMap: Record<string, number> = {
+    tetrahedron: 0,
+    cube: 1,
+    octahedron: 2,
+    icosahedron: 3,
+    dodecahedron: 4,
+  };
+  const solidType = solidTypeMap[cfg.kind ?? ""] ?? 2; // default: octahedron
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Sources.vtkPlatonicSolidSource;
+  if (!factory) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    return { output: vtk.Common.DataModel.vtkPolyData.newInstance(), isFilter: true };
+  }
+  const source = factory.newInstance({
+    solidType,
+    radius: cfg.radius,
+    center: cfg.center,
+  });
+  return { output: source, isFilter: true };
+}
+
 function createMeshSource(cfg: SourceConfig): SourceResult {
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
