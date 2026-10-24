@@ -68,6 +68,8 @@ class Camera:
     parallel_projection : bool, optional
         Enable parallel (orthographic) projection instead of perspective
         projection. Default is False.
+    parallel_scale : float, optional
+        Scale used in parallel projection mode. Default is 1.0.
     elevation : float, optional
         Camera elevation angle in degrees. Default is 0.0.
 
@@ -92,6 +94,7 @@ class Camera:
         view_angle: float = 30.0,
         clipping_range: tuple[float, float] = (0.01, 1000.01),
         parallel_projection: bool = False,  # noqa: FBT001 FBT002
+        parallel_scale: float = 1.0,
         elevation: float = 0.0,
     ) -> None:
         """Initialize a Camera instance."""
@@ -101,6 +104,7 @@ class Camera:
         self.view_angle = view_angle
         self.clipping_range = clipping_range
         self.parallel_projection = parallel_projection
+        self.parallel_scale = parallel_scale
         self.elevation = elevation
 
     @property
@@ -287,6 +291,221 @@ class Camera:
     def parallel_projection(self, value: bool) -> None:
         """Set parallel projection mode."""
         self._parallel_projection = bool(value)
+
+    @property
+    def parallel_scale(self) -> float:
+        """Get or set the parallel projection scale.
+
+        This property only has an effect when ``parallel_projection`` is
+        True. The scale sets the height of the viewport in world
+        coordinates.
+
+        Parameters
+        ----------
+        value : float
+            Parallel scale in world coordinates.
+
+        Returns
+        -------
+        float
+            Parallel scale in world coordinates.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.parallel_scale = 2.0
+        >>> camera.parallel_scale
+        2.0
+
+        """
+        return self._parallel_scale
+
+    @parallel_scale.setter
+    def parallel_scale(self, value: float) -> None:
+        """Set the parallel projection scale."""
+        self._parallel_scale = float(value)
+
+    @property
+    def distance(self) -> float:
+        """Get or set the distance from the camera position to the focal point.
+
+        Setting this property moves the camera position along the view
+        direction while keeping the focal point and view direction fixed.
+
+        Returns
+        -------
+        float
+            Distance from the camera position to the focal point.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(0, 0, 10), focal_point=(0, 0, 0))
+        >>> camera.distance
+        10.0
+        >>> camera.distance = 5.0
+        >>> camera.position
+        (0.0, 0.0, 5.0)
+
+        """
+        pos = np.array(self._position, dtype=np.float64)
+        fp = np.array(self._focal_point, dtype=np.float64)
+        return float(np.linalg.norm(fp - pos))
+
+    @distance.setter
+    def distance(self, value: float) -> None:
+        """Set the distance to the focal point."""
+        value = float(value)
+        if value <= 0:
+            msg = f"distance must be positive, got {value}"
+            raise ValueError(msg)
+
+        pos = np.array(self._position, dtype=np.float64)
+        fp = np.array(self._focal_point, dtype=np.float64)
+        offset = pos - fp
+        dist = np.linalg.norm(offset)
+        if dist < _NORM_TOL:
+            return
+
+        new_pos = fp + offset / dist * value
+        self.position = _to_float3(new_pos)
+
+    def set_position(
+        self,
+        position: tuple[float, float, float],
+    ) -> None:
+        """Set the camera position.
+
+        Parameters
+        ----------
+        position : tuple of float
+            Camera position as (x, y, z).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.set_position((5, 0, 0))
+        >>> camera.position
+        (5.0, 0.0, 0.0)
+
+        """
+        self.position = position
+
+    def set_focal_point(
+        self,
+        focal_point: tuple[float, float, float],
+    ) -> None:
+        """Set the camera focal point.
+
+        Parameters
+        ----------
+        focal_point : tuple of float
+            Focal point as (x, y, z).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.set_focal_point((1, 2, 3))
+        >>> camera.focal_point
+        (1.0, 2.0, 3.0)
+
+        """
+        self.focal_point = focal_point
+
+    def set_view_up(self, view_up: tuple[float, float, float]) -> None:
+        """Set the view-up vector.
+
+        Parameters
+        ----------
+        view_up : tuple of float
+            View-up vector as (x, y, z).
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.set_view_up((0, 0, 1))
+        >>> camera.view_up
+        (0.0, 0.0, 1.0)
+
+        """
+        self.view_up = view_up
+
+    def reset_clipping_range(self) -> None:
+        """Reset the clipping range to the default value.
+
+        Resets the near/far clipping planes to
+        ``(0.01, 1000.01)``.  The vtk.js renderer also recomputes the
+        clipping range from actor bounds on every render, so manual
+        adjustment is rarely needed.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera()
+        >>> camera.clipping_range = (1.0, 2.0)
+        >>> camera.reset_clipping_range()
+        >>> camera.clipping_range
+        (0.01, 1000.01)
+
+        """
+        self.clipping_range = (0.01, 1000.01)
+
+    def to_dict(self) -> dict[str, object]:
+        """Serialize the camera state to a dictionary.
+
+        Returns
+        -------
+        dict
+            Camera state as keyword arguments accepted by ``Camera``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(1, 2, 3))
+        >>> state = camera.to_dict()
+        >>> state["position"]
+        (1.0, 2.0, 3.0)
+
+        """
+        return {
+            "position": self._position,
+            "focal_point": self._focal_point,
+            "view_up": self._view_up,
+            "view_angle": self._view_angle,
+            "clipping_range": self._clipping_range,
+            "parallel_projection": self._parallel_projection,
+            "parallel_scale": self._parallel_scale,
+            "elevation": self._elevation,
+        }
+
+    @classmethod
+    def from_dict(cls, state: dict[str, object]) -> Camera:
+        """Create a Camera from a dictionary produced by :meth:`to_dict`.
+
+        Parameters
+        ----------
+        state : dict
+            Camera state as returned by :meth:`to_dict`.
+
+        Returns
+        -------
+        Camera
+            A new camera with the serialized state.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> camera = pv.Camera(position=(1, 2, 3))
+        >>> clone = pv.Camera.from_dict(camera.to_dict())
+        >>> clone.position
+        (1.0, 2.0, 3.0)
+
+        """
+        return cls(**state)  # type: ignore[arg-type]
 
     def enable_parallel_projection(self) -> None:
         """Enable parallel (orthographic) projection.
@@ -528,5 +747,6 @@ class Camera:
             f"view_angle={self._view_angle}, "
             f"clipping_range={self._clipping_range}, "
             f"parallel_projection={self._parallel_projection}, "
+            f"parallel_scale={self._parallel_scale}, "
             f"elevation={self._elevation})"
         )

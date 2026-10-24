@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 import pyvista_js as pv
+from pyvista_js import rendering
 from pyvista_js.camera import Camera
 from pyvista_js.rendering import MockRenderer
 
@@ -486,3 +487,120 @@ class TestCameraCombinedMovement:
         assert cam.position != (0.0, 0.0, 5.0)
         # Up vector should be changed by both
         assert cam.view_up != (0.0, 1.0, 0.0)
+
+
+def test_camera_parallel_scale_default() -> None:
+    """Test parallel_scale default value."""
+    camera = Camera()
+    assert camera.parallel_scale == 1.0
+
+
+def test_camera_parallel_scale_setter() -> None:
+    """Test parallel_scale can be set and reads back."""
+    camera = Camera()
+    camera.parallel_scale = 2.5
+    assert camera.parallel_scale == 2.5
+
+
+def test_camera_parallel_scale_converts_to_float() -> None:
+    """Test parallel_scale converts ints to float."""
+    camera = Camera()
+    camera.parallel_scale = 3
+    assert camera.parallel_scale == 3.0
+    assert isinstance(camera.parallel_scale, float)
+
+
+def test_camera_distance_getter() -> None:
+    """Test distance returns position-to-focal-point distance."""
+    camera = Camera(position=(0, 0, 10), focal_point=(0, 0, 0))
+    assert camera.distance == 10.0
+
+
+def test_camera_distance_setter() -> None:
+    """Test setting distance moves position along view direction."""
+    camera = Camera(position=(0, 0, 10), focal_point=(0, 0, 0))
+    camera.distance = 5.0
+    assert camera.position == (0.0, 0.0, 5.0)
+    assert camera.focal_point == (0.0, 0.0, 0.0)
+
+
+def test_camera_distance_setter_off_axis() -> None:
+    """Test setting distance preserves view direction."""
+    camera = Camera(position=(3, 0, 4), focal_point=(0, 0, 0))
+    camera.distance = 10.0
+    np.testing.assert_allclose(camera.position, (6.0, 0.0, 8.0), atol=1e-10)
+
+
+def test_camera_distance_non_positive_raises() -> None:
+    """Test distance setter rejects non-positive values."""
+    camera = Camera()
+    with pytest.raises(ValueError, match="distance must be positive"):
+        camera.distance = 0.0
+
+
+def test_camera_set_position() -> None:
+    """Test set_position sets the camera position."""
+    camera = Camera()
+    camera.set_position((5, 0, 0))
+    assert camera.position == (5.0, 0.0, 0.0)
+
+
+def test_camera_set_focal_point() -> None:
+    """Test set_focal_point sets the focal point."""
+    camera = Camera()
+    camera.set_focal_point((1, 2, 3))
+    assert camera.focal_point == (1.0, 2.0, 3.0)
+
+
+def test_camera_set_view_up() -> None:
+    """Test set_view_up sets the view-up vector."""
+    camera = Camera()
+    camera.set_view_up((0, 0, 1))
+    assert camera.view_up == (0.0, 0.0, 1.0)
+
+
+def test_camera_reset_clipping_range() -> None:
+    """Test reset_clipping_range restores default clipping range."""
+    camera = Camera()
+    camera.clipping_range = (1.0, 2.0)
+    camera.reset_clipping_range()
+    assert camera.clipping_range == (0.01, 1000.01)
+
+
+def test_camera_to_dict_round_trip() -> None:
+    """Test camera state round-trips through to_dict/from_dict."""
+    camera = Camera(
+        position=(1.0, 2.0, 3.0),
+        focal_point=(4.0, 5.0, 6.0),
+        view_up=(0.0, 0.0, 1.0),
+        view_angle=45.0,
+        clipping_range=(0.1, 500.0),
+        parallel_projection=True,
+        parallel_scale=2.0,
+        elevation=10.0,
+    )
+    clone = Camera.from_dict(camera.to_dict())
+    assert clone.position == camera.position
+    assert clone.focal_point == camera.focal_point
+    assert clone.view_up == camera.view_up
+    assert clone.view_angle == camera.view_angle
+    assert clone.clipping_range == camera.clipping_range
+    assert clone.parallel_projection == camera.parallel_projection
+    assert clone.parallel_scale == camera.parallel_scale
+    assert clone.elevation == camera.elevation
+
+
+def test_camera_parallel_scale_in_renderer(monkeypatch) -> None:
+    """Test renderer serializes parallel_scale for vtk.js."""
+    from tests.conftest import extract_scene_data  # noqa: PLC0415
+
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+
+    renderer = rendering.VTKJSRenderer()
+    renderer.add_mesh_actor(pv.Sphere())
+    renderer.camera = Camera(parallel_projection=True, parallel_scale=3.0)
+
+    html = renderer._repr_html_()
+    scene = extract_scene_data(html)
+    assert scene["camera"]["parallelScale"] == 3.0
+    assert scene["camera"]["parallelProjection"] is True

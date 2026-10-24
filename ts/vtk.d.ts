@@ -160,6 +160,7 @@ interface VtkCamera {
   setViewAngle: (angle: number) => void;
   setClippingRange: (near: number, far: number) => void;
   setParallelProjection: (value: boolean) => void;
+  setParallelScale: (value: number) => void;
 }
 
 /** A scene light with position, color, and cone parameters. */
@@ -479,6 +480,7 @@ interface CameraConfig {
   viewAngle?: number;
   clippingRange?: [number, number];
   parallelProjection?: boolean;
+  parallelScale?: number;
   viewVector?: [number, number, number];
 }
 

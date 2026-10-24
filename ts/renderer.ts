@@ -956,6 +956,10 @@ function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
     cam.setParallelProjection(true);
   }
 
+  if (camConfig.parallelScale !== undefined) {
+    cam.setParallelScale(camConfig.parallelScale);
+  }
+
   if (camConfig.viewVector && camConfig.viewUp) {
     cam.setPosition(camConfig.viewVector[0], camConfig.viewVector[1], camConfig.viewVector[2]);
     cam.setViewUp(camConfig.viewUp[0], camConfig.viewUp[1], camConfig.viewUp[2]);

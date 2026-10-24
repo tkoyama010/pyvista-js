@@ -862,6 +862,7 @@ class _BaseHTMLRenderer:
                 data["clippingRange"] = list(cam.clipping_range)
             if cam.parallel_projection:
                 data["parallelProjection"] = True
+            data["parallelScale"] = cam.parallel_scale
             return data
         if self._view_vector is not None:
             return {
