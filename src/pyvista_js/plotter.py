@@ -7,7 +7,7 @@ using vtk.js in browser environments.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 import numpy as np
 
@@ -253,6 +253,69 @@ class Plotter:
         )
 
         return actor
+
+    def add_arrows(
+        self,
+        cent: object,
+        direction: object,
+        mag: float = 1.0,
+        **kwargs: object,
+    ) -> dict[str, object]:
+        """Add arrows as vectors to the scene.
+
+        This mirrors the PyVista ``Plotter.add_arrows`` API: each ``cent``
+        point gets an arrow oriented and scaled by the corresponding
+        ``direction`` vector.
+
+        Parameters
+        ----------
+        cent : array-like
+            A single 3D point or an (N, 3) array of points.
+        direction : array-like
+            An (N, 3) array of direction vectors matching ``cent``.
+        mag : float, optional
+            Scaling factor applied to the direction vectors. Default 1.0.
+        **kwargs : dict, optional
+            Extra keyword arguments forwarded to
+            :meth:`~pyvista_js.Plotter.add_mesh`.
+
+        Returns
+        -------
+        dict
+            Actor information for the arrows.
+
+        Raises
+        ------
+        ValueError
+            If ``cent`` and ``direction`` have mismatched shapes.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> plotter = pv.Plotter()
+        >>> cent = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+        >>> direction = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        >>> arrows = plotter.add_arrows(cent, direction, mag=2.0)  # doctest: +SKIP
+
+        """
+        from .mesh import PolyData  # noqa: PLC0415
+
+        points = np.atleast_2d(np.asarray(cent, dtype=float))
+        vectors = np.atleast_2d(np.asarray(direction, dtype=float)) * float(mag)
+        if points.shape != vectors.shape:
+            msg = (
+                "cent and direction must have the same shape, got "
+                f"{points.shape} and {vectors.shape}"
+            )
+            raise ValueError(msg)
+
+        arrows = PolyData(points=points)
+        arrows.point_data["vectors"] = vectors
+        glyphed = arrows.glyph(orient=True, factor=1.0)
+        kwargs.setdefault("color", "white")
+        cast_kwargs = cast("dict[str, Any]", kwargs)
+        return self.add_mesh(glyphed, **cast_kwargs)
 
     def add_points(
         self,
