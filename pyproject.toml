@@ -137,6 +137,7 @@ build.targets.wheel.packages = [ "src/pyvista_js" ]
 
 [tool.uv]
 constraint-dependencies = [
+  "filelock>=4.2.1",
   "gitpython>=3.1.52",
   "mistune>=3.3.0",
   "pillow>=12.3.0",
