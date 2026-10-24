@@ -10,6 +10,7 @@
 /** Number of components in a 3-D coordinate (x, y, z). */
 // biome-ignore lint/style/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
+const PLANAR_CUT_VALUE = 0.0;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
 const UV_COMPONENTS = 2;
@@ -1408,6 +1409,7 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     contour: tryContourFilter,
     fillHoles: tryFillHolesFilter,
     threshold: tryThresholdFilter,
+    slice: trySliceFilter,
     warpByScalar: tryWarpByScalarFilter,
     smoothTaubin: trySmoothTaubinFilter,
     textureSphere: tryTextureMapToSphere,
@@ -2172,6 +2174,48 @@ function tryTextureMapToSphere(current: SourceResult, f: FilterConfig): SourceRe
   map.setInputData(getPolyData(current));
   map.update();
   return { output: map, isFilter: true };
+}
+
+/**
+ * Try to apply a slice filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function trySliceFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (!(f.normal && f.origin)) {
+    return current;
+  }
+  return applySliceFilter(current, f.normal, f.origin);
+}
+
+/**
+ * Apply vtkCutter with a cut plane, producing cross-section lines.
+ * @param sourceResult
+ * @param normal
+ * @param origin
+ * @returns A {@link SourceResult} with the sliced geometry.
+ */
+function applySliceFilter(
+  sourceResult: SourceResult,
+  normal: [number, number, number],
+  origin: [number, number, number],
+): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const cutterFactory = vtk.Filters.Core.vtkCutter;
+  if (!cutterFactory) {
+    return sourceResult;
+  }
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const plane = vtk.Common.DataModel.vtkPlane.newInstance();
+  plane.setOrigin(origin[0], origin[1], origin[2]);
+  plane.setNormal(normal[0], normal[1], normal[2]);
+  const cutter = cutterFactory.newInstance();
+  cutter.setCutFunction?.(plane);
+  cutter.setCutValue?.(PLANAR_CUT_VALUE);
+  cutter.setInputData(getPolyData(sourceResult));
+  cutter.update();
+  return { output: cutter, isFilter: true };
 }
 
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {

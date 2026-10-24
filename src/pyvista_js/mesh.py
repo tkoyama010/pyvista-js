@@ -1021,6 +1021,120 @@ class PolyData:
             _scene_data=base_scene,
         )
 
+    def slice(
+        self,
+        normal: str | tuple[float, float, float] = "z",
+        origin: tuple[float, float, float] | None = None,
+        generate_triangles: bool = False,  # noqa: FBT001, FBT002, ARG002
+    ) -> PolyData:
+        """Slice the mesh with a plane, producing cross-section lines.
+
+        This mirrors the PyVista ``slice`` filter API and is backed by
+        vtk.js's ``vtkCutter`` with a cut plane.
+
+        .. note::
+
+            The slicing is computed in JavaScript at render time by
+            evaluating the cut function per point and triangulating the
+            crossing edges. ``generate_triangles`` is accepted for API
+            compatibility but currently has no effect.
+
+        Parameters
+        ----------
+        normal : str or tuple of float, optional
+            The normal vector of the slicing plane. Can be a string
+            specifying a cardinal direction ('x', 'y', 'z', '-x', '-y',
+            '-z') or a 3-tuple of floats (nx, ny, nz). Default is 'z'.
+        origin : tuple of float, optional
+            The origin point of the slicing plane as (x, y, z). If not
+            provided, defaults to the center of the mesh's bounding box.
+        generate_triangles : bool, optional
+            Reserved for API compatibility with PyVista. No effect.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with the cross-section geometry.
+
+        Raises
+        ------
+        ValueError
+            If the normal string is invalid or vectors have the wrong size.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sliced = sphere.slice(normal='z')
+        >>> isinstance(sliced, pv.PolyData)
+        True
+
+        Render the cross-section:
+
+        >>> sliced.plot(color='red', opacity=1.0)  # doctest: +SKIP
+
+        """
+        if isinstance(normal, str):
+            normal_map = {
+                "x": (1.0, 0.0, 0.0),
+                "+x": (1.0, 0.0, 0.0),
+                "-x": (-1.0, 0.0, 0.0),
+                "y": (0.0, 1.0, 0.0),
+                "+y": (0.0, 1.0, 0.0),
+                "-y": (0.0, -1.0, 0.0),
+                "z": (0.0, 0.0, 1.0),
+                "+z": (0.0, 0.0, 1.0),
+                "-z": (0.0, 0.0, -1.0),
+            }
+            if normal not in normal_map:
+                msg = f"Invalid normal string '{normal}'. Must be one of {list(normal_map.keys())}"
+                raise ValueError(msg)
+            normal_vec = normal_map[normal]
+        else:
+            if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
+                msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"
+                raise ValueError(msg)
+            n = [float(x) for x in normal]  # type: ignore[arg-type]
+            normal_vec = (n[0], n[1], n[2])
+
+        if origin is None:
+            pts = self.points
+            origin = (
+                float((pts[:, 0].min() + pts[:, 0].max()) / 2),
+                float((pts[:, 1].min() + pts[:, 1].max()) / 2),
+                float((pts[:, 2].min() + pts[:, 2].max()) / 2),
+            )
+        else:
+            if len(origin) != _VECTOR_COMPONENTS:
+                msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
+                raise ValueError(msg)
+            o = [float(x) for x in origin]
+            origin = (o[0], o[1], o[2])
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "slice",
+                "normal": list(normal_vec),
+                "origin": list(origin),
+            },
+        )
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _scene_data=base_scene,
+        )
+
     def tube(
         self,
         *,
