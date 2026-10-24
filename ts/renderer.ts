@@ -322,6 +322,7 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     line: createLineSource,
     plane: createPlaneSource,
     pointSource: createPointSource,
+    regularPolygon: createRegularPolygonSource,
     mesh: createMeshSource,
     points: createPointsSource,
     plyReader: createReaderSource,
@@ -511,6 +512,26 @@ function createPointSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the constructed mesh PolyData.
  */
+/**
+ * Create a regular polygon in the XY plane.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the regular polygon source filter.
+ */
+function createRegularPolygonSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Sources.vtkRegularPolygonSource;
+  if (!factory) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    return { output: vtk.Common.DataModel.vtkPolyData.newInstance(), isFilter: true };
+  }
+  const source = factory.newInstance({
+    numberOfSides: cfg.nSides,
+    radius: cfg.radius,
+    center: cfg.center,
+  });
+  return { output: source, isFilter: true };
+}
+
 function createMeshSource(cfg: SourceConfig): SourceResult {
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
