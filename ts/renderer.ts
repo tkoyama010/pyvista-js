@@ -327,6 +327,7 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     line: createLineSource,
     plane: createPlaneSource,
     pointSource: createPointSource,
+    glyph: createGlyphSource,
     platonicSolid: createPlatonicSolidSource,
     regularPolygon: createRegularPolygonSource,
     mesh: createMeshSource,
@@ -567,6 +568,70 @@ function createRegularPolygonSource(cfg: SourceConfig): SourceResult {
     center: cfg.center,
   });
   return { output: source, isFilter: true };
+}
+
+/**
+ * Create a points-only PolyData backing a glyph scene.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the glyph point cloud.
+ */
+function createGlyphSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
+  polydata.setPoints(vtkPts);
+  return { output: polydata, isFilter: false };
+}
+
+/**
+ * Create a vtkGlyph3DMapper for a glyph scene.
+ * @param polydata
+ * @param cfg
+ * @returns The configured glyph mapper.
+ */
+function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const mapperFactory = vtk.Rendering.Core.vtkGlyph3DMapper;
+  if (!mapperFactory) {
+    throw new Error("vtkGlyph3DMapper is not available in this vtk.js build");
+  }
+  const mapper = mapperFactory.newInstance();
+  mapper.setInputData(polydata);
+  mapper.setScalarVisibility(false);
+
+  let geometry: VtkPolyData;
+  if (cfg.geometryPoints && cfg.geometryPoints.length > 0) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    geometry = vtk.Common.DataModel.vtkPolyData.newInstance();
+    const geometryPoints = Float32Array.from(cfg.geometryPoints);
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const geometryPts = vtk.Common.Core.vtkPoints.newInstance();
+    geometryPts.setData(geometryPoints, XYZ_COMPONENTS);
+    geometry.setPoints(geometryPts);
+    if (cfg.geometryPolys) {
+      geometry.getPolys().setData(Uint32Array.from(cfg.geometryPolys));
+    }
+  } else {
+    // Default geometry: an arrow (matches the PyVista glyph default)
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const arrow = vtk.Filters.Sources.vtkArrowSource.newInstance();
+    arrow.update();
+    geometry = arrow.getOutputData();
+  }
+  mapper.setSourceData(geometry);
+
+  const orientationArray = cfg.orientationArray ?? "vectors";
+  if (cfg.orient !== false) {
+    mapper.setOrient?.(true);
+    mapper.setOrientationArray(orientationArray);
+  }
+  if (cfg.scaleFactor !== undefined) {
+    mapper.setScaleFactor(cfg.scaleFactor);
+  }
+  return mapper as unknown as VtkMapper;
 }
 
 function createMeshSource(cfg: SourceConfig): SourceResult {
@@ -879,9 +944,14 @@ function setupActor(
     currentResult = applyFilters(sourceResult, cfg.source.filters);
   }
 
-  const mapperInput = setupNormals(currentResult, cfg.normals);
-  const mapper = createMapper(mapperInput, cfg);
-  applyScalars(mapper, cfg.scalars);
+  let mapper: VtkMapper;
+  if (cfg.source.type === "glyph") {
+    mapper = createGlyphMapper(polydata, cfg.source);
+  } else {
+    const mapperInput = setupNormals(currentResult, cfg.normals);
+    mapper = createMapper(mapperInput, cfg);
+    applyScalars(mapper, cfg.scalars);
+  }
 
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const actor = vtk.Rendering.Core.vtkActor.newInstance();

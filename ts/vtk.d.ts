@@ -252,6 +252,25 @@ interface VtkReader {
   parseAsText: (text: string) => void;
 }
 
+/** A vtk.js mapper that renders per-point glyph geometry. */
+// biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+interface VtkGlyph3DMapper {
+  setInputData: (data: VtkPolyData) => void;
+  setSourceData: (geometry: VtkPolyData) => void;
+  setOrient?: (orient: boolean) => void;
+  setOrientationArray: (name: string) => void;
+  setScaleArray: (name: string) => void;
+  setScaleFactor: (factor: number) => void;
+  setScalarVisibility: (visible: boolean) => void;
+}
+
+/** Factory for creating {@link VtkGlyph3DMapper} instances. */
+// biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+interface VtkGlyph3DMapperFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkGlyph3DMapper;
+}
+
 /** Factory for creating {@link VtkReader} instances. */
 interface VtkReaderFactory {
   // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
@@ -271,6 +290,8 @@ interface VtkGlobal {
       vtkActor: VtkNewInstanceFactory<VtkActor>;
       vtkMapper: VtkNewInstanceFactory<VtkMapper>;
       vtkSphereMapper: VtkNewInstanceFactory<VtkMapper>;
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js class names
+      vtkGlyph3DMapper?: VtkGlyph3DMapperFactory;
       vtkColorTransferFunction: VtkColorTransferFunctionFactory;
       vtkTexture: VtkNewInstanceFactory<VtkTexture>;
       vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
@@ -449,6 +470,11 @@ interface SourceConfig {
   nPoints?: number;
   kind?: string;
   nSides?: number;
+  scaleFactor?: number;
+  orient?: boolean;
+  orientationArray?: string;
+  geometryPoints?: number[];
+  geometryPolys?: number[];
   points?: number[];
   polys?: number[];
   data?: string;
@@ -458,6 +484,15 @@ interface SourceConfig {
 }
 
 /** Edge rendering configuration. */
+interface GlyphConfig {
+  points: number[];
+  geometryPoints: number[];
+  geometryPolys: number[];
+  orient: boolean;
+  scaleFactor: number;
+  color?: [number, number, number];
+}
+
 interface EdgesConfig {
   color: [number, number, number];
 }

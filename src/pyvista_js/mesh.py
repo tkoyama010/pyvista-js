@@ -1861,6 +1861,99 @@ class PolyData:
             _scene_data=base_scene,
         )
 
+    def glyph(
+        self,
+        orient: bool | str = True,  # noqa: FBT001, FBT002
+        scale: bool | str = True,  # noqa: FBT001, FBT002
+        factor: float = 1.0,
+        geometry: PolyData | None = None,
+    ) -> PolyData:
+        """Glyph the mesh points with per-point geometry.
+
+        This mirrors the PyVista ``glyph`` filter API: a point cloud is
+        rendered with per-point arrows (by default) oriented and scaled by
+        point vectors using vtk.js's ``vtkGlyph3DMapper`` at render time.
+
+        .. note::
+
+            The glyphing happens in JavaScript at render time. This method
+            only serializes the configuration.
+
+        Parameters
+        ----------
+        orient : bool or str, optional
+            Whether to orient glyphs by the ``'vectors'`` point array.
+            A string names the array to use. Default is True.
+        scale : bool or str, optional
+            Whether to scale glyphs by the ``'vectors'`` point array.
+            A string names the array to use. For simplicity, only
+            ``'vectors'`` scaling is supported in this implementation.
+            Default is True.
+        factor : float, optional
+            Scale factor applied to the glyphs. Default is 1.0.
+        geometry : PolyData, optional
+            Geometry to use for each glyph. Default uses an arrow
+            (matching the PyVista default).
+
+        Returns
+        -------
+        PolyData
+            A mesh configured for glyph rendering.
+
+        Raises
+        ------
+        ValueError
+            If ``orient`` is set but the vectors array is missing or has a
+            mismatched length.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.PolyData(points=np.zeros((4, 3)))
+        >>> mesh.point_data['vectors'] = np.ones((4, 3))
+        >>> glyphed = mesh.glyph()
+        >>> glyphed.to_scene_data()['type']
+        'glyph'
+
+        Render the glyphs:
+
+        >>> glyphed.plot()  # doctest: +SKIP
+
+        """
+        if orient in (False, None):
+            msg = "Orienting glyphs requires a 'vectors' or named vector array"
+            raise ValueError(msg)
+        if orient not in (True, False) and not isinstance(orient, str):
+            msg = "orient must be a bool or a string naming the vector array"
+            raise ValueError(msg)
+        orientation_array = orient if isinstance(orient, str) else "vectors"
+        if orientation_array not in self._point_data:
+            msg = f"No point data array named '{orientation_array}' found"
+            raise ValueError(msg)
+        if factor < 0:
+            msg = f"factor must be non-negative, got {factor}"
+            raise ValueError(msg)
+
+        _ = scale  # only vector scaling is supported
+        scene: dict[str, object] = {
+            "type": "glyph",
+            "points": _Float32Array(self.points),
+            "scaleFactor": float(factor),
+            "orient": True,
+            "orientationArray": orientation_array,
+        }
+        if geometry is not None:
+            scene["geometryPoints"] = _Float32Array(geometry.points)
+            flat_polys: list[float] = []
+            for cell in geometry._iter_face_cells():  # noqa: SLF001
+                flat_polys.extend([float(len(cell)), *(int(c) for c in cell)])
+            scene["geometryPolys"] = flat_polys
+
+        glyphed = PolyData(points=self.points, _scene_data=scene)
+        glyphed.point_data[orientation_array] = self._point_data[orientation_array]
+        return glyphed
+
     def to_scene_data(self) -> dict[str, object]:
         """Return a JSON-serializable dict describing this mesh source.
 
