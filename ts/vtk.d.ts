@@ -303,6 +303,7 @@ interface VtkGlobal {
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
+      vtkWarpScalar?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkTubeFilter: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkClipClosedSurface?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkContourTriangulator?: VtkNewInstanceFactory<VtkAlgorithm>;
@@ -407,6 +408,7 @@ interface FilterConfig {
   origin?: [number, number, number];
   invert?: boolean;
   values?: number[];
+  factor?: number;
   lowerValue?: number;
   upperValue?: number;
   scalarName?: string;

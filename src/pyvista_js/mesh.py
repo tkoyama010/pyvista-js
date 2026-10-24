@@ -1582,6 +1582,82 @@ class PolyData:
         msg = "No scalar data provided. Pass scalars parameter or set mesh.scalars"
         raise ValueError(msg)
 
+    def warp_by_scalar(
+        self,
+        scalars: str | ArrayLike | None = None,
+        factor: float = 1.0,
+    ) -> PolyData:
+        """Displace the points along their normals weighted by the scalars.
+
+        This mirrors the PyVista ``warp_by_scalar`` filter API and is backed
+        by vtk.js's ``vtkWarpScalar``.
+
+        .. note::
+
+            The warp is applied in JavaScript at render time.
+
+        Parameters
+        ----------
+        scalars : str or array-like, optional
+            The scalar array used for the warp. Default uses the
+            ``scalars`` attribute of the mesh.
+        factor : float, optional
+            Scaling factor applied to the scalar values. Default is 1.0.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with warped points.
+
+        Raises
+        ------
+        ValueError
+            If no scalar data is available.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere.point_data['data'] = sphere.points[:, 2]
+        >>> warped = sphere.warp_by_scalar(scalars='data', factor=0.5)
+        >>> isinstance(warped, pv.PolyData)
+        True
+
+        Render the warped mesh:
+
+        >>> warped.plot()  # doctest: +SKIP
+
+        """
+        scalar_data = self._get_threshold_scalars(scalars)
+        scalar_name = scalars if isinstance(scalars, str) else self.scalar_name
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "warpByScalar",
+                "factor": float(factor),
+                "scalarName": scalar_name,
+            },
+        )
+        warped = PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=scalar_data,
+            scalar_name=scalar_name,
+            _scene_data=base_scene,
+        )
+        warped.point_data[scalar_name] = scalar_data
+        return warped
+
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.
 

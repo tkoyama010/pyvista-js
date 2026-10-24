@@ -1163,6 +1163,7 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     contour: tryContourFilter,
     fillHoles: tryFillHolesFilter,
     threshold: tryThresholdFilter,
+    warpByScalar: tryWarpByScalarFilter,
   };
 
 /**
@@ -1817,6 +1818,50 @@ function applyThresholdFilter(
   threshold.setInputData(inputPd);
   threshold.update();
   return { output: threshold, isFilter: true };
+}
+
+/**
+ * Try to apply a warp-by-scalar filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryWarpByScalarFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (f.factor === undefined || !f.scalarName) {
+    return current;
+  }
+  return applyWarpByScalarFilter(current, f.factor, f.scalarName);
+}
+
+/**
+ * Apply vtkWarpScalar to displace points along their normals scaled by the
+ * active scalar value.
+ * @param sourceResult
+ * @param factor
+ * @param scalarName
+ * @returns A {@link SourceResult} with the warped geometry.
+ */
+function applyWarpByScalarFilter(
+  sourceResult: SourceResult,
+  factor: number,
+  scalarName: string,
+): SourceResult {
+  const inputPd = getPolyData(sourceResult);
+  const pdArrays = inputPd.getPointData();
+  if (!pdArrays.getArrayByName(scalarName)) {
+    return sourceResult;
+  }
+  pdArrays.setActiveScalars(scalarName);
+
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const warpFactory = vtk.Filters.General.vtkWarpScalar;
+  if (!warpFactory) {
+    return sourceResult;
+  }
+  const warp = warpFactory.newInstance({ scaleFactor: factor });
+  warp.setInputData(inputPd);
+  warp.update();
+  return { output: warp, isFilter: true };
 }
 
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {
