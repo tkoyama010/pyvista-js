@@ -693,6 +693,93 @@ class PolyData:
             _scene_data=base_scene,
         )
 
+    def clean(self, point_tolerance: float = 0.0) -> PolyData:
+        """Merge duplicate points and remove unused or degenerate cells.
+
+        This filters coincident points into a single point and rebuilds
+        the cell connectivity accordingly. Point data arrays are
+        preserved by keeping the value of the first occurrence of each
+        merged point. It mirrors the PyVista ``clean`` filter API.
+
+        .. note::
+
+            The merge is computed in Python with NumPy. Points are
+            merged when their coordinates are equal (or within
+            ``point_tolerance`` when it is greater than zero).
+
+        Parameters
+        ----------
+        point_tolerance : float, optional
+            Tolerance used to decide whether two points are coincident.
+            The default of 0.0 merges only points that are exactly equal.
+
+        Returns
+        -------
+        PolyData
+            A new mesh without duplicate points or degenerate cells.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> points = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+        >>> faces = np.array([2, 0, 1])
+        >>> mesh = pv.PolyData(points, faces)
+        >>> cleaned = mesh.clean()
+        >>> cleaned.n_points
+        2
+
+        Render the cleaned mesh:
+
+        >>> cleaned.plot()  # doctest: +SKIP
+
+        """
+        pts = self.points
+        faces = self.faces
+
+        quantized = np.round(pts / point_tolerance) if point_tolerance > 0.0 else pts
+        _, first_occurrence_indices, inverse_indices = np.unique(
+            quantized,
+            axis=0,
+            return_index=True,
+            return_inverse=True,
+        )
+        n_unique = len(first_occurrence_indices)
+        order = np.argsort(first_occurrence_indices)
+        rank = np.empty(n_unique, dtype=np.int64)
+        rank[order] = np.arange(n_unique)
+        remap = rank[inverse_indices]
+        rep = first_occurrence_indices[order]
+        new_points = pts[rep]
+
+        new_faces: list[np.ndarray] = []
+        if faces is not None and faces.ndim == 1:
+            flat = faces.reshape(-1)
+            i = 0
+            while i < len(flat):
+                n_cell = int(flat[i])
+                cell = remap[flat[i + 1 : i + 1 + n_cell]]
+                i += n_cell + 1
+                if n_cell > 0 and len(np.unique(cell)) < n_cell:
+                    continue
+                new_faces.append(np.concatenate([[n_cell], cell]))
+            faces = np.concatenate(new_faces) if new_faces else None
+        elif faces is not None and faces.ndim == _VECTOR_COMPONENTS - 1:
+            rows = remap[faces]
+            keep = np.array([len(np.unique(row)) == len(row) for row in rows])
+            faces = rows[keep]
+
+        cleaned = PolyData(
+            points=new_points,
+            faces=faces,
+            scalars=None if self.scalars is None else self.scalars[rep],
+            scalar_name=self.scalar_name,
+            t_coords=None if self.t_coords is None else self.t_coords[rep],
+        )
+        for name, array in self._point_data.items():
+            cleaned.point_data[name] = np.asarray(array)[rep]
+        return cleaned
+
     def clip(
         self,
         normal: str | tuple[float, float, float] = "x",
