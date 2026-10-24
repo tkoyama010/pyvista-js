@@ -2595,6 +2595,39 @@ class UnstructuredGrid:
         return data
 
 
+class _VolumeImageData(ImageData):
+    """Image rendered as a volume (used internally by ``add_volume``)."""
+
+    def __init__(
+        self,
+        image: ImageData,
+        scalars_name: str,
+        cmap: str,
+    ) -> None:
+        """Initialize from an image with the scalar settings to render."""
+        super().__init__(
+            dimensions=(image.dimensions[0], image.dimensions[1], image.dimensions[2]),
+            spacing=(image.spacing[0], image.spacing[1], image.spacing[2]),
+            origin=(image.origin[0], image.origin[1], image.origin[2]),
+        )
+        self._point_data = image._point_data  # noqa: SLF001
+        self._scalars_name = scalars_name
+        self._cmap = cmap
+
+    def to_scene_data(self) -> dict[str, object]:
+        """Return the volume scene configuration."""
+        scalar_data = np.asarray(self._point_data[self._scalars_name])
+        scene = super().to_scene_data()
+        scene["type"] = "imageVolume"
+        scene["scalars"] = {
+            "arrayName": self._scalars_name,
+            "cmap": self._cmap,
+            "range": [float(scalar_data.min()), float(scalar_data.max())],
+            "direct": False,
+        }
+        return scene
+
+
 def _scene_source(mesh: object) -> dict[str, object]:
     """Return a mesh's scene source, for serializing with ``_dumps_scene``.
 

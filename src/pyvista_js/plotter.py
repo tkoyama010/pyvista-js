@@ -317,6 +317,99 @@ class Plotter:
         cast_kwargs = cast("dict[str, Any]", kwargs)
         return self.add_mesh(glyphed, **cast_kwargs)
 
+    def add_volume(
+        self,
+        image: ImageData,
+        scalars: str | ArrayLike | None = None,
+        cmap: str = "viridis",
+    ) -> dict[str, object]:
+        """Add an :class:`~pyvista_js.ImageData` as a volume to the scene.
+
+        Mirrors the PyVista ``Plotter.add_volume`` API backed by
+        vtk.js's ``vtkVolumeMapper``.
+
+        Parameters
+        ----------
+        image : ImageData
+            The image dataset to render as a volume.
+        scalars : str or array-like, optional
+            The point data array used for the color/opacity mapping.
+            A string names an existing point data array; an array is
+            added under ``"scalars"``. Default uses the first point
+            data array on the image.
+        cmap : str, optional
+            Colormap name. Default is 'viridis'.
+
+        Returns
+        -------
+        dict
+            Actor information for the volume.
+
+        Raises
+        ------
+        ValueError
+            If the image has no point data arrays or the scalar name is
+            unknown.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(16, 16, 16))
+        >>> grid.point_data['data'] = np.random.rand(grid.n_points)
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_volume(grid, scalars='data', cmap='viridis')  # doctest: +SKIP
+
+        """
+        from .mesh import _VolumeImageData  # noqa: PLC0415
+
+        if isinstance(scalars, str):
+            scalars_name = scalars
+            if scalars_name not in image._point_data:  # noqa: SLF001
+                msg = f"No point data array named '{scalars_name}' found"
+                raise ValueError(msg)
+            scalar_data = np.asarray(image._point_data[scalars_name])  # noqa: SLF001
+        elif scalars is not None:
+            scalars_name = "scalars"
+            scalar_data = np.asarray(scalars)
+            if len(scalar_data) != image.n_points:
+                msg = f"scalars must have length {image.n_points}, got {len(scalar_data)}"
+                raise ValueError(msg)
+            image.point_data[scalars_name] = scalar_data
+        elif len(image._point_data) > 0:  # noqa: SLF001
+            scalars_name = next(iter(image._point_data.keys()))  # noqa: SLF001
+            scalar_data = np.asarray(image._point_data[scalars_name])  # noqa: SLF001
+        else:
+            msg = "No scalar data provided. Pass scalars parameter or set image.point_data"
+            raise ValueError(msg)
+
+        volume_image = _VolumeImageData(image, scalars_name, cmap)
+        actor = self._renderer.add_mesh_actor(
+            volume_image,  # type: ignore[arg-type]
+            color=(0.5, 0.5, 0.5),
+            opacity=1.0,
+            pbr=False,
+            metallic=0.0,
+            roughness=0.5,
+            smooth_shading=False,
+            texture=None,
+            show_edges=False,
+            edge_color=None,
+            style="volume",
+            scalars=scalars_name,
+            cmap=cmap,
+        )
+        self._actors.append(
+            {
+                "mesh": volume_image,
+                "scalars": scalars_name,
+                "cmap": cmap,
+                "actor": actor,
+                "kwargs": {},
+            },
+        )
+        return actor
+
     def add_image(
         self,
         image: ImageData,

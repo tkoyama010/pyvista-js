@@ -183,6 +183,7 @@ interface VtkLight {
 interface VtkRenderer {
   setBackground: (r: number, g: number, b: number) => void;
   addActor: (actor: VtkActor) => void;
+  addVolume?: (volume: VtkVolume) => void;
   addLight: (light: VtkLight) => void;
   removeAllLights: () => void;
   setAutomaticLightCreation: (value: boolean) => void;
@@ -252,6 +253,53 @@ interface VtkReader {
   parseAsText: (text: string) => void;
 }
 
+/** A vtk.js volume actor. */
+interface VtkVolume {
+  getVolume: () => VtkVolume;
+  setProperty?: (property: VtkVolumeProperty) => void;
+  setMapper?: (mapper: VtkVolumeMapper) => void;
+}
+
+/** Factory for creating {@link VtkVolume} instances. */
+interface VtkVolumeFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkVolume;
+}
+
+/** A vtk.js volume mapper that renders {@link VtkImageData}. */
+interface VtkVolumeMapper {
+  setInputData: (image: VtkImageData) => void;
+  setSampleDistance: (distance: number) => void;
+}
+
+/** Factory for creating {@link VtkVolumeMapper} instances. */
+interface VtkVolumeMapperFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkVolumeMapper;
+}
+
+/** A vtk.js volume appearance property (color/opacity mapping). */
+interface VtkVolumeProperty {
+  setScalarOpacity: (component: number, ctf: VtkPiecewiseFunction) => void;
+}
+
+/** Factory for creating {@link VtkVolumeProperty} instances. */
+interface VtkVolumePropertyFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkVolumeProperty;
+}
+
+/** A vtk.js piecewise function (opacity mapping). */
+interface VtkPiecewiseFunction {
+  addPoint: (x: number, y: number) => void;
+}
+
+/** Factory for creating {@link VtkPiecewiseFunction} instances. */
+interface VtkPiecewiseFunctionFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkPiecewiseFunction;
+}
+
 /** A vtk.js structured image dataset. */
 interface VtkImageData {
   setExtent: (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number) => boolean;
@@ -310,6 +358,9 @@ interface VtkGlobal {
       vtkColorTransferFunction: VtkColorTransferFunctionFactory;
       vtkTexture: VtkNewInstanceFactory<VtkTexture>;
       vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
+      vtkVolume?: VtkNewInstanceFactory<VtkVolume>;
+      vtkVolumeMapper?: VtkVolumeMapperFactory;
+      vtkVolumeProperty?: VtkVolumePropertyFactory;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     OpenGL: {
@@ -363,6 +414,7 @@ interface VtkGlobal {
       vtkPolyData: VtkNewInstanceFactory<VtkPolyData>;
       vtkPlane: VtkNewInstanceFactory<VtkPlane>;
       vtkImageData?: VtkImageDataFactory;
+      vtkPiecewiseFunction?: VtkPiecewiseFunctionFactory;
     };
   };
   // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
@@ -500,6 +552,7 @@ interface SourceConfig {
   pointData?: PointDataArray[];
   tCoords?: number[];
   filters?: FilterConfig[];
+  scalars?: ScalarsConfig;
 }
 
 /** Edge rendering configuration. */
