@@ -356,6 +356,11 @@ interface VtkGlobal {
     Legacy: {
       vtkPolyDataReader: VtkReaderFactory;
     };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+    XML: {
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js reader names
+      vtkXMLPolyDataReader?: VtkReaderFactory;
+    };
   };
 }
 
