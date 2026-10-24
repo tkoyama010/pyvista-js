@@ -37,6 +37,10 @@ const COLORMAP_PRESETS: Record<string, string> = {
   hot: "Black-Body Radiation",
 };
 const DEFAULT_COLORMAP_PRESET = "Viridis (matplotlib)";
+const OPACITY_MIDPOINT = 0.5;
+const OPACITY_MIN = 0.0;
+const OPACITY_HALF = 0.5;
+const OPACITY_MAX = 1.0;
 
 /** Multiplier to convert a normalised fraction to a CSS percentage. */
 const PERCENT = 100;
@@ -576,6 +580,98 @@ function createRegularPolygonSource(cfg: SourceConfig): SourceResult {
  * @param cfg
  * @returns A {@link SourceResult} wrapping the glyph point cloud.
  */
+/**
+ * Build a vtkImageData from a source config.
+ * @param cfg
+ * @returns The configured image dataset, or undefined if vtkImageData is missing.
+ */
+function buildImageData(cfg: SourceConfig): VtkImageData | undefined {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Common.DataModel.vtkImageData;
+  if (!factory) {
+    return undefined;
+  }
+  const dimensions = cfg.dimensions ?? [1, 1, 1];
+  const spacing = cfg.spacing ?? [1, 1, 1];
+  const origin = cfg.origin ?? [0, 0, 0];
+  const image = factory.newInstance();
+  const [nx, ny, nz] = dimensions;
+  image.setExtent(0, nx - 1, 0, ny - 1, 0, nz - 1);
+  image.setSpacing(spacing[0], spacing[1], spacing[2]);
+  image.setOrigin(origin[0], origin[1], origin[2]);
+  return image;
+}
+
+/**
+ * Create a volume actor and mapper from an image-volume scene config.
+ * @param cfg
+ * @returns The volume actor, mapper, and image dataset.
+ */
+function createImageVolumeActor(cfg: SourceConfig): {
+  volume: VtkVolume;
+  mapper: VtkVolumeMapper;
+  image: VtkImageData;
+} {
+  const image = buildImageData(cfg);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const volumeMapperFactory = vtk.Rendering.Core.vtkVolumeMapper;
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const volumeFactory = vtk.Rendering.Core.vtkVolume;
+  if (!(image && volumeMapperFactory && volumeFactory)) {
+    throw new Error("Volume rendering requires vtkImageData/vtkVolumeMapper");
+  }
+  injectVolumeScalars(image, cfg);
+  const mapper = volumeMapperFactory.newInstance();
+  mapper.setInputData(image);
+  const volume = volumeFactory.newInstance();
+  return { volume, mapper, image };
+}
+
+/**
+ * Add scalar arrays and a color/opacity property to a volume renderer input.
+ * @param image
+ * @param cfg
+ */
+function injectVolumeScalars(image: VtkImageData, cfg: SourceConfig): void {
+  const pointDataArrays = cfg.pointData;
+  if (pointDataArrays && pointDataArrays.length > 0) {
+    injectPointData(image as unknown as VtkPolyData, pointDataArrays);
+  }
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const propertyFactory = vtk.Rendering.Core.vtkVolumeProperty;
+  if (!propertyFactory) {
+    return;
+  }
+  const property = propertyFactory.newInstance();
+  const { scalars } = cfg;
+  if (scalars !== undefined && !scalars.direct) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const ctf = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const colorMaps = vtk.Rendering.Core.vtkColorTransferFunction.vtkColorMaps;
+    const presetName = COLORMAP_PRESETS[scalars.cmap] ?? DEFAULT_COLORMAP_PRESET;
+    const preset = colorMaps.getPresetByName(presetName);
+    if (preset) {
+      ctf.applyColorMap(preset);
+    }
+    ctf.setMappingRange(scalars.range[0], scalars.range[1]);
+    ctf.updateRange();
+    property.setRGBTransferFunction(0, ctf);
+
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const otfFactory = vtk.Common.DataModel.vtkPiecewiseFunction;
+    if (otfFactory) {
+      const otf = otfFactory.newInstance();
+      const [lo, hi] = scalars.range;
+      const mid = lo + (hi - lo) * OPACITY_MIDPOINT;
+      otf.addPoint(lo, OPACITY_MIN);
+      otf.addPoint(mid, OPACITY_HALF);
+      otf.addPoint(hi, OPACITY_MAX);
+      property.setScalarOpacity(0, otf);
+    }
+  }
+}
+
 function createGlyphSource(cfg: SourceConfig): SourceResult {
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
@@ -958,12 +1054,51 @@ function applyScalars(mapper: VtkMapper, scalars: ScalarsConfig | undefined): vo
  * @param renWin
  * @returns The actor's vtk.js objects, or undefined if its source could not be built.
  */
+/**
+ * Build a volume-rendering actor from an image-volume scene config.
+ * @param cfg
+ * @param ren
+ * @returns The volume handle, or undefined when volume rendering is unavailable.
+ */
+function setupVolumeActor(cfg: ActorConfig, ren: VtkRenderer): ActorHandle | undefined {
+  const parts = createImageVolumeActor(cfg.source);
+  const { volume, mapper } = parts;
+
+  ren.addVolume?.(volume);
+  return {
+    id: cfg.id,
+    polydata: buildImageDataPolyDataFallback(cfg.source),
+    mapper: mapper as unknown as VtkMapper,
+    actor: volume as unknown as VtkActor,
+  };
+}
+
+/**
+ * Empty poly data fallback so volume handles can carry a mapper reference.
+ * @param cfg
+ * @returns An empty PolyData.
+ */
+function buildImageDataPolyDataFallback(cfg: SourceConfig): VtkPolyData {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
+  polydata.setPoints(vtkPts);
+  return polydata;
+}
+
 function setupActor(
   cfg: ActorConfig,
   _index: number,
   ren: VtkRenderer,
   renWin: VtkRenderWindow,
 ): ActorHandle | undefined {
+  if (cfg.source.type === "imageVolume") {
+    return setupVolumeActor(cfg, ren);
+  }
+
   const sourceResult = createSource(cfg.source);
   if (!sourceResult?.output) {
     return undefined;
