@@ -1165,6 +1165,7 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     threshold: tryThresholdFilter,
     warpByScalar: tryWarpByScalarFilter,
     smoothTaubin: trySmoothTaubinFilter,
+    textureSphere: tryTextureMapToSphere,
   };
 
 /**
@@ -1908,6 +1909,24 @@ function applySmoothTaubinFilter(
   smoother.setInputData(getPolyData(sourceResult));
   smoother.update();
   return { output: smoother, isFilter: true };
+}
+
+/**
+ * Try to apply a sphere texture mapping filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryTextureMapToSphere(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const map = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance({
+    center: f.center,
+    radius: f.radius,
+    preventSeam: true,
+  });
+  map.setInputData(getPolyData(current));
+  map.update();
+  return { output: map, isFilter: true };
 }
 
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {

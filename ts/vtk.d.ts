@@ -404,6 +404,7 @@ interface FilterConfig {
   type: string;
   shrinkFactor?: number;
   radius?: number;
+  center?: [number, number, number];
   numberOfSides?: number;
   normal?: [number, number, number];
   origin?: [number, number, number];
