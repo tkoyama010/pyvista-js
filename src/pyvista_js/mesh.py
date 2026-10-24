@@ -136,6 +136,7 @@ class PointData:
 _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
 _POINT_CLOUD_COMPONENTS = 3  # Points of a point cloud have x, y, and z coordinates
+_POINT_PAIR_LENGTH = 2  # A threshold range is a pair of values
 _TUBE_MIN_SIDES = 3
 _TUBE_DEFAULT_RADIUS = 0.5
 _TUBE_MAX_RADIUS = 100.0
@@ -1464,6 +1465,122 @@ class PolyData:
             faces=self.faces,
             _scene_data=base_scene,
         )
+
+    def threshold(
+        self,
+        value: float | list[float] | tuple[float, float],
+        scalars: str | ArrayLike | None = None,
+        invert: bool = False,  # noqa: FBT001 FBT002
+    ) -> PolyData:
+        """Extract the parts of the mesh whose scalars are inside a range.
+
+        This filter keeps the points (and any cells having at least one kept
+        point) whose scalar value lies in the threshold range. It mirrors
+        the PyVista ``threshold`` filter API and is backed by vtk.js's
+        ``vtkThresholdPoints``.
+
+        .. note::
+
+            The thresholding is applied in JavaScript at render time.
+
+        Parameters
+        ----------
+        value : float or list/tuple of float
+            A single value thresholds in the range ``[value, max]``; a pair
+            of values thresholds in the range ``[low, high]``.
+        scalars : array-like, optional
+            The scalar array used for thresholding. Default uses the
+            ``scalars`` attribute of the mesh.
+        invert : bool, optional
+            If True, invert the threshold range. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with the thresholded subset.
+
+        Raises
+        ------
+        ValueError
+            If no scalar data is available or the value has the wrong size.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere.point_data['data'] = sphere.points[:, 2]
+        >>> thresh = sphere.threshold(0.5, scalars='data')
+        >>> isinstance(thresh, pv.PolyData)
+        True
+
+        Render the thresholded mesh:
+
+        >>> thresh.plot()  # doctest: +SKIP
+
+        """
+        scalar_data = self._get_threshold_scalars(scalars)
+        scalar_min, scalar_max = float(scalar_data.min()), float(scalar_data.max())
+        if scalar_min == scalar_max:
+            scalar_max = scalar_min + 1.0
+        if not isinstance(value, (list, tuple)):
+            lower, upper = float(value), scalar_max
+        else:
+            if len(value) != _POINT_PAIR_LENGTH:
+                msg = f"value must be a single float or a pair of floats, got {len(value)} values"
+                raise ValueError(msg)
+            lower, upper = float(value[0]), float(value[1])
+        if invert:
+            lower, upper = upper, lower
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        scalar_name = scalars if isinstance(scalars, str) else self.scalar_name
+        filters_list.append(
+            {
+                "type": "threshold",
+                "lowerValue": lower,
+                "upperValue": upper,
+                "scalarName": scalar_name,
+            },
+        )
+        thresholded = PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=scalar_data,
+            scalar_name=scalar_name,
+            _scene_data=base_scene,
+        )
+        thresholded.point_data[scalar_name] = scalar_data
+        return thresholded
+
+    def _get_threshold_scalars(self, scalars: str | ArrayLike | None) -> np.ndarray:
+        """Resolve the scalar array used for thresholding."""
+        if isinstance(scalars, str):
+            if scalars not in self._point_data:
+                msg = f"No point data array named '{scalars}' found"
+                raise ValueError(msg)
+            return np.asarray(self._point_data[scalars])
+        if scalars is not None:
+            scalar_data = np.asarray(scalars)
+            if scalar_data.ndim != 0 and len(scalar_data) != self.n_points:
+                msg = f"scalars must have length {self.n_points}, got {scalar_data.ndim}"
+                raise ValueError(msg)
+            return scalar_data
+        if self.scalars is not None:
+            return self.scalars
+        if len(self._point_data) > 0:
+            first = next(iter(self._point_data.values()))
+            return np.asarray(first)
+        msg = "No scalar data provided. Pass scalars parameter or set mesh.scalars"
+        raise ValueError(msg)
 
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.

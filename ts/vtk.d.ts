@@ -299,6 +299,7 @@ interface VtkGlobal {
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Core: {
       vtkPolyDataNormals: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkThresholdPoints?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
@@ -406,6 +407,8 @@ interface FilterConfig {
   origin?: [number, number, number];
   invert?: boolean;
   values?: number[];
+  lowerValue?: number;
+  upperValue?: number;
   scalarName?: string;
   scalarData?: number[];
   holeSize?: number;

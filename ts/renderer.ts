@@ -1162,6 +1162,7 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     clip: tryClipFilter,
     contour: tryContourFilter,
     fillHoles: tryFillHolesFilter,
+    threshold: tryThresholdFilter,
   };
 
 /**
@@ -1768,6 +1769,56 @@ function triangulateLoop(loop: number[], newPolys: number[]): void {
  * @param holeSize
  * @returns A {@link SourceResult} with holes filled.
  */
+/**
+ * Try to apply a threshold filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryThresholdFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (f.lowerValue === undefined || f.upperValue === undefined || !f.scalarName) {
+    return current;
+  }
+  return applyThresholdFilter(current, f.lowerValue, f.upperValue, f.scalarName);
+}
+
+/**
+ * Apply vtkThresholdPoints to keep points whose active scalar lies in the
+ * threshold range. Cells with all points outside the range are removed.
+ * @param sourceResult
+ * @param lowerValue
+ * @param upperValue
+ * @param scalarName
+ * @returns A {@link SourceResult} with the thresholded geometry.
+ */
+function applyThresholdFilter(
+  sourceResult: SourceResult,
+  lowerValue: number,
+  upperValue: number,
+  scalarName: string,
+): SourceResult {
+  const inputPd = getPolyData(sourceResult);
+  const pdArrays = inputPd.getPointData();
+  if (!pdArrays.getArrayByName(scalarName)) {
+    return sourceResult;
+  }
+  pdArrays.setActiveScalars(scalarName);
+
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Core.vtkThresholdPoints;
+  if (!factory) {
+    return sourceResult;
+  }
+  const threshold = factory.newInstance({
+    lowerThreshold: lowerValue,
+    upperThreshold: upperValue,
+    thresholdFunction: (value: number) => value >= lowerValue && value <= upperValue,
+  });
+  threshold.setInputData(inputPd);
+  threshold.update();
+  return { output: threshold, isFilter: true };
+}
+
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {
   const inputPd = getPolyData(sourceResult);
   const inPoints = inputPd.getPoints().getData();
