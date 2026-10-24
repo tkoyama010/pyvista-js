@@ -22,7 +22,7 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
-# Note: The upper bound on requires-python (<3.15) is needed to prevent
+# Note: The upper bound on requires-python (<3.16) is needed to prevent
 # uv-lock from attempting dependency resolution for unreleased Python
 # versions where packages are not yet available. This aligns with the
 # supported versions declared in classifiers.
@@ -60,7 +60,7 @@ authors = [
 # - Build provenance attestations using Sigstore
 # - All GitHub Actions pinned to commit SHAs
 # - See .github/workflows/release-please.yml for implementation details
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.12,<3.16"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
@@ -70,6 +70,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [

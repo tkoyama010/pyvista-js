@@ -64,7 +64,7 @@ pyvista-js is a PyVista-like API for vtk.js that brings intuitive 3D visualizati
 
 ### Prerequisites
 
-- Python 3.12 or higher (3.12, 3.13, or 3.14 recommended for testing)
+- Python 3.12 or higher (3.12, 3.13, 3.14, or 3.15 recommended for testing)
 - [uv](https://github.com/astral-sh/uv) - Ultra-fast Python package installer
 - Git
 
@@ -226,7 +226,7 @@ uv run pytest --cov=pyvista_js --cov-report=html
 - All new features should include tests
 - Bug fixes should include regression tests
 - Maintain or improve code coverage
-- Tests should pass on Python 3.12, 3.13, and 3.14
+- Tests should pass on Python 3.12, 3.13, 3.14, and 3.15
 
 ## Documentation
 
@@ -310,7 +310,7 @@ See [ADR-0000](../docs/decisions/0000-use-markdown-architectural-decision-record
 Pull requests are automatically tested using GitHub Actions:
 
 - Linting and formatting checks
-- Tests on Python 3.12, 3.13, and 3.14
+- Tests on Python 3.12, 3.13, 3.14, and 3.15
 - Tests on Linux, Windows, and macOS
 - Code coverage reporting to Codecov
 - Conventional commit PR title validation
