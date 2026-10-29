@@ -18,4 +18,5 @@ worked example.
 
 0000-use-markdown-architectural-decision-records
 0001-add-three-js-rendering-option
+0002-add-fastapi-backend-data-hosting-service
 ```
