@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.20.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.19.0...pyvista-js-v0.20.0) (2026-10-31)
+
+
+### Features
+
+* support Python 3.15 ([#739](https://github.com/tkoyama010/pyvista-js/issues/739)) ([8c117e7](https://github.com/tkoyama010/pyvista-js/commit/8c117e71bced833d0faef150a211d7500d4e38ea))
+
+
+### Bug Fixes
+
+* **biome:** enable all nursery rules except noUnsafeTypeAssertion and useConsistentFunctionStyle ([#754](https://github.com/tkoyama010/pyvista-js/issues/754)) ([719be16](https://github.com/tkoyama010/pyvista-js/commit/719be16f19593a359d0a1bd15076afda16536e98))
+* install pytest-base-url so browser tests use real base_url fixture ([#749](https://github.com/tkoyama010/pyvista-js/issues/749)) ([6b8b171](https://github.com/tkoyama010/pyvista-js/commit/6b8b1713ad7ed14637273ad974085dd356390bbd))
+* mount src into JupyterLite drive so docs examples can import pyvista_js ([#756](https://github.com/tkoyama010/pyvista-js/issues/756)) ([41b85a6](https://github.com/tkoyama010/pyvista-js/commit/41b85a68dbe3ea91a64c866826e2c15e24ab1d45))
+
+
+### Reverts
+
+* "fix(biome): enable all nursery rules except noUnsafeTypeAssertion and useConsistentFunctionStyle" ([#755](https://github.com/tkoyama010/pyvista-js/issues/755)) ([8567825](https://github.com/tkoyama010/pyvista-js/commit/85678252df9b7033dc4fe115db4eb99487799666))
+
 ## [0.19.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.18.1...pyvista-js-v0.19.0) (2026-10-24)
 
 ### Features
