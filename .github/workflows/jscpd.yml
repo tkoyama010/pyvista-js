@@ -19,7 +19,7 @@ jobs:
 
       # Fails when the PR introduces clones absent from the PR base branch,
       # so pre-existing duplication (currently ~8.7% overall) is tolerated.
-      - uses: kucherenko/jscpd@095d6ca33e9f291c144bb05ef653b2bfdc3c1453  # v5.4.1
+      - uses: kucherenko/jscpd@db415b5d7cc34d72a324fe5eae2147646dc3558b  # v5.4.2
         with:
           baseline-from-ref: origin/${{ github.base_ref }}
           fail-on-new-clones: 'true'
