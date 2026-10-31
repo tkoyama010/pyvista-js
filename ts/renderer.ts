@@ -10,7 +10,7 @@
 /** Number of components in a 3-D coordinate (x, y, z). */
 // biome-ignore lint/style/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
-const PLANAR_CUT_VALUE = 0.0;
+const PLANAR_CUT_VALUE = 0;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
 const UV_COMPONENTS = 2;
@@ -39,9 +39,9 @@ const COLORMAP_PRESETS: Record<string, string> = {
 };
 const DEFAULT_COLORMAP_PRESET = "Viridis (matplotlib)";
 const OPACITY_MIDPOINT = 0.5;
-const OPACITY_MIN = 0.0;
+const OPACITY_MIN = 0;
 const OPACITY_HALF = 0.5;
-const OPACITY_MAX = 1.0;
+const OPACITY_MAX = 1;
 
 /** Multiplier to convert a normalised fraction to a CSS percentage. */
 const PERCENT = 100;
