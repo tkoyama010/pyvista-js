@@ -10,7 +10,11 @@ Topic driven themed lessons to help you get started with pyvista-js.
    :height: 600px
 
    import micropip
-   await micropip.install("pyvista-js")
+   await micropip.install("jinja2")
+   await micropip.install("lazy-loader")
+
+   import sys
+   sys.path.insert(0, '/drive/src')
 
    import pyvista_js as pv
 
@@ -35,7 +39,11 @@ Topic driven themed lessons to help you get started with pyvista-js.
    :height: 600px
 
    import micropip
-   await micropip.install("pyvista-js")
+   await micropip.install("jinja2")
+   await micropip.install("lazy-loader")
+
+   import sys
+   sys.path.insert(0, '/drive/src')
 
    import pyvista_js as pv
    from pyvista_js import examples
@@ -56,7 +64,11 @@ Topic driven themed lessons to help you get started with pyvista-js.
    :height: 600px
 
    import micropip
-   await micropip.install("pyvista-js")
+   await micropip.install("jinja2")
+   await micropip.install("lazy-loader")
+
+   import sys
+   sys.path.insert(0, '/drive/src')
 
    import pyvista_js as pv
 

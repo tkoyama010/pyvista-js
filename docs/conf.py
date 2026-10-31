@@ -36,10 +36,8 @@ if dest_dir.exists():
     shutil.rmtree(dest_dir)
 shutil.copytree(src_dir, dest_dir)
 
-# Configure JupyterLite to pre-load jinja2 and orjson.
-# Interactive examples install pyvista-js from PyPI via micropip.
-# sys.path tricks (e.g. '/drive/src') are unreliable on hosted pages because
-# the kernel contents drive requires SharedArrayBuffer/ServiceWorker sync.
+# Configure JupyterLite to pre-load jinja2 and orjson and set up sys.path
+# so that examples work without explicit micropip or sys.path calls.
 _jupyterlite_config = docs_dir / "content" / "jupyter-lite.json"
 _jupyterlite_config.write_text(
     json.dumps(
@@ -127,5 +125,11 @@ try_examples_global_warning_text = (
     "pyvista-js's interactive examples are experimental and may not always work as expected."
 )
 try_examples_preamble = (
-    "import micropip\nawait micropip.install('pyvista-js')\nimport pyvista_js as pv\n"
+    "import micropip\n"
+    "await micropip.install('jinja2')\n"
+    "await micropip.install('orjson')\n"
+    "await micropip.install('lazy-loader')\n"
+    "import sys\n"
+    "sys.path.insert(0, '/drive/src')\n"
+    "import pyvista_js as pv\n"
 )
