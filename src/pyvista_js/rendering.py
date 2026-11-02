@@ -259,6 +259,21 @@ def _validate_update(
         raise ValueError(msg)
 
 
+def _set_actor_properties(
+    actor_info: dict[str, object],
+    update: dict[str, object],
+    color: str | tuple[float, float, float] | None,
+    opacity: float | None,
+) -> None:
+    """Set the actor's solid color and opacity, if given, and add them to the update."""
+    if color is not None:
+        rgb = _color_name_to_rgb(color) if isinstance(color, str) else color
+        actor_info["color"] = rgb
+        update["color"] = [float(c) for c in rgb]
+    if opacity is not None:
+        actor_info["opacity"] = update["opacity"] = float(opacity)
+
+
 class _BaseHTMLRenderer:
     """Base class providing shared state and HTML generation for vtk.js renderers.
 
@@ -685,18 +700,22 @@ class _BaseHTMLRenderer:
         """
         return str(actor_info.setdefault("id", secrets.token_hex(8)))
 
-    def build_update_data(
+    def build_update_data(  # noqa: PLR0913
         self,
         actor_index: int,
         *,
         points: ArrayLike | None = None,
         point_data: Mapping[str, ArrayLike] | None = None,
         scalars: str | None = None,
+        color: str | tuple[float, float, float] | None = None,
+        opacity: float | None = None,
+        add: bool = False,
+        remove: bool = False,
     ) -> dict[str, object]:
-        """Update an actor's data and build the message that applies it in the page.
+        """Update an actor and build the message that applies it in the page.
 
-        The actor's mesh is updated too, so HTML generated afterwards shows the
-        new data. Apply the message in a rendered page with
+        The actor is updated too, so HTML generated afterwards shows the
+        change. Apply the message in a rendered page with
         ``window.pvjsApplyUpdate(containerId, message)``, after serializing it
         with :func:`scene_to_json`. Updates reach the rendered mesh through
         smooth-shading normals, but not through filters such as ``clip``.
@@ -712,12 +731,22 @@ class _BaseHTMLRenderer:
         scalars : str, optional
             Name of the point-data array to color by. Without it, the coloring
             is re-sent only when its array is in ``point_data``.
+        color : str or tuple, optional
+            New solid color, as an RGB tuple (0-1) or a color name.
+        opacity : float, optional
+            New opacity, between 0 and 1.
+        add : bool, default=False
+            Send the whole actor, to add it to a page that does not have it
+            yet, such as one rendered before the actor was added.
+        remove : bool, default=False
+            Remove the actor, here and from the page.
 
         Returns
         -------
         dict
             The update message, with the ``"actor"`` ID and whichever of ``"points"``,
-            ``"pointData"`` and ``"scalars"`` changed.
+            ``"pointData"``, ``"scalars"``, ``"color"``, ``"opacity"``, ``"add"``
+            and ``"remove"`` changed.
 
         Raises
         ------
@@ -728,16 +757,40 @@ class _BaseHTMLRenderer:
         ValueError
             If an array does not have one row per point or has NaN or
             infinite values, ``points`` is given for a mesh that is not
-            defined by its points, or ``scalars`` names no point-data array.
+            defined by its points, ``scalars`` names no point-data array, or
+            ``add`` or ``remove`` is combined with any other change.
             Nothing is changed when this is raised.
 
         """
+        # normalize the index, as the page looks actors up by a non-negative one
+        actor_index = range(len(self.actors))[actor_index]
+        if add or remove:
+            changes = (points, point_data, scalars, color, opacity)
+            return self._build_add_or_remove_data(actor_index, changes, add=add, remove=remove)
+        return self._build_change_data(
+            actor_index,
+            points=points,
+            point_data=point_data,
+            scalars=scalars,
+            color=color,
+            opacity=opacity,
+        )
+
+    def _build_change_data(  # noqa: PLR0913
+        self,
+        actor_index: int,
+        *,
+        points: ArrayLike | None,
+        point_data: Mapping[str, ArrayLike] | None,
+        scalars: str | None,
+        color: str | tuple[float, float, float] | None,
+        opacity: float | None,
+    ) -> dict[str, object]:
+        """Build the message that changes an actor's data or properties, changing it here too."""
         import numpy as np  # noqa: PLC0415
 
         from .mesh import _Float32Array, _point_data_to_scene  # noqa: PLC0415
 
-        # normalize the index, as the page looks actors up by a non-negative one
-        actor_index = range(len(self.actors))[actor_index]
         actor_info = self.actors[actor_index]
         mesh = actor_info["mesh"]
         if points is not None:
@@ -765,7 +818,43 @@ class _BaseHTMLRenderer:
             actor_info["scalars"] = scalars
         if scalars is not None or actor_info.get("scalars") in arrays:
             update["scalars"] = self._build_scalars_data(actor_info)
+        _set_actor_properties(actor_info, update, color, opacity)
         return update
+
+    def _build_add_or_remove_data(
+        self,
+        actor_index: int,
+        changes: tuple[object, ...],
+        *,
+        add: bool,
+        remove: bool,
+    ) -> dict[str, object]:
+        """Build the message that adds or removes an actor, removing it here too."""
+        if (add and remove) or any(change is not None for change in changes):
+            msg = "add and remove cannot be combined with each other or with other changes"
+            raise ValueError(msg)
+        actor_info = self.actors[actor_index]
+        actor_id = self._actor_id(actor_info)
+        if add:
+            return {"actor": actor_id, "add": self._build_actor_data(actor_info)}
+        del self.actors[actor_index]
+        return {"actor": actor_id, "remove": True}
+
+    def build_camera_update_data(self) -> dict[str, object]:
+        """Build the message that sets the camera of a rendered page.
+
+        The camera is the one set by :meth:`view_vector` or :attr:`camera`, set
+        as a new page would set it, so ``view_vector`` frames the scene again.
+        Apply it as the messages of :meth:`build_update_data` are applied.
+
+        Returns
+        -------
+        dict
+            The update message, with the ``"camera"`` if one is set.
+
+        """
+        camera = self._build_camera_data()
+        return {} if camera is None else {"camera": camera}
 
     def _build_actor_data(self, actor_info: dict[str, object]) -> dict[str, object]:
         """Build JSON-serializable actor configuration."""
