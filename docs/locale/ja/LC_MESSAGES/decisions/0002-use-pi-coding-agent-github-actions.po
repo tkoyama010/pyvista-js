@@ -1,0 +1,332 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-02 22:59+0000\n"
+"PO-Revision-Date: 2026-11-02 23:09+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:9
+msgid "Use Pi Coding Agent GitHub Actions for Repository Automation"
+msgstr "リポジトリ自動化に Pi Coding Agent GitHub Actions を使う"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:11
+msgid "Context and Problem Statement"
+msgstr "背景と問題の提示"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:13
+msgid ""
+"Repository maintenance tasks — triaging issues, reviewing pull requests, and"
+" drafting fixes — currently happen only when a maintainer is available. The "
+"repository already carries its AI-facing guidance in "
+"[`AGENTS.md`](../../AGENTS.md), which every coding agent reads, but GitHub "
+"automation has no way to invoke that agent on demand. Should the repository "
+"run the [pi coding agent](https://github.com/badlogic/pi-mono) directly from"
+" GitHub Actions, triggered by comments on issues and pull requests?"
+msgstr ""
+"リポジトリの保守作業 — イシューのトリアージ、プルリクエストのレビュー、修正案の作成 — "
+"は現在、メンテナーが手空きのときにしか行われない。リポジトリには、すべてのコーディングエージェントが読む AI 向けのガイダンスがすでに "
+"[`AGENTS.md`](../../AGENTS.md) に納められているが、GitHub "
+"自動化にはそのエージェントを必要なときに呼び出す手段がない。リポジトリは [pi coding "
+"agent](https://github.com/badlogic/pi-mono) を GitHub Actions "
+"から直接、イシューとプルリクエストへのコメントでトリガーして実行すべきか?"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:15
+msgid "Decision Drivers"
+msgstr "意思決定の要因"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:17
+msgid ""
+"**Reuse of AGENTS.md**: The agent harness reads `AGENTS.md`, skills, and "
+"extensions, so workflow contributions must follow the same conventions as "
+"human-written ones."
+msgstr ""
+"**AGENTS.md の再利用**: エージェントハーネスは "
+"`AGENTS.md`、スキル、拡張を読み込むため、ワークフローへの貢献は人間が書いたものと同じ規約に従う必要がある。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:18
+msgid ""
+"**Security**: A comment-triggered agent can post content and write to "
+"branches; it must not run for arbitrary accounts or leak the LLM API key."
+msgstr ""
+"**セキュリティ**: コメントで起動されるエージェントはコンテンツを投稿し、ブランチへ書き込める。任意のアカウントで実行されてはならず、LLM API"
+" キーを漏洩させてはいけない。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:19
+msgid ""
+"**Runner cost**: Agent runs use hosted runners plus a paid LLM API key; "
+"unbounded triggers would be expensive."
+msgstr "**ランナー費用**: エージェントの実行にはホストランナーと有料の LLM API キーが使われる。無制限のトリガーは高くつく。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:20
+msgid ""
+"**Action pinning policy**: Project policy (SPEC 8) requires third-party "
+"GitHub Actions to be pinned to a commit SHA, which applies to any action "
+"added here."
+msgstr ""
+"**アクションのピン留めポリシー**: プロジェクトのポリシー (SPEC 8) はサードパーティ製 GitHub Actions をコミット SHA "
+"にピン留めすることを要求しており、ここに追加するすべてのアクションに適用される。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:21
+msgid ""
+"**Maintainer bandwidth**: Automation should reduce manual triage and review "
+"turn-around without requiring a new service or self-hosted infrastructure."
+msgstr ""
+"**メンテナーの負担**: 自動化は、新しいサービスやセルフホストのインフラを必要とせずに、手動のトリアージとレビューの所要時間を短縮すべきである。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:23
+msgid "Considered Options"
+msgstr "検討した選択肢"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:25
+msgid "Do nothing; handle issues and reviews manually only."
+msgstr "何もしない。イシューとレビューは手動でのみ処理する。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:26
+msgid ""
+"Use `shaftoe/pi-coding-agent-action` (pi-native GitHub Action) triggered by "
+"comments."
+msgstr ""
+"コメントでトリガーされる `shaftoe/pi-coding-agent-action` (pi ネイティブの GitHub Action) を使う。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:27
+msgid ""
+"Use a generic AI review bot (for example, an LLM-based reviewer app that "
+"does not load `AGENTS.md`)."
+msgstr "汎用の AI レビューボットを使う (例: `AGENTS.md` を読み込まない LLM ベースのレビューアプリ)。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:28
+msgid "Self-host a dedicated agent service outside GitHub Actions."
+msgstr "GitHub Actions の外部に専用のエージェントサービスをセルフホストする。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:30
+msgid "Decision Outcome"
+msgstr "決定結果"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:32
+msgid ""
+"Chosen option: \"Use `shaftoe/pi-coding-agent-action` (pi-native GitHub "
+"Action) triggered by comments\" (proposed, not yet accepted), because it is "
+"the pi ecosystem's own action: it runs the pi CLI inside the workflow, so it"
+" loads `AGENTS.md`, skills, and extensions exactly like a local run, keeping"
+" repository guidance consistent between local and CI. It is comment-"
+"triggered (`/pi`), but the workflow must explicitly restrict triggering "
+"actors to repository owners and organization members. It needs no new "
+"infrastructure and keeps the agent's token budget and cost visible in the "
+"workflow run log."
+msgstr ""
+"選択したオプション:「コメントでトリガーされる `shaftoe/pi-coding-agent-action` (pi ネイティブの GitHub "
+"Action) を使う」(提案中、未承認)。理由: pi エコシステム自身のアクションであり、ワークフローの内部で pi CLI "
+"を実行するため、`AGENTS.md`、スキル、拡張をローカル実行とまったく同じように読み込み、ローカルと CI "
+"でリポジトリのガイダンスが一貫する。トリガーはコメント (`/pi`) "
+"だが、ワークフローはトリガーできるアクターをリポジトリのオーナーと組織メンバーに明示的に限定しなければならない。新しいインフラは不要で、エージェントのトークン予算と費用はワークフローの実行ログの中に見えたまま保たれる。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:34
+msgid "Consequences"
+msgstr "結果"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:36
+msgid ""
+"Good, because issue and PR triage can start from a maintainer comment "
+"instead of the maintainer's keyboard."
+msgstr "良い点: イシューと PR のトリアージを、メンテナーがキーボードを打たなくてもメンテナーのコメントから開始できるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:37
+msgid ""
+"Good, because the same `AGENTS.md` and skill set govern local sessions and "
+"CI runs, so there is one source of agent guidance."
+msgstr ""
+"良い点: 同じ `AGENTS.md` とスキルセットがローカルセッションと CI "
+"実行の両方を支配し、エージェントのガイダンスの情報源が一つになるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:38
+msgid ""
+"Good, because the allowlist default (owners and organization members) plus "
+"the project's pinned-SHA policy keeps the attack surface small."
+msgstr ""
+"良い点: デフォルトの許可リスト (オーナーと組織メンバー) とプロジェクトの SHA ピン留めポリシーにより、攻撃対象領域が小さく保たれるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:39
+msgid ""
+"Bad, because each triggered run consumes a hosted runner and a paid LLM API "
+"call; cost must be watched."
+msgstr "悪い点: トリガーごとの実行がホストランナーと有料の LLM API 呼び出しを消費するため、費用を監視する必要がある。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:40
+msgid ""
+"Bad, because an agent posting on behalf of the repository can generate "
+"incorrect technical claims; posted output still needs human review before "
+"being trusted."
+msgstr ""
+"悪い点: リポジトリの代わりに投稿するエージェントは誤った技術的主張を生成しかねないため、投稿された出力は信頼する前に人間のレビューが必要である。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:41
+msgid ""
+"Bad, because third-party action dependency adds supply-chain surface; "
+"version updates must be reviewed."
+msgstr "悪い点: サードパーティのアクションへの依存はサプライチェーンの攻撃対象を増やすため、バージョン更新はレビューが必要である。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:43
+msgid "Confirmation"
+msgstr "確認"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:45
+msgid ""
+"Compliance is confirmed by review of any workflow file added under "
+"`.github/workflows/`: it must trigger only on comments (not on every push), "
+"restrict triggering actors to owners and organization members, pin the "
+"action to a commit SHA, and read the API token from a repository secret "
+"(never an inline value). The ADR status moves from `proposed` to `accepted` "
+"or `rejected` after discussion in the PR that carries this record."
+msgstr ""
+"コンプライアンスは、`.github/workflows/` "
+"の下に追加されるすべてのワークフローファイルのレビューで確認される。コメントでのみトリガーし (毎回の push "
+"ではトリガーしない)、トリガーできるアクターをオーナーと組織メンバーに限定し、アクションをコミット SHA にピン留めし、API "
+"トークンをリポジトリのシークレットから読む (インラインの値は使わない) 必要がある。この ADR のステータスは、この記録を運ぶ PR "
+"での議論の後、`proposed` から `accepted` または `rejected` へ移る。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:47
+msgid "Pros and Cons of the Options"
+msgstr "各選択肢のメリットとデメリット"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:49
+msgid "Do nothing; handle issues and reviews manually only"
+msgstr "何もしない。イシューとレビューは手動でのみ処理する"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:51
+msgid "No automation is added."
+msgstr "自動化は追加されない。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:53
+msgid "Good, because there is no new dependency, cost, or security surface."
+msgstr "良い点: 新しい依存、費用、セキュリティ面が生じないため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:54
+msgid ""
+"Bad, because triage and review latency stays proportional to maintainer "
+"availability."
+msgstr "悪い点: トリアージとレビューの遅延がメンテナーの稼働状況に比例したままになるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:56
+msgid "Use `shaftoe/pi-coding-agent-action` (proposed)"
+msgstr "`shaftoe/pi-coding-agent-action` を使う (提案)"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:58
+msgid ""
+"Invoke the pi CLI through the pi-native GitHub Action via `/pi` comments on "
+"issues and pull requests."
+msgstr "イシューとプルリクエストの `/pi` コメントで、pi ネイティブの GitHub Action を介して pi CLI を呼び出す。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:60
+msgid ""
+"Good, because it loads `AGENTS.md`, skills, and extensions, matching local "
+"pi sessions exactly."
+msgstr "良い点: `AGENTS.md`、スキル、拡張を読み込み、ローカルの pi セッションと正確に一致するため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:61
+msgid ""
+"Good, because it is comment-triggered and allowlisted by default to owners "
+"and organization members."
+msgstr "良い点: コメントトリガーで、デフォルトではオーナーと組織メンバーに許可リストで限定されるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:62
+msgid ""
+"Good, because it needs no infrastructure beyond hosted runners and one API-"
+"key secret."
+msgstr "良い点: ホストランナーと 1 つの API キーシークレット以外にインフラが不要なため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:63
+msgid ""
+"Neutral, because the action is maintained by a third party, not by pi core; "
+"its releases must be tracked."
+msgstr "中立: このアクションは pi コアではなくサードパーティが維持するため、そのリリースを追跡する必要がある。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:64
+msgid ""
+"Bad, because it sits outside pi-mono, so it can drift from pi CLI changes "
+"between releases."
+msgstr "悪い点: pi-mono の外部にあるため、リリース間で pi CLI の変更とずれる可能性がある。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:66
+msgid "Use a generic AI review bot"
+msgstr "汎用の AI レビューボットを使う"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:68
+msgid "Install an LLM-based reviewer application from the GitHub Marketplace."
+msgstr "GitHub Marketplace から LLM ベースのレビューアプリをインストールする。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:70
+msgid "Good, because setup is often a one-click app install."
+msgstr "良い点: セットアップが多くの場合ワンクリックのアプリインストールであるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:71
+msgid ""
+"Bad, because such bots do not read `AGENTS.md` or the repository's skills, "
+"so their guidance diverges from what local agents follow."
+msgstr "悪い点: そのようなボットは `AGENTS.md` やリポジトリのスキルを読まないため、ローカルのエージェントが従うガイダンスとずれる。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:72
+msgid ""
+"Bad, because behavior is opaque and not customizable to this repository's "
+"conventions."
+msgstr "悪い点: 動作が不透明で、このリポジトリの規約に合わせてカスタマイズできない。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:74
+msgid "Self-host a dedicated agent service"
+msgstr "専用のエージェントサービスをセルフホストする"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:76
+msgid ""
+"Run a long-lived agent outside GitHub Actions and connect it via webhook."
+msgstr "GitHub Actions の外部で長時間稼働のエージェントを実行し、webhook で接続する。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:78
+msgid "Good, because it could support richer triggers and persistence."
+msgstr "良い点: より豊富なトリガーと永続化に対応できる可能性があるため。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:79
+msgid ""
+"Bad, because it requires running and monitoring a service, which is "
+"disproportionate to the current maintainer count."
+msgstr "悪い点: サービスの実行と監視が必要で、現在のメンテナー数に対して不釣り合いである。"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:81
+msgid "More Information"
+msgstr "詳細情報"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:83
+msgid ""
+"[pi-mono](https://github.com/badlogic/pi-mono) (the pi coding agent) and the"
+" [pi ecosystem `awesome-pi-coding-agent` "
+"list](https://github.com/shaftoe/awesome-pi-coding-agent)"
+msgstr ""
+"[pi-mono](https://github.com/badlogic/pi-mono) (pi coding agent) と [pi "
+"エコシステムの `awesome-pi-coding-agent` リスト](https://github.com/shaftoe/awesome-"
+"pi-coding-agent)"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:84
+msgid ""
+"[`shaftoe/pi-coding-agent-action`](https://github.com/shaftoe/pi-coding-"
+"agent-action)"
+msgstr ""
+"[`shaftoe/pi-coding-agent-action`](https://github.com/shaftoe/pi-coding-"
+"agent-action)"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:85
+msgid "ADR-0000 for the record format used here."
+msgstr "ここで使用している記録形式は ADR-0000 を参照。"
