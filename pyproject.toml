@@ -4,7 +4,7 @@ requires = [ "hatch-build-scripts", "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.18.0"
+version = "0.19.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -22,7 +22,7 @@ authors = [
 # - Minimum Python: 3.12 (released 2023-10-02)
 # - Minimum NumPy: 2.0 (released 2024-06-16)
 #
-# Note: The upper bound on requires-python (<3.15) is needed to prevent
+# Note: The upper bound on requires-python (<3.16) is needed to prevent
 # uv-lock from attempting dependency resolution for unreleased Python
 # versions where packages are not yet available. This aligns with the
 # supported versions declared in classifiers.
@@ -32,12 +32,14 @@ authors = [
 #
 # This project follows SPEC 1 for lazy loading of submodules and functions
 #
-# SPEC 6 — Upper Bound Constraints on Dependencies
-# https://scientific-python.org/specs/spec-0006/
+# Dependency upper bounds (project policy, not a SPEC):
 #
-# This project follows SPEC 6 by using upper bound version constraints on
-# dependencies to prevent breaking changes from major version updates.
-# All core dependencies use upper bounds (e.g., package>=1.0.0,<2.0.0).
+# This project uses upper bound version constraints on dependencies to
+# prevent breaking changes from major version updates. All core dependencies
+# use upper bounds (e.g., package>=1.0.0,<2.0.0).
+#
+# SPEC 6 — Keys to the Castle (https://scientific-python.org/specs/spec-0006/)
+# is not currently adopted.
 #
 # SPEC 7 — Seeding Pseudo-Random Number Generation
 # https://scientific-python.org/specs/spec-0007/
@@ -58,7 +60,7 @@ authors = [
 # - Build provenance attestations using Sigstore
 # - All GitHub Actions pinned to commit SHAs
 # - See .github/workflows/release-please.yml for implementation details
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.12,<3.16"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
@@ -68,6 +70,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
@@ -77,8 +80,8 @@ dependencies = [
   "typer>=0.9.1,<1.0.1",
 ]
 optional-dependencies.dev = [
-  "mypy>=1.0.1,<2.3.2",
-  "pre-commit>=3.0.1,<4.6.3",
+  "mypy>=1.0.1,<2.4.1",
+  "pre-commit>=3.0.1,<4.7.1",
   "pytest>=7.0.1,<9.1.2",
   "ruff>=0.1.1,<1.0.1",
   "tox>=4.0.1,<5.0.1",
@@ -113,16 +116,18 @@ scripts.pyvista-js = "pyvista_js._cli:cli_main"
 [dependency-groups]
 dev = [
   "meshio>=5.3.5,<6.0.1",
-  "mypy>=1.0.1,<2.3.2",
-  "pre-commit>=3.0.1,<4.6.3",
+  "mypy>=1.0.1,<2.4.1",
+  "pre-commit>=3.0.1,<4.7.1",
   "ruff>=0.1.1,<1.0.1",
   "tox>=4.0.1,<5.0.1",
   { include-group = "test" },
 ]
 test = [
   "orjson>=3.10.1,<4.0.1",
+  "pillow>=9.0.1,<14.0.1",
   "playwright>=1.40.1,<2.0.1",
   "pytest>=7.0.1,<9.1.2",
+  "pytest-base-url>=1.0.1,<2.1.1",
   "pytest-playwright>=0.4.1,<1.0.1",
 ]
 
@@ -135,10 +140,12 @@ build.targets.wheel.packages = [ "src/pyvista_js" ]
 
 [tool.uv]
 constraint-dependencies = [
+  "filelock>=4.2.1",
   "gitpython>=3.1.52",
   "mistune>=3.3.0",
   "pillow>=12.3.0",
   "soupsieve>=2.8.4",
+  "virtualenv>=21.14.13",
 ]
 
 [tool.ruff]

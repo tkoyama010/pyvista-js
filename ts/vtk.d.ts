@@ -74,6 +74,8 @@ interface VtkOutputPort {
 
 /** A vtk.js algorithm (filter or source) with input/output pipeline. */
 interface VtkAlgorithm {
+  setCutFunction?: (cutFunction: VtkPlane) => void;
+  setCutValue?: (value: number) => void;
   getOutputPort: () => VtkOutputPort;
   getOutputData: () => VtkPolyData;
   update: () => void;
@@ -160,6 +162,7 @@ interface VtkCamera {
   setViewAngle: (angle: number) => void;
   setClippingRange: (near: number, far: number) => void;
   setParallelProjection: (value: boolean) => void;
+  setParallelScale: (value: number) => void;
 }
 
 /** A scene light with position, color, and cone parameters. */
@@ -182,6 +185,7 @@ interface VtkLight {
 interface VtkRenderer {
   setBackground: (r: number, g: number, b: number) => void;
   addActor: (actor: VtkActor) => void;
+  addVolume?: (volume: VtkVolume) => void;
   removeActor: (actor: VtkActor) => void;
   addLight: (light: VtkLight) => void;
   removeAllLights: () => void;
@@ -252,6 +256,89 @@ interface VtkReader {
   parseAsText: (text: string) => void;
 }
 
+/** A vtk.js volume actor. */
+interface VtkVolume {
+  getVolume: () => VtkVolume;
+  setProperty?: (property: VtkVolumeProperty) => void;
+  setMapper?: (mapper: VtkVolumeMapper) => void;
+}
+
+/** Factory for creating {@link VtkVolume} instances. */
+interface VtkVolumeFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkVolume;
+}
+
+/** A vtk.js volume mapper that renders {@link VtkImageData}. */
+interface VtkVolumeMapper {
+  setInputData: (image: VtkImageData) => void;
+  setSampleDistance: (distance: number) => void;
+}
+
+/** Factory for creating {@link VtkVolumeMapper} instances. */
+interface VtkVolumeMapperFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkVolumeMapper;
+}
+
+/** A vtk.js volume appearance property (color/opacity mapping). */
+interface VtkVolumeProperty {
+  // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+  setRGBTransferFunction: (component: number, ctf: VtkColorTransferFunction) => void;
+  setScalarOpacity: (component: number, ctf: VtkPiecewiseFunction) => void;
+}
+
+/** Factory for creating {@link VtkVolumeProperty} instances. */
+interface VtkVolumePropertyFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkVolumeProperty;
+}
+
+/** A vtk.js piecewise function (opacity mapping). */
+interface VtkPiecewiseFunction {
+  addPoint: (x: number, y: number) => void;
+}
+
+/** Factory for creating {@link VtkPiecewiseFunction} instances. */
+interface VtkPiecewiseFunctionFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkPiecewiseFunction;
+}
+
+/** A vtk.js structured image dataset. */
+interface VtkImageData {
+  setExtent: (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number) => boolean;
+  setSpacing: (x: number, y: number, z: number) => boolean;
+  setOrigin: (x: number, y: number, z: number) => boolean;
+  getPointData: () => VtkPointData;
+  getDimensions: () => [number, number, number];
+}
+
+/** Factory for creating {@link VtkImageData} instances. */
+interface VtkImageDataFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkImageData;
+}
+
+/** A vtk.js mapper that renders per-point glyph geometry. */
+// biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+interface VtkGlyph3DMapper {
+  setInputData: (data: VtkPolyData) => void;
+  setSourceData: (geometry: VtkPolyData) => void;
+  setOrient?: (orient: boolean) => void;
+  setOrientationArray: (name: string) => void;
+  setScaleArray: (name: string) => void;
+  setScaleFactor: (factor: number) => void;
+  setScalarVisibility: (visible: boolean) => void;
+}
+
+/** Factory for creating {@link VtkGlyph3DMapper} instances. */
+// biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+interface VtkGlyph3DMapperFactory {
+  // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
+  newInstance: (options?: Record<string, unknown>) => VtkGlyph3DMapper;
+}
+
 /** Factory for creating {@link VtkReader} instances. */
 interface VtkReaderFactory {
   // eslint-disable-next-line unicorn/no-keyword-prefix -- vtk.js API convention
@@ -271,9 +358,14 @@ interface VtkGlobal {
       vtkActor: VtkNewInstanceFactory<VtkActor>;
       vtkMapper: VtkNewInstanceFactory<VtkMapper>;
       vtkSphereMapper: VtkNewInstanceFactory<VtkMapper>;
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js class names
+      vtkGlyph3DMapper?: VtkGlyph3DMapperFactory;
       vtkColorTransferFunction: VtkColorTransferFunctionFactory;
       vtkTexture: VtkNewInstanceFactory<VtkTexture>;
       vtkAxesActor: VtkNewInstanceFactory<VtkAxesActor>;
+      vtkVolume?: VtkNewInstanceFactory<VtkVolume>;
+      vtkVolumeMapper?: VtkVolumeMapperFactory;
+      vtkVolumeProperty?: VtkVolumePropertyFactory;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     OpenGL: {
@@ -292,13 +384,21 @@ interface VtkGlobal {
       vtkArrowSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkLineSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPlaneSource: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkPointSource?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkPlatonicSolidSource?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkRegularPolygonSource?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Core: {
       vtkPolyDataNormals: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkThresholdPoints?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkCutter?: VtkNewInstanceFactory<VtkAlgorithm>;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     General: {
+      vtkImageDataOutlineFilter?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkWindowedSincPolyDataFilter?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkWarpScalar?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkTubeFilter: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkClipClosedSurface?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkContourTriangulator?: VtkNewInstanceFactory<VtkAlgorithm>;
@@ -319,6 +419,8 @@ interface VtkGlobal {
     DataModel: {
       vtkPolyData: VtkNewInstanceFactory<VtkPolyData>;
       vtkPlane: VtkNewInstanceFactory<VtkPlane>;
+      vtkImageData?: VtkImageDataFactory;
+      vtkPiecewiseFunction?: VtkPiecewiseFunctionFactory;
     };
   };
   // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
@@ -349,6 +451,11 @@ interface VtkGlobal {
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Legacy: {
       vtkPolyDataReader: VtkReaderFactory;
+    };
+    // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
+    XML: {
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js reader names
+      vtkXMLPolyDataReader?: VtkReaderFactory;
     };
   };
 }
@@ -398,11 +505,17 @@ interface FilterConfig {
   type: string;
   shrinkFactor?: number;
   radius?: number;
+  center?: [number, number, number];
   numberOfSides?: number;
   normal?: [number, number, number];
   origin?: [number, number, number];
   invert?: boolean;
   values?: number[];
+  factor?: number;
+  passBand?: number;
+  nIterations?: number;
+  lowerValue?: number;
+  upperValue?: number;
   scalarName?: string;
   scalarData?: number[];
   holeSize?: number;
@@ -429,15 +542,35 @@ interface SourceConfig {
   point2?: [number, number, number];
   origin?: [number, number, number];
   normal?: [number, number, number];
+  nPoints?: number;
+  kind?: string;
+  nSides?: number;
+  scaleFactor?: number;
+  orient?: boolean;
+  orientationArray?: string;
+  geometryPoints?: number[];
+  geometryPolys?: number[];
+  dimensions?: [number, number, number];
+  spacing?: [number, number, number];
   points?: number[];
   polys?: number[];
   data?: string;
   pointData?: PointDataArray[];
   tCoords?: number[];
   filters?: FilterConfig[];
+  scalars?: ScalarsConfig;
 }
 
 /** Edge rendering configuration. */
+interface GlyphConfig {
+  points: number[];
+  geometryPoints: number[];
+  geometryPolys: number[];
+  orient: boolean;
+  scaleFactor: number;
+  color?: [number, number, number];
+}
+
 interface EdgesConfig {
   color: [number, number, number];
 }
@@ -480,6 +613,7 @@ interface CameraConfig {
   viewAngle?: number;
   clippingRange?: [number, number];
   parallelProjection?: boolean;
+  parallelScale?: number;
   viewVector?: [number, number, number];
 }
 

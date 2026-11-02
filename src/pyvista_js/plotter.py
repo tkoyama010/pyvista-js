@@ -7,7 +7,9 @@ using vtk.js in browser environments.
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
+
+import numpy as np
 
 from .rendering import IPYTHON_AVAILABLE, _BaseHTMLRenderer, get_renderer
 
@@ -15,13 +17,12 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
 
-    import numpy as np
     from numpy.typing import ArrayLike
 
     from .camera import Camera
     from .examples import CubeMap
     from .light import Light
-    from .mesh import PolyData, UnstructuredGrid
+    from .mesh import ImageData, PolyData, UnstructuredGrid
     from .text import Text
     from .texture import Texture
 
@@ -260,6 +261,219 @@ class Plotter:
             self.update_actor(-1, add=True)
         return actor
 
+    def add_arrows(
+        self,
+        cent: object,
+        direction: object,
+        mag: float = 1.0,
+        **kwargs: object,
+    ) -> dict[str, object]:
+        """Add arrows as vectors to the scene.
+
+        This mirrors the PyVista ``Plotter.add_arrows`` API: each ``cent``
+        point gets an arrow oriented and scaled by the corresponding
+        ``direction`` vector.
+
+        Parameters
+        ----------
+        cent : array-like
+            A single 3D point or an (N, 3) array of points.
+        direction : array-like
+            An (N, 3) array of direction vectors matching ``cent``.
+        mag : float, optional
+            Scaling factor applied to the direction vectors. Default 1.0.
+        **kwargs : dict, optional
+            Extra keyword arguments forwarded to
+            :meth:`~pyvista_js.Plotter.add_mesh`.
+
+        Returns
+        -------
+        dict
+            Actor information for the arrows.
+
+        Raises
+        ------
+        ValueError
+            If ``cent`` and ``direction`` have mismatched shapes.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> plotter = pv.Plotter()
+        >>> cent = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+        >>> direction = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        >>> arrows = plotter.add_arrows(cent, direction, mag=2.0)  # doctest: +SKIP
+
+        """
+        from .mesh import PolyData  # noqa: PLC0415
+
+        points = np.atleast_2d(np.asarray(cent, dtype=float))
+        vectors = np.atleast_2d(np.asarray(direction, dtype=float)) * float(mag)
+        if points.shape != vectors.shape:
+            msg = (
+                "cent and direction must have the same shape, got "
+                f"{points.shape} and {vectors.shape}"
+            )
+            raise ValueError(msg)
+
+        arrows = PolyData(points=points)
+        arrows.point_data["vectors"] = vectors
+        glyphed = arrows.glyph(orient=True, factor=1.0)
+        kwargs.setdefault("color", "white")
+        cast_kwargs = cast("dict[str, Any]", kwargs)
+        return self.add_mesh(glyphed, **cast_kwargs)
+
+    def add_volume(
+        self,
+        image: ImageData,
+        scalars: str | ArrayLike | None = None,
+        cmap: str = "viridis",
+    ) -> dict[str, object]:
+        """Add an :class:`~pyvista_js.ImageData` as a volume to the scene.
+
+        Mirrors the PyVista ``Plotter.add_volume`` API backed by
+        vtk.js's ``vtkVolumeMapper``.
+
+        Parameters
+        ----------
+        image : ImageData
+            The image dataset to render as a volume.
+        scalars : str or array-like, optional
+            The point data array used for the color/opacity mapping.
+            A string names an existing point data array; an array is
+            added under ``"scalars"``. Default uses the first point
+            data array on the image.
+        cmap : str, optional
+            Colormap name. Default is 'viridis'.
+
+        Returns
+        -------
+        dict
+            Actor information for the volume.
+
+        Raises
+        ------
+        ValueError
+            If the image has no point data arrays or the scalar name is
+            unknown.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(16, 16, 16))
+        >>> grid.point_data['data'] = np.random.rand(grid.n_points)
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_volume(grid, scalars='data', cmap='viridis')  # doctest: +SKIP
+
+        """
+        from .mesh import _VolumeImageData  # noqa: PLC0415
+
+        if isinstance(scalars, str):
+            scalars_name = scalars
+            if scalars_name not in image._point_data:  # noqa: SLF001
+                msg = f"No point data array named '{scalars_name}' found"
+                raise ValueError(msg)
+            scalar_data = np.asarray(image._point_data[scalars_name])  # noqa: SLF001
+        elif scalars is not None:
+            scalars_name = "scalars"
+            scalar_data = np.asarray(scalars)
+            if len(scalar_data) != image.n_points:
+                msg = f"scalars must have length {image.n_points}, got {len(scalar_data)}"
+                raise ValueError(msg)
+            image.point_data[scalars_name] = scalar_data
+        elif len(image._point_data) > 0:  # noqa: SLF001
+            scalars_name = next(iter(image._point_data.keys()))  # noqa: SLF001
+            scalar_data = np.asarray(image._point_data[scalars_name])  # noqa: SLF001
+        else:
+            msg = "No scalar data provided. Pass scalars parameter or set image.point_data"
+            raise ValueError(msg)
+
+        volume_image = _VolumeImageData(image, scalars_name, cmap)
+        actor = self._renderer.add_mesh_actor(
+            volume_image,  # type: ignore[arg-type]
+            color=(0.5, 0.5, 0.5),
+            opacity=1.0,
+            pbr=False,
+            metallic=0.0,
+            roughness=0.5,
+            smooth_shading=False,
+            texture=None,
+            show_edges=False,
+            edge_color=None,
+            style="volume",
+            scalars=scalars_name,
+            cmap=cmap,
+        )
+        self._actors.append(
+            {
+                "mesh": volume_image,
+                "scalars": scalars_name,
+                "cmap": cmap,
+                "actor": actor,
+                "kwargs": {},
+            },
+        )
+        return actor
+
+    def add_image(
+        self,
+        image: ImageData,
+        color: str | tuple[float, float, float] | None = None,
+    ) -> dict[str, object]:
+        """Add an :class:`~pyvista_js.ImageData` to the scene.
+
+        Mirrors the PyVista ``Plotter.add_image`` API. The image is
+        rendered as the outline of its bounding box; per-point data
+        coloring and volume rendering follow in dedicated APIs.
+
+        Parameters
+        ----------
+        image : ImageData
+            The image dataset to add.
+        color : str or tuple, optional
+            Color of the outline.
+
+        Returns
+        -------
+        dict
+            Actor information for the image.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_image(pv.ImageData(dimensions=(4, 4, 4)))  # doctest: +SKIP
+
+        """
+        actor = self._renderer.add_mesh_actor(
+            image,  # type: ignore[arg-type]
+            color=color or "white",
+            opacity=1.0,
+            pbr=False,
+            metallic=0.0,
+            roughness=0.5,
+            smooth_shading=False,
+            texture=None,
+            show_edges=False,
+            edge_color=None,
+            style="surface",
+            scalars=None,
+            cmap="",
+        )
+        self._actors.append(
+            {
+                "mesh": image,
+                "color": color or "white",
+                "opacity": 1.0,
+                "style": "surface",
+                "actor": actor,
+                "kwargs": {},
+            },
+        )
+        return actor
+
     def add_points(  # noqa: PLR0913
         self,
         points: object,
@@ -413,6 +627,59 @@ class Plotter:
         # Render the scene
         self._renderer.render()
         self._shown = True
+
+    def add_bounding_box(
+        self,
+        color: str | tuple[float, float, float] = "white",
+        opacity: float = 1.0,
+    ) -> PolyData:
+        """Add an outline of the bounds for all meshes in the scene.
+
+        Mirrors the PyVista ``Plotter.add_bounding_box`` API. The outline is
+        the bounding box of all meshes added so far and is displayed as line
+        segments along the box edges.
+
+        Parameters
+        ----------
+        color : str or tuple, optional
+            Color of the outline. Default is white.
+        opacity : float, optional
+            Opacity of the outline, between 0 (transparent) and 1 (opaque).
+            Default is 1.0.
+
+        Returns
+        -------
+        PolyData
+            The bounding box outline mesh that was added.
+
+        Raises
+        ------
+        ValueError
+            If no meshes have been added yet.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> _ = plotter.add_mesh(pv.Sphere())
+        >>> _ = plotter.add_bounding_box(color='red')  # doctest: +SKIP
+
+        """
+        meshes = [
+            entry["mesh"]
+            for entry in self._actors
+            if "mesh" in entry and hasattr(entry["mesh"], "points")
+        ]
+        if not meshes:
+            msg = "No meshes have been added; cannot create a bounding box"
+            raise ValueError(msg)
+
+        points = np.concatenate([np.asarray(mesh.points) for mesh in meshes])
+        from .mesh import PolyData  # noqa: PLC0415
+
+        outline = PolyData(points).outline(generate_faces=False)
+        self.add_mesh(outline, color=color, opacity=opacity)
+        return outline
 
     def generate_standalone_html(self) -> str:
         """Generate a complete standalone HTML page with the current scene.

@@ -1,0 +1,26 @@
+name: Duplication Check
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  jscpd:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # Full history so the baseline ref below is available.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Fails when the PR introduces clones absent from the PR base branch,
+      # so pre-existing duplication (currently ~8.7% overall) is tolerated.
+      - uses: kucherenko/jscpd@db415b5d7cc34d72a324fe5eae2147646dc3558b  # v5.4.2
+        with:
+          baseline-from-ref: origin/${{ github.base_ref }}
+          fail-on-new-clones: 'true'
+          upload-sarif: 'false'

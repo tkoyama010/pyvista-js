@@ -135,7 +135,17 @@ class PointData:
 
 _CIRCLE_MIN_RESOLUTION = 3
 _VECTOR_COMPONENTS = 3  # Number of components in a 3D vector (x, y, z)
+_POINT_CLOUD_COMPONENTS = 3  # Points of a point cloud have x, y, and z coordinates
+_POINT_PAIR_LENGTH = 2  # A threshold range is a pair of values
+_MIN_SMOOTH_ITERATIONS = 1  # smoothing needs at least one pass
 _TUBE_MIN_SIDES = 3
+_TUBE_DEFAULT_RADIUS = 0.5
+_TUBE_MAX_RADIUS = 100.0
+_TUBE_SIDES_FOR_TUBES = 20
+_FACE_DIMENSIONS = 2  # faces stored as (n_cells, n_corners) rows
+_CORNERS_PER_BOX_FACE = 4  # each face of a box has four corners
+_BOX_EDGE_CORNERS = 8  # a box has eight corners in total
+_TRIANGLE_VERTICES = 3  # a triangle has three corners
 
 # VTK cell type constants
 _CELL_TYPE_VERTEX = 1
@@ -512,6 +522,108 @@ class PolyData:
         """Return the number of faces."""
         return len(self.faces) if self.faces is not None else 0
 
+    def _iter_face_cells(self) -> list[np.ndarray]:
+        """Return the faces as a list of index arrays, one per cell."""
+        if self.faces is None:
+            return []
+        if self.faces.ndim == _FACE_DIMENSIONS:
+            return [np.asarray(row) for row in self.faces]
+        cells: list[np.ndarray] = []
+        flat = self.faces.reshape(-1)
+        i = 0
+        while i < len(flat):
+            n_cell = int(flat[i])
+            cells.append(flat[i + 1 : i + 1 + n_cell])
+            i += n_cell + 1
+        return cells
+
+    def __add__(self, other: PolyData) -> PolyData:
+        """Combine two meshes with dictionary-style ``+`` operator.
+
+        Mirrors the PyVista ``PolyData.__add__`` API: point and cell arrays of
+        both meshes are concatenated and the point indices of cells in
+        ``other`` are shifted by ``n_points`` of this mesh.
+
+        Parameters
+        ----------
+        other : PolyData
+            The second mesh to append.
+
+        Returns
+        -------
+        PolyData
+            A new mesh containing points and cells from both meshes.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> combined = pv.Cube() + pv.Cube(x_length=2.0)
+        >>> isinstance(combined, pv.PolyData)
+        True
+
+        """
+        other._validate_same_points_dims(self)
+        points = np.vstack([self.points, other.points])
+        offset = len(self.points)
+        cells = [*self._iter_face_cells(), *[cell + offset for cell in other._iter_face_cells()]]
+        faces: np.ndarray | None
+        if cells and all(len(cell) == len(cells[0]) for cell in cells):
+            faces = np.array(cells)
+        elif cells:
+            faces = np.concatenate(
+                [np.concatenate([[len(cell)], cell]) for cell in cells],
+            )
+        else:
+            faces = None
+
+        scalars: np.ndarray | None = None
+        if self.scalars is not None and other.scalars is not None:
+            scalars = np.concatenate([self.scalars, other.scalars])
+        elif self.scalars is not None:
+            scalars = np.concatenate(
+                [self.scalars, np.full(len(other.points), np.nan)],
+            )
+        elif other.scalars is not None:
+            scalars = np.concatenate(
+                [np.full(len(self.points), np.nan), other.scalars],
+            )
+
+        combined = PolyData(
+            points=points,
+            faces=faces,
+            scalars=scalars,
+            scalar_name=self.scalar_name if scalars is not None else "scalars",
+        )
+        for name in (*self._point_data.keys(), *other._point_data.keys()):
+            if name in self._point_data and name in other._point_data:
+                combined.point_data[name] = np.concatenate(
+                    [
+                        np.asarray(self._point_data[name]),
+                        np.asarray(other._point_data[name]),
+                    ],
+                )
+            elif name in self._point_data:
+                combined.point_data[name] = np.concatenate(
+                    [
+                        np.asarray(self._point_data[name]),
+                        np.full(len(other.points), np.nan),
+                    ],
+                )
+            else:
+                combined.point_data[name] = np.concatenate(
+                    [
+                        np.full(len(self.points), np.nan),
+                        np.asarray(other._point_data[name]),
+                    ],
+                )
+        return combined
+
+    def _validate_same_points_dims(self, expected: PolyData) -> None:
+        """Check that another mesh has the same point dimensionality."""
+        if self.points.shape[1:] != expected.points.shape[1:]:
+            msg = "Both meshes must have 3D points to combine with '+'"
+            raise ValueError(msg)
+
     def plot(
         self,
         color: str | tuple[float, float, float] | None = None,
@@ -693,6 +805,93 @@ class PolyData:
             _scene_data=base_scene,
         )
 
+    def clean(self, point_tolerance: float = 0.0) -> PolyData:
+        """Merge duplicate points and remove unused or degenerate cells.
+
+        This filters coincident points into a single point and rebuilds
+        the cell connectivity accordingly. Point data arrays are
+        preserved by keeping the value of the first occurrence of each
+        merged point. It mirrors the PyVista ``clean`` filter API.
+
+        .. note::
+
+            The merge is computed in Python with NumPy. Points are
+            merged when their coordinates are equal (or within
+            ``point_tolerance`` when it is greater than zero).
+
+        Parameters
+        ----------
+        point_tolerance : float, optional
+            Tolerance used to decide whether two points are coincident.
+            The default of 0.0 merges only points that are exactly equal.
+
+        Returns
+        -------
+        PolyData
+            A new mesh without duplicate points or degenerate cells.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> points = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+        >>> faces = np.array([2, 0, 1])
+        >>> mesh = pv.PolyData(points, faces)
+        >>> cleaned = mesh.clean()
+        >>> cleaned.n_points
+        2
+
+        Render the cleaned mesh:
+
+        >>> cleaned.plot()  # doctest: +SKIP
+
+        """
+        pts = self.points
+        faces = self.faces
+
+        quantized = np.round(pts / point_tolerance) if point_tolerance > 0.0 else pts
+        _, first_occurrence_indices, inverse_indices = np.unique(
+            quantized,
+            axis=0,
+            return_index=True,
+            return_inverse=True,
+        )
+        n_unique = len(first_occurrence_indices)
+        order = np.argsort(first_occurrence_indices)
+        rank = np.empty(n_unique, dtype=np.int64)
+        rank[order] = np.arange(n_unique)
+        remap = rank[inverse_indices]
+        rep = first_occurrence_indices[order]
+        new_points = pts[rep]
+
+        new_faces: list[np.ndarray] = []
+        if faces is not None and faces.ndim == 1:
+            flat = faces.reshape(-1)
+            i = 0
+            while i < len(flat):
+                n_cell = int(flat[i])
+                cell = remap[flat[i + 1 : i + 1 + n_cell]]
+                i += n_cell + 1
+                if n_cell > 0 and len(np.unique(cell)) < n_cell:
+                    continue
+                new_faces.append(np.concatenate([[n_cell], cell]))
+            faces = np.concatenate(new_faces) if new_faces else None
+        elif faces is not None and faces.ndim == _VECTOR_COMPONENTS - 1:
+            rows = remap[faces]
+            keep = np.array([len(np.unique(row)) == len(row) for row in rows])
+            faces = rows[keep]
+
+        cleaned = PolyData(
+            points=new_points,
+            faces=faces,
+            scalars=None if self.scalars is None else self.scalars[rep],
+            scalar_name=self.scalar_name,
+            t_coords=None if self.t_coords is None else self.t_coords[rep],
+        )
+        for name, array in self._point_data.items():
+            cleaned.point_data[name] = np.asarray(array)[rep]
+        return cleaned
+
     def clip(
         self,
         normal: str | tuple[float, float, float] = "x",
@@ -813,6 +1012,120 @@ class PolyData:
                 "normal": list(normal_vec),
                 "origin": list(origin),
                 "invert": invert,
+            },
+        )
+
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            _scene_data=base_scene,
+        )
+
+    def slice(
+        self,
+        normal: str | tuple[float, float, float] = "z",
+        origin: tuple[float, float, float] | None = None,
+        generate_triangles: bool = False,  # noqa: FBT001, FBT002, ARG002
+    ) -> PolyData:
+        """Slice the mesh with a plane, producing cross-section lines.
+
+        This mirrors the PyVista ``slice`` filter API and is backed by
+        vtk.js's ``vtkCutter`` with a cut plane.
+
+        .. note::
+
+            The slicing is computed in JavaScript at render time by
+            evaluating the cut function per point and triangulating the
+            crossing edges. ``generate_triangles`` is accepted for API
+            compatibility but currently has no effect.
+
+        Parameters
+        ----------
+        normal : str or tuple of float, optional
+            The normal vector of the slicing plane. Can be a string
+            specifying a cardinal direction ('x', 'y', 'z', '-x', '-y',
+            '-z') or a 3-tuple of floats (nx, ny, nz). Default is 'z'.
+        origin : tuple of float, optional
+            The origin point of the slicing plane as (x, y, z). If not
+            provided, defaults to the center of the mesh's bounding box.
+        generate_triangles : bool, optional
+            Reserved for API compatibility with PyVista. No effect.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with the cross-section geometry.
+
+        Raises
+        ------
+        ValueError
+            If the normal string is invalid or vectors have the wrong size.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sliced = sphere.slice(normal='z')
+        >>> isinstance(sliced, pv.PolyData)
+        True
+
+        Render the cross-section:
+
+        >>> sliced.plot(color='red', opacity=1.0)  # doctest: +SKIP
+
+        """
+        if isinstance(normal, str):
+            normal_map = {
+                "x": (1.0, 0.0, 0.0),
+                "+x": (1.0, 0.0, 0.0),
+                "-x": (-1.0, 0.0, 0.0),
+                "y": (0.0, 1.0, 0.0),
+                "+y": (0.0, 1.0, 0.0),
+                "-y": (0.0, -1.0, 0.0),
+                "z": (0.0, 0.0, 1.0),
+                "+z": (0.0, 0.0, 1.0),
+                "-z": (0.0, 0.0, -1.0),
+            }
+            if normal not in normal_map:
+                msg = f"Invalid normal string '{normal}'. Must be one of {list(normal_map.keys())}"
+                raise ValueError(msg)
+            normal_vec = normal_map[normal]
+        else:
+            if len(normal) != _VECTOR_COMPONENTS:  # type: ignore[arg-type]
+                msg = f"Normal vector must have {_VECTOR_COMPONENTS} components, got {len(normal)}"
+                raise ValueError(msg)
+            n = [float(x) for x in normal]  # type: ignore[arg-type]
+            normal_vec = (n[0], n[1], n[2])
+
+        if origin is None:
+            pts = self.points
+            origin = (
+                float((pts[:, 0].min() + pts[:, 0].max()) / 2),
+                float((pts[:, 1].min() + pts[:, 1].max()) / 2),
+                float((pts[:, 2].min() + pts[:, 2].max()) / 2),
+            )
+        else:
+            if len(origin) != _VECTOR_COMPONENTS:
+                msg = f"Origin must have {_VECTOR_COMPONENTS} components, got {len(origin)}"
+                raise ValueError(msg)
+            o = [float(x) for x in origin]
+            origin = (o[0], o[1], o[2])
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "slice",
+                "normal": list(normal_vec),
+                "origin": list(origin),
             },
         )
 
@@ -1037,6 +1350,151 @@ class PolyData:
             raise ValueError(msg)
         return contour_values
 
+    def triangulate(self) -> PolyData:
+        """Convert all polygon cells into triangles.
+
+        This filter replaces every polygon of more than three vertices with
+        a fan of triangles sharing its first vertex, and leaves lines and
+        vertices unchanged. It mirrors the PyVista ``triangulate`` filter
+        API.
+
+        .. note::
+
+            The triangulation is computed in Python with NumPy.
+
+        Returns
+        -------
+        PolyData
+            A new mesh whose polygons are all triangles.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> cube = pv.Cube()
+        >>> triangles = cube.triangulate()
+        >>> triangles.n_points
+        24
+
+        Render the triangulated mesh:
+
+        >>> triangles.plot()  # doctest: +SKIP
+
+        """
+        cells = self._iter_face_cells()
+        triangulated: list[list[np.int64]] = []
+        for cell in cells:
+            if len(cell) == _TRIANGLE_VERTICES:
+                triangulated.append(cell.tolist())
+            elif len(cell) > _TRIANGLE_VERTICES:
+                triangulated.extend(
+                    [cell[0], cell[i], cell[i + 1]].copy() for i in range(1, len(cell) - 1)
+                )
+            else:
+                triangulated.append(cell.tolist())
+
+        faces: np.ndarray | None
+        triangulated_array = np.asarray(triangulated) if triangulated else None
+        if triangulated_array is not None and all(
+            len(row) == len(triangulated[0]) for row in triangulated
+        ):
+            faces = triangulated_array
+        elif triangulated_array is not None:
+            faces = np.concatenate(
+                [np.concatenate([[len(cell)], cell]) for cell in triangulated],
+            )
+        else:
+            faces = None
+        return PolyData(
+            points=self.points,
+            faces=faces,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
+            t_coords=self.t_coords,
+        )
+
+    def outline(self, generate_faces: bool = False) -> PolyData:  # noqa: FBT001 FBT002
+        """Produce an outline of the bounds for the mesh.
+
+        Mirrors the PyVista ``outline`` filter API: the default output is an
+        outline of 12 line segments along the bounding box edges, and
+        ``generate_faces=True`` returns the filled box surface instead.
+
+        .. note::
+
+            The outline is computed in Python with NumPy from the
+            axis-aligned bounding box of the points.
+
+        Parameters
+        ----------
+        generate_faces : bool, optional
+            If True, produce the filled box surface. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh representing the bounding box.
+
+        Raises
+        ------
+        ValueError
+            If the mesh has no points.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> outline = pv.Sphere().outline(generate_faces=True)
+        >>> outline.n_points
+        8
+
+        Render the bounding box:
+
+        >>> outline.plot(color="black")  # doctest: +SKIP
+
+        """
+        if self.n_points == 0:
+            msg = "Cannot outline a mesh without points"
+            raise ValueError(msg)
+
+        pts = np.asarray(self.points)
+        px = (float(pts[:, 0].min()), float(pts[:, 0].max()))
+        py_ = (float(pts[:, 1].min()), float(pts[:, 1].max()))
+        pz = (float(pts[:, 2].min()), float(pts[:, 2].max()))
+
+        # Corner ordering shared with the Cube factory:
+        # index bit 2 = x, bit 1 = y, bit 0 = z
+        corners = np.array(
+            [
+                [px[i], py_[j], pz[k]]
+                for i in range(_FACE_DIMENSIONS)
+                for j in range(_FACE_DIMENSIONS)
+                for k in range(_FACE_DIMENSIONS)
+            ],
+        )
+        # Quad connectivity for the box faces:
+        # index bit 2 = x, bit 1 = y, bit 0 = z; corners are a ring
+        cube_quads = (
+            (0, 1, 3, 2),
+            (4, 5, 7, 6),
+            (0, 1, 5, 4),
+            (2, 3, 7, 6),
+            (0, 2, 4, 6),
+            (1, 3, 5, 7),
+        )
+
+        cells: list[np.ndarray] = []
+        if generate_faces:
+            cells.extend(np.array([4, *quad]) for quad in cube_quads)
+        else:
+            # 12 box edges: pairs of corners differing in exactly one coordinate
+            for a in range(_BOX_EDGE_CORNERS):
+                for bit in (_CORNERS_PER_BOX_FACE, _CORNERS_PER_BOX_FACE // 2, 1):
+                    b = a ^ bit
+                    if b > a:
+                        cells.append(np.array([2, a, b]))
+
+        faces = np.concatenate(cells)
+        return PolyData(points=corners, faces=faces)
+
     def fill_holes(self, hole_size: float = 1000.0) -> PolyData:
         """Fill holes in a polygonal mesh.
 
@@ -1123,6 +1581,274 @@ class PolyData:
             _scene_data=base_scene,
         )
 
+    def threshold(
+        self,
+        value: float | list[float] | tuple[float, float],
+        scalars: str | ArrayLike | None = None,
+        invert: bool = False,  # noqa: FBT001 FBT002
+    ) -> PolyData:
+        """Extract the parts of the mesh whose scalars are inside a range.
+
+        This filter keeps the points (and any cells having at least one kept
+        point) whose scalar value lies in the threshold range. It mirrors
+        the PyVista ``threshold`` filter API and is backed by vtk.js's
+        ``vtkThresholdPoints``.
+
+        .. note::
+
+            The thresholding is applied in JavaScript at render time.
+
+        Parameters
+        ----------
+        value : float or list/tuple of float
+            A single value thresholds in the range ``[value, max]``; a pair
+            of values thresholds in the range ``[low, high]``.
+        scalars : array-like, optional
+            The scalar array used for thresholding. Default uses the
+            ``scalars`` attribute of the mesh.
+        invert : bool, optional
+            If True, invert the threshold range. Default is False.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with the thresholded subset.
+
+        Raises
+        ------
+        ValueError
+            If no scalar data is available or the value has the wrong size.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere.point_data['data'] = sphere.points[:, 2]
+        >>> thresh = sphere.threshold(0.5, scalars='data')
+        >>> isinstance(thresh, pv.PolyData)
+        True
+
+        Render the thresholded mesh:
+
+        >>> thresh.plot()  # doctest: +SKIP
+
+        """
+        scalar_data = self._get_threshold_scalars(scalars)
+        scalar_min, scalar_max = float(scalar_data.min()), float(scalar_data.max())
+        if scalar_min == scalar_max:
+            scalar_max = scalar_min + 1.0
+        if not isinstance(value, (list, tuple)):
+            lower, upper = float(value), scalar_max
+        else:
+            if len(value) != _POINT_PAIR_LENGTH:
+                msg = f"value must be a single float or a pair of floats, got {len(value)} values"
+                raise ValueError(msg)
+            lower, upper = float(value[0]), float(value[1])
+        if invert:
+            lower, upper = upper, lower
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        scalar_name = scalars if isinstance(scalars, str) else self.scalar_name
+        filters_list.append(
+            {
+                "type": "threshold",
+                "lowerValue": lower,
+                "upperValue": upper,
+                "scalarName": scalar_name,
+            },
+        )
+        thresholded = PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=scalar_data,
+            scalar_name=scalar_name,
+            _scene_data=base_scene,
+        )
+        thresholded.point_data[scalar_name] = scalar_data
+        return thresholded
+
+    def _get_threshold_scalars(self, scalars: str | ArrayLike | None) -> np.ndarray:
+        """Resolve the scalar array used for thresholding."""
+        if isinstance(scalars, str):
+            if scalars not in self._point_data:
+                msg = f"No point data array named '{scalars}' found"
+                raise ValueError(msg)
+            return np.asarray(self._point_data[scalars])
+        if scalars is not None:
+            scalar_data = np.asarray(scalars)
+            if scalar_data.ndim != 0 and len(scalar_data) != self.n_points:
+                msg = f"scalars must have length {self.n_points}, got {scalar_data.ndim}"
+                raise ValueError(msg)
+            return scalar_data
+        if self.scalars is not None:
+            return self.scalars
+        if len(self._point_data) > 0:
+            first = next(iter(self._point_data.values()))
+            return np.asarray(first)
+        msg = "No scalar data provided. Pass scalars parameter or set mesh.scalars"
+        raise ValueError(msg)
+
+    def warp_by_scalar(
+        self,
+        scalars: str | ArrayLike | None = None,
+        factor: float = 1.0,
+    ) -> PolyData:
+        """Displace the points along their normals weighted by the scalars.
+
+        This mirrors the PyVista ``warp_by_scalar`` filter API and is backed
+        by vtk.js's ``vtkWarpScalar``.
+
+        .. note::
+
+            The warp is applied in JavaScript at render time.
+
+        Parameters
+        ----------
+        scalars : str or array-like, optional
+            The scalar array used for the warp. Default uses the
+            ``scalars`` attribute of the mesh.
+        factor : float, optional
+            Scaling factor applied to the scalar values. Default is 1.0.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with warped points.
+
+        Raises
+        ------
+        ValueError
+            If no scalar data is available.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> sphere.point_data['data'] = sphere.points[:, 2]
+        >>> warped = sphere.warp_by_scalar(scalars='data', factor=0.5)
+        >>> isinstance(warped, pv.PolyData)
+        True
+
+        Render the warped mesh:
+
+        >>> warped.plot()  # doctest: +SKIP
+
+        """
+        scalar_data = self._get_threshold_scalars(scalars)
+        scalar_name = scalars if isinstance(scalars, str) else self.scalar_name
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "warpByScalar",
+                "factor": float(factor),
+                "scalarName": scalar_name,
+            },
+        )
+        warped = PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=scalar_data,
+            scalar_name=scalar_name,
+            _scene_data=base_scene,
+        )
+        warped.point_data[scalar_name] = scalar_data
+        return warped
+
+    def smooth_taubin(
+        self,
+        pass_band: float = 0.001,
+        n_iter: int = 15,
+    ) -> PolyData:
+        """Smooth the mesh surface using a Taubin smoothing filter.
+
+        This mirrors the PyVista ``smooth_taubin`` filter API and is backed
+        by vtk.js's ``vtkWindowedSincPolyDataFilter``. Taubin smoothing
+        avoids the surface shrinkage of Laplacian smoothing.
+
+        .. note::
+
+            The smoothing is applied in JavaScript at render time.
+
+        Parameters
+        ----------
+        pass_band : float, optional
+            Pass band frequency for the smoothing filter. The closer to
+            zero, the greater the smoothing effect. Default is 0.001.
+        n_iter : int, optional
+            Number of iterations for the smoothing filter.
+            Default is 15.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with smoothed points.
+
+        Raises
+        ------
+        ValueError
+            If ``n_iter`` is less than 1.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> smoothed = sphere.smooth_taubin(pass_band=0.001, n_iter=15)
+        >>> isinstance(smoothed, pv.PolyData)
+        True
+
+        Render the smoothed mesh:
+
+        >>> smoothed.plot()  # doctest: +SKIP
+
+        """
+        if n_iter < _MIN_SMOOTH_ITERATIONS:
+            msg = f"n_iter must be at least {_MIN_SMOOTH_ITERATIONS}, got {n_iter}"
+            raise ValueError(msg)
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "smoothTaubin",
+                "passBand": float(pass_band),
+                "nIterations": int(n_iter),
+            },
+        )
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
+            _scene_data=base_scene,
+        )
+
     def texture_map_to_plane(self) -> PolyData:
         """Generate texture coordinates by projecting points onto the XY plane.
 
@@ -1163,6 +1889,184 @@ class PolyData:
             scalar_name=self.scalar_name,
             _scene_data=self._scene_data,
         )
+
+    def texture_map_to_sphere(
+        self,
+        center: tuple[float, float, float] | None = None,
+        prevent_seam: bool = True,  # noqa: ARG002, FBT001, FBT002
+    ) -> PolyData:
+        """Texture map a mesh to a sphere.
+
+        This mirrors the PyVista ``texture_map_to_sphere`` filter API and
+        is backed by vtk.js's ``vtkTextureMapToSphere`` used by the
+        sphere source pipeline.
+
+        .. note::
+
+            The texture coordinates are computed in JavaScript at render
+            time by mapping each point onto a sphere.
+
+        Parameters
+        ----------
+        center : tuple, optional
+            Center of the sphere used for the mapping. Default uses the
+            center of the mesh's bounding sphere.
+        prevent_seam : bool, optional
+            If True, controls whether or not to prevent seam artifacts.
+            Default is True.
+
+        Returns
+        -------
+        PolyData
+            A new mesh with sphere texture coordinates.
+
+        Raises
+        ------
+        ValueError
+            If ``center`` is provided with the wrong size.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> sphere = pv.Sphere()
+        >>> textured = sphere.texture_map_to_sphere()
+        >>> isinstance(textured, pv.PolyData)
+        True
+
+        Render the textured mesh:
+
+        >>> textured.plot()  # doctest: +SKIP
+
+        """
+        mapped_center: tuple[float, float, float]
+        if center is None:
+            radius, sph_center = self.bounding_sphere
+            mapped_center = sph_center
+            mapped_radius = radius
+        else:
+            if len(center) != _VECTOR_COMPONENTS:
+                msg = f"center must have {_VECTOR_COMPONENTS} components, got {len(center)}"
+                raise ValueError(msg)
+            mapped_center = (float(center[0]), float(center[1]), float(center[2]))
+            mapped_radius = self.bounding_sphere[0]
+
+        base_scene = (
+            dict(self._scene_data)
+            if self._scene_data
+            else {
+                "type": "mesh",
+                "points": _Float32Array(self.points),
+            }
+        )
+        base_scene.setdefault("filters", [])
+        filters_list: list[object] = base_scene["filters"]  # type: ignore[assignment]
+        filters_list.append(
+            {
+                "type": "textureSphere",
+                "center": list(mapped_center),
+                "radius": mapped_radius,
+            },
+        )
+        return PolyData(
+            points=self.points,
+            faces=self.faces,
+            scalars=self.scalars,
+            scalar_name=self.scalar_name,
+            _scene_data=base_scene,
+        )
+
+    def glyph(
+        self,
+        orient: bool | str = True,  # noqa: FBT001, FBT002
+        scale: bool | str = True,  # noqa: FBT001, FBT002
+        factor: float = 1.0,
+        geometry: PolyData | None = None,
+    ) -> PolyData:
+        """Glyph the mesh points with per-point geometry.
+
+        This mirrors the PyVista ``glyph`` filter API: a point cloud is
+        rendered with per-point arrows (by default) oriented and scaled by
+        point vectors using vtk.js's ``vtkGlyph3DMapper`` at render time.
+
+        .. note::
+
+            The glyphing happens in JavaScript at render time. This method
+            only serializes the configuration.
+
+        Parameters
+        ----------
+        orient : bool or str, optional
+            Whether to orient glyphs by the ``'vectors'`` point array.
+            A string names the array to use. Default is True.
+        scale : bool or str, optional
+            Whether to scale glyphs by the ``'vectors'`` point array.
+            A string names the array to use. For simplicity, only
+            ``'vectors'`` scaling is supported in this implementation.
+            Default is True.
+        factor : float, optional
+            Scale factor applied to the glyphs. Default is 1.0.
+        geometry : PolyData, optional
+            Geometry to use for each glyph. Default uses an arrow
+            (matching the PyVista default).
+
+        Returns
+        -------
+        PolyData
+            A mesh configured for glyph rendering.
+
+        Raises
+        ------
+        ValueError
+            If ``orient`` is set but the vectors array is missing or has a
+            mismatched length.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> import numpy as np
+        >>> mesh = pv.PolyData(points=np.zeros((4, 3)))
+        >>> mesh.point_data['vectors'] = np.ones((4, 3))
+        >>> glyphed = mesh.glyph()
+        >>> glyphed.to_scene_data()['type']
+        'glyph'
+
+        Render the glyphs:
+
+        >>> glyphed.plot()  # doctest: +SKIP
+
+        """
+        if orient in (False, None):
+            msg = "Orienting glyphs requires a 'vectors' or named vector array"
+            raise ValueError(msg)
+        if orient not in (True, False) and not isinstance(orient, str):
+            msg = "orient must be a bool or a string naming the vector array"
+            raise ValueError(msg)
+        orientation_array = orient if isinstance(orient, str) else "vectors"
+        if orientation_array not in self._point_data:
+            msg = f"No point data array named '{orientation_array}' found"
+            raise ValueError(msg)
+        if factor < 0:
+            msg = f"factor must be non-negative, got {factor}"
+            raise ValueError(msg)
+
+        _ = scale  # only vector scaling is supported
+        scene: dict[str, object] = {
+            "type": "glyph",
+            "points": _Float32Array(self.points),
+            "scaleFactor": float(factor),
+            "orient": True,
+            "orientationArray": orientation_array,
+        }
+        if geometry is not None:
+            scene["geometryPoints"] = _Float32Array(geometry.points)
+            flat_polys: list[float] = []
+            for cell in geometry._iter_face_cells():  # noqa: SLF001
+                flat_polys.extend([float(len(cell)), *(int(c) for c in cell)])
+            scene["geometryPolys"] = flat_polys
+
+        glyphed = PolyData(points=self.points, _scene_data=scene)
+        glyphed.point_data[orientation_array] = self._point_data[orientation_array]
+        return glyphed
 
     def to_scene_data(self) -> dict[str, object]:
         """Return a JSON-serializable dict describing this mesh source.
@@ -1233,6 +2137,166 @@ class PolyData:
         self.t_coords = state["t_coords"]  # type: ignore[assignment]
         self._point_data = state["_point_data"]  # type: ignore[assignment]
         self._scene_data = state.get("_scene_data")  # type: ignore[assignment]
+
+
+class ImageData:
+    """Uniformly spaced image (structured mesh) dataset.
+
+    Mirrors the PyVista ``ImageData`` class backed by
+    ``vtk.Common.DataModel.vtkImageData`` at render time.
+
+    Parameters
+    ----------
+    dimensions : tuple, optional
+        Number of points in each (x, y, z) direction. Default is (1, 1, 1).
+    spacing : tuple, optional
+        Distance between points in each direction. Default is (1, 1, 1).
+    origin : tuple, optional
+        World coordinates of the (0, 0, 0) corner. Default is (0, 0, 0).
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> grid = pv.ImageData(dimensions=(8, 8, 8), spacing=(1, 1, 1))
+    >>> grid.n_points
+    512
+
+    """
+
+    def __init__(
+        self,
+        dimensions: tuple[int, int, int] = (1, 1, 1),
+        spacing: tuple[float, float, float] = (1.0, 1.0, 1.0),
+        origin: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    ) -> None:
+        """Initialize the image data."""
+        if any(dim < 1 for dim in dimensions):
+            msg = f"dimensions must be at least 1 in each direction, got {dimensions}"
+            raise ValueError(msg)
+        self.dimensions = tuple(int(dim) for dim in dimensions)
+        self.spacing = tuple(float(s) for s in spacing)
+        self.origin = tuple(float(o) for o in origin)
+        self._point_data = PointData()
+
+    @property
+    def point_data(self) -> PointData:
+        """Access point data arrays.
+
+        Returns
+        -------
+        PointData
+            Dict-like container for point data arrays.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(4, 4, 4))
+        >>> grid.point_data['data'] = np.zeros(grid.n_points)
+        >>> 'data' in grid.point_data
+        True
+
+        """
+        return self._point_data
+
+    @property
+    def n_points(self) -> int:
+        """Return the total number of points."""
+        return int(np.prod(self.dimensions))
+
+    @property
+    def n_cells(self) -> int:
+        """Return the total number of cells."""
+        cells = [dim - 1 for dim in self.dimensions]
+        return int(np.prod([max(cell, 0) for cell in cells]))
+
+    @property
+    def points(self) -> np.ndarray:
+        """Return the point coordinates of the image.
+
+        Returns
+        -------
+        np.ndarray
+            Points array with shape ``(n_points, 3)``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(2, 2, 2))
+        >>> grid.points.tolist()  # doctest: +NORMALIZE_WHITESPACE
+        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0],
+         [0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [0.0, 1.0, 1.0], [1.0, 1.0, 1.0]]
+
+        """
+        n_x, n_y, n_z = self.dimensions
+        d_x, d_y, d_z = self.spacing
+        o_x, o_y, o_z = self.origin
+        points = [
+            [o_x + i * d_x, o_y + j * d_y, o_z + k * d_z]
+            for k in range(n_z)
+            for j in range(n_y)
+            for i in range(n_x)
+        ]
+        return np.array(points)
+
+    def to_scene_data(self) -> dict[str, object]:
+        """Return a JSON-serializable dict describing this image.
+
+        Returns
+        -------
+        dict
+            Source configuration with ``"type": "image"``.
+
+        """
+        scene: dict[str, object] = {
+            "type": "image",
+            "dimensions": list(self.dimensions),
+            "spacing": list(self.spacing),
+            "origin": list(self.origin),
+        }
+        if len(self._point_data) > 0:
+            scene["pointData"] = _point_data_to_scene(self._point_data)
+        return scene
+
+    def __getstate__(self) -> dict[str, object]:
+        """Return state for pickling."""
+        return {
+            "dimensions": self.dimensions,
+            "spacing": self.spacing,
+            "origin": self.origin,
+            "_point_data": self._point_data,
+        }
+
+    def __setstate__(self, state: dict[str, object]) -> None:
+        """Restore state from pickle."""
+        self.dimensions = state["dimensions"]  # type: ignore[assignment]
+        self.spacing = state["spacing"]  # type: ignore[assignment]
+        self.origin = state["origin"]  # type: ignore[assignment]
+        self._point_data = state["_point_data"]  # type: ignore[assignment]
+
+    def plot(self, color: str | tuple[float, float, float] | None = None) -> None:
+        """Plot this image as an outline.
+
+        This is a convenience method that creates a :class:`~pyvista_js.Plotter`,
+        adds this image, and calls :func:`~pyvista_js.Plotter.show`.
+
+        Parameters
+        ----------
+        color : str or tuple, optional
+            Color of the image outline.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> grid = pv.ImageData(dimensions=(4, 4, 4))
+        >>> grid.plot(color='red')  # doctest: +SKIP
+
+        """
+        from .plotter import Plotter  # noqa: PLC0415
+
+        plotter = Plotter()
+        plotter.add_image(self, color=color)
+        plotter.show()
 
 
 class UnstructuredGrid:
@@ -1643,6 +2707,39 @@ class UnstructuredGrid:
             data["pointData"] = _point_data_to_scene(self._point_data)
 
         return data
+
+
+class _VolumeImageData(ImageData):
+    """Image rendered as a volume (used internally by ``add_volume``)."""
+
+    def __init__(
+        self,
+        image: ImageData,
+        scalars_name: str,
+        cmap: str,
+    ) -> None:
+        """Initialize from an image with the scalar settings to render."""
+        super().__init__(
+            dimensions=(image.dimensions[0], image.dimensions[1], image.dimensions[2]),
+            spacing=(image.spacing[0], image.spacing[1], image.spacing[2]),
+            origin=(image.origin[0], image.origin[1], image.origin[2]),
+        )
+        self._point_data = image._point_data  # noqa: SLF001
+        self._scalars_name = scalars_name
+        self._cmap = cmap
+
+    def to_scene_data(self) -> dict[str, object]:
+        """Return the volume scene configuration."""
+        scalar_data = np.asarray(self._point_data[self._scalars_name])
+        scene = super().to_scene_data()
+        scene["type"] = "imageVolume"
+        scene["scalars"] = {
+            "arrayName": self._scalars_name,
+            "cmap": self._cmap,
+            "range": [float(scalar_data.min()), float(scalar_data.max())],
+            "direct": False,
+        }
+        return scene
 
 
 def _scene_source(mesh: object) -> dict[str, object]:
@@ -2385,5 +3482,184 @@ def Plane(  # noqa: N802 PLR0913
             "type": "plane",
             "origin": [float(origin[0]), float(origin[1]), float(origin[2])],
             "normal": [float(n[0]), float(n[1]), float(n[2])],
+        },
+    )
+
+
+def PointSource(  # noqa: N802
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    n_points: int = 100,
+    radius: float = 1.0,
+) -> PolyData:
+    """Create a point cloud distributed randomly inside a sphere.
+
+    This mirrors the :func:`pyvista.PointSource` API. The points are
+    generated by vtk.js at render time and rendered as isolated vertices.
+
+    Parameters
+    ----------
+    center : tuple, optional
+        Center of the sphere (x, y, z). Default is (0, 0, 0).
+    n_points : int, optional
+        Number of generated points. Default is 100.
+    radius : float, optional
+        Radius of the bounding sphere. Default is 1.0.
+
+    Returns
+    -------
+    PolyData
+        A point cloud mesh.
+
+    Raises
+    ------
+    ValueError
+        If ``n_points`` is less than 1 or ``radius`` is not positive.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> cloud = pv.PointSource(n_points=100, radius=1.0)
+    >>> cloud.n_points
+    100
+
+    Render the point cloud:
+
+    >>> cloud.plot()  # doctest: +SKIP
+
+    """
+    if n_points < 1:
+        msg = f"n_points must be at least 1, got {n_points}"
+        raise ValueError(msg)
+    if radius <= 0:
+        msg = f"radius must be positive, got {radius}"
+        raise ValueError(msg)
+
+    return PolyData(
+        points=np.zeros((n_points, _POINT_CLOUD_COMPONENTS)),
+        _scene_data={
+            "type": "pointSource",
+            "center": list(center),
+            "radius": radius,
+            "nPoints": n_points,
+        },
+    )
+
+
+def PlatonicSolid(  # noqa: N802
+    kind: str = "octahedron",
+    radius: float = 1.0,
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+) -> PolyData:
+    """Create one of the Platonic solids.
+
+    This mirrors the :func:`pyvista.PlatonicSolid` API. The geometry is
+    generated by vtk.js at render time.
+
+    Parameters
+    ----------
+    kind : str, optional
+        One of 'tetrahedron', 'cube', 'octahedron', 'icosahedron',
+        or 'dodecahedron'. Default is 'octahedron'.
+    radius : float, optional
+        Circumradius of the solid. Default is 1.0.
+    center : tuple, optional
+        Center of the solid (x, y, z). Default is (0, 0, 0).
+
+    Returns
+    -------
+    PolyData
+        A Platonic solid mesh.
+
+    Raises
+    ------
+    ValueError
+        If ``kind`` is not a valid solid name.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> solid = pv.PlatonicSolid(kind='dodecahedron', radius=1.0)
+    >>> isinstance(solid, pv.PolyData)
+    True
+
+    Render the solid:
+
+    >>> solid.plot()  # doctest: +SKIP
+
+    """
+    solids = ("tetrahedron", "cube", "octahedron", "icosahedron", "dodecahedron")
+    if kind not in solids:
+        msg = f"kind must be one of {list(solids)}, got '{kind}'"
+        raise ValueError(msg)
+    if radius <= 0:
+        msg = f"radius must be positive, got {radius}"
+        raise ValueError(msg)
+
+    return PolyData(
+        points=np.zeros((1, _POINT_CLOUD_COMPONENTS)),
+        _scene_data={
+            "type": "platonicSolid",
+            "kind": kind,
+            "radius": radius,
+            "center": list(center),
+        },
+    )
+
+
+def RegularPolygon(  # noqa: N802
+    n_sides: int = 6,
+    radius: float = 0.5,
+    center: tuple[float, float, float] = (0.0, 0.0, 0.0),
+) -> PolyData:
+    """Create a regular polygon in the XY plane.
+
+    This mirrors the :func:`pyvista.RegularPolygon` API. The geometry is
+    generated by vtk.js at render time.
+
+    Parameters
+    ----------
+    n_sides : int, optional
+        Number of polygon sides. Must be at least 3. Default is 6.
+    radius : float, optional
+        Distance from the center to a vertex. Default is 0.5.
+    center : tuple, optional
+        Center of the polygon (x, y, z). Default is (0, 0, 0).
+
+    Returns
+    -------
+    PolyData
+        A regular polygon mesh.
+
+    Raises
+    ------
+    ValueError
+        If ``n_sides`` is less than 3 or ``radius`` is not positive.
+
+    Examples
+    --------
+    >>> import pyvista_js as pv
+    >>> hexagon = pv.RegularPolygon(n_sides=6, radius=0.5)
+    >>> isinstance(hexagon, pv.PolyData)
+    True
+
+    Render the polygon:
+
+    >>> hexagon.plot()  # doctest: +SKIP
+
+    """
+    if n_sides < _CIRCLE_MIN_RESOLUTION:
+        msg = f"n_sides must be at least {_CIRCLE_MIN_RESOLUTION}, got {n_sides}"
+        raise ValueError(msg)
+    if radius <= 0:
+        msg = f"radius must be positive, got {radius}"
+        raise ValueError(msg)
+
+    return PolyData(
+        points=np.zeros((n_sides, _POINT_CLOUD_COMPONENTS)),
+        _scene_data={
+            "type": "regularPolygon",
+            "nSides": n_sides,
+            "radius": radius,
+            "center": list(center),
         },
     )

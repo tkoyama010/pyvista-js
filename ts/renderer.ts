@@ -10,6 +10,7 @@
 /** Number of components in a 3-D coordinate (x, y, z). */
 // biome-ignore lint/style/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
+const PLANAR_CUT_VALUE = 0.0;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
 const UV_COMPONENTS = 2;
@@ -40,6 +41,10 @@ const COLORMAP_PRESETS: Record<string, string> = {
   hot: "Black-Body Radiation",
 };
 const DEFAULT_COLORMAP_PRESET = "Viridis (matplotlib)";
+const OPACITY_MIDPOINT = 0.5;
+const OPACITY_MIN = 0.0;
+const OPACITY_HALF = 0.5;
+const OPACITY_MAX = 1.0;
 
 /** Multiplier to convert a normalised fraction to a CSS percentage. */
 const PERCENT = 100;
@@ -311,6 +316,11 @@ function getReaderMap(): ReaderFactoryMap {
       factory: vtk.IO.Legacy.vtkPolyDataReader,
       parseMethod: "parseAsText",
     },
+    vtpReader: {
+      // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+      factory: vtk.IO.XML.vtkXMLPolyDataReader as VtkReaderFactory,
+      parseMethod: "parseAsText",
+    },
   };
 }
 
@@ -330,12 +340,18 @@ function createSource(cfg: SourceConfig): SourceResult | undefined {
     arrow: createArrowSource,
     line: createLineSource,
     plane: createPlaneSource,
+    pointSource: createPointSource,
+    glyph: createGlyphSource,
+    image: createImageSource,
+    platonicSolid: createPlatonicSolidSource,
+    regularPolygon: createRegularPolygonSource,
     mesh: createMeshSource,
     points: createPointsSource,
     plyReader: createReaderSource,
     stlReader: createReaderSource,
     objReader: createReaderSource,
     vtkReader: createReaderSource,
+    vtpReader: createReaderSource,
   };
 
   const factory = sourceFactoryMap[cfg.type];
@@ -495,10 +511,269 @@ function createPlaneSource(cfg: SourceConfig): SourceResult {
 }
 
 /**
+ * Create a random point cloud inside a sphere.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the point source filter.
+ */
+function createPointSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Sources.vtkPointSource;
+  if (!factory) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    return { output: vtk.Common.DataModel.vtkPolyData.newInstance(), isFilter: true };
+  }
+  const source = factory.newInstance({
+    center: cfg.center,
+    radius: cfg.radius,
+    numberOfPoints: cfg.nPoints,
+  });
+  return { output: source, isFilter: true };
+}
+
+/**
  * Create PolyData from raw point and polygon arrays.
  * @param cfg
  * @returns A {@link SourceResult} wrapping the constructed mesh PolyData.
  */
+/**
+ * Create a Platonic solid (tetrahedron, cube, octahedron, icosahedron, or
+ * dodecahedron).
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the Platonic solid source filter.
+ */
+function createPlatonicSolidSource(cfg: SourceConfig): SourceResult {
+  // PyVista kind names mapped to the vtk.js numeric solid types.
+  const solidTypeMap: Record<string, number> = {
+    tetrahedron: 0,
+    cube: 1,
+    octahedron: 2,
+    icosahedron: 3,
+    dodecahedron: 4,
+  };
+  const solidType = solidTypeMap[cfg.kind ?? ""] ?? 2; // default: octahedron
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Sources.vtkPlatonicSolidSource;
+  if (!factory) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    return { output: vtk.Common.DataModel.vtkPolyData.newInstance(), isFilter: true };
+  }
+  const source = factory.newInstance({
+    solidType,
+    radius: cfg.radius,
+    center: cfg.center,
+  });
+  return { output: source, isFilter: true };
+}
+
+/**
+ * Create a regular polygon in the XY plane.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the regular polygon source filter.
+ */
+function createRegularPolygonSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Sources.vtkRegularPolygonSource;
+  if (!factory) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    return { output: vtk.Common.DataModel.vtkPolyData.newInstance(), isFilter: true };
+  }
+  const source = factory.newInstance({
+    numberOfSides: cfg.nSides,
+    radius: cfg.radius,
+    center: cfg.center,
+  });
+  return { output: source, isFilter: true };
+}
+
+/**
+ * Create a points-only PolyData backing a glyph scene.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the glyph point cloud.
+ */
+/**
+ * Build a vtkImageData from a source config.
+ * @param cfg
+ * @returns The configured image dataset, or undefined if vtkImageData is missing.
+ */
+function buildImageData(cfg: SourceConfig): VtkImageData | undefined {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Common.DataModel.vtkImageData;
+  if (!factory) {
+    return undefined;
+  }
+  const dimensions = cfg.dimensions ?? [1, 1, 1];
+  const spacing = cfg.spacing ?? [1, 1, 1];
+  const origin = cfg.origin ?? [0, 0, 0];
+  const image = factory.newInstance();
+  const [nx, ny, nz] = dimensions;
+  image.setExtent(0, nx - 1, 0, ny - 1, 0, nz - 1);
+  image.setSpacing(spacing[0], spacing[1], spacing[2]);
+  image.setOrigin(origin[0], origin[1], origin[2]);
+  return image;
+}
+
+/**
+ * Create a volume actor and mapper from an image-volume scene config.
+ * @param cfg
+ * @returns The volume actor, mapper, and image dataset.
+ */
+function createImageVolumeActor(cfg: SourceConfig): {
+  volume: VtkVolume;
+  mapper: VtkVolumeMapper;
+  image: VtkImageData;
+} {
+  const image = buildImageData(cfg);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const volumeMapperFactory = vtk.Rendering.Core.vtkVolumeMapper;
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const volumeFactory = vtk.Rendering.Core.vtkVolume;
+  if (!(image && volumeMapperFactory && volumeFactory)) {
+    throw new Error("Volume rendering requires vtkImageData/vtkVolumeMapper");
+  }
+  injectVolumeScalars(image, cfg);
+  const mapper = volumeMapperFactory.newInstance();
+  mapper.setInputData(image);
+  const volume = volumeFactory.newInstance();
+  return { volume, mapper, image };
+}
+
+/**
+ * Add scalar arrays and a color/opacity property to a volume renderer input.
+ * @param image
+ * @param cfg
+ */
+function injectVolumeScalars(image: VtkImageData, cfg: SourceConfig): void {
+  const pointDataArrays = cfg.pointData;
+  if (pointDataArrays && pointDataArrays.length > 0) {
+    injectPointData(image as unknown as VtkPolyData, pointDataArrays);
+  }
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const propertyFactory = vtk.Rendering.Core.vtkVolumeProperty;
+  if (!propertyFactory) {
+    return;
+  }
+  const property = propertyFactory.newInstance();
+  const { scalars } = cfg;
+  if (scalars !== undefined && !scalars.direct) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const ctf = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const colorMaps = vtk.Rendering.Core.vtkColorTransferFunction.vtkColorMaps;
+    const presetName = COLORMAP_PRESETS[scalars.cmap] ?? DEFAULT_COLORMAP_PRESET;
+    const preset = colorMaps.getPresetByName(presetName);
+    if (preset) {
+      ctf.applyColorMap(preset);
+    }
+    ctf.setMappingRange(scalars.range[0], scalars.range[1]);
+    ctf.updateRange();
+    property.setRGBTransferFunction(0, ctf);
+
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const otfFactory = vtk.Common.DataModel.vtkPiecewiseFunction;
+    if (otfFactory) {
+      const otf = otfFactory.newInstance();
+      const [lo, hi] = scalars.range;
+      const mid = lo + (hi - lo) * OPACITY_MIDPOINT;
+      otf.addPoint(lo, OPACITY_MIN);
+      otf.addPoint(mid, OPACITY_HALF);
+      otf.addPoint(hi, OPACITY_MAX);
+      property.setScalarOpacity(0, otf);
+    }
+  }
+}
+
+function createGlyphSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
+  polydata.setPoints(vtkPts);
+  return { output: polydata, isFilter: false };
+}
+
+/**
+ * Create an image dataset scene source rendered as an outline.
+ * @param cfg
+ * @returns A {@link SourceResult} wrapping the image outline poly data.
+ */
+function createImageSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Common.DataModel.vtkImageData;
+  if (!factory) {
+    return createGlyphSource({ type: "glyph", points: [] });
+  }
+  const dimensions = cfg.dimensions ?? [1, 1, 1];
+  const spacing = cfg.spacing ?? [1, 1, 1];
+  const origin = cfg.origin ?? [0, 0, 0];
+  const image = factory.newInstance();
+  const [nx, ny, nz] = dimensions;
+  image.setExtent(0, nx - 1, 0, ny - 1, 0, nz - 1);
+  image.setSpacing(spacing[0], spacing[1], spacing[2]);
+  image.setOrigin(origin[0], origin[1], origin[2]);
+
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const outlineFactory = vtk.Filters.General.vtkImageDataOutlineFilter;
+  if (!outlineFactory) {
+    return createGlyphSource({
+      type: "glyph",
+      points: [...origin],
+    });
+  }
+  const outline = outlineFactory.newInstance({ imageData: image });
+  outline.update();
+  return { output: outline, isFilter: true };
+}
+
+/**
+ * Create a vtkGlyph3DMapper for a glyph scene.
+ * @param polydata
+ * @param cfg
+ * @returns The configured glyph mapper.
+ */
+function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const mapperFactory = vtk.Rendering.Core.vtkGlyph3DMapper;
+  if (!mapperFactory) {
+    throw new Error("vtkGlyph3DMapper is not available in this vtk.js build");
+  }
+  const mapper = mapperFactory.newInstance();
+  mapper.setInputData(polydata);
+  mapper.setScalarVisibility(false);
+
+  let geometry: VtkPolyData;
+  if (cfg.geometryPoints && cfg.geometryPoints.length > 0) {
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    geometry = vtk.Common.DataModel.vtkPolyData.newInstance();
+    const geometryPoints = Float32Array.from(cfg.geometryPoints);
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const geometryPts = vtk.Common.Core.vtkPoints.newInstance();
+    geometryPts.setData(geometryPoints, XYZ_COMPONENTS);
+    geometry.setPoints(geometryPts);
+    if (cfg.geometryPolys) {
+      geometry.getPolys().setData(Uint32Array.from(cfg.geometryPolys));
+    }
+  } else {
+    // Default geometry: an arrow (matches the PyVista glyph default)
+    // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+    const arrow = vtk.Filters.Sources.vtkArrowSource.newInstance();
+    arrow.update();
+    geometry = arrow.getOutputData();
+  }
+  mapper.setSourceData(geometry);
+
+  const orientationArray = cfg.orientationArray ?? "vectors";
+  if (cfg.orient !== false) {
+    mapper.setOrient?.(true);
+    mapper.setOrientationArray(orientationArray);
+  }
+  if (cfg.scaleFactor !== undefined) {
+    mapper.setScaleFactor(cfg.scaleFactor);
+  }
+  return mapper as unknown as VtkMapper;
+}
+
 function createMeshSource(cfg: SourceConfig): SourceResult {
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
@@ -789,12 +1064,51 @@ function applyScalars(mapper: VtkMapper, scalars: ScalarsConfig | undefined): vo
  * @param renWin
  * @returns The actor's vtk.js objects, or undefined if its source could not be built.
  */
+/**
+ * Build a volume-rendering actor from an image-volume scene config.
+ * @param cfg
+ * @param ren
+ * @returns The volume handle, or undefined when volume rendering is unavailable.
+ */
+function setupVolumeActor(cfg: ActorConfig, ren: VtkRenderer): ActorHandle | undefined {
+  const parts = createImageVolumeActor(cfg.source);
+  const { volume, mapper } = parts;
+
+  ren.addVolume?.(volume);
+  return {
+    id: cfg.id,
+    polydata: buildImageDataPolyDataFallback(cfg.source),
+    mapper: mapper as unknown as VtkMapper,
+    actor: volume as unknown as VtkActor,
+  };
+}
+
+/**
+ * Empty poly data fallback so volume handles can carry a mapper reference.
+ * @param cfg
+ * @returns An empty PolyData.
+ */
+function buildImageDataPolyDataFallback(cfg: SourceConfig): VtkPolyData {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const polydata = vtk.Common.DataModel.vtkPolyData.newInstance();
+  const pointsArray = Float32Array.from(cfg.points ?? []);
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const vtkPts = vtk.Common.Core.vtkPoints.newInstance();
+  vtkPts.setData(pointsArray, XYZ_COMPONENTS);
+  polydata.setPoints(vtkPts);
+  return polydata;
+}
+
 function setupActor(
   cfg: ActorConfig,
   _index: number,
   ren: VtkRenderer,
   renWin: VtkRenderWindow,
 ): ActorHandle | undefined {
+  if (cfg.source.type === "imageVolume") {
+    return setupVolumeActor(cfg, ren);
+  }
+
   const sourceResult = createSource(cfg.source);
   if (!sourceResult?.output) {
     return undefined;
@@ -809,9 +1123,14 @@ function setupActor(
     currentResult = applyFilters(sourceResult, cfg.source.filters);
   }
 
-  const mapperInput = setupNormals(currentResult, cfg.normals);
-  const mapper = createMapper(mapperInput, cfg);
-  applyScalars(mapper, cfg.scalars);
+  let mapper: VtkMapper;
+  if (cfg.source.type === "glyph") {
+    mapper = createGlyphMapper(polydata, cfg.source);
+  } else {
+    const mapperInput = setupNormals(currentResult, cfg.normals);
+    mapper = createMapper(mapperInput, cfg);
+    applyScalars(mapper, cfg.scalars);
+  }
 
   // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
   const actor = vtk.Rendering.Core.vtkActor.newInstance();
@@ -1004,6 +1323,10 @@ function setupCamera(ren: VtkRenderer, camConfig: CameraConfig): void {
     cam.setParallelProjection(true);
   }
 
+  if (camConfig.parallelScale !== undefined) {
+    cam.setParallelScale(camConfig.parallelScale);
+  }
+
   if (camConfig.viewVector && camConfig.viewUp) {
     cam.setPosition(camConfig.viewVector[0], camConfig.viewVector[1], camConfig.viewVector[2]);
     cam.setViewUp(camConfig.viewUp[0], camConfig.viewUp[1], camConfig.viewUp[2]);
@@ -1133,6 +1456,11 @@ const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig)
     clip: tryClipFilter,
     contour: tryContourFilter,
     fillHoles: tryFillHolesFilter,
+    threshold: tryThresholdFilter,
+    slice: trySliceFilter,
+    warpByScalar: tryWarpByScalarFilter,
+    smoothTaubin: trySmoothTaubinFilter,
+    textureSphere: tryTextureMapToSphere,
   };
 
 /**
@@ -1739,6 +2067,205 @@ function triangulateLoop(loop: number[], newPolys: number[]): void {
  * @param holeSize
  * @returns A {@link SourceResult} with holes filled.
  */
+/**
+ * Try to apply a threshold filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryThresholdFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (f.lowerValue === undefined || f.upperValue === undefined || !f.scalarName) {
+    return current;
+  }
+  return applyThresholdFilter(current, f.lowerValue, f.upperValue, f.scalarName);
+}
+
+/**
+ * Apply vtkThresholdPoints to keep points whose active scalar lies in the
+ * threshold range. Cells with all points outside the range are removed.
+ * @param sourceResult
+ * @param lowerValue
+ * @param upperValue
+ * @param scalarName
+ * @returns A {@link SourceResult} with the thresholded geometry.
+ */
+function applyThresholdFilter(
+  sourceResult: SourceResult,
+  lowerValue: number,
+  upperValue: number,
+  scalarName: string,
+): SourceResult {
+  const inputPd = getPolyData(sourceResult);
+  const pdArrays = inputPd.getPointData();
+  if (!pdArrays.getArrayByName(scalarName)) {
+    return sourceResult;
+  }
+  pdArrays.setActiveScalars(scalarName);
+
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.Core.vtkThresholdPoints;
+  if (!factory) {
+    return sourceResult;
+  }
+  const threshold = factory.newInstance({
+    lowerThreshold: lowerValue,
+    upperThreshold: upperValue,
+    thresholdFunction: (value: number) => value >= lowerValue && value <= upperValue,
+  });
+  threshold.setInputData(inputPd);
+  threshold.update();
+  return { output: threshold, isFilter: true };
+}
+
+/**
+ * Try to apply a warp-by-scalar filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryWarpByScalarFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (f.factor === undefined || !f.scalarName) {
+    return current;
+  }
+  return applyWarpByScalarFilter(current, f.factor, f.scalarName);
+}
+
+/**
+ * Apply vtkWarpScalar to displace points along their normals scaled by the
+ * active scalar value.
+ * @param sourceResult
+ * @param factor
+ * @param scalarName
+ * @returns A {@link SourceResult} with the warped geometry.
+ */
+function applyWarpByScalarFilter(
+  sourceResult: SourceResult,
+  factor: number,
+  scalarName: string,
+): SourceResult {
+  const inputPd = getPolyData(sourceResult);
+  const pdArrays = inputPd.getPointData();
+  if (!pdArrays.getArrayByName(scalarName)) {
+    return sourceResult;
+  }
+  pdArrays.setActiveScalars(scalarName);
+
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const warpFactory = vtk.Filters.General.vtkWarpScalar;
+  if (!warpFactory) {
+    return sourceResult;
+  }
+  const warp = warpFactory.newInstance({ scaleFactor: factor });
+  warp.setInputData(inputPd);
+  warp.update();
+  return { output: warp, isFilter: true };
+}
+
+/**
+ * Try to apply a Taubin smoothing filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function trySmoothTaubinFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (f.passBand === undefined || f.nIterations === undefined) {
+    return current;
+  }
+  return applySmoothTaubinFilter(current, f.passBand, f.nIterations);
+}
+
+/**
+ * Apply vtkWindowedSincPolyDataFilter for Laplacian smoothing, mirroring
+ * the PyVista smooth_taubin filter (Taubin = pass band smoothing that
+ * avoids surface shrinkage).
+ * @param sourceResult
+ * @param passBand
+ * @param numberOfIterations
+ * @returns A {@link SourceResult} with the smoothed geometry.
+ */
+function applySmoothTaubinFilter(
+  sourceResult: SourceResult,
+  passBand: number,
+  numberOfIterations: number,
+): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const factory = vtk.Filters.General.vtkWindowedSincPolyDataFilter;
+  if (!factory) {
+    return sourceResult;
+  }
+  const smoother = factory.newInstance({
+    passBand,
+    numberOfIterations,
+    featureAngle: 60,
+    edgeAngle: 15,
+    boundarySmoothing: true,
+    nonManifoldBoundarySmoothing: true,
+  });
+  smoother.setInputData(getPolyData(sourceResult));
+  smoother.update();
+  return { output: smoother, isFilter: true };
+}
+
+/**
+ * Try to apply a sphere texture mapping filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function tryTextureMapToSphere(current: SourceResult, f: FilterConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const map = vtk.Filters.Texture.vtkTextureMapToSphere.newInstance({
+    center: f.center,
+    radius: f.radius,
+    preventSeam: true,
+  });
+  map.setInputData(getPolyData(current));
+  map.update();
+  return { output: map, isFilter: true };
+}
+
+/**
+ * Try to apply a slice filter.
+ * @param current
+ * @param f
+ * @returns The filtered result, or the original if config is incomplete.
+ */
+function trySliceFilter(current: SourceResult, f: FilterConfig): SourceResult {
+  if (!(f.normal && f.origin)) {
+    return current;
+  }
+  return applySliceFilter(current, f.normal, f.origin);
+}
+
+/**
+ * Apply vtkCutter with a cut plane, producing cross-section lines.
+ * @param sourceResult
+ * @param normal
+ * @param origin
+ * @returns A {@link SourceResult} with the sliced geometry.
+ */
+function applySliceFilter(
+  sourceResult: SourceResult,
+  normal: [number, number, number],
+  origin: [number, number, number],
+): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const cutterFactory = vtk.Filters.Core.vtkCutter;
+  if (!cutterFactory) {
+    return sourceResult;
+  }
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const plane = vtk.Common.DataModel.vtkPlane.newInstance();
+  plane.setOrigin(origin[0], origin[1], origin[2]);
+  plane.setNormal(normal[0], normal[1], normal[2]);
+  const cutter = cutterFactory.newInstance();
+  cutter.setCutFunction?.(plane);
+  cutter.setCutValue?.(PLANAR_CUT_VALUE);
+  cutter.setInputData(getPolyData(sourceResult));
+  cutter.update();
+  return { output: cutter, isFilter: true };
+}
+
 function applyFillHolesFilter(sourceResult: SourceResult, holeSize: number): SourceResult {
   const inputPd = getPolyData(sourceResult);
   const inPoints = inputPd.getPoints().getData();

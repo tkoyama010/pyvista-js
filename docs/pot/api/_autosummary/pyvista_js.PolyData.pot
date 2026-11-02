@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-02 22:55+0000\n"
+"POT-Creation-Date: 2026-10-24 11:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,7 @@ msgstr ""
 msgid "Cell connectivity information."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.__init__:1
 msgid "Initialize a PolyData mesh."
 msgstr ""
@@ -45,92 +45,173 @@ msgstr ""
 msgid "Methods"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`__init__ <pyvista_js.PolyData.__init__>`\\ \\(points\\[\\, faces\\, t\\_coords\\, scalars\\, ...\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`clean <pyvista_js.PolyData.clean>`\\ \\(\\[point\\_tolerance\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:1
+msgid "Merge duplicate points and remove unused or degenerate cells."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`clip <pyvista_js.PolyData.clip>`\\ \\(\\[normal\\, origin\\, invert\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clip:1
 msgid "Clip the mesh with a plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`contour <pyvista_js.PolyData.contour>`\\ \\(\\[isosurfaces\\, scalars\\, scalar\\_name\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.contour:1
 msgid "Generate contour lines at constant scalar values."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`fill_holes <pyvista_js.PolyData.fill_holes>`\\ \\(\\[hole\\_size\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:1
 msgid "Fill holes in a polygonal mesh."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`glyph <pyvista_js.PolyData.glyph>`\\ \\(\\[orient\\, scale\\, factor\\, geometry\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:1
+msgid "Glyph the mesh points with per-point geometry."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`outline <pyvista_js.PolyData.outline>`\\ \\(\\[generate\\_faces\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:1
+msgid "Produce an outline of the bounds for the mesh."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`plot <pyvista_js.PolyData.plot>`\\ \\(\\[color\\, opacity\\, pbr\\, metallic\\, roughness\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.plot:1
 msgid "Plot this mesh."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`save <pyvista_js.PolyData.save>`\\ \\(filename\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.save:1
 msgid "Write this mesh to disk using meshio."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`shrink <pyvista_js.PolyData.shrink>`\\ \\(\\[shrink\\_factor\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.shrink:1
 msgid "Shrink the cells of a mesh towards their centroid."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`slice <pyvista_js.PolyData.slice>`\\ \\(\\[normal\\, origin\\, generate\\_triangles\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:1
+msgid "Slice the mesh with a plane, producing cross-section lines."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`smooth_taubin <pyvista_js.PolyData.smooth_taubin>`\\ \\(\\[pass\\_band\\, n\\_iter\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:1
+msgid "Smooth the mesh surface using a Taubin smoothing filter."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`texture_map_to_plane <pyvista_js.PolyData.texture_map_to_plane>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_plane:1
 msgid "Generate texture coordinates by projecting points onto the XY plane."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`texture_map_to_sphere <pyvista_js.PolyData.texture_map_to_sphere>`\\ \\(\\[center\\, prevent\\_seam\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:1
+msgid "Texture map a mesh to a sphere."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`threshold <pyvista_js.PolyData.threshold>`\\ \\(value\\[\\, scalars\\, invert\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:1
+msgid "Extract the parts of the mesh whose scalars are inside a range."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`to_scene_data <pyvista_js.PolyData.to_scene_data>`\\ \\(\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.to_scene_data:1
 msgid "Return a JSON-serializable dict describing this mesh source."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`triangulate <pyvista_js.PolyData.triangulate>`\\ \\(\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:1
+msgid "Convert all polygon cells into triangles."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 msgid ":py:obj:`tube <pyvista_js.PolyData.tube>`\\ \\(\\*\\[\\, radius\\, n\\_sides\\, capping\\]\\)"
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:30:<autosummary>:1
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.tube:1
 msgid "Generate a tube around a line polydata."
 msgstr ""
 
-#: ../api/_autosummary/pyvista_js.PolyData.rst:32
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+msgid ":py:obj:`warp_by_scalar <pyvista_js.PolyData.warp_by_scalar>`\\ \\(\\[scalars\\, factor\\]\\)"
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:39:<autosummary>:1
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:1
+msgid "Displace the points along their normals weighted by the scalars."
+msgstr ""
+
+#: ../api/_autosummary/pyvista_js.PolyData.rst:41
 msgid "Attributes"
 msgstr ""
 
@@ -188,15 +269,44 @@ msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.PolyData.bounding_sphere:10
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.PolyData.point_data:7
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:22
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clip:31
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.contour:33
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:29
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:32
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:21
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.plot:18
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.save:27
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.shrink:24
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:29
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:24
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_plane:10
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:25
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:27
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:16
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.tube:27
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:22
 msgid "Examples"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:3
+msgid "This filters coincident points into a single point and rebuilds the cell connectivity accordingly. Point data arrays are preserved by keeping the value of the first occurrence of each merged point. It mirrors the PyVista ``clean`` filter API."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:10
+msgid "The merge is computed in Python with NumPy. Points are merged when their coordinates are equal (or within ``point_tolerance`` when it is greater than zero)."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:14
+msgid "Tolerance used to decide whether two points are coincident. The default of 0.0 merges only points that are exactly equal."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:18
+msgid "A new mesh without duplicate points or degenerate cells."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clean:35
+msgid "Render the cleaned mesh:"
 msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clip:3
@@ -307,6 +417,66 @@ msgstr ""
 msgid "Render the filled mesh:"
 msgstr ""
 
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:3
+msgid "This mirrors the PyVista ``glyph`` filter API: a point cloud is rendered with per-point arrows (by default) oriented and scaled by point vectors using vtk.js's ``vtkGlyph3DMapper`` at render time."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:9
+msgid "The glyphing happens in JavaScript at render time. This method only serializes the configuration."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:12
+msgid "Whether to orient glyphs by the ``'vectors'`` point array. A string names the array to use. Default is True."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:15
+msgid "Whether to scale glyphs by the ``'vectors'`` point array. A string names the array to use. For simplicity, only ``'vectors'`` scaling is supported in this implementation. Default is True."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:20
+msgid "Scale factor applied to the glyphs. Default is 1.0."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:22
+msgid "Geometry to use for each glyph. Default uses an arrow (matching the PyVista default)."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:26
+msgid "A mesh configured for glyph rendering."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:29
+msgid "If ``orient`` is set but the vectors array is missing or has a     mismatched length."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:44
+msgid "Render the glyphs:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:3
+msgid "Mirrors the PyVista ``outline`` filter API: the default output is an outline of 12 line segments along the bounding box edges, and ``generate_faces=True`` returns the filled box surface instead."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:9
+msgid "The outline is computed in Python with NumPy from the axis-aligned bounding box of the points."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:12
+msgid "If True, produce the filled box surface. Default is False."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:15
+msgid "A new mesh representing the bounding box."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:18
+msgid "If the mesh has no points."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:30
+msgid "Render the bounding box:"
+msgstr ""
+
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.plot:3
 msgid "This is a convenience method that creates a :class:`~pyvista_js.Plotter`, adds this mesh, and calls :func:`~pyvista_js.Plotter.show`."
 msgstr ""
@@ -379,6 +549,66 @@ msgstr ""
 msgid "Render the shrunk mesh:"
 msgstr ""
 
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:3
+msgid "This mirrors the PyVista ``slice`` filter API and is backed by vtk.js's ``vtkCutter`` with a cut plane."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:8
+msgid "The slicing is computed in JavaScript at render time by evaluating the cut function per point and triangulating the crossing edges. ``generate_triangles`` is accepted for API compatibility but currently has no effect."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:13
+msgid "The normal vector of the slicing plane. Can be a string specifying a cardinal direction ('x', 'y', 'z', '-x', '-y', '-z') or a 3-tuple of floats (nx, ny, nz). Default is 'z'."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:17
+msgid "The origin point of the slicing plane as (x, y, z). If not provided, defaults to the center of the mesh's bounding box."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:20
+msgid "Reserved for API compatibility with PyVista. No effect."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:23
+msgid "A new mesh with the cross-section geometry."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:26
+msgid "If the normal string is invalid or vectors have the wrong size."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.slice:39
+msgid "Render the cross-section:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:3
+msgid "This mirrors the PyVista ``smooth_taubin`` filter API and is backed by vtk.js's ``vtkWindowedSincPolyDataFilter``. Taubin smoothing avoids the surface shrinkage of Laplacian smoothing."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:9
+msgid "The smoothing is applied in JavaScript at render time."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:11
+msgid "Pass band frequency for the smoothing filter. The closer to zero, the greater the smoothing effect. Default is 0.001."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:14
+msgid "Number of iterations for the smoothing filter. Default is 15."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:18
+msgid "A new mesh with smoothed points."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:21
+msgid "If ``n_iter`` is less than 1."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.smooth_taubin:34
+msgid "Render the smoothed mesh:"
+msgstr ""
+
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_plane:3
 msgid "Maps the mesh's X and Y extents to UV coordinates in the [0, 1] range. This mirrors the PyVista :meth:`pyvista.DataSet.texture_map_to_plane` API."
 msgstr ""
@@ -387,8 +617,84 @@ msgstr ""
 msgid "A new mesh with texture coordinates (``t_coords``) set."
 msgstr ""
 
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:3
+msgid "This mirrors the PyVista ``texture_map_to_sphere`` filter API and is backed by vtk.js's ``vtkTextureMapToSphere`` used by the sphere source pipeline."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:9
+msgid "The texture coordinates are computed in JavaScript at render time by mapping each point onto a sphere."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:12
+msgid "Center of the sphere used for the mapping. Default uses the center of the mesh's bounding sphere."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:15
+msgid "If True, controls whether or not to prevent seam artifacts. Default is True."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:19
+msgid "A new mesh with sphere texture coordinates."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:22
+msgid "If ``center`` is provided with the wrong size."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.texture_map_to_sphere:35
+msgid "Render the textured mesh:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:3
+msgid "This filter keeps the points (and any cells having at least one kept point) whose scalar value lies in the threshold range. It mirrors the PyVista ``threshold`` filter API and is backed by vtk.js's ``vtkThresholdPoints``."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:10
+msgid "The thresholding is applied in JavaScript at render time."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:12
+msgid "A single value thresholds in the range ``[value, max]``; a pair of values thresholds in the range ``[low, high]``."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:15
+msgid "The scalar array used for thresholding. Default uses the ``scalars`` attribute of the mesh."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:18
+msgid "If True, invert the threshold range. Default is False."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:21
+msgid "A new mesh with the thresholded subset."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:24
+msgid "If no scalar data is available or the value has the wrong size."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.threshold:38
+msgid "Render the thresholded mesh:"
+msgstr ""
+
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.to_scene_data:3
 msgid "Source configuration with ``\"type\"`` key and type-specific parameters."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:3
+msgid "This filter replaces every polygon of more than three vertices with a fan of triangles sharing its first vertex, and leaves lines and vertices unchanged. It mirrors the PyVista ``triangulate`` filter API."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:10
+msgid "The triangulation is computed in Python with NumPy."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:12
+msgid "A new mesh whose polygons are all triangles."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.triangulate:26
+msgid "Render the triangulated mesh:"
 msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.tube:3
@@ -417,4 +723,32 @@ msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.tube:37
 msgid "Render the tube:"
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:3
+msgid "This mirrors the PyVista ``warp_by_scalar`` filter API and is backed by vtk.js's ``vtkWarpScalar``."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:8
+msgid "The warp is applied in JavaScript at render time."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:10
+msgid "The scalar array used for the warp. Default uses the ``scalars`` attribute of the mesh."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:13
+msgid "Scaling factor applied to the scalar values. Default is 1.0."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:16
+msgid "A new mesh with warped points."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:19
+msgid "If no scalar data is available."
+msgstr ""
+
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.warp_by_scalar:33
+msgid "Render the warped mesh:"
 msgstr ""
