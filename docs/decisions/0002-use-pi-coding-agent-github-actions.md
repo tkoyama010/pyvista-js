@@ -29,7 +29,7 @@ Repository maintenance tasks — triaging issues, reviewing pull requests, and d
 
 ## Decision Outcome
 
-Chosen option: "Use `shaftoe/pi-coding-agent-action` (pi-native GitHub Action) triggered by comments" (proposed, not yet accepted), because it is the pi ecosystem's own action: it runs the pi CLI inside the workflow, so it loads `AGENTS.md`, skills, and extensions exactly like a local run, keeping repository guidance consistent between local and CI. It is comment-triggered (`/pi`), restricted to repository owners and organization members by default, needs no new infrastructure, and keeps the agent's token budget and cost visible in the workflow run log.
+Chosen option: "Use `shaftoe/pi-coding-agent-action` (pi-native GitHub Action) triggered by comments" (proposed, not yet accepted), because it is the pi ecosystem's own action: it runs the pi CLI inside the workflow, so it loads `AGENTS.md`, skills, and extensions exactly like a local run, keeping repository guidance consistent between local and CI. It is comment-triggered (`/pi`), but the workflow must explicitly restrict triggering actors to repository owners and organization members. It needs no new infrastructure and keeps the agent's token budget and cost visible in the workflow run log.
 
 ### Consequences
 
