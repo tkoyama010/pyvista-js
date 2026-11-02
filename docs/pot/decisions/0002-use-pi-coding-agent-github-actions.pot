@@ -1,0 +1,217 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-02 22:59+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:9
+msgid "Use Pi Coding Agent GitHub Actions for Repository Automation"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:11
+msgid "Context and Problem Statement"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:13
+msgid "Repository maintenance tasks — triaging issues, reviewing pull requests, and drafting fixes — currently happen only when a maintainer is available. The repository already carries its AI-facing guidance in [`AGENTS.md`](../../AGENTS.md), which every coding agent reads, but GitHub automation has no way to invoke that agent on demand. Should the repository run the [pi coding agent](https://github.com/badlogic/pi-mono) directly from GitHub Actions, triggered by comments on issues and pull requests?"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:15
+msgid "Decision Drivers"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:17
+msgid "**Reuse of AGENTS.md**: The agent harness reads `AGENTS.md`, skills, and extensions, so workflow contributions must follow the same conventions as human-written ones."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:18
+msgid "**Security**: A comment-triggered agent can post content and write to branches; it must not run for arbitrary accounts or leak the LLM API key."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:19
+msgid "**Runner cost**: Agent runs use hosted runners plus a paid LLM API key; unbounded triggers would be expensive."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:20
+msgid "**Action pinning policy**: Project policy (SPEC 8) requires third-party GitHub Actions to be pinned to a commit SHA, which applies to any action added here."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:21
+msgid "**Maintainer bandwidth**: Automation should reduce manual triage and review turn-around without requiring a new service or self-hosted infrastructure."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:23
+msgid "Considered Options"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:25
+msgid "Do nothing; handle issues and reviews manually only."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:26
+msgid "Use `shaftoe/pi-coding-agent-action` (pi-native GitHub Action) triggered by comments."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:27
+msgid "Use a generic AI review bot (for example, an LLM-based reviewer app that does not load `AGENTS.md`)."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:28
+msgid "Self-host a dedicated agent service outside GitHub Actions."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:30
+msgid "Decision Outcome"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:32
+msgid "Chosen option: \"Use `shaftoe/pi-coding-agent-action` (pi-native GitHub Action) triggered by comments\" (proposed, not yet accepted), because it is the pi ecosystem's own action: it runs the pi CLI inside the workflow, so it loads `AGENTS.md`, skills, and extensions exactly like a local run, keeping repository guidance consistent between local and CI. It is comment-triggered (`/pi`), but the workflow must explicitly restrict triggering actors to repository owners and organization members. It needs no new infrastructure and keeps the agent's token budget and cost visible in the workflow run log."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:34
+msgid "Consequences"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:36
+msgid "Good, because issue and PR triage can start from a maintainer comment instead of the maintainer's keyboard."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:37
+msgid "Good, because the same `AGENTS.md` and skill set govern local sessions and CI runs, so there is one source of agent guidance."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:38
+msgid "Good, because the allowlist default (owners and organization members) plus the project's pinned-SHA policy keeps the attack surface small."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:39
+msgid "Bad, because each triggered run consumes a hosted runner and a paid LLM API call; cost must be watched."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:40
+msgid "Bad, because an agent posting on behalf of the repository can generate incorrect technical claims; posted output still needs human review before being trusted."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:41
+msgid "Bad, because third-party action dependency adds supply-chain surface; version updates must be reviewed."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:43
+msgid "Confirmation"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:45
+msgid "Compliance is confirmed by review of any workflow file added under `.github/workflows/`: it must trigger only on comments (not on every push), restrict triggering actors to owners and organization members, pin the action to a commit SHA, and read the API token from a repository secret (never an inline value). The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:47
+msgid "Pros and Cons of the Options"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:49
+msgid "Do nothing; handle issues and reviews manually only"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:51
+msgid "No automation is added."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:53
+msgid "Good, because there is no new dependency, cost, or security surface."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:54
+msgid "Bad, because triage and review latency stays proportional to maintainer availability."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:56
+msgid "Use `shaftoe/pi-coding-agent-action` (proposed)"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:58
+msgid "Invoke the pi CLI through the pi-native GitHub Action via `/pi` comments on issues and pull requests."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:60
+msgid "Good, because it loads `AGENTS.md`, skills, and extensions, matching local pi sessions exactly."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:61
+msgid "Good, because it is comment-triggered and allowlisted by default to owners and organization members."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:62
+msgid "Good, because it needs no infrastructure beyond hosted runners and one API-key secret."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:63
+msgid "Neutral, because the action is maintained by a third party, not by pi core; its releases must be tracked."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:64
+msgid "Bad, because it sits outside pi-mono, so it can drift from pi CLI changes between releases."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:66
+msgid "Use a generic AI review bot"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:68
+msgid "Install an LLM-based reviewer application from the GitHub Marketplace."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:70
+msgid "Good, because setup is often a one-click app install."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:71
+msgid "Bad, because such bots do not read `AGENTS.md` or the repository's skills, so their guidance diverges from what local agents follow."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:72
+msgid "Bad, because behavior is opaque and not customizable to this repository's conventions."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:74
+msgid "Self-host a dedicated agent service"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:76
+msgid "Run a long-lived agent outside GitHub Actions and connect it via webhook."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:78
+msgid "Good, because it could support richer triggers and persistence."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:79
+msgid "Bad, because it requires running and monitoring a service, which is disproportionate to the current maintainer count."
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:81
+msgid "More Information"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:83
+msgid "[pi-mono](https://github.com/badlogic/pi-mono) (the pi coding agent) and the [pi ecosystem `awesome-pi-coding-agent` list](https://github.com/shaftoe/awesome-pi-coding-agent)"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:84
+msgid "[`shaftoe/pi-coding-agent-action`](https://github.com/shaftoe/pi-coding-agent-action)"
+msgstr ""
+
+#: ../decisions/0002-use-pi-coding-agent-github-actions.md:85
+msgid "ADR-0000 for the record format used here."
+msgstr ""
