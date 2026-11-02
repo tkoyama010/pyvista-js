@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"POT-Creation-Date: 2026-11-02 23:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,49 +49,69 @@ msgid "color by a different point-data array with `scalars`,"
 msgstr ""
 
 #: ../howtos/update-in-place.md:35
-msgid "move the points of a mesh given by points and faces with `points`."
+msgid "move the points of a mesh given by points and faces with `points`,"
 msgstr ""
 
-#: ../howtos/update-in-place.md:37
+#: ../howtos/update-in-place.md:36
+msgid "change the solid `color` and the `opacity`."
+msgstr ""
+
+#: ../howtos/update-in-place.md:38
 msgid "The number of points cannot change. The mesh is updated in Python too, so a page generated later shows the new data."
 msgstr ""
 
-#: ../howtos/update-in-place.md:40
+#: ../howtos/update-in-place.md:41
+msgid "Adding and removing actors, and moving the camera"
+msgstr ""
+
+#: ../howtos/update-in-place.md:43
+msgid "As in PyVista, once a scene is shown, {meth}`~pyvista_js.Plotter.add_mesh`, {meth}`~pyvista_js.Plotter.add_points` and {meth}`~pyvista_js.Plotter.remove_actor` add and remove actors in it too, and {meth}`~pyvista_js.Plotter.view_vector`, {attr}`~pyvista_js.Plotter.camera` and {attr}`~pyvista_js.Plotter.camera_position` move its camera:"
+msgstr ""
+
+#: ../howtos/update-in-place.md:54
+msgid "Pass `render=False` to change only the plotter. Scenes shown before {meth}`~pyvista_js.Plotter.clear` keep what they had, and later changes reach only the scenes shown after it."
+msgstr ""
+
+#: ../howtos/update-in-place.md:58
 msgid "In a page you embed yourself"
 msgstr ""
 
-#: ../howtos/update-in-place.md:42
+#: ../howtos/update-in-place.md:60
 msgid "If you put the page from {meth}`~pyvista_js.Plotter.generate_standalone_html` somewhere yourself, for example in an `<iframe>`, deliver the updates yourself as well. Pass `send=False` and serialize the message with {func}`~pyvista_js.rendering.scene_to_json`:"
 msgstr ""
 
-#: ../howtos/update-in-place.md:59
+#: ../howtos/update-in-place.md:77
 msgid "Then apply the message with `pvjsApplyUpdate`, which the page defines:"
 msgstr ""
 
-#: ../howtos/update-in-place.md:66
+#: ../howtos/update-in-place.md:84
 msgid "How the message gets to the page is up to you: a `postMessage` handler, a widget, or any other channel you already have."
 msgstr ""
 
-#: ../howtos/update-in-place.md:69
+#: ../howtos/update-in-place.md:87
+msgid "The other changes have messages too: `plotter.update_actor(index, add=True, send=False)` for an actor added after the page was generated, `plotter.update_actor(index, remove=True, send=False)` to remove one, and `plotter.update_camera(send=False)` for the camera."
+msgstr ""
+
+#: ../howtos/update-in-place.md:92
 msgid "Limitations"
 msgstr ""
 
-#: ../howtos/update-in-place.md:71
+#: ../howtos/update-in-place.md:94
 msgid "Updates reach the rendered mesh through smooth-shading normals, but not through filters such as {meth}`~pyvista_js.PolyData.clip` or {meth}`~pyvista_js.PolyData.contour`, which are computed when the page loads."
 msgstr ""
 
-#: ../howtos/update-in-place.md:74
+#: ../howtos/update-in-place.md:97
 msgid "`points` can only be updated for meshes given by points and faces, not for generated shapes such as {func}`~pyvista_js.Sphere`."
 msgstr ""
 
-#: ../howtos/update-in-place.md:77
+#: ../howtos/update-in-place.md:100
 msgid "Faster serialization"
 msgstr ""
 
-#: ../howtos/update-in-place.md:79
+#: ../howtos/update-in-place.md:102
 msgid "Scenes and update messages with large meshes are written several times faster when [orjson](https://github.com/ijl/orjson) is installed:"
 msgstr ""
 
-#: ../howtos/update-in-place.md:86
+#: ../howtos/update-in-place.md:109
 msgid "In Pyodide, run `await micropip.install(\"orjson\")`."
 msgstr ""
