@@ -127,6 +127,9 @@ and {meth}`pyvista_js.Plotter.update_camera`, and see {doc}`/howtos/update-in-pl
    pyvista_js.STLReader
 ```
 
+Load glTF 2.0 assets (`.gltf`/`.glb`) with {class}`pyvista_js.GLTFReader`;
+see {doc}`/howtos/gltf-import` for rendering, URLs, and animations.
+
 ## Examples
 
 ```{eval-rst}
