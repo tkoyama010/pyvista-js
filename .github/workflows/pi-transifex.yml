@@ -1,0 +1,60 @@
+# Runs the pi coding agent from the Actions tab to update Transifex
+# translations, following ADR-0002
+# (docs/decisions/0002-use-pi-coding-agent-github-actions.md).
+#
+# The agent updates the Transifex resources in place via the Transifex
+# tools; it never edits docs/pot/ or docs/locale/ directly (those files
+# are machine-generated and repopulated from Transifex).
+#
+# Triggers only via workflow_dispatch, so only users with Actions write
+# access can invoke it (no scheduled or push-triggered path).
+#
+# Required repository configuration:
+#   secret   PI_TOKEN     API token for the LLM provider
+#   variable PI_PROVIDER  LLM provider (e.g. anthropic, openai, google)
+#   variable PI_MODEL     Model name (e.g. claude-sonnet-4-5, gpt-5.4)
+#   secret   TX_TOKEN     Transifex API token
+
+name: Pi Transifex Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      lang:
+        description: 'Target language code (e.g. ja); empty means all languages'
+        required: false
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: pi-transifex
+  cancel-in-progress: false
+
+jobs:
+  pi-transifex:
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run Pi agent
+        uses: shaftoe/pi-coding-agent-action@381f578da466b8d2ef48f0fdb8a940f276fe4c3c  # v2.30.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          provider: ${{ vars.PI_PROVIDER }}
+          model: ${{ vars.PI_MODEL }}
+          token: ${{ secrets.PI_TOKEN }}
+          prompt: |-
+            Update the Transifex translations for this repository (${{ github.repository }}).
+            Use the Transifex tools with the TX_TOKEN environment variable
+            (organization: tkoyama010, project: pyvista-js, resource: all resources).
+            Target language: ${{ inputs.lang && inputs.lang || 'all languages' }}.
+            Fetch the untranslated strings for the target language(s) and translate
+            them in place with the Transifex tools. Do not edit docs/pot/ or
+            docs/locale/ directly; those files are machine-generated from Transifex.
+            When you are done, report how many strings were translated per language
+            and list any strings you skipped (for example markup-only placeholders).
