@@ -2,16 +2,16 @@
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Tetsuo Koyama <tkoyama010@gmail.com>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 19:42+0000\n"
+"POT-Creation-Date: 2026-11-02 23:45+0000\n"
 "PO-Revision-Date: 2026-09-26 01:09+0000\n"
 "Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
@@ -60,20 +60,52 @@ msgid "color by a different point-data array with `scalars`,"
 msgstr "`scalars` で別の点データ配列を使って着色する"
 
 #: ../howtos/update-in-place.md:35
-msgid "move the points of a mesh given by points and faces with `points`."
-msgstr "`points` で points と faces から与えられたメッシュの点を移動する"
+msgid "move the points of a mesh given by points and faces with `points`,"
+msgstr "`points` で points と faces からなるメッシュの点を移動し、"
 
-#: ../howtos/update-in-place.md:37
+#: ../howtos/update-in-place.md:36
+msgid "change the solid `color` and the `opacity`."
+msgstr "単色の `color` と `opacity` を変更します。"
+
+#: ../howtos/update-in-place.md:38
 msgid ""
 "The number of points cannot change. The mesh is updated in Python too, so a "
 "page generated later shows the new data."
 msgstr "点の数は変更できません。メッシュは Python 側でも更新されるため、後で生成したページには新しいデータが表示されます。"
 
-#: ../howtos/update-in-place.md:40
+#: ../howtos/update-in-place.md:41
+msgid "Adding and removing actors, and moving the camera"
+msgstr "アクターの追加・削除とカメラの移動"
+
+#: ../howtos/update-in-place.md:43
+msgid ""
+"As in PyVista, once a scene is shown, {meth}`~pyvista_js.Plotter.add_mesh`, "
+"{meth}`~pyvista_js.Plotter.add_points` and "
+"{meth}`~pyvista_js.Plotter.remove_actor` add and remove actors in it too, "
+"and {meth}`~pyvista_js.Plotter.view_vector`, "
+"{attr}`~pyvista_js.Plotter.camera` and "
+"{attr}`~pyvista_js.Plotter.camera_position` move its camera:"
+msgstr ""
+"PyVista "
+"と同様に、シーンを表示した後は、{meth}`~pyvista_js.Plotter.add_mesh`、{meth}`~pyvista_js.Plotter.add_points`、{meth}`~pyvista_js.Plotter.remove_actor`"
+" "
+"がそのシーン内のアクターを追加・削除し、{meth}`~pyvista_js.Plotter.view_vector`、{attr}`~pyvista_js.Plotter.camera`、{attr}`~pyvista_js.Plotter.camera_position`"
+" がカメラを移動します:"
+
+#: ../howtos/update-in-place.md:54
+msgid ""
+"Pass `render=False` to change only the plotter. Scenes shown before "
+"{meth}`~pyvista_js.Plotter.clear` keep what they had, and later changes "
+"reach only the scenes shown after it."
+msgstr ""
+"プロッターのみを変更するには `render=False` を渡します。{meth}`~pyvista_js.Plotter.clear` "
+"の前に表示されたシーンはその内容を保ち、それ以降の変更はクリア後に表示されたシーンにのみ反映されます。"
+
+#: ../howtos/update-in-place.md:58
 msgid "In a page you embed yourself"
 msgstr "自分で埋め込むページの場合"
 
-#: ../howtos/update-in-place.md:42
+#: ../howtos/update-in-place.md:60
 msgid ""
 "If you put the page from "
 "{meth}`~pyvista_js.Plotter.generate_standalone_html` somewhere yourself, for"
@@ -85,21 +117,32 @@ msgstr ""
 "などに自分で配置した場合は、更新も自分で配信してください。`send=False` を渡し、メッセージを "
 "{func}`~pyvista_js.rendering.scene_to_json` でシリアライズします:"
 
-#: ../howtos/update-in-place.md:59
+#: ../howtos/update-in-place.md:77
 msgid "Then apply the message with `pvjsApplyUpdate`, which the page defines:"
 msgstr "その後、ページが定義する `pvjsApplyUpdate` でメッセージを適用します:"
 
-#: ../howtos/update-in-place.md:66
+#: ../howtos/update-in-place.md:84
 msgid ""
 "How the message gets to the page is up to you: a `postMessage` handler, a "
 "widget, or any other channel you already have."
 msgstr "メッセージをページに届かせる方法は自由です: `postMessage` ハンドラ、ウィジェット、既存の任意のチャネルを使用できます。"
 
-#: ../howtos/update-in-place.md:69
+#: ../howtos/update-in-place.md:87
+msgid ""
+"The other changes have messages too: `plotter.update_actor(index, add=True, "
+"send=False)` for an actor added after the page was generated, "
+"`plotter.update_actor(index, remove=True, send=False)` to remove one, and "
+"`plotter.update_camera(send=False)` for the camera."
+msgstr ""
+"その他の変更にもメッセージがあります: ページ生成後に追加されたアクターには `plotter.update_actor(index, "
+"add=True, send=False)`、削除には `plotter.update_actor(index, remove=True, "
+"send=False)`、カメラには `plotter.update_camera(send=False)` を使います。"
+
+#: ../howtos/update-in-place.md:92
 msgid "Limitations"
 msgstr "制限事項"
 
-#: ../howtos/update-in-place.md:71
+#: ../howtos/update-in-place.md:94
 msgid ""
 "Updates reach the rendered mesh through smooth-shading normals, but not "
 "through filters such as {meth}`~pyvista_js.PolyData.clip` or "
@@ -110,7 +153,7 @@ msgstr ""
 "{meth}`~pyvista_js.PolyData.clip` や {meth}`~pyvista_js.PolyData.contour` "
 "などのフィルタには届きません。"
 
-#: ../howtos/update-in-place.md:74
+#: ../howtos/update-in-place.md:97
 msgid ""
 "`points` can only be updated for meshes given by points and faces, not for "
 "generated shapes such as {func}`~pyvista_js.Sphere`."
@@ -118,11 +161,11 @@ msgstr ""
 "`points` は points と faces から与えられたメッシュにのみ更新でき、{func}`~pyvista_js.Sphere` "
 "のような生成された形状には使用できません。"
 
-#: ../howtos/update-in-place.md:77
+#: ../howtos/update-in-place.md:100
 msgid "Faster serialization"
 msgstr "高速なシリアライズ"
 
-#: ../howtos/update-in-place.md:79
+#: ../howtos/update-in-place.md:102
 msgid ""
 "Scenes and update messages with large meshes are written several times "
 "faster when [orjson](https://github.com/ijl/orjson) is installed:"
@@ -130,6 +173,6 @@ msgstr ""
 "大きなメッシュを含むシーンや更新メッセージは、[orjson](https://github.com/ijl/orjson) "
 "がインストールされていると数倍高速に書き出されます:"
 
-#: ../howtos/update-in-place.md:86
+#: ../howtos/update-in-place.md:109
 msgid "In Pyodide, run `await micropip.install(\"orjson\")`."
 msgstr "Pyodide では `await micropip.install(\"orjson\")` を実行します。"
