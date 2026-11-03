@@ -69,6 +69,19 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(scope="session")
+def base_url() -> None:
+    """Shadow pytest-base-url's ``base_url`` fixture.
+
+    ``pytest-base-url`` defines a session-scoped ``base_url`` fixture as an
+    instance method, which raises ``PytestRemovedIn10Warning`` under pytest 9.2
+    (treated as an error by this repository's ``filterwarnings`` configuration)
+    and breaks the setup of every Playwright browser test. Tests here do not use
+    a base URL, so a plain function fixture is a safe replacement.
+
+    """
+
+
+@pytest.fixture(scope="session")
 def browser_context_args(browser_context_args: dict) -> dict:
     """Configure Playwright browser context arguments.
 
