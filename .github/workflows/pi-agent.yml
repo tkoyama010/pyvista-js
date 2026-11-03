@@ -1,0 +1,79 @@
+# Runs the pi coding agent manually from the Actions tab, following
+# ADR-0002 (docs/decisions/0002-use-pi-coding-agent-github-actions.md).
+#
+# Triggers only via workflow_dispatch, so only users with Actions write
+# access can invoke it (no comment-triggered path).
+#
+# Required repository configuration:
+#   secret   PI_TOKEN     API token for the LLM provider
+#   variable PI_PROVIDER  LLM provider (e.g. anthropic, openai, google)
+#   variable PI_MODEL     Model name (e.g. claude-sonnet-4-5, gpt-5.4)
+
+name: Pi Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Task for the pi agent'
+        required: true
+        type: string
+      pull_number:
+        description: 'Optional pull request number to check out'
+        required: false
+        type: number
+      issue_number:
+        description: 'Optional issue number to resolve; the agent creates a pull request closing it'
+        required: false
+        type: number
+
+permissions: {}
+
+concurrency:
+  group: pi-agent
+  cancel-in-progress: false
+
+jobs:
+  pi-agent:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      # Only same-repository PR heads are checked out: a fork head must not be
+      # checked out before the agent runs with PI_TOKEN and a write-capable
+      # token. The agent can still inspect fork PR diffs via its GitHub tools.
+      - name: Reject fork pull request heads
+        if: ${{ inputs.pull_number != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ inputs.pull_number }}" --jq '.head.repo.full_name')"
+          = "${GITHUB_REPOSITORY}"
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: >-
+            ${{
+              inputs.pull_number
+              && format('refs/pull/{0}/head', inputs.pull_number)
+              || ''
+            }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Pi agent
+        uses: shaftoe/pi-coding-agent-action@381f578da466b8d2ef48f0fdb8a940f276fe4c3c  # v2.30.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          provider: ${{ vars.PI_PROVIDER }}
+          model: ${{ vars.PI_MODEL }}
+          token: ${{ secrets.PI_TOKEN }}
+          prompt: |-
+            ${{
+              inputs.issue_number
+              && format('Resolve issue #{0}: read it with the GitHub tools, then create a pull request that resolves it and whose body says "Closes #{0}". Task: ', inputs.issue_number)
+              || ''
+            }}${{ inputs.prompt }}
