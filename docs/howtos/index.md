@@ -4,4 +4,5 @@ Focused guides for common tasks with pyvista-js.
 
 ```{toctree}
 update-in-place
+gltf-import
 ```

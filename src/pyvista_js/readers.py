@@ -923,6 +923,12 @@ class GLTFReader:
     path : str or Path
         Path to the ``.gltf`` or ``.glb`` file.
 
+    Notes
+    -----
+    Materials, textures, and lights are handled by vtk.js's
+    ``vtkGLTFImporter`` in the browser. When the file contains animation
+    clips, the first clip is played automatically.
+
     See Also
     --------
     :ref:`using-download-damaged-helmet`
