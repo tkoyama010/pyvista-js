@@ -1,5 +1,8 @@
-# Runs the pi coding agent on `/pi` comments on issues and pull requests,
-# following ADR-0002 (docs/decisions/0002-use-pi-coding-agent-github-actions.md).
+# Runs the pi coding agent manually from the Actions tab, following
+# ADR-0002 (docs/decisions/0002-use-pi-coding-agent-github-actions.md).
+#
+# Triggers only via workflow_dispatch, so only users with Actions write
+# access can invoke it (no comment-triggered path).
 #
 # Required repository configuration:
 #   secret   PI_TOKEN     API token for the LLM provider
@@ -8,29 +11,26 @@
 
 name: Pi Agent
 
-# ADR-0002 mandates `/pi` comment triggers (issues + pull requests); the job
-# allowlist below restricts them to owners and organization members.
 on:
-  issue_comment:  # zizmor: ignore[dangerous-triggers]
-    types: [ created ]
-  pull_request_review_comment:
-    types: [ created ]
-  pull_request_review:
-    types: [ submitted ]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Task for the pi agent'
+        required: true
+        type: string
+      pull_number:
+        description: 'Optional pull request number to check out'
+        required: false
+        type: number
 
 permissions: {}
 
 concurrency:
-  group: pi-agent-${{ github.event.issue.number || github.event.pull_request.number }}
+  group: pi-agent
   cancel-in-progress: false
 
 jobs:
   pi-agent:
-    # ADR-0002: trigger on comments only, restricted to repository owners
-    # and organization members.
-    if: |-
-      startsWith(github.event.comment.body || github.event.review.body || '', '/pi ')
-      && contains(fromJSON('["OWNER", "MEMBER"]'), (github.event.comment || github.event.review).author_association)
     permissions:
       contents: write
       issues: write
@@ -42,9 +42,9 @@ jobs:
         with:
           ref: >-
             ${{
-              github.event_name == 'issue_comment' && github.event.issue.pull_request
-              && format('refs/pull/{0}/head', github.event.issue.number)
-              || github.event.pull_request.head.ref || ''
+              inputs.pull_number
+              && format('refs/pull/{0}/head', inputs.pull_number)
+              || ''
             }}
           fetch-depth: 0
           persist-credentials: false
@@ -56,3 +56,4 @@ jobs:
           provider: ${{ vars.PI_PROVIDER }}
           model: ${{ vars.PI_MODEL }}
           token: ${{ secrets.PI_TOKEN }}
+          prompt: ${{ inputs.prompt }}
