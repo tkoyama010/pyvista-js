@@ -22,6 +22,10 @@ on:
         description: 'Optional pull request number to check out'
         required: false
         type: number
+      issue_number:
+        description: 'Optional issue number to resolve; the agent creates a pull request closing it'
+        required: false
+        type: number
 
 permissions: {}
 
@@ -56,4 +60,9 @@ jobs:
           provider: ${{ vars.PI_PROVIDER }}
           model: ${{ vars.PI_MODEL }}
           token: ${{ secrets.PI_TOKEN }}
-          prompt: ${{ inputs.prompt }}
+          prompt: |-
+            ${{
+              inputs.issue_number
+              && format('Resolve issue #{0}: read it with the GitHub tools, then create a pull request that resolves it and whose body says "Closes #{0}". Task: ', inputs.issue_number)
+              || ''
+            }}${{ inputs.prompt }}
