@@ -7,12 +7,18 @@ Load 3D assets in glTF 2.0 format (`.gltf` JSON or `.glb` binary container) with
 ```python
 import pyvista_js as pv
 
-reader = pv.GLTFReader("model.gltf")
-mesh = reader.read()
+mesh = pv.examples.download_damaged_helmet()
 
 plotter = pv.Plotter()
 plotter.add_mesh(mesh)
 plotter.show()
+```
+
+For local files, pass the path directly:
+
+```python
+reader = pv.GLTFReader("model.gltf")
+mesh = reader.read()
 ```
 
 The same call works for `.glb` files; Python-side point extraction handles both the JSON and binary container layouts.
