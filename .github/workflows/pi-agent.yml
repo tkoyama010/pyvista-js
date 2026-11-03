@@ -41,6 +41,17 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      # Only same-repository PR heads are checked out: a fork head must not be
+      # checked out before the agent runs with PI_TOKEN and a write-capable
+      # token. The agent can still inspect fork PR diffs via its GitHub tools.
+      - name: Reject fork pull request heads
+        if: ${{ inputs.pull_number != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ inputs.pull_number }}" --jq '.head.repo.full_name')"
+          = "${GITHUB_REPOSITORY}"
+
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
