@@ -28,6 +28,13 @@ repos:
         # Preserve MADR's as-is formatting in ADR records (see docs/decisions/).
         exclude: '^docs/decisions/.*\.md$'
 
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.27
+    hooks:
+      - id: validate-pyproject
+        # Optional extra validations from SchemaStore:
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: "v2.30.3"
     hooks:
