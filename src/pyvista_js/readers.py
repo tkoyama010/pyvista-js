@@ -26,6 +26,11 @@ _MIN_VTK_LINES = 4
 # Number of coordinate components per vertex (x, y, z)
 _N_COORDS = 3
 
+# GLB container layout: 12-byte header, then 8-byte chunk headers
+_GLB_HEADER_SIZE = 12
+_GLB_CHUNK_HEADER_SIZE = 8
+_GLB_CHUNK_HEADER_OFFSET = 4
+
 
 class _OBJMesh(PolyData):
     """Mesh loaded from an OBJ file, rendered via vtk.js OBJ reader."""
@@ -1008,11 +1013,8 @@ class GLTFReader:
             Points array with shape (N, 3).
 
         """
-        # Parse glTF JSON
-        try:
-            text = raw.decode("utf-8")
-            gltf_data = json.loads(text)
-        except (UnicodeDecodeError, json.JSONDecodeError):
+        gltf_data = GLTFReader._parse_gltf_json(raw)
+        if gltf_data is None:
             return np.empty((0, 3))
 
         # Extract position accessor
@@ -1022,6 +1024,52 @@ class GLTFReader:
 
         # Extract bounding box from accessor min/max
         return GLTFReader._extract_bounds_points(accessor)
+
+    @staticmethod
+    def _parse_gltf_json(raw: bytes) -> dict | None:
+        """Parse the JSON payload of a ``.gltf`` or ``.glb`` file.
+
+        Parameters
+        ----------
+        raw : bytes
+            Raw content of the glTF file.
+
+        Returns
+        -------
+        dict or None
+            Parsed glTF JSON, or None if the file is not valid glTF 2.0.
+
+        Notes
+        -----
+        A ``.glb`` container stores its JSON in the first chunk, preceded by a
+        12-byte header (magic ``'glTF'``, version, total length) and an 8-byte
+        chunk header (length, type ``0x4E4F534A``).
+
+        """
+        if raw[:4] == b"glTF":
+            # GLB container: skip the 12-byte header, then read the JSON chunk
+            if len(raw) < _GLB_HEADER_SIZE + _GLB_CHUNK_HEADER_SIZE:
+                return None
+            chunk_length = int.from_bytes(raw[_GLB_HEADER_SIZE : _GLB_HEADER_SIZE + 4], "little")
+            chunk_type = raw[
+                _GLB_HEADER_SIZE + _GLB_CHUNK_HEADER_OFFSET : _GLB_HEADER_SIZE
+                + _GLB_CHUNK_HEADER_OFFSET
+                + 4
+            ]
+            if chunk_type != b"JSON":
+                return None
+            start = _GLB_HEADER_SIZE + _GLB_CHUNK_HEADER_SIZE
+            end = min(start + chunk_length, len(raw))
+            text = raw[start:end].decode("utf-8", errors="replace")
+        else:
+            try:
+                text = raw.decode("utf-8")
+            except UnicodeDecodeError:
+                return None
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            return None
 
     @staticmethod
     def _get_position_accessor(gltf_data: dict) -> dict | None:

@@ -189,9 +189,11 @@ interface VtkRenderer {
   removeActor: (actor: VtkActor) => void;
   addLight: (light: VtkLight) => void;
   removeAllLights: () => void;
+  /** Actors currently in this renderer; present in vtk.js but not used by every path. */
+  getActors?: () => VtkActor[];
   setAutomaticLightCreation: (value: boolean) => void;
-  resetCamera: () => void;
-  resetCameraClippingRange: () => void;
+  resetCamera: (bounds?: number[]) => void;
+  resetCameraClippingRange: (bounds?: number[]) => void;
   getActiveCamera: () => VtkCamera;
 }
 
@@ -206,6 +208,7 @@ interface VtkRenderWindow {
 interface VtkOpenGlRenderWindow {
   setContainer: (container: HTMLElement) => void;
   setSize: (width: number, height: number) => void;
+  getCanvas?: () => HTMLElement;
 }
 
 /** Handles user interaction events (mouse, keyboard, touch). */
@@ -245,6 +248,27 @@ interface VtkOrientationMarkerWidgetFactory {
     actor: VtkAxesActor;
     interactor: VtkInteractor;
   }) => VtkOrientationMarkerWidget;
+}
+
+/** Drives glTF animation clips over time. */
+interface VtkAnimationMixer {
+  getAnimationNames: () => string[];
+  playAnimation: (name: string) => void;
+  hasAnimations: () => boolean;
+  tick: (deltaTime: number) => void;
+}
+
+/** An imported glTF scene: actors with PBR materials, textures, lights, and animations. */
+// biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in importer names
+interface VtkGLTFImporter {
+  parse: (data: ArrayBuffer | string) => void;
+  setUrl: (url: string, options?: Record<string, unknown>) => PromiseLike<void>;
+  onReady: (callback: () => void) => void;
+  importActors: () => void;
+  importLights: () => void;
+  getActors: () => { forEach: (callback: (actor: VtkActor) => void) => void };
+  createAnimationMixer: () => VtkAnimationMixer;
+  getSceneBounds?: (sceneIndex?: number) => number[] | null;
 }
 
 /** A vtk.js file reader that parses binary or text data into PolyData. */
@@ -442,6 +466,8 @@ interface VtkGlobal {
       vtkPLYReader: VtkReaderFactory;
       // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js reader names
       vtkSTLReader: VtkReaderFactory;
+      // biome-ignore lint/style/useNamingConvention: vtk.js API uses consecutive uppercase in vtk.js importer names
+      vtkGLTFImporter?: VtkGLTFImporterFactory;
     };
     // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
     Misc: {
@@ -555,6 +581,8 @@ interface SourceConfig {
   points?: number[];
   polys?: number[];
   data?: string;
+  /** Source URL for importer-based sources (glTF referenced by URL). */
+  url?: string;
   pointData?: PointDataArray[];
   tCoords?: number[];
   filters?: FilterConfig[];
