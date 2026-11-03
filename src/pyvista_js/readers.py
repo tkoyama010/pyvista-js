@@ -936,7 +936,16 @@ class GLTFReader:
 
     Examples
     --------
+    Download a glTF asset and render it:
+
     >>> import pyvista_js as pv
+    >>> mesh = pv.examples.download_damaged_helmet()  # doctest: +SKIP
+    >>> plotter = pv.Plotter()  # doctest: +SKIP
+    >>> plotter.add_mesh(mesh)  # doctest: +SKIP
+    >>> plotter.show()  # doctest: +SKIP
+
+    Read a local ``.gltf`` or ``.glb`` file directly:
+
     >>> reader = pv.GLTFReader("model.gltf")  # doctest: +SKIP
     >>> mesh = reader.read()  # doctest: +SKIP
 
