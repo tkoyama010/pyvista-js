@@ -67,6 +67,10 @@ def test_glyph_rejects_missing_vectors() -> None:
     mesh.point_data["vectors"] = np.ones((4, 3))
     with pytest.raises(ValueError, match="No point data array named 'sizes'"):
         mesh.glyph(scale="sizes")
+    with pytest.raises(ValueError, match="requires a 'vectors'"):
+        mesh.glyph(orient=False)
+    with pytest.raises(ValueError, match="must be a bool or a string"):
+        mesh.glyph(orient=1.5)  # type: ignore[arg-type]
 
 
 def test_glyph_rejects_bad_factor() -> None:
