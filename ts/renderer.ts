@@ -10,6 +10,9 @@
 /** Number of components in a 3-D coordinate (x, y, z). */
 // biome-ignore lint/style/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
+
+/** Components of a per-glyph 3x3 rotation matrix. */
+const MATRIX_COMPONENTS = 9;
 const PLANAR_CUT_VALUE = 0.0;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
@@ -767,6 +770,14 @@ function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper 
   if (cfg.orient !== false) {
     mapper.setOrient?.(true);
     mapper.setOrientationArray(orientationArray);
+    const array = polydata.getPointData().getArrayByName(orientationArray);
+    if (array?.getNumberOfComponents() === MATRIX_COMPONENTS) {
+      mapper.setOrientationModeToMatrix();
+    }
+  }
+  if (cfg.scaleArray) {
+    mapper.setScaleArray(cfg.scaleArray);
+    mapper.setScaleModeToScaleByMagnitude();
   }
   if (cfg.scaleFactor !== undefined) {
     mapper.setScaleFactor(cfg.scaleFactor);
@@ -1126,6 +1137,7 @@ function setupActor(
   let mapper: VtkMapper;
   if (cfg.source.type === "glyph") {
     mapper = createGlyphMapper(polydata, cfg.source);
+    applyScalars(mapper, cfg.scalars);
   } else {
     const mapperInput = setupNormals(currentResult, cfg.normals);
     mapper = createMapper(mapperInput, cfg);

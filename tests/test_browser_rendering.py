@@ -764,3 +764,30 @@ def test_update_actor_add_remove_and_camera(page: Page) -> None:
     )
     assert (n_actors, color) == (1, [1, 0, 0])
     np.testing.assert_allclose(direction, [-1, 0, 0], atol=1e-6)
+
+
+@pytest.mark.playwright
+def test_glyph_matrices_scales_and_colors(page: Page) -> None:
+    """Test glyphs are rotated by matrices, sized, and colored per point in the page.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = PolyData(np.array([[-1.0, 0, 0], [1.0, 0, 0]]))
+    mesh.point_data["rotations"] = np.tile(np.eye(3).ravel(), (2, 1))
+    mesh.point_data["sizes"] = np.array([1.0, 0.5])
+    mesh.point_data["colors"] = np.array([[255, 0, 0, 255], [0, 255, 0, 128]], np.uint8)
+    plotter = Plotter()
+    plotter._renderer = BrowserRenderer()
+    plotter.add_mesh(mesh.glyph(orient="rotations", scale="sizes"), scalars="colors")
+    _load_plotter_html(page, plotter)
+    mapper = page.evaluate(
+        "id => { const m = window.__pvjs[id][0].actors[0].mapper;"
+        " return [m.getOrientationMode(), m.getScaleArray(), m.getScalarVisibility(),"
+        " m.getColorByArrayName()]; }",
+        plotter.container_id,
+    )
+    assert mapper == [2, "sizes", True, "colors"]  # 2 is vtk.js's MATRIX mode

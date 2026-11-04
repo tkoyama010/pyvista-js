@@ -44,11 +44,29 @@ def test_glyph_geometry_points() -> None:
     assert len(scene["geometryPolys"]) == 3
 
 
+def test_glyph_matrices_scales_and_colors() -> None:
+    """Test glyph takes per-point rotation matrices and sizes, and keeps colors."""
+    mesh = PolyData(np.zeros((2, 3)))
+    rotations = np.tile(np.eye(3), (2, 1, 1))
+    mesh.point_data["rotations"] = rotations.transpose(0, 2, 1).reshape(-1, 9)
+    mesh.point_data["sizes"] = np.array([1.0, 0.5])
+    mesh.point_data["colors"] = np.array([[255, 0, 0, 255], [0, 255, 0, 128]], np.uint8)
+    scene = mesh.glyph(orient="rotations", scale="sizes").to_scene_data()
+    assert (scene["orientationArray"], scene["scaleArray"]) == ("rotations", "sizes")
+    assert {a["name"] for a in scene["pointData"]} == {"rotations", "sizes", "colors"}
+
+
 def test_glyph_rejects_missing_vectors() -> None:
-    """Test glyph raises without a vectors array."""
+    """Test glyph raises without a vectors array, or with an unusable one."""
     mesh = PolyData(np.zeros((4, 3)))
     with pytest.raises(ValueError, match="No point data array"):
         mesh.glyph()
+    mesh.point_data["vectors"] = np.ones((4, 2))
+    with pytest.raises(ValueError, match="3 or 9 components"):
+        mesh.glyph()
+    mesh.point_data["vectors"] = np.ones((4, 3))
+    with pytest.raises(ValueError, match="No point data array named 'sizes'"):
+        mesh.glyph(scale="sizes")
 
 
 def test_glyph_rejects_bad_factor() -> None:

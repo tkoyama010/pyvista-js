@@ -16,6 +16,7 @@ interface VtkNewInstanceFactory<T> {
 /** A vtk.js data array holding typed numeric values. */
 interface VtkDataArray {
   getData: () => Float32Array;
+  getNumberOfComponents: () => number;
 }
 
 /** Factory for creating {@link VtkDataArray} instances. */
@@ -327,7 +328,9 @@ interface VtkGlyph3DMapper {
   setInputData: (data: VtkPolyData, port?: number) => void;
   setOrient?: (orient: boolean) => void;
   setOrientationArray: (name: string) => void;
+  setOrientationModeToMatrix: () => void;
   setScaleArray: (name: string) => void;
+  setScaleModeToScaleByMagnitude: () => void;
   setScaleFactor: (factor: number) => void;
   setScalarVisibility: (visible: boolean) => void;
 }
@@ -548,6 +551,8 @@ interface SourceConfig {
   scaleFactor?: number;
   orient?: boolean;
   orientationArray?: string;
+  /** Point array whose magnitude scales each glyph. */
+  scaleArray?: string;
   geometryPoints?: number[];
   geometryPolys?: number[];
   dimensions?: [number, number, number];
