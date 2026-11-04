@@ -1017,14 +1017,26 @@ class _BaseHTMLRenderer:
     def generate_standalone_html(self) -> str:
         """Generate a complete standalone HTML page with vtk.js.
 
-        Wraps the HTML fragment from _generate_html() in a full HTML document.
+        Wraps the HTML fragment from _generate_html() in a full HTML document
+        whose scene fills the window, such as an ``<iframe>`` it is embedded in.
         """
         fragment = self._generate_html()
+        container_rule = (
+            f"    #{self.container_id} "
+            "{ width: 100vw !important; height: 100vh !important; border: none !important; }\n"
+        )
+        style = (
+            "  <style>\n"
+            "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
+            " overflow: hidden; }\n" + container_rule + "  </style>\n"
+        )
         return (
             "<!DOCTYPE html>\n"
             "<html>\n"
-            "<head><meta charset='utf-8'></head>\n"
-            "<body>\n" + fragment + "\n</body>\n"
+            "<head>\n"
+            "  <meta charset='utf-8'>\n"
+            "  <title>pyvista-js</title>\n" + style + "</head>\n"
+            "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
 
@@ -1362,30 +1374,6 @@ class BrowserRenderer(_BaseHTMLRenderer):
         url = pathlib.Path(tmp_path).as_uri()
         webbrowser.open(url)
         logger.info("Opened visualization in browser: %s", url)
-
-    def generate_standalone_html(self) -> str:
-        """Wrap the HTML fragment in a complete standalone HTML page."""
-        fragment = self._generate_html()
-        container_id = self.container_id
-        container_rule = (
-            f"    #{container_id} "
-            "{ width: 100vw !important; height: 100vh !important; border: none !important; }\n"
-        )
-        style = (
-            "  <style>\n"
-            "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
-            " overflow: hidden; }\n" + container_rule + "  </style>\n"
-        )
-        return (
-            "<!DOCTYPE html>\n"
-            "<html>\n"
-            "<head>\n"
-            "  <meta charset='utf-8'>\n"
-            "  <title>pyvista-js</title>\n"
-            f"  <script src='{_VTKJS_CDN}'></script>\n" + style + "</head>\n"
-            "<body>\n" + fragment + "</body>\n"
-            "</html>\n"
-        )
 
     def screenshot(
         self,

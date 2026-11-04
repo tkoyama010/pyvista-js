@@ -293,18 +293,22 @@ def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     assert scene["actors"][1]["source"]["type"] == "cube"
 
 
-def test_generate_standalone_html(monkeypatch) -> None:
+@pytest.mark.parametrize("renderer_class", ["VTKJSRenderer", "BrowserRenderer"])
+def test_generate_standalone_html(renderer_class, monkeypatch) -> None:
     """Test that generate_standalone_html produces a complete HTML page with scene data."""
     from tests.conftest import extract_scene_data  # noqa: PLC0415
 
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
 
-    renderer = rendering.VTKJSRenderer()
+    renderer = getattr(rendering, renderer_class)()
     renderer.add_mesh_actor(Sphere(), color="red")
 
     html = renderer.generate_standalone_html()
 
     assert "<!DOCTYPE html>" in html
+    # every renderer's page fills the window, loading vtk.js once
+    assert f"#{renderer.container_id} {{ width: 100vw" in html
+    assert html.count(rendering._VTKJS_CDN) == 1
     assert 'id="scene-data"' in html
     scene = extract_scene_data(html)
     assert len(scene["actors"]) == 1
