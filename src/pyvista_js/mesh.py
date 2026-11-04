@@ -1997,12 +1997,15 @@ class PolyData:
         ----------
         orient : bool or str, optional
             Whether to orient glyphs by the ``'vectors'`` point array.
-            A string names the array to use. Default is True.
+            A string names the array to use. An array of 3 components gives
+            each glyph a direction; one of 9 gives it a full 3x3 rotation,
+            stored in column-major order as vtk.js reads it, such as
+            ``rotations.transpose(0, 2, 1).reshape(-1, 9)`` for an
+            ``(n_points, 3, 3)`` array of rotation matrices. Default is True.
         scale : bool or str, optional
-            Whether to scale glyphs by the ``'vectors'`` point array.
-            A string names the array to use. For simplicity, only
-            ``'vectors'`` scaling is supported in this implementation.
-            Default is True.
+            Whether to scale glyphs. A string names the point array whose
+            magnitude scales each glyph, such as a one-component array of
+            sizes. Default is True.
         factor : float, optional
             Scale factor applied to the glyphs. Default is 1.0.
         geometry : PolyData, optional
@@ -2018,7 +2021,8 @@ class PolyData:
         ------
         ValueError
             If ``orient`` is set but the vectors array is missing or has a
-            mismatched length.
+            mismatched length or a number of components other than 3 or 9,
+            or ``scale`` names a missing array.
 
         Examples
         --------
@@ -2035,21 +2039,11 @@ class PolyData:
         >>> glyphed.plot()  # doctest: +SKIP
 
         """
-        if orient in (False, None):
-            msg = "Orienting glyphs requires a 'vectors' or named vector array"
-            raise ValueError(msg)
-        if orient not in (True, False) and not isinstance(orient, str):
-            msg = "orient must be a bool or a string naming the vector array"
-            raise ValueError(msg)
-        orientation_array = orient if isinstance(orient, str) else "vectors"
-        if orientation_array not in self._point_data:
-            msg = f"No point data array named '{orientation_array}' found"
-            raise ValueError(msg)
+        orientation_array = self._glyph_orientation_array(orient=orient, scale=scale)
         if factor < 0:
             msg = f"factor must be non-negative, got {factor}"
             raise ValueError(msg)
 
-        _ = scale  # only vector scaling is supported
         scene: dict[str, object] = {
             "type": "glyph",
             "points": _Float32Array(self.points),
@@ -2057,6 +2051,8 @@ class PolyData:
             "orient": True,
             "orientationArray": orientation_array,
         }
+        if isinstance(scale, str):
+            scene["scaleArray"] = scale
         if geometry is not None:
             scene["geometryPoints"] = _Float32Array(geometry.points)
             flat_polys: list[float] = []
@@ -2065,8 +2061,29 @@ class PolyData:
             scene["geometryPolys"] = flat_polys
 
         glyphed = PolyData(points=self.points, _scene_data=scene)
-        glyphed.point_data[orientation_array] = self._point_data[orientation_array]
+        # all of them, so a scale or color array reaches the page too
+        for name, array in self._point_data.items():
+            glyphed.point_data[name] = array
         return glyphed
+
+    def _glyph_orientation_array(self, *, orient: bool | str, scale: bool | str) -> str:
+        """Check the arrays that glyph() orients and scales by, returning the first's name."""
+        if orient in (False, None):
+            msg = "Orienting glyphs requires a 'vectors' or named vector array"
+            raise ValueError(msg)
+        if orient is not True and not isinstance(orient, str):
+            msg = "orient must be a bool or a string naming the vector array"
+            raise ValueError(msg)
+        name = orient if isinstance(orient, str) else "vectors"
+        for array_name in (name, scale):
+            if isinstance(array_name, str) and array_name not in self._point_data:
+                msg = f"No point data array named '{array_name}' found"
+                raise ValueError(msg)
+        n_components = np.asarray(self._point_data[name]).reshape(self.n_points, -1).shape[1]
+        if n_components not in (3, 9):
+            msg = f"'{name}' must have 3 or 9 components, got {n_components}"
+            raise ValueError(msg)
+        return name
 
     def to_scene_data(self) -> dict[str, object]:
         """Return a JSON-serializable dict describing this mesh source.
