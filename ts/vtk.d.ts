@@ -323,8 +323,8 @@ interface VtkImageDataFactory {
 /** A vtk.js mapper that renders per-point glyph geometry. */
 // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
 interface VtkGlyph3DMapper {
-  setInputData: (data: VtkPolyData) => void;
-  setSourceData: (geometry: VtkPolyData) => void;
+  /** Port 0 is the points to glyph, port 1 the geometry drawn at each. */
+  setInputData: (data: VtkPolyData, port?: number) => void;
   setOrient?: (orient: boolean) => void;
   setOrientationArray: (name: string) => void;
   setScaleArray: (name: string) => void;

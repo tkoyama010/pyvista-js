@@ -761,7 +761,7 @@ function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper 
     arrow.update();
     geometry = arrow.getOutputData();
   }
-  mapper.setSourceData(geometry);
+  mapper.setInputData(geometry, 1); // port 1 is the glyph geometry
 
   const orientationArray = cfg.orientationArray ?? "vectors";
   if (cfg.orient !== false) {
