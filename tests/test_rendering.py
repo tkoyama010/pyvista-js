@@ -299,12 +299,16 @@ def test_generate_standalone_html(renderer_class, monkeypatch) -> None:
     from tests.conftest import extract_scene_data  # noqa: PLC0415
 
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    shown: list[object] = []
+    monkeypatch.setattr(rendering, "display", shown.append)
+    monkeypatch.setattr(rendering, "HTML", str, raising=False)  # as if IPython were installed
 
     renderer = getattr(rendering, renderer_class)()
     renderer.add_mesh_actor(Sphere(), color="red")
 
     html = renderer.generate_standalone_html()
 
+    assert shown == []  # nothing preloads vtk.js: a scene shown later loads it
     assert "<!DOCTYPE html>" in html
     # every renderer's page fills the window, loading vtk.js once
     assert f"#{renderer.container_id} {{ width: 100vw" in html
