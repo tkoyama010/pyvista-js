@@ -746,10 +746,14 @@ function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper 
   mapper.setScalarVisibility(false);
 
   let geometry: VtkPolyData;
+  let templateSize = 1;
   if (cfg.geometryPoints && cfg.geometryPoints.length > 0) {
     // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     geometry = vtk.Common.DataModel.vtkPolyData.newInstance();
-    const geometryPoints = Float32Array.from(cfg.geometryPoints);
+    const rawPoints = Float32Array.from(cfg.geometryPoints);
+    // vtk.js rescales a template under ~3 cm on upload, which glyphs ignore: use unit size
+    templateSize = boundsDiagonal(rawPoints) || 1;
+    const geometryPoints = rawPoints.map((value) => value / templateSize);
     // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     const geometryPts = vtk.Common.Core.vtkPoints.newInstance();
     geometryPts.setData(geometryPoints, XYZ_COMPONENTS);
@@ -779,10 +783,26 @@ function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper 
     mapper.setScaleArray(cfg.scaleArray);
     mapper.setScaleModeToScaleByMagnitude();
   }
-  if (cfg.scaleFactor !== undefined) {
-    mapper.setScaleFactor(cfg.scaleFactor);
-  }
+  mapper.setScaleFactor((cfg.scaleFactor ?? 1) * templateSize);
   return mapper as unknown as VtkMapper;
+}
+
+/**
+ * Return the length of the diagonal of the bounding box of flat XYZ points.
+ * @param points
+ * @returns The diagonal, or 0 for no points.
+ */
+function boundsDiagonal(points: Float32Array): number {
+  let sum = 0;
+  for (let axis = 0; axis < XYZ_COMPONENTS; axis += 1) {
+    const values = points.filter((_, index) => index % XYZ_COMPONENTS === axis);
+    if (values.length > 0) {
+      const hi = values.reduce((max, value) => Math.max(max, value));
+      const lo = values.reduce((min, value) => Math.min(min, value));
+      sum += (hi - lo) ** 2;
+    }
+  }
+  return Math.sqrt(sum);
 }
 
 function createMeshSource(cfg: SourceConfig): SourceResult {

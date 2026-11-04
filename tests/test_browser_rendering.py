@@ -780,14 +780,24 @@ def test_glyph_matrices_scales_and_colors(page: Page) -> None:
     mesh.point_data["rotations"] = np.tile(np.eye(3).ravel(), (2, 1))
     mesh.point_data["sizes"] = np.array([1.0, 0.5])
     mesh.point_data["colors"] = np.array([[255, 0, 0, 255], [0, 255, 0, 128]], np.uint8)
+    # a 2 cm square, small enough that vtk.js would rescale it on upload
+    square = PolyData(
+        np.array([[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]]) * 0.01,
+        [4, 0, 1, 2, 3],
+    )
     plotter = Plotter()
     plotter._renderer = BrowserRenderer()
-    plotter.add_mesh(mesh.glyph(orient="rotations", scale="sizes"), scalars="colors")
+    glyphed = mesh.glyph(orient="rotations", scale="sizes", geometry=square)
+    plotter.add_mesh(glyphed, scalars="colors")
     _load_plotter_html(page, plotter)
     mapper = page.evaluate(
         "id => { const m = window.__pvjs[id][0].actors[0].mapper;"
+        " const b = m.getInputData(1).getBounds();"
         " return [m.getOrientationMode(), m.getScaleArray(), m.getScalarVisibility(),"
-        " m.getColorByArrayName()]; }",
+        " m.getColorByArrayName(), Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4]),"
+        " m.getScaleFactor()]; }",
         plotter.container_id,
     )
-    assert mapper == [2, "sizes", True, "colors"]  # 2 is vtk.js's MATRIX mode
+    assert mapper[:4] == [2, "sizes", True, "colors"]  # 2 is vtk.js's MATRIX mode
+    # drawn at unit size and scaled back up, so the rescaling cannot happen
+    np.testing.assert_allclose(mapper[4:], [1, 0.02 * np.sqrt(2)], rtol=1e-6)
