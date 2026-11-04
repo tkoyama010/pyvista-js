@@ -81,7 +81,8 @@
         "platform",
         "code",
         "review",
-        "ideas"
+        "ideas",
+        "bug"
       ]
     }
   ],
