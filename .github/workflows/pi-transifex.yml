@@ -43,6 +43,8 @@ jobs:
 
       - name: Run Pi agent
         uses: shaftoe/pi-coding-agent-action@381f578da466b8d2ef48f0fdb8a940f276fe4c3c  # v2.30.1
+        env:
+          TX_TOKEN: ${{ secrets.TX_TOKEN }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           provider: ${{ vars.PI_PROVIDER }}
