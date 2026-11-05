@@ -2,16 +2,16 @@
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Tetsuo Koyama <tkoyama010@gmail.com>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 11:43+0000\n"
+"POT-Creation-Date: 2026-11-05 11:49+0000\n"
 "PO-Revision-Date: 2026-03-21 10:39+0000\n"
 "Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
@@ -340,7 +340,7 @@ msgstr "戻り値の型"
 #: ../../src/pyvista_js/mesh.pydocstring of
 #: pyvista_js.mesh.PolyData.contour:33 ../../src/pyvista_js/mesh.pydocstring
 #: of pyvista_js.mesh.PolyData.fill_holes:29
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:32
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:35
 #: ../../src/pyvista_js/mesh.pydocstring of
 #: pyvista_js.mesh.PolyData.outline:21 ../../src/pyvista_js/mesh.pydocstring
 #: of pyvista_js.mesh.PolyData.plot:18 ../../src/pyvista_js/mesh.pydocstring
@@ -601,39 +601,48 @@ msgstr "グリフ化は描画時に JavaScript で行われます。このメソ
 #: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:12
 msgid ""
 "Whether to orient glyphs by the ``'vectors'`` point array. A string names "
-"the array to use. Default is True."
-msgstr "``'vectors'`` 点配列でグリフの向きを決めるかどうか。文字列の場合は使用する配列名。デフォルトは True。"
-
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:15
-msgid ""
-"Whether to scale glyphs by the ``'vectors'`` point array. A string names the"
-" array to use. For simplicity, only ``'vectors'`` scaling is supported in "
-"this implementation. Default is True."
+"the array to use. An array of 3 components gives each glyph a direction; one"
+" of 9 gives it a full 3x3 rotation, stored in column-major order as vtk.js "
+"reads it, such as ``rotations.transpose(0, 2, 1).reshape(-1, 9)`` for an "
+"``(n_points, 3, 3)`` array of rotation matrices. Default is True."
 msgstr ""
-"``'vectors'`` 点配列でグリフのスケールを決めるかどうか。文字列の場合は使用する配列名。簡略化のため、この実装では "
-"``'vectors'`` によるスケーリングのみ対応しています。デフォルトは True。"
+"``'vectors'`` 点配列によってグリフの向きを決めるかどうか。文字列の場合は使用する配列名を指定します。成分数 3 "
+"の配列は各グリフに方向を与え、9 の場合は vtk.js が読み込む形式である列優先順で完全な 3x3 の回転を与えます。例えば "
+"``(n_points, 3, 3)`` の回転行列配列に対して ``rotations.transpose(0, 2, 1).reshape(-1, "
+"9)`` のようにします。デフォルトは True です。"
 
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:20
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:19
+msgid ""
+"Whether to scale glyphs. A string names the point array whose magnitude "
+"scales each glyph, such as a one-component array of sizes. Default is True."
+msgstr ""
+"グリフをスケールするかどうか。文字列の場合は、その大きさで各グリフをスケールする点配列(例えばサイズの 1 成分配列)の名前を指定します。デフォルトは "
+"True です。"
+
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:23
 msgid "Scale factor applied to the glyphs. Default is 1.0."
 msgstr "グリフに適用されるスケール係数。デフォルトは 1.0。"
 
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:22
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:25
 msgid ""
 "Geometry to use for each glyph. Default uses an arrow (matching the PyVista "
 "default)."
 msgstr "各グリフに使用するジオメトリ。デフォルトは矢印 (PyVista のデフォルトと同じ)。"
 
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:26
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:29
 msgid "A mesh configured for glyph rendering."
 msgstr "グリフ描画用に設定されたメッシュ。"
 
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:29
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:32
 msgid ""
 "If ``orient`` is set but the vectors array is missing or has a     "
-"mismatched length."
-msgstr "``orient`` が設定されているが、ベクトル配列がないか長さが一致しない場合。"
+"mismatched length or a number of components other than 3 or 9,     or "
+"``scale`` names a missing array."
+msgstr ""
+"``orient`` が設定されているのにベクトル配列が存在しない場合、長さが一致しない場合、成分数が 3 または 9 以外の場合、あるいは "
+"``scale`` が存在しない配列を指している場合。"
 
-#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:44
+#: ../../src/pyvista_js/mesh.pydocstring of pyvista_js.mesh.PolyData.glyph:47
 msgid "Render the glyphs:"
 msgstr "グリフを表示:"
 
