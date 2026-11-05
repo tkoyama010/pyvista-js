@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-02 23:45+0000\n"
+"POT-Creation-Date: 2026-11-05 11:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,6 +36,7 @@ msgstr ""
 msgid "Lighting mode for the plotter. Options are: - ``\"default\"`` (default): Creates a default directional light - ``None``: No default lights are created, giving full control over lighting"
 msgstr ""
 
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.actors:8
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.background_color:11
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.camera:10
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.camera_position:9
@@ -355,7 +356,7 @@ msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.actors:1
 #: ../:1:<autosummary>:1
-msgid "Return the list of actors in the plotter."
+msgid "Return the list of actors in the plotter, in the order they were added."
 msgstr ""
 
 #: ../:1:<autosummary>:1
@@ -392,6 +393,10 @@ msgstr ""
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.container_id:1
 #: ../:1:<autosummary>:1
 msgid "Return the ID of the HTML element that the scene renders into."
+msgstr ""
+
+#: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.Plotter.actors:3
+msgid "Each entry is a dict with the ``\"actor\"`` returned by :meth:`add_mesh` or :meth:`add_points`, the ``\"mesh\"`` (or ``\"points\"``) it draws, and the options it was added with, such as ``\"color\"`` and ``\"opacity\"``."
 msgstr ""
 
 #: ../../src/pyvista_js/plotter.py:docstring of pyvista_js.plotter.Plotter.add_arrows:3
