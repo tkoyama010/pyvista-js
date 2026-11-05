@@ -2,16 +2,16 @@
 # Copyright (C) 2024, Tetsuo Koyama
 # This file is distributed under the same license as the pyvista-js package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# 
 # Translators:
 # Tetsuo Koyama <tkoyama010@gmail.com>, 2026
-#
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-02 23:45+0000\n"
+"POT-Creation-Date: 2026-11-05 11:49+0000\n"
 "PO-Revision-Date: 2026-03-21 10:39+0000\n"
 "Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
 "Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
@@ -49,6 +49,7 @@ msgstr ""
 "プロッターのライティングモード。選択肢: - ``\"default\"`` (デフォルト): 既定のディレクショナルライトを作成 - "
 "``None``: 既定のライトを作成しない (ライティングを完全に制御できる)"
 
+#: ../../src/pyvista_js/plotter.pydocstring of pyvista_js.Plotter.actors:8
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.Plotter.background_color:11
 #: ../../src/pyvista_js/plotter.pydocstring of pyvista_js.Plotter.camera:10
@@ -487,8 +488,9 @@ msgstr ":py:obj:`actors <pyvista_js.Plotter.actors>`"
 
 #: ../../src/pyvista_js/plotter.pydocstring of pyvista_js.Plotter.actors:1
 #: ../:1:<autosummary>:1
-msgid "Return the list of actors in the plotter."
-msgstr "プロッター内のアクターのリストを返します。"
+msgid ""
+"Return the list of actors in the plotter, in the order they were added."
+msgstr "プロッターに追加された順序でアクターのリストを返します。"
 
 #: ../:1:<autosummary>:1
 msgid ":py:obj:`background_color <pyvista_js.Plotter.background_color>`"
@@ -525,6 +527,16 @@ msgstr ":py:obj:`container_id <pyvista_js.Plotter.container_id>`"
 #: pyvista_js.Plotter.container_id:1 ../:1:<autosummary>:1
 msgid "Return the ID of the HTML element that the scene renders into."
 msgstr "シーンが描画される HTML 要素の ID を返します。"
+
+#: ../../src/pyvista_js/plotter.pydocstring of pyvista_js.Plotter.actors:3
+msgid ""
+"Each entry is a dict with the ``\"actor\"`` returned by :meth:`add_mesh` or "
+":meth:`add_points`, the ``\"mesh\"`` (or ``\"points\"``) it draws, and the "
+"options it was added with, such as ``\"color\"`` and ``\"opacity\"``."
+msgstr ""
+"各エントリは辞書で、:meth:`add_mesh` または :meth:`add_points` が返す ``\"actor\"``、描画対象の "
+"``\"mesh\"``(または ``\"points\"``)、および ``\"color\"`` や ``\"opacity\"`` "
+"など追加時のオプションを含みます。"
 
 #: ../../src/pyvista_js/plotter.pydocstring of
 #: pyvista_js.plotter.Plotter.add_arrows:3
