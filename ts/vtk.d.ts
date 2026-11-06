@@ -384,6 +384,7 @@ interface VtkGlobal {
       vtkCubeSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkCylinderSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkDiskSource?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkCircleSource?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkArrowSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkLineSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPlaneSource: VtkNewInstanceFactory<VtkAlgorithm>;

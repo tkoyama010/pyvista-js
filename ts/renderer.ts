@@ -113,7 +113,10 @@ interface SourceResult {
  * @returns The underlying {@link VtkPolyData} from the source or filter output.
  */
 function getPolyData(sourceResult: SourceResult): VtkPolyData {
-  if (sourceResult.isFilter) {
+  if (
+    sourceResult.isFilter &&
+    typeof (sourceResult.output as { update?: unknown }).update === "function"
+  ) {
     (sourceResult.output as VtkAlgorithm).update();
     return (sourceResult.output as VtkAlgorithm).getOutputData();
   }
@@ -459,6 +462,18 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the disk source configured as a circle.
  */
 function createCircleSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const circleFactory = vtk.Filters.Sources.vtkCircleSource;
+  if (circleFactory) {
+    const source = circleFactory.newInstance({
+      center: [0, 0, 0],
+      direction: [0, 0, 1],
+      radius: cfg.radius ?? DEFAULT_RADIUS,
+      resolution: cfg.resolution ?? DEFAULT_RESOLUTION,
+      lines: true,
+    });
+    return { output: source, isFilter: true };
+  }
   return createDiskSource({
     type: "disk",
     innerRadius: 0,
