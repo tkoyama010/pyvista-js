@@ -15,6 +15,18 @@ TRIANGLE_STL = DATA_DIR / "triangle.stl"
 TRIANGLE_GLTF = DATA_DIR / "triangle.gltf"
 
 
+def _make_glb(json_text: str) -> bytes:
+    """Wrap glTF JSON into a minimal GLB binary container."""
+    json_bytes = json_text.encode("utf-8")
+    # pad the JSON chunk to a multiple of 4 as the GLB spec requires
+    padding = b"  " if len(json_bytes) % 4 != 0 else b""
+    json_bytes += padding
+    total = 12 + 8 + len(json_bytes)
+    header = b"glTF" + (2).to_bytes(4, "little") + total.to_bytes(4, "little")
+    chunk_header = len(json_bytes).to_bytes(4, "little") + b"JSON"
+    return header + chunk_header + json_bytes
+
+
 # --- PolyDataReader tests ---
 
 
@@ -454,6 +466,14 @@ def test_gltf_reader_scene_data() -> None:
     assert "data" in scene
 
 
+def test_gltf_reader_scene_data_with_url() -> None:
+    """Test that a gltf_url is passed through to the scene data."""
+    url = "https://example.com/model.gltf"
+    mesh = GLTFReader(TRIANGLE_GLTF, gltf_url=url).read()
+    scene = mesh.to_scene_data()
+    assert scene["url"] == url
+
+
 @pytest.mark.parametrize(
     ("fixture_type", "match"),
     [
@@ -490,6 +510,38 @@ def test_gltf_reader_no_meshes(tmp_path: Path) -> None:
     gltf_file = tmp_path / "empty.gltf"
     gltf_file.write_text('{"asset": {"version": "2.0"}}')
     mesh = GLTFReader(gltf_file).read()
+    assert mesh.n_points == 0
+
+
+def test_gltf_reader_glb_points(tmp_path: Path) -> None:
+    """Test point extraction from a binary GLB container."""
+    gltf_json = (
+        '{"asset": {"version": "2.0"}, "meshes": [{"primitives": '
+        '[{"attributes": {"POSITION": 0}}]}], '
+        '"accessors": [{"min": [0.0, 0.0, 0.0], "max": [1.0, 2.0, 3.0]}]}'
+    )
+    glb_file = tmp_path / "test.glb"
+    glb_file.write_bytes(_make_glb(gltf_json))
+    mesh = GLTFReader(glb_file).read()
+    assert mesh.n_points == 8
+    np.testing.assert_array_equal(mesh.points.max(axis=0), [1.0, 2.0, 3.0])
+
+
+def test_gltf_reader_glb_bad_container(tmp_path: Path) -> None:
+    """Test that a GLB with a non-JSON first chunk yields an empty mesh."""
+    raw = b"glTF" + (2).to_bytes(4, "little") + (20).to_bytes(4, "little")
+    raw += (0).to_bytes(4, "little") + b"BIN\x00\x00" + b"\x00" * 8
+    glb_file = tmp_path / "bad.glb"
+    glb_file.write_bytes(raw)
+    mesh = GLTFReader(glb_file).read()
+    assert mesh.n_points == 0
+
+
+def test_gltf_reader_glb_truncated(tmp_path: Path) -> None:
+    """Test that a truncated GLB container yields an empty mesh."""
+    glb_file = tmp_path / "short.glb"
+    glb_file.write_bytes(b"glTF")
+    mesh = GLTFReader(glb_file).read()
     assert mesh.n_points == 0
 
 

@@ -101,6 +101,9 @@ function at(array: Float32Array | Uint32Array, index: number): number {
   return array[index] ?? 0;
 }
 
+/** Converts elapsed milliseconds to seconds for glTF animation mixers. */
+const GLTF_SECONDS_TO_MS = 1000;
+
 /** Wraps either a vtk.js algorithm (filter/source) or raw PolyData. */
 interface SourceResult {
   output: VtkAlgorithm | VtkPolyData;
@@ -198,7 +201,7 @@ const sceneHandle: SceneHandle = {
   renderWindow,
   renderer,
   actors: sceneData.actors.map((actorConfig, index) =>
-    setupActor(actorConfig, index, renderer, renderWindow),
+    setupActor(actorConfig, index, { ren: renderer, renWin: renderWindow, container }),
   ),
 };
 // no prototype, so container IDs such as "constructor" are not taken for its properties
@@ -1130,14 +1133,101 @@ function buildImageDataPolyDataFallback(cfg: SourceConfig): VtkPolyData {
   return polydata;
 }
 
+/**
+ * Build actors from a glTF/GLB file with vtk.js's GLTF importer.
+ *
+ * The importer handles geometry, PBR materials, textures, and lights
+ * automatically. Animation clips, when present, are played in a
+ * requestAnimationFrame loop that stops once the canvas leaves the page.
+ *
+ * @param cfg
+ * @param ren
+ * @param renWin
+ * @returns `undefined` because glTF actors are managed by the importer, not per-actor handles.
+ */
+function setupGltfActor(
+  cfg: ActorConfig,
+  ren: VtkRenderer,
+  renWin: VtkRenderWindow,
+  sceneContainer: HTMLElement,
+): ActorHandle | undefined {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const importerFactory = vtk.IO.Geometry.vtkGLTFImporter;
+  if (!importerFactory) {
+    // biome-ignore lint/suspicious/noConsole: the browser console is the only place to report this
+    console.error("vtkGLTFImporter is not available in this vtk.js build");
+    return undefined;
+  }
+  const importer = importerFactory.newInstance({ renderer: ren });
+  // eslint-disable-next-line no-restricted-globals -- browser-only base64 decoding
+  const bytes = Uint8Array.from(atob(cfg.source.data ?? ""), (char) => char.codePointAt(0) ?? 0);
+
+  importer.onReady(() => {
+    importer.importActors();
+    importer.importLights();
+    const mixer = importer.createAnimationMixer();
+    const animationNames = mixer.getAnimationNames();
+    if (animationNames.length > 0) {
+      mixer.playAnimation(animationNames[0]);
+      // advance the animation every frame until the scene leaves the page
+      let lastTime = performance.now();
+      const tick = (): void => {
+        if (!sceneContainer.isConnected) {
+          return; // the scene has been pruned, so stop animating it
+        }
+        const now = performance.now();
+        mixer.tick((now - lastTime) / GLTF_SECONDS_TO_MS);
+        lastTime = now;
+        renWin.render();
+        // biome-ignore lint/style/useGlobalThis: rAF is invoked from the render window codebase via window, consistent with the rest of this file
+        window.requestAnimationFrame(tick);
+      };
+      // biome-ignore lint/style/useGlobalThis: rAF is invoked from the render window codebase via window, consistent with the rest of this file
+      window.requestAnimationFrame(tick);
+    }
+    // frame the camera once the actors are in the scene
+    // biome-ignore lint/style/useGlobalThis: rAF is invoked from the render window codebase via window, consistent with the rest of this file
+    window.requestAnimationFrame(() => {
+      const bounds = importer.getSceneBounds?.() ?? undefined;
+      if (bounds) {
+        ren.resetCamera(bounds);
+        ren.resetCameraClippingRange(bounds);
+      } else {
+        ren.resetCamera();
+        ren.resetCameraClippingRange();
+      }
+      renWin.render();
+    });
+  });
+
+  if (cfg.source.url) {
+    // an external .gltf references buffers and textures by URL, so let the importer fetch them
+    importer.setUrl(cfg.source.url, { binary: true });
+  } else {
+    importer.parse(bytes.buffer);
+  }
+  return undefined;
+}
+
+/** The shared state an actor needs to attach itself to a scene. */
+interface SceneContext {
+  ren: VtkRenderer;
+  renWin: VtkRenderWindow;
+  container: HTMLElement;
+}
+
 function setupActor(
   cfg: ActorConfig,
   _index: number,
-  ren: VtkRenderer,
-  renWin: VtkRenderWindow,
+  scene: SceneContext,
 ): ActorHandle | undefined {
+  const { ren, renWin, container: sceneContainer } = scene;
   if (cfg.source.type === "imageVolume") {
     return setupVolumeActor(cfg, ren);
+  }
+
+  if (cfg.source.type === "gltfReader") {
+    return setupGltfActor(cfg, ren, renWin, sceneContainer);
   }
 
   const sourceResult = createSource(cfg.source);
@@ -1268,7 +1358,11 @@ function applyActorUpdate(scene: SceneHandle, update: ActorUpdate): boolean {
     // a page generated after the actor was added has it already
     if (!handle) {
       scene.actors.push(
-        setupActor(update.add, scene.actors.length, scene.renderer, scene.renderWindow),
+        setupActor(update.add, scene.actors.length, {
+          ren: scene.renderer,
+          renWin: scene.renderWindow,
+          container: scene.container,
+        }),
       );
       scene.renderWindow.render();
     }
