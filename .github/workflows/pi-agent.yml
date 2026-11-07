@@ -59,6 +59,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          token: ${{ secrets.TKOYAMA010_TOKEN }}
           ref: >-
             ${{
               inputs.pull_number
@@ -66,7 +67,9 @@ jobs:
               || ''
             }}
           fetch-depth: 0
-          persist-credentials: false
+          # Persist the tkoyama010 PAT so the agent's git pushes authenticate
+          # when creating the PR branch (issue #791; review comment r4501824814).
+          persist-credentials: true
 
       # Commits made by the agent carry the tkoyama010 identity, and the
       # tkoyama010 PAT passed as github_token makes the pull request author
