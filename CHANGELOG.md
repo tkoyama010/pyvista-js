@@ -2,10 +2,9 @@
 
 ## [0.21.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.0...pyvista-js-v0.21.1) (2026-11-07)
 
-
 ### Bug Fixes
 
-* render Circle meshes in the browser ([#789](https://github.com/tkoyama010/pyvista-js/issues/789)) ([bc03f7a](https://github.com/tkoyama010/pyvista-js/commit/bc03f7a61c53ffdc1ce17bf214393e629414f5d8))
+- render Circle meshes in the browser ([#789](https://github.com/tkoyama010/pyvista-js/issues/789)) ([bc03f7a](https://github.com/tkoyama010/pyvista-js/commit/bc03f7a61c53ffdc1ce17bf214393e629414f5d8))
 
 ## [0.21.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.20.0...pyvista-js-v0.21.0) (2026-11-05)
 
