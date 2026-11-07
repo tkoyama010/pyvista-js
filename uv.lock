@@ -1829,7 +1829,7 @@ wheels = [
 
 [[package]]
 name = "pyvista-js"
-version = "0.21.0"
+version = "0.21.1"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
