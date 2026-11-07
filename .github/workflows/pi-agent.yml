@@ -5,9 +5,13 @@
 # access can invoke it (no comment-triggered path).
 #
 # Required repository configuration:
-#   secret   PI_TOKEN     API token for the LLM provider
-#   variable PI_PROVIDER  LLM provider (e.g. anthropic, openai, google)
-#   variable PI_MODEL     Model name (e.g. claude-sonnet-4-5, gpt-5.4)
+#   secret   PI_TOKEN          API token for the LLM provider
+#   variable PI_PROVIDER       LLM provider (e.g. anthropic, openai, google)
+#   variable PI_MODEL          Model name (e.g. claude-sonnet-4-5, gpt-5.4)
+#   secret   TKOYAMA010_TOKEN  PAT belonging to tkoyama010 (contents/issues/
+#                              pull-requests write scopes), used to check out the
+#                              repository and open PRs so they are attributed to
+#                              tkoyama010 instead of github-actions[bot].
 
 name: Pi Agent
 
@@ -64,10 +68,18 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # Commits made by the agent carry the tkoyama010 identity, and the
+      # tkoyama010 PAT passed as github_token makes the pull request author
+      # tkoyama010 rather than github-actions[bot] (issue #791).
+      - name: Configure git identity
+        run: |-
+          git config user.name 'tkoyama010'
+          git config user.email 'tkoyama010@users.noreply.github.com'
+
       - name: Run Pi agent
         uses: shaftoe/pi-coding-agent-action@381f578da466b8d2ef48f0fdb8a940f276fe4c3c  # v2.30.1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TKOYAMA010_TOKEN }}
           provider: ${{ vars.PI_PROVIDER }}
           model: ${{ vars.PI_MODEL }}
           token: ${{ secrets.PI_TOKEN }}
