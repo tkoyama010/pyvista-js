@@ -16,6 +16,7 @@ interface VtkNewInstanceFactory<T> {
 /** A vtk.js data array holding typed numeric values. */
 interface VtkDataArray {
   getData: () => Float32Array;
+  getNumberOfComponents: () => number;
 }
 
 /** Factory for creating {@link VtkDataArray} instances. */
@@ -323,11 +324,13 @@ interface VtkImageDataFactory {
 /** A vtk.js mapper that renders per-point glyph geometry. */
 // biome-ignore lint/style/useNamingConvention: vtk.js API uses PascalCase property names
 interface VtkGlyph3DMapper {
-  setInputData: (data: VtkPolyData) => void;
-  setSourceData: (geometry: VtkPolyData) => void;
+  /** Port 0 is the points to glyph, port 1 the geometry drawn at each. */
+  setInputData: (data: VtkPolyData, port?: number) => void;
   setOrient?: (orient: boolean) => void;
   setOrientationArray: (name: string) => void;
+  setOrientationModeToMatrix: () => void;
   setScaleArray: (name: string) => void;
+  setScaleModeToScaleByMagnitude: () => void;
   setScaleFactor: (factor: number) => void;
   setScalarVisibility: (visible: boolean) => void;
 }
@@ -381,6 +384,7 @@ interface VtkGlobal {
       vtkCubeSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkCylinderSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkDiskSource?: VtkNewInstanceFactory<VtkAlgorithm>;
+      vtkCircleSource?: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkArrowSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkLineSource: VtkNewInstanceFactory<VtkAlgorithm>;
       vtkPlaneSource: VtkNewInstanceFactory<VtkAlgorithm>;
@@ -548,6 +552,8 @@ interface SourceConfig {
   scaleFactor?: number;
   orient?: boolean;
   orientationArray?: string;
+  /** Point array whose magnitude scales each glyph. */
+  scaleArray?: string;
   geometryPoints?: number[];
   geometryPolys?: number[];
   dimensions?: [number, number, number];

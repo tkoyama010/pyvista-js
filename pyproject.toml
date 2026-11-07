@@ -4,7 +4,7 @@ requires = [ "hatch-build-scripts", "hatchling" ]
 
 [project]
 name = "pyvista-js"
-version = "0.20.0"
+version = "0.21.0"
 description = "PyVista-like API for vtk.js"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -80,9 +80,9 @@ dependencies = [
   "typer>=0.9.1,<1.0.1",
 ]
 optional-dependencies.dev = [
-  "mypy>=1.0.1,<2.4.1",
+  "mypy>=1.0.1,<2.4.2",
   "pre-commit>=3.0.1,<4.7.1",
-  "pytest>=7.0.1,<9.1.2",
+  "pytest>=7.0.1,<9.2.1",
   "ruff>=0.1.1,<1.0.1",
   "tox>=4.0.1,<5.0.1",
 ]
@@ -116,7 +116,7 @@ scripts.pyvista-js = "pyvista_js._cli:cli_main"
 [dependency-groups]
 dev = [
   "meshio>=5.3.5,<6.0.1",
-  "mypy>=1.0.1,<2.4.1",
+  "mypy>=1.0.1,<2.4.2",
   "pre-commit>=3.0.1,<4.7.1",
   "ruff>=0.1.1,<1.0.1",
   "tox>=4.0.1,<5.0.1",
@@ -126,7 +126,7 @@ test = [
   "orjson>=3.10.1,<4.0.1",
   "pillow>=9.0.1,<14.0.1",
   "playwright>=1.40.1,<2.0.1",
-  "pytest>=7.0.1,<9.1.2",
+  "pytest>=7.0.1,<9.2.1",
   "pytest-base-url>=1.0.1,<2.1.1",
   "pytest-playwright>=0.4.1,<1.0.1",
 ]

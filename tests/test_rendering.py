@@ -293,22 +293,52 @@ def test_multiple_meshes_unique_variables(monkeypatch) -> None:
     assert scene["actors"][1]["source"]["type"] == "cube"
 
 
-def test_generate_standalone_html(monkeypatch) -> None:
+@pytest.mark.parametrize("renderer_class", ["VTKJSRenderer", "BrowserRenderer"])
+def test_generate_standalone_html(renderer_class, monkeypatch) -> None:
     """Test that generate_standalone_html produces a complete HTML page with scene data."""
     from tests.conftest import extract_scene_data  # noqa: PLC0415
 
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", True)
+    shown: list[object] = []
+    monkeypatch.setattr(rendering, "display", shown.append)
+    monkeypatch.setattr(rendering, "HTML", str, raising=False)  # as if IPython were installed
 
-    renderer = rendering.VTKJSRenderer()
+    renderer = getattr(rendering, renderer_class)()
     renderer.add_mesh_actor(Sphere(), color="red")
 
     html = renderer.generate_standalone_html()
 
+    assert shown == []  # nothing preloads vtk.js: a scene shown later loads it
     assert "<!DOCTYPE html>" in html
+    # every renderer's page fills the window, loading vtk.js once
+    assert f"#{renderer.container_id} {{ width: 100vw" in html
+    assert html.count(rendering._VTKJS_CDN) == 1
     assert 'id="scene-data"' in html
     scene = extract_scene_data(html)
     assert len(scene["actors"]) == 1
     assert scene["actors"][0]["source"]["type"] == "sphere"
+
+
+def test_render_loads_vtkjs_in_pyodide(monkeypatch) -> None:
+    """Test that rendering into a Pyodide page without IPython loads vtk.js there once."""
+    added: list[object] = []
+    document = types.SimpleNamespace(
+        createElement=lambda _tag: types.SimpleNamespace(),
+        head=types.SimpleNamespace(appendChild=added.append),
+    )
+    monkeypatch.setattr(rendering, "PYODIDE_ENV", True)
+    monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", False)
+    monkeypatch.setattr(rendering, "document", document)
+    monkeypatch.setattr(rendering.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(rendering._VTKJSLoader(), "_loaded", False)
+    renderer = rendering.VTKJSRenderer()
+    assert added == []  # nothing until it renders
+    # the vtk.js objects that rendering directly into the page uses
+    renderer.renderer = types.SimpleNamespace(resetCamera=lambda: None)  # type: ignore[attr-defined]
+    renderer.render_window = types.SimpleNamespace(render=lambda: None)  # type: ignore[attr-defined]
+    renderer.render()
+    renderer.render()
+    assert [script.src for script in added] == [rendering._VTKJS_CDN]
 
 
 def test_generate_render_js(monkeypatch) -> None:

@@ -149,13 +149,12 @@ else:
 # Check if running in IPython (Jupyter, JupyterLite, the IPython shell)
 try:
     from IPython import get_ipython
-    from IPython.display import HTML, Javascript, display
+    from IPython.display import Javascript, display
 
     # installed is not enough: a plain script still needs the browser renderer
     IPYTHON_AVAILABLE = get_ipython() is not None
 except ImportError:
     IPYTHON_AVAILABLE = False
-    HTML = None  # type: ignore[assignment]
     Javascript = None  # type: ignore[assignment]
     display = None  # type: ignore[assignment]
 
@@ -173,29 +172,16 @@ class _VTKJSLoader:
         return cls._instance  # type: ignore[return-value]
 
     def load(self) -> None:
-        """Load vtk.js library in IPython/Jupyter/Pyodide environment.
+        """Load the vtk.js library into the page, for rendering into it directly.
 
-        This function automatically loads the vtk.js library from unpkg CDN
-        when working in Jupyter notebooks or JupyterLite. It only loads the
-        library once per session and waits for it to be available.
+        Only Pyodide without IPython needs this: the scenes displayed in a
+        notebook load vtk.js themselves. It loads the library once per session
+        and waits for it to be available.
         """
         if self._loaded:
             return
 
-        if IPYTHON_AVAILABLE:
-            try:
-                display(
-                    HTML(f"""
-<script src="{_VTKJS_CDN}"></script>
-"""),
-                )
-                # Wait for vtk.js to load from CDN
-                time.sleep(2)
-                self._loaded = True
-            except (NameError, TypeError):
-                # display/HTML not available (e.g., in tests)
-                pass
-        elif PYODIDE_ENV and document is not None:
+        if PYODIDE_ENV and document is not None:
             # In pure Pyodide environment without IPython
             script = document.createElement("script")
             script.src = _VTKJS_CDN
@@ -1017,14 +1003,26 @@ class _BaseHTMLRenderer:
     def generate_standalone_html(self) -> str:
         """Generate a complete standalone HTML page with vtk.js.
 
-        Wraps the HTML fragment from _generate_html() in a full HTML document.
+        Wraps the HTML fragment from _generate_html() in a full HTML document
+        whose scene fills the window, such as an ``<iframe>`` it is embedded in.
         """
         fragment = self._generate_html()
+        container_rule = (
+            f"    #{self.container_id} "
+            "{ width: 100vw !important; height: 100vh !important; border: none !important; }\n"
+        )
+        style = (
+            "  <style>\n"
+            "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
+            " overflow: hidden; }\n" + container_rule + "  </style>\n"
+        )
         return (
             "<!DOCTYPE html>\n"
             "<html>\n"
-            "<head><meta charset='utf-8'></head>\n"
-            "<body>\n" + fragment + "\n</body>\n"
+            "<head>\n"
+            "  <meta charset='utf-8'>\n"
+            "  <title>pyvista-js</title>\n" + style + "</head>\n"
+            "<body>\n" + fragment + "</body>\n"
             "</html>\n"
         )
 
@@ -1180,8 +1178,6 @@ class VTKJSRenderer(_BaseHTMLRenderer):
     def __init__(self, lighting: str | None = "default") -> None:
         """Initialize the vtk.js renderer.
 
-        Automatically loads vtk.js library if in IPython/Jupyter environment.
-
         Parameters
         ----------
         lighting : str or None, optional
@@ -1201,11 +1197,6 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             raise RuntimeError(msg)
 
         super().__init__(lighting=lighting)
-
-        # Automatically load vtk.js in IPython/Jupyter (including Pyodide)
-        if IPYTHON_AVAILABLE or PYODIDE_ENV:
-            _VTKJSLoader().load()
-
         self.container = None
         self.use_ipython = IPYTHON_AVAILABLE
 
@@ -1260,7 +1251,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
             js_code = self._generate_render_js()
             display(Javascript(js_code))
         else:
-            # Direct rendering
+            # Direct rendering, which needs vtk.js in the page already
+            _VTKJSLoader().load()
             self.renderer.resetCamera()  # type: ignore[attr-defined]
             self.render_window.render()  # type: ignore[attr-defined]
 
@@ -1362,30 +1354,6 @@ class BrowserRenderer(_BaseHTMLRenderer):
         url = pathlib.Path(tmp_path).as_uri()
         webbrowser.open(url)
         logger.info("Opened visualization in browser: %s", url)
-
-    def generate_standalone_html(self) -> str:
-        """Wrap the HTML fragment in a complete standalone HTML page."""
-        fragment = self._generate_html()
-        container_id = self.container_id
-        container_rule = (
-            f"    #{container_id} "
-            "{ width: 100vw !important; height: 100vh !important; border: none !important; }\n"
-        )
-        style = (
-            "  <style>\n"
-            "    html, body { margin: 0; padding: 0; width: 100%; height: 100%;"
-            " overflow: hidden; }\n" + container_rule + "  </style>\n"
-        )
-        return (
-            "<!DOCTYPE html>\n"
-            "<html>\n"
-            "<head>\n"
-            "  <meta charset='utf-8'>\n"
-            "  <title>pyvista-js</title>\n"
-            f"  <script src='{_VTKJS_CDN}'></script>\n" + style + "</head>\n"
-            "<body>\n" + fragment + "</body>\n"
-            "</html>\n"
-        )
 
     def screenshot(
         self,
