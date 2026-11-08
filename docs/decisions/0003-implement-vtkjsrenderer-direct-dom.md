@@ -31,9 +31,10 @@ Chosen option: "Implement the direct-DOM path", because Pyodide without IPython 
 
 ### Consequences
 
-* Good, because `VTKJSRenderer.render()` stops crashing in Pyodide without IPython, and the direct-DOM branch becomes reachable and testable.
-* Good, because the `type: ignore` markers that currently mask the defect can be deleted.
-* Neutral, because a second rendering wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
+* Good, because Pyodide users get working rendering without IPython, so `VTKJSRenderer.render()` stops crashing in that configuration and the direct-DOM branch becomes reachable and testable.
+* Good, because the existing `create_container()` and `render()` method signatures stay unchanged; only the previously undocumented `renderer`/`render_window` attributes become real.
+* Good, because the `type: ignore[attr-defined]` markers that currently mask the defect can be deleted.
+* Neutral, because a second mesh wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
 
 ### Confirmation
 
@@ -45,9 +46,10 @@ Confirmed by tests that exercise the actual direct-DOM lifecycle without injecte
 
 At `create_container()` time, construct the vtk.js object graph for the container; `render()` then calls `resetCamera()` and `render_window.render()` on real objects.
 
-* Good, because Pyodide users get working rendering without IPython.
-* Good, because the existing method signatures (`create_container`, `render`) stay unchanged; only undocumented attributes become real.
-* Neutral, because vtk.js object wiring is duplicated or abstracted across the Python and generated-JS paths.
+* Good, because Pyodide users get working rendering without IPython, so `VTKJSRenderer.render()` stops crashing in that configuration and the direct-DOM branch becomes reachable and testable.
+* Good, because the existing `create_container()` and `render()` method signatures stay unchanged; only the previously undocumented `renderer`/`render_window` attributes become real.
+* Good, because the `type: ignore[attr-defined]` markers that currently mask the defect can be deleted.
+* Neutral, because a second vtk.js object wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
 
 ### Remove the direct-DOM path
 
