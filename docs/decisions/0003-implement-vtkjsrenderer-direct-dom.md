@@ -33,7 +33,7 @@ Chosen option: "Implement the direct-DOM path", because Pyodide without IPython 
 
 * Good, because `VTKJSRenderer.render()` stops crashing in Pyodide without IPython, and the direct-DOM branch becomes reachable and testable.
 * Good, because the `type: ignore` markers that currently mask the defect can be deleted.
-* Bad, because a second rendering wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
+* Neutral, because a second rendering wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
 
 ### Confirmation
 
@@ -47,7 +47,7 @@ At `create_container()` time, construct the vtk.js object graph for the containe
 
 * Good, because Pyodide users get working rendering without IPython.
 * Good, because the existing method signatures (`create_container`, `render`) stay unchanged; only undocumented attributes become real.
-* Bad, because vtk.js object wiring is duplicated or abstracted across the Python and generated-JS paths.
+* Neutral, because vtk.js object wiring is duplicated or abstracted across the Python and generated-JS paths.
 
 ### Remove the direct-DOM path
 
