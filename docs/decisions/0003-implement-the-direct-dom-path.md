@@ -6,7 +6,7 @@ consulted: [larsoner]
 informed: []
 ---
 
-# Implement the VTKJSRenderer Direct-DOM Path
+# Implement the Direct-DOM Path
 
 ## Context and Problem Statement
 
@@ -42,7 +42,7 @@ Confirmed by tests that exercise the actual direct-DOM lifecycle without injecte
 
 ## Pros and Cons of the Options
 
-Ratings follow the Decision Drivers in the listed order: (1) correctness over dead code, (2) Pyodide as a supported target, (3) testability, (4) maintenance cost.
+## Pros and Cons of the Options
 
 ### Implement the direct-DOM path (proposed)
 
@@ -62,7 +62,7 @@ Raise an explicit `RuntimeError` with guidance (for example, "install or initial
 * Neutral, because the exposed failure is deterministic and easy to test, and the Playwright surface neither shrinks nor grows.
 * Good, because it is the smallest change, with no duplicated vtk.js wiring to maintain.
 
-### Guard and mark experimental
+### Keep the path but document it as experimental
 
 Keep the path untouched but catch `AttributeError` and warn.
 

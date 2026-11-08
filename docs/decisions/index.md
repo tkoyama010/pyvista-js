@@ -19,5 +19,5 @@ worked example.
 0000-use-markdown-architectural-decision-records
 0001-add-three-js-rendering-option
 0002-use-pi-coding-agent-github-actions
-0003-implement-vtkjsrenderer-direct-dom
+0003-implement-the-direct-dom-path
 ```
