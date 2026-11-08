@@ -31,10 +31,10 @@ Chosen option: "Implement the direct-DOM path", because Pyodide without IPython 
 
 ### Consequences
 
-* Good, because Pyodide users get working rendering without IPython, so `VTKJSRenderer.render()` stops crashing in that configuration and the direct-DOM branch becomes reachable and testable.
-* Good, because the existing `create_container()` and `render()` method signatures stay unchanged; only the previously undocumented `renderer`/`render_window` attributes become real.
-* Good, because the `type: ignore[attr-defined]` markers that currently mask the defect can be deleted.
-* Neutral, because a second mesh wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
+* Good, because it removes the guaranteed `AttributeError` defect, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
+* Good, because Pyodide without IPython stays a supported use case with real rendering instead of a crash.
+* Good, because the direct-DOM branch becomes reachable and testable by tests that exercise the real lifecycle rather than injected stand-ins.
+* Neutral, because a second vtk.js object wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
 
 ### Confirmation
 
@@ -42,29 +42,34 @@ Confirmed by tests that exercise the actual direct-DOM lifecycle without injecte
 
 ## Pros and Cons of the Options
 
+Ratings follow the Decision Drivers in the listed order: (1) correctness over dead code, (2) Pyodide as a supported target, (3) testability, (4) maintenance cost.
+
 ### Implement the direct-DOM path (proposed)
 
 At `create_container()` time, construct the vtk.js object graph for the container; `render()` then calls `resetCamera()` and `render_window.render()` on real objects.
 
-* Good, because Pyodide users get working rendering without IPython, so `VTKJSRenderer.render()` stops crashing in that configuration and the direct-DOM branch becomes reachable and testable.
-* Good, because the existing `create_container()` and `render()` method signatures stay unchanged; only the previously undocumented `renderer`/`render_window` attributes become real.
-* Good, because the `type: ignore[attr-defined]` markers that currently mask the defect can be deleted.
+* Good, because it removes the guaranteed `AttributeError` defect, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
+* Good, because Pyodide without IPython stays a supported use case with real rendering instead of a crash.
+* Good, because the direct-DOM branch becomes reachable and testable by tests that exercise the real lifecycle rather than injected stand-ins.
 * Neutral, because a second vtk.js object wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
 
 ### Remove the direct-DOM path
 
 Raise an explicit `RuntimeError` with guidance (for example, "install or initialize IPython, or use `generate_standalone_html()`") when not in IPython.
 
-* Good, because the smallest change: no duplicated wiring, and the failure is loud and intentional instead of an `AttributeError`.
-* Bad, because it makes Pyodide-without-IPython a permanently unsupported configuration, with `VTKJSRenderer` degrading to IPython-only despite accepting that environment.
-* Bad, because removal is a deprecation for any user who somehow creates the attributes themselves today.
+* Good, because it replaces the `AttributeError` with a loud, intentional error and removes the masked dead path and its `type: ignore` comments.
+* Bad, because Pyodide-without-IPython becomes a permanently unsupported configuration, with `VTKJSRenderer` degrading to IPython-only despite accepting that environment.
+* Neutral, because the exposed failure is deterministic and easy to test, and the Playwright surface neither shrinks nor grows.
+* Good, because it is the smallest change, with no duplicated vtk.js wiring to maintain.
 
 ### Guard and mark experimental
 
 Keep the path untouched but catch `AttributeError` and warn.
 
-* Good, because no behavior regression for crash-free users and near-zero implementation work.
-* Bad, because it converts a crash into a silent no-op; the scene still does not render, which is worse than a clear error.
+* Bad, because the masked defect and the `type: ignore[attr-defined]` comments stay, and a caught `AttributeError` turns the crash into a silent no-op, which is worse than a clear error.
+* Bad, because in Pyodide without IPython the scene still does not render, so the supported use case gets no visualization.
+* Good, because the guarded branch becomes deterministic and testable, and a no-IPython test needs no stand-ins for `renderer` or `render_window`.
+* Good, because the implementation work is near zero: no vtk.js wiring is created.
 
 ## More Information
 
