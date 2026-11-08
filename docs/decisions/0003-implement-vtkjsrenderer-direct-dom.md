@@ -17,7 +17,7 @@ informed: []
 * **Correctness over dead code**: A code path that always raises `AttributeError` when reached is a defect, and the `type: ignore` annotations hide it from both mypy and readers.
 * **Pyodide is a supported target**: pyvista-js explicitly supports Pyodide environments ({file}`jupyterlite/`, {file}`stlite/` demos), and Pyodide without IPython is a real configuration, so crashing there breaks a supported use case.
 * **Testability**: Coverage tooling flags the branch, and the maintainers want the suite to cover it either way — a tested implementation is also the natural target of the existing Playwright tests.
-* **Maintenance cost**: Implementing direct-DOM rendering means creating and wiring the full vtk.js object graph (`render_window`, `renderer`, context) in `ts/pyodide/`-style Python, which duplicates logic that today lives in the generated JavaScript of the IPython path.
+* **Maintenance cost**: Implementing direct-DOM rendering means creating and wiring the full vtk.js object graph (`render_window`, `renderer`, context) from Python in `src/pyvista_js/rendering.py`, duplicating logic that today lives in the vtk.js wiring of `ts/renderer.ts` and is embedded into the generated JavaScript of the IPython path.
 
 ## Considered Options
 
@@ -37,7 +37,7 @@ Chosen option: "Implement the direct-DOM path", because Pyodide without IPython 
 
 ### Confirmation
 
-Confirmed by unit tests that exercise the direct-DOM branch (renderer and render window stand-ins or real vtk.js objects) and by the Playwright browser tests. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record.
+Confirmed by tests that exercise the actual direct-DOM lifecycle without injected attributes: a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present), plus a browser test that renders a mesh in Pyodide without IPython, analogous to the existing Playwright tests. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record.
 
 ## Pros and Cons of the Options
 
