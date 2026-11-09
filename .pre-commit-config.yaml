@@ -36,12 +36,12 @@ repos:
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: "v2.30.3"
+    rev: "v2.30.6"
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.3
+    rev: v0.17.4
     hooks:
       # Run the linter
       - id: ruff-check
@@ -50,14 +50,14 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.6
+    rev: 0.13.7
     hooks:
       - id: uv-lock
         args: [--check, --offline]
 
 
   - repo: https://github.com/djlint/djLint
-    rev: v1.49.2
+    rev: v1.49.10
     hooks:
       - id: djlint-reformat-jinja
         files: src/pyvista_js/templates/.*\.html$
@@ -112,12 +112,12 @@ repos:
       - id: standard-readme
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.31.1
+    rev: v1.32.0
     hooks:
       - id: zizmor
 
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.7
+    rev: v1.7.12
     hooks:
       - id: actionlint
 
