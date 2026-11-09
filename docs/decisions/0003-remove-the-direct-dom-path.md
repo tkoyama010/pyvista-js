@@ -6,7 +6,7 @@ consulted: [larsoner]
 informed: []
 ---
 
-# Replay the Generated JavaScript in Non-IPython Pages
+# Remove the Direct-DOM Path
 
 ## Context and Problem Statement
 
@@ -34,21 +34,20 @@ Review of this record noted that no current demo reaches the direct-DOM path. Ju
 
 ## Decision Outcome
 
-Chosen option: "Replay the generated JavaScript in non-IPython pages", because it removes the guaranteed crash, gives a non-IPython embedding real rendering, and needs no TypeScript changes: the non-IPython branch emits the JavaScript the IPython path already generates through `_generate_render_js()` inside the container `create_container()` builds, and the `# type: ignore[attr-defined]` comments go away with the dead branch. Review of this record raised this option and showed an inclination toward "Remove the direct-DOM path"; the record chose replay over removal because removal trades away the only Good under "Reachability of a plausible target" for neutrality elsewhere, while replay keeps every Good of removal except "Loud and helpful failure", where a Python-side precondition check with an informative message covers the gap. The decision therefore remains `proposed` pending that discussion in the PR that carries this record.
+Chosen option: "Remove the direct-DOM path", because YAGNI ranks first and removal is the only option that is Good under it: with no current demo reaching the direct-DOM path and no concrete non-IPython use case, building — or replaying — rendering capability for a hypothetical embedding is exactly the speculative work YAGNI rules out. Review of this record and discussion with larsoner in [pyvista-js#797](https://github.com/tkoyama010/pyvista-js/pull/797) settled removal, and the ranking agrees. The decision is revisitable: a concrete non-IPython use case (for example, a PyScript page embedding Pyodide without IPython) triggers a new record, where replaying the existing `_generate_render_js()` output inside the container `create_container()` builds — rather than rebuilding the vtk.js object graph from Python — is the recorded starting point because it avoids a second wiring that must stay in sync with `ts/renderer.ts`.
 
 ### Consequences
 
-* Bad, because it serves an embedding no current demo reaches; YAGNI names the tension this record knowingly carries.
-* Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
-* Good, because a possible non-IPython embedding gets real rendering drawn by the same code as the IPython path.
-* Neutral, because standalone execution of the replayed output must first be proven by a browser test.
-* Good, because nothing new must stay in sync with `ts/renderer.ts`, at the bounded cost of `create_container()` still placing a suitable host element.
-* Good, because only Python-side changes are needed, with no TypeScript rebuild in the loop.
-* Neutral, because if the replayed output fails in the browser, the failure carries no informative message until a precondition check fills that gap.
+* Good, because it deletes the unused branch instead of building for hypothetical users, which is what the first-ranked driver YAGNI calls for.
+* Good, because it replaces the `AttributeError` with a loud, intentional error and removes the masked dead path and its `type: ignore` comments.
+* Neutral, because the exposed failure is deterministic and easy to test, and the Playwright surface neither shrinks nor grows.
+* Good, because it is the smallest change, with no duplicated vtk.js wiring to maintain.
+* Good, because a small Python-side change can ship the fix quickly.
+* Good, because the exposed error carries guidance, such as installing IPython or using `generate_standalone_html()`.
 
 ### Confirmation
 
-Confirmed by tests that exercise the actual direct-DOM lifecycle without injected attributes: a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present), plus a browser test that renders a mesh in Pyodide without IPython and thereby proves the replayed `_generate_render_js()` output runs standalone. Accepted after discussion in [tkoyama010/pyvista-js#797](https://github.com/tkoyama010/pyvista-js/pull/797).
+Confirmed by a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes and asserts the explicit error with alternative guidance (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present). Accepted after discussion in [tkoyama010/pyvista-js#797](https://github.com/tkoyama010/pyvista-js/pull/797).
 
 ## Pros and Cons of the Options
 
@@ -64,7 +63,7 @@ At `create_container()` time, construct the vtk.js object graph for the containe
 * Bad, because the fix waits on new vtk.js wiring plus new unit and browser tests before it can ship.
 * Neutral, because a completed implementation leaves no unsupported configuration to fail, but until it lands the crash stays.
 
-### Remove the direct-DOM path
+### Remove the direct-DOM path (accepted)
 
 Raise an explicit `RuntimeError` with guidance (for example, "install or initialize IPython, or use `generate_standalone_html()`") when not in IPython.
 
@@ -88,7 +87,7 @@ Keep the path untouched but catch `AttributeError` and warn.
 * Neutral, because the catch-and-warn guard is a small change, but it leaves the rendering question unresolved.
 * Bad, because the guarded branch still renders nothing and only prints a warning instead of informative guidance.
 
-### Replay the generated JavaScript in non-IPython pages (proposed)
+### Replay the generated JavaScript in non-IPython pages
 
 Make the non-IPython branch emit the same JavaScript the IPython path generates through `_generate_render_js()` and inject it into the container built by `create_container()`, reusing the single vtk.js object wiring that lives in `ts/renderer.ts`.
 
