@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-11-04
 decision-makers: [tkoyama010]
 consulted: [larsoner]
@@ -46,7 +46,7 @@ Chosen option: "Replay the generated JavaScript in non-IPython pages", because i
 
 ### Confirmation
 
-Confirmed by tests that exercise the actual direct-DOM lifecycle without injected attributes: a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present), plus a browser test that renders a mesh in Pyodide without IPython and thereby proves the replayed `_generate_render_js()` output runs standalone. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record.
+Confirmed by tests that exercise the actual direct-DOM lifecycle without injected attributes: a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present), plus a browser test that renders a mesh in Pyodide without IPython and thereby proves the replayed `_generate_render_js()` output runs standalone. Accepted after discussion in [tkoyama010/pyvista-js#797](https://github.com/tkoyama010/pyvista-js/pull/797).
 
 ## Pros and Cons of the Options
 
