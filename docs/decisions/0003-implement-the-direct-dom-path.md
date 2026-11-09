@@ -79,7 +79,7 @@ Make the non-IPython branch emit the same JavaScript the IPython path generates 
 * Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior instead of a crash.
 * Good, because it avoids a second vtk.js object wiring: there is nothing new to keep in sync with `ts/renderer.ts`, unlike creating the object graph from Python.
 * Good, because the rendered result and the tested JavaScript stay identical to the IPython path.
-* Bad, because `create_container()` still must place a suitable host element, so implementation work does not fully vanish.
+* Neutral, because `create_container()` still must place a suitable host element, so implementation work does not fully vanish.
 
 ## More Information
 
