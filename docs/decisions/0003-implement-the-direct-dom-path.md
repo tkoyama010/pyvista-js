@@ -30,11 +30,10 @@ Review of this record noted that no current demo reaches the direct-DOM path. Ju
 * Keep the path but document it as experimental and guard `render()` so it degrades gracefully instead of crashing.
 * Replay the generated JavaScript in non-IPython pages: run the existing `_generate_render_js()` output of the IPython path inside the page instead of rebuilding the vtk.js object graph from Python.
 * Share a single TypeScript render entry point: refactor `ts/renderer.ts` so both the IPython path and the direct-DOM path drive rendering through one entry function, with Python passing the rendering data and the container element.
-* Defer the decision: replace the non-IPython branch with an explicit error now and revisit this record when a concrete non-IPython use case appears.
 
 ## Decision Outcome
 
-Chosen option: "Implement the direct-DOM path", because it is the option that both removes the guaranteed crash and gives a non-IPython embedding real rendering. Review of this record raised the "Replay the generated JavaScript in non-IPython pages" alternative — refined below as sharing a single TypeScript render entry point, together with a "Defer the decision" option — and an inclination toward "Remove the direct-DOM path", because no current demo reaches this path and the cheaper alternative reuses the single vtk.js wiring. The decision therefore remains `proposed` pending that discussion. The implementation must create the vtk.js renderer and render window inside the container `create_container()` builds, so `render()` drives actual objects instead of attributes that do not exist, and the `# type: ignore[attr-defined]` comments are removed or justified by generated attributes.
+Chosen option: "Implement the direct-DOM path", because it is the option that both removes the guaranteed crash and gives a non-IPython embedding real rendering. Review of this record raised the "Replay the generated JavaScript in non-IPython pages" alternative — refined below as sharing a single TypeScript render entry point — and showed an inclination toward "Remove the direct-DOM path", because no current demo reaches this path and the record weights how quickly the defect leaves a release and how helpfully it fails. The decision therefore remains `proposed` pending that discussion. The implementation must create the vtk.js renderer and render window inside the container `create_container()` builds, so `render()` drives actual objects instead of attributes that do not exist, and the `# type: ignore[attr-defined]` comments are removed or justified by generated attributes.
 
 ### Consequences
 
@@ -105,17 +104,6 @@ Refactor `ts/renderer.ts` so the IPython path and the direct-DOM path drive rend
 * Good, because a single vtk.js wiring remains: there is no second object graph to keep in sync, at only the one-time cost of refactoring the entry function out of `ts/renderer.ts` and rebuilding the bundle.
 * Bad, because the fix waits on the TypeScript refactor, rebuild, and new tests.
 * Neutral, because a completed shared entry point leaves no unsupported configuration to fail, but until it lands the crash stays.
-
-### Defer the decision
-
-Replace the non-IPython branch with an explicit, informative error now; revisit this record when a concrete non-IPython use case appears.
-
-* Good, because the guaranteed `AttributeError` becomes a loud, intentional error and the masked path goes away.
-* Bad, because a possible Pyodide-without-IPython embedding gets no rendering and no plan until someone asks again.
-* Good, because the error path is deterministic and testable without stand-ins.
-* Good, because today's change is small; Neutral, because the decision recurs whenever a concrete use case appears.
-* Good, because a small Python-side change can ship the fix quickly.
-* Good, because the explicit error carries guidance toward a working alternative now, and the decision can be revisited later.
 
 ## More Information
 
