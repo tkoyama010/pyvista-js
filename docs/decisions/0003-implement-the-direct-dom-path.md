@@ -20,6 +20,8 @@ Review of this record noted that no current demo reaches the direct-DOM path. Ju
 * **Reachability of a plausible target**: no current demo reaches the direct-DOM path, but Pyodide without IPython (for example, a PyScript page) is a plausible future embedding, and a path that always crashes there gives no clear error for that configuration.
 * **Testability**: Coverage tooling flags the branch, and the maintainers want the suite to cover it either way — a tested implementation is also the natural target of the existing Playwright tests.
 * **Maintenance cost**: Implementing direct-DOM rendering means creating and wiring the full vtk.js object graph (`render_window`, `renderer`, context) from Python in `src/pyvista_js/rendering.py`, duplicating logic that today lives in the vtk.js wiring of `ts/renderer.ts` and is embedded into the generated JavaScript of the IPython path.
+* **Time to a safe release**: the crash defect should disappear from released pyvista-js soon; options that require substantial new implementation and testing delay that release.
+* **Loud and helpful failure**: a configuration that cannot render should fail with an explicit, informative message suggesting a working alternative, instead of crashing or silently doing nothing.
 
 ## Considered Options
 
@@ -40,6 +42,8 @@ Chosen option: "Implement the direct-DOM path", because it is the option that bo
 * Good, because a possible Pyodide-without-IPython embedding gets real rendering instead of a crash.
 * Good, because the direct-DOM branch becomes reachable and testable by tests that exercise the real lifecycle rather than injected stand-ins.
 * Neutral, because a second vtk.js object wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
+* Bad, because the fix waits on new vtk.js wiring plus new unit and browser tests before it can ship.
+* Neutral, because a completed implementation leaves no unsupported configuration to fail, but until it lands the crash stays.
 
 ### Confirmation
 
@@ -55,6 +59,8 @@ At `create_container()` time, construct the vtk.js object graph for the containe
 * Good, because a possible Pyodide-without-IPython embedding gets real rendering instead of a crash.
 * Good, because the direct-DOM branch becomes reachable and testable by tests that exercise the real lifecycle rather than injected stand-ins.
 * Neutral, because a second vtk.js object wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
+* Bad, because the fix waits on new vtk.js wiring plus new unit and browser tests before it can ship.
+* Neutral, because a completed implementation leaves no unsupported configuration to fail, but until it lands the crash stays.
 
 ### Remove the direct-DOM path
 
@@ -64,6 +70,8 @@ Raise an explicit `RuntimeError` with guidance (for example, "install or initial
 * Bad, because Pyodide-without-IPython becomes a permanently unsupported configuration, with `VTKJSRenderer` degrading to IPython-only despite accepting that environment.
 * Neutral, because the exposed failure is deterministic and easy to test, and the Playwright surface neither shrinks nor grows.
 * Good, because it is the smallest change, with no duplicated vtk.js wiring to maintain.
+* Good, because a small Python-side change can ship the fix quickly.
+* Good, because the exposed error carries guidance, such as installing IPython or using `generate_standalone_html()`.
 
 ### Keep the path but document it as experimental
 
@@ -73,6 +81,8 @@ Keep the path untouched but catch `AttributeError` and warn.
 * Bad, because in Pyodide without IPython the scene still does not render, so the supported use case gets no visualization.
 * Good, because the guarded branch becomes deterministic and testable, and a no-IPython test needs no stand-ins for `renderer` or `render_window`.
 * Good, because the implementation work is near zero: no vtk.js wiring is created.
+* Neutral, because the catch-and-warn guard is a small change, but it leaves the rendering question unresolved.
+* Bad, because the guarded branch still renders nothing and only prints a warning instead of informative guidance.
 
 ### Replay the generated JavaScript in non-IPython pages
 
@@ -82,6 +92,8 @@ Make the non-IPython branch emit the same JavaScript the IPython path generates 
 * Good, because a possible non-IPython embedding gets real rendering drawn by the same code as the IPython path.
 * Neutral, because the generated JavaScript is written for the IPython display context, so standalone execution must first be proven by a browser test.
 * Good, because nothing new must stay in sync with `ts/renderer.ts`, at the bounded cost of `create_container()` still placing a suitable host element.
+* Good, because only Python-side changes are needed, with no TypeScript rebuild in the loop.
+* Neutral, because if the replayed output fails in the browser, the failure carries no informative message.
 
 ### Share a single TypeScript render entry point
 
@@ -91,6 +103,8 @@ Refactor `ts/renderer.ts` so the IPython path and the direct-DOM path drive rend
 * Good, because a possible Pyodide-without-IPython embedding gets real rendering.
 * Good, because both modes exercise the same tested code, so one browser test covers the shared entry point.
 * Good, because a single vtk.js wiring remains: there is no second object graph to keep in sync, at only the one-time cost of refactoring the entry function out of `ts/renderer.ts` and rebuilding the bundle.
+* Bad, because the fix waits on the TypeScript refactor, rebuild, and new tests.
+* Neutral, because a completed shared entry point leaves no unsupported configuration to fail, but until it lands the crash stays.
 
 ### Defer the decision
 
@@ -100,6 +114,8 @@ Replace the non-IPython branch with an explicit, informative error now; revisit 
 * Bad, because a possible Pyodide-without-IPython embedding gets no rendering and no plan until someone asks again.
 * Good, because the error path is deterministic and testable without stand-ins.
 * Good, because today's change is small; Neutral, because the decision recurs whenever a concrete use case appears.
+* Good, because a small Python-side change can ship the fix quickly.
+* Good, because the explicit error carries guidance toward a working alternative now, and the decision can be revisited later.
 
 ## More Information
 
