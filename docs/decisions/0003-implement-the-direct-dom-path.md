@@ -81,8 +81,7 @@ Make the non-IPython branch emit the same JavaScript the IPython path generates 
 * Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior instead of a crash.
 * Good, because a possible non-IPython embedding gets real rendering drawn by the same code as the IPython path.
 * Neutral, because the generated JavaScript is written for the IPython display context, so standalone execution must first be proven by a browser test.
-* Good, because there is nothing new to keep in sync with `ts/renderer.ts`, unlike creating the object graph from Python.
-* Neutral, because `create_container()` still must place a suitable host element, so implementation work does not fully vanish.
+* Good, because nothing new must stay in sync with `ts/renderer.ts`, at the bounded cost of `create_container()` still placing a suitable host element.
 
 ### Share a single TypeScript render entry point
 
@@ -91,8 +90,7 @@ Refactor `ts/renderer.ts` so the IPython path and the direct-DOM path drive rend
 * Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior instead of a crash.
 * Good, because a possible Pyodide-without-IPython embedding gets real rendering.
 * Good, because both modes exercise the same tested code, so one browser test covers the shared entry point.
-* Good, because a single vtk.js wiring remains: there is no second object graph to keep in sync.
-* Neutral, because the entry function must first be refactored out of `ts/renderer.ts` and the bundle rebuilt once.
+* Good, because a single vtk.js wiring remains: there is no second object graph to keep in sync, at only the one-time cost of refactoring the entry function out of `ts/renderer.ts` and rebuilding the bundle.
 
 ### Defer the decision
 
