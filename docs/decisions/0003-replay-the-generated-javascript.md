@@ -16,6 +16,7 @@ Review of this record noted that no current demo reaches the direct-DOM path. Ju
 
 ## Decision Drivers
 
+* **You aren't gonna need it (YAGNI)**: capability for an embedding with no current user should not be built; the unused direct-DOM path and any new code serving only hypothetical configurations should be deleted rather than extended.
 * **Correctness over dead code**: A code path that always raises `AttributeError` when reached is a defect, and the `type: ignore` annotations hide it from both mypy and readers.
 * **Reachability of a plausible target**: no current demo reaches the direct-DOM path, but Pyodide without IPython (for example, a PyScript page) is a plausible future embedding, and a path that always crashes there gives no clear error for that configuration.
 * **Testability**: Coverage tooling flags the branch, and the maintainers want the suite to cover it either way — a tested implementation is also the natural target of the existing Playwright tests.
@@ -37,6 +38,7 @@ Chosen option: "Replay the generated JavaScript in non-IPython pages", because i
 
 ### Consequences
 
+* Bad, because it serves an embedding no current demo reaches; YAGNI names the tension this record knowingly carries.
 * Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
 * Good, because a possible non-IPython embedding gets real rendering drawn by the same code as the IPython path.
 * Neutral, because standalone execution of the replayed output must first be proven by a browser test.
@@ -54,6 +56,7 @@ Confirmed by tests that exercise the actual direct-DOM lifecycle without injecte
 
 At `create_container()` time, construct the vtk.js object graph for the container; `render()` then calls `resetCamera()` and `render_window.render()` on real objects.
 
+* Bad, because wiring the full vtk.js object graph builds speculative capability for an embedding no current demo reaches.
 * Good, because it removes the guaranteed `AttributeError` defect, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
 * Good, because a possible Pyodide-without-IPython embedding gets real rendering instead of a crash.
 * Good, because the direct-DOM branch becomes reachable and testable by tests that exercise the real lifecycle rather than injected stand-ins.
@@ -65,6 +68,7 @@ At `create_container()` time, construct the vtk.js object graph for the containe
 
 Raise an explicit `RuntimeError` with guidance (for example, "install or initialize IPython, or use `generate_standalone_html()`") when not in IPython.
 
+* Good, because it deletes the unused branch instead of building for hypothetical users.
 * Good, because it replaces the `AttributeError` with a loud, intentional error and removes the masked dead path and its `type: ignore` comments.
 * Bad, because Pyodide-without-IPython becomes a permanently unsupported configuration, with `VTKJSRenderer` degrading to IPython-only despite accepting that environment.
 * Neutral, because the exposed failure is deterministic and easy to test, and the Playwright surface neither shrinks nor grows.
@@ -76,6 +80,7 @@ Raise an explicit `RuntimeError` with guidance (for example, "install or initial
 
 Keep the path untouched but catch `AttributeError` and warn.
 
+* Bad, because it keeps an unused branch around instead of deleting it.
 * Bad, because the masked defect and the `type: ignore[attr-defined]` comments stay, and a caught `AttributeError` turns the crash into a silent no-op, which is worse than a clear error.
 * Bad, because in Pyodide without IPython the scene still does not render, so the supported use case gets no visualization.
 * Good, because the guarded branch becomes deterministic and testable, and a no-IPython test needs no stand-ins for `renderer` or `render_window`.
@@ -87,6 +92,7 @@ Keep the path untouched but catch `AttributeError` and warn.
 
 Make the non-IPython branch emit the same JavaScript the IPython path generates through `_generate_render_js()` and inject it into the container built by `create_container()`, reusing the single vtk.js object wiring that lives in `ts/renderer.ts`.
 
+* Bad, because, like implementing the path, it adds rendering capability for an embedding no current demo reaches, only at smaller cost.
 * Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior instead of a crash.
 * Good, because a possible non-IPython embedding gets real rendering drawn by the same code as the IPython path.
 * Neutral, because the generated JavaScript is written for the IPython display context, so standalone execution must first be proven by a browser test.
@@ -98,6 +104,7 @@ Make the non-IPython branch emit the same JavaScript the IPython path generates 
 
 Refactor `ts/renderer.ts` so the IPython path and the direct-DOM path drive rendering through the same entry function; Python passes the rendering data and the container element, and the bundle creates the vtk.js object graph.
 
+* Bad, because it refactors the bundle to serve an embedding no current demo reaches.
 * Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior instead of a crash.
 * Good, because a possible Pyodide-without-IPython embedding gets real rendering.
 * Good, because both modes exercise the same tested code, so one browser test covers the shared entry point.
