@@ -6,7 +6,7 @@ consulted: [larsoner]
 informed: []
 ---
 
-# Implement the Direct-DOM Path
+# Replay the Generated JavaScript in Non-IPython Pages
 
 ## Context and Problem Statement
 
@@ -33,24 +33,24 @@ Review of this record noted that no current demo reaches the direct-DOM path. Ju
 
 ## Decision Outcome
 
-Chosen option: "Implement the direct-DOM path", because it is the option that both removes the guaranteed crash and gives a non-IPython embedding real rendering. Review of this record raised the "Replay the generated JavaScript in non-IPython pages" alternative — refined below as sharing a single TypeScript render entry point — and showed an inclination toward "Remove the direct-DOM path", because no current demo reaches this path and the record weights how quickly the defect leaves a release and how helpfully it fails. The decision therefore remains `proposed` pending that discussion. The implementation must create the vtk.js renderer and render window inside the container `create_container()` builds, so `render()` drives actual objects instead of attributes that do not exist, and the `# type: ignore[attr-defined]` comments are removed or justified by generated attributes.
+Chosen option: "Replay the generated JavaScript in non-IPython pages", because it removes the guaranteed crash, gives a non-IPython embedding real rendering, and needs no TypeScript changes: the non-IPython branch emits the JavaScript the IPython path already generates through `_generate_render_js()` inside the container `create_container()` builds, and the `# type: ignore[attr-defined]` comments go away with the dead branch. Review of this record raised this option and showed an inclination toward "Remove the direct-DOM path"; the record chose replay over removal because removal trades away the only Good under "Reachability of a plausible target" for neutrality elsewhere, while replay keeps every Good of removal except "Loud and helpful failure", where a Python-side precondition check with an informative message covers the gap. The decision therefore remains `proposed` pending that discussion in the PR that carries this record.
 
 ### Consequences
 
-* Good, because it removes the guaranteed `AttributeError` defect, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
-* Good, because a possible Pyodide-without-IPython embedding gets real rendering instead of a crash.
-* Good, because the direct-DOM branch becomes reachable and testable by tests that exercise the real lifecycle rather than injected stand-ins.
-* Neutral, because a second vtk.js object wiring path now exists alongside the generated-JavaScript IPython path, and the two must be kept in sync.
-* Bad, because the fix waits on new vtk.js wiring plus new unit and browser tests before it can ship.
-* Neutral, because a completed implementation leaves no unsupported configuration to fail, but until it lands the crash stays.
+* Good, because it removes the guaranteed `AttributeError` defect with a deliberate behavior, and the `type: ignore[attr-defined]` markers that mask it can be deleted.
+* Good, because a possible non-IPython embedding gets real rendering drawn by the same code as the IPython path.
+* Neutral, because standalone execution of the replayed output must first be proven by a browser test.
+* Good, because nothing new must stay in sync with `ts/renderer.ts`, at the bounded cost of `create_container()` still placing a suitable host element.
+* Good, because only Python-side changes are needed, with no TypeScript rebuild in the loop.
+* Neutral, because if the replayed output fails in the browser, the failure carries no informative message until a precondition check fills that gap.
 
 ### Confirmation
 
-Confirmed by tests that exercise the actual direct-DOM lifecycle without injected attributes: a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present), plus a browser test that renders a mesh in Pyodide without IPython, analogous to the existing Playwright tests. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record.
+Confirmed by tests that exercise the actual direct-DOM lifecycle without injected attributes: a unit test that calls `create_container()` and `render()` in Pyodide without IPython and without preset `renderer`/`render_window` attributes (note that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot serve as this check because it injects stand-ins for both attributes, so it passes with the defect still present), plus a browser test that renders a mesh in Pyodide without IPython and thereby proves the replayed `_generate_render_js()` output runs standalone. The ADR status moves from `proposed` to `accepted` or `rejected` after discussion in the PR that carries this record.
 
 ## Pros and Cons of the Options
 
-### Implement the direct-DOM path (proposed)
+### Implement the direct-DOM path
 
 At `create_container()` time, construct the vtk.js object graph for the container; `render()` then calls `resetCamera()` and `render_window.render()` on real objects.
 
@@ -83,7 +83,7 @@ Keep the path untouched but catch `AttributeError` and warn.
 * Neutral, because the catch-and-warn guard is a small change, but it leaves the rendering question unresolved.
 * Bad, because the guarded branch still renders nothing and only prints a warning instead of informative guidance.
 
-### Replay the generated JavaScript in non-IPython pages
+### Replay the generated JavaScript in non-IPython pages (proposed)
 
 Make the non-IPython branch emit the same JavaScript the IPython path generates through `_generate_render_js()` and inject it into the container built by `create_container()`, reusing the single vtk.js object wiring that lives in `ts/renderer.ts`.
 
