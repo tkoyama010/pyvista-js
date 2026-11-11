@@ -36,6 +36,8 @@ Review of this record noted that no current demo reaches the direct-DOM path. Ju
 
 Chosen option: "Remove the direct-DOM path", because YAGNI ranks first and removal is the only option that is Good under it: with no current demo reaching the direct-DOM path and no concrete non-IPython use case, building — or replaying — rendering capability for a hypothetical embedding is exactly the speculative work YAGNI rules out. Review of this record and discussion with larsoner in [pyvista-js#797](https://github.com/tkoyama010/pyvista-js/pull/797) settled removal, and the ranking agrees. The decision is revisitable: a concrete non-IPython use case (for example, a PyScript page embedding Pyodide without IPython) triggers a new record, where replaying the existing `_generate_render_js()` output inside the container `create_container()` builds — rather than rebuilding the vtk.js object graph from Python — is the recorded starting point because it avoids a second wiring that must stay in sync with `ts/renderer.ts`.
 
+The scope of the removal reaches beyond `render()`. `get_renderer()` still selects `VTKJSRenderer` in Pyodide without IPython, and `VTKJSRenderer.__init__`, `create_container()`, `clear()`, and `_VTKJSLoader` all carry code that serves only the direct-DOM path. Raising the explicit error in `__init__` (or not selecting `VTKJSRenderer` in `get_renderer()`) and deleting those branches removes the path cleanly.
+
 ### Consequences
 
 * Good, because it deletes the unused branch instead of building for hypothetical users, which is what the first-ranked driver YAGNI calls for.
@@ -116,5 +118,5 @@ Refactor `ts/renderer.ts` so the IPython path and the direct-DOM path drive rend
 * Issue: [tkoyama010/pyvista-js#778](https://github.com/tkoyama010/pyvista-js/issues/778)
 * Coverage PR that surfaced it: [tkoyama010/pyvista-js#776](https://github.com/tkoyama010/pyvista-js/pull/776)
 * Review discussion of this record: [tkoyama010/pyvista-js#797](https://github.com/tkoyama010/pyvista-js/pull/797)
-* Affected code: `src/pyvista_js/rendering.py`, `VTKJSRenderer.create_container` and `VTKJSRenderer.render`
+* Affected code: `src/pyvista_js/rendering.py`, `VTKJSRenderer.__init__`, `VTKJSRenderer.create_container`, `VTKJSRenderer.render`, `VTKJSRenderer.clear`, `_VTKJSLoader`, and the `get_renderer` selection of `VTKJSRenderer`
 * ADR-0001 for the related rendering-backend decision, ADR-0000 for the record format used here.
