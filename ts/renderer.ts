@@ -137,6 +137,27 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
   }
 }
 
+/**
+ * Map from filter type to its dispatcher function.
+ *
+ * Declared above the scene-setup entry block: `applyFilters` runs during
+ * scene construction, and a `var`-downleveled `const` here would be hoisted
+ * as `undefined`, crashing filter actors with `undefined['shrink']`.
+ */
+const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
+  {
+    shrink: tryShrinkFilter,
+    tube: tryTubeFilter,
+    clip: tryClipFilter,
+    contour: tryContourFilter,
+    fillHoles: tryFillHolesFilter,
+    threshold: tryThresholdFilter,
+    slice: trySliceFilter,
+    warpByScalar: tryWarpByScalarFilter,
+    smoothTaubin: trySmoothTaubinFilter,
+    textureSphere: tryTextureMapToSphere,
+  };
+
 const sceneData: SceneData =
   // biome-ignore lint/style/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
   typeof __pvjsSceneData === "undefined"
@@ -1492,23 +1513,6 @@ function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResul
   // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.holeSize === undefined ? current : applyFillHolesFilter(current, f.holeSize);
 }
-
-/**
- * Map from filter type to its dispatcher function.
- */
-const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
-  {
-    shrink: tryShrinkFilter,
-    tube: tryTubeFilter,
-    clip: tryClipFilter,
-    contour: tryContourFilter,
-    fillHoles: tryFillHolesFilter,
-    threshold: tryThresholdFilter,
-    slice: trySliceFilter,
-    warpByScalar: tryWarpByScalarFilter,
-    smoothTaubin: trySmoothTaubinFilter,
-    textureSphere: tryTextureMapToSphere,
-  };
 
 /**
  * Apply a chain of filters to a source.
