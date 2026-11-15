@@ -29,30 +29,9 @@ CANVAS_WAIT_SECONDS = 600
 LITE_FRAME_WAIT_SECONDS = 120
 HTTP_ERROR_MIN_STATUS = 400
 
-# A rendered mesh has many pixels that differ strongly from the page
-# background; this is the minimum count of such pixels for the canvas to
-# count as non-blank.
-MIN_NONBLANK_PIXELS = 40
-
-
-def _canvas_nonblank_js() -> str:
-    """Return JavaScript that reports whether the example canvas has content."""
-    return f"""
-() => {{
-  const c = document.querySelector('.jp-OutputArea-output canvas');
-  if (!c) return false;
-  const t = document.createElement('canvas');
-  t.width = c.width; t.height = c.height;
-  const ctx = t.getContext('2d');
-  ctx.drawImage(c, 0, 0);
-  const d = ctx.getImageData(0, 0, t.width, t.height).data;
-  let n = 0;
-  for (let i = 0; i < d.length; i += 4) {{
-    if (d[i] < 230 || d[i+1] < 230 || d[i+2] < 230) n++;
-  }}
-  return n > {MIN_NONBLANK_PIXELS};
-}}
-"""
+# A rendered mesh produces more than one distinct color on the canvas;
+# a blank (uniform) canvas produces exactly one.
+MIN_DISTINCT_CANVAS_COLORS = 2
 
 
 def _find_lite_frame(page: Any) -> Any:
@@ -108,34 +87,35 @@ def capture(url: str, output: Path) -> list[str]:
         page.on("console", lambda msg: _on_console(js_errors, msg))
         page.on("pageerror", lambda err: js_errors.append(f"pageerror: {err}"))
 
-        page.goto(url, wait_until="networkidle", timeout=120_000)
-
-        button = page.locator("button.try_examples_button")
-        if button.count() == 0:
-            problems.append("No 'Try it with JupyterLite!' button found on the page.")
-            page.screenshot(path=str(output / "capture.png"), full_page=True)
-            browser.close()
-            problems.extend(js_errors)
-            problems.extend(failed_urls)
-            _write_problems(problems, output, url)
-            return problems
-
-        button.first.click()
-        iframe = page.locator(".jupyterlite_sphinx_iframe_container iframe")
         try:
-            iframe.wait_for(state="visible", timeout=120_000)
+            page.goto(url, wait_until="networkidle", timeout=120_000)
+
+            button = page.locator("button.try_examples_button")
+            if button.count() == 0:
+                problems.append("No 'Try it with JupyterLite!' button found on the page.")
+            else:
+                button.first.click()
+                iframe = page.locator(".jupyterlite_sphinx_iframe_container iframe")
+                try:
+                    iframe.wait_for(state="visible", timeout=120_000)
+                except Exception as exc:  # noqa: BLE001
+                    problems.append(f"JupyterLite iframe never appeared: {exc}")
+
+                lite = _find_lite_frame(page) if not problems else None
+                if lite is None:
+                    problems.append("JupyterLite frame never loaded.")
+                else:
+                    problems.extend(_run_example(lite))
+
+            page.wait_for_timeout(5_000)
         except Exception as exc:  # noqa: BLE001
-            problems.append(f"JupyterLite iframe never appeared: {exc}")
-
-        lite = _find_lite_frame(page) if not problems else None
-        if lite is None:
-            problems.append("JupyterLite frame never loaded.")
-        else:
-            problems.extend(_run_example(lite, js_errors, failed_urls))
-
-        page.wait_for_timeout(5_000)
-        page.screenshot(path=str(output / "capture.png"), full_page=True)
-        browser.close()
+            problems.append(f"Capture failed with an unexpected error: {exc}")
+        finally:
+            try:
+                page.screenshot(path=str(output / "capture.png"), full_page=True)
+            except Exception as exc:  # noqa: BLE001
+                problems.append(f"No screenshot could be taken: {exc}")
+            browser.close()
 
     # Resource failures are tracked with URLs via responses; console errors
     # and page errors are collected with their messages.
@@ -145,7 +125,7 @@ def capture(url: str, output: Path) -> list[str]:
     return problems
 
 
-def _run_example(lite: Any, js_errors: list[str], failed_urls: list[str]) -> list[str]:
+def _run_example(lite: Any) -> list[str]:
     """Run all cells in the JupyterLite notebook and check the result."""
     problems: list[str] = []
     try:
@@ -153,10 +133,6 @@ def _run_example(lite: Any, js_errors: list[str], failed_urls: list[str]) -> lis
     except Exception as exc:  # noqa: BLE001
         problems.append(f"Notebook UI never finished booting: {exc}")
         return problems
-
-    lite.on("pageerror", lambda err: js_errors.append(f"pageerror: {err}"))
-    lite.on("console", lambda msg: _on_console(js_errors, msg))
-    lite.on("response", lambda response: _on_response(failed_urls, response))
 
     # A "File Load Error" dialog means the generated example notebook is
     # missing from the deployed JupyterLite contents.
@@ -187,7 +163,7 @@ def _run_example(lite: Any, js_errors: list[str], failed_urls: list[str]) -> lis
     # Give the render loop time to draw.
     lite.wait_for_timeout(20_000)
     try:
-        if not lite.evaluate(_canvas_nonblank_js()):
+        if not _canvas_renders_mesh(lite):
             problems.append(
                 "The render canvas is blank after running all cells "
                 "(the example produced no visible output).",
@@ -196,6 +172,24 @@ def _run_example(lite: Any, js_errors: list[str], failed_urls: list[str]) -> lis
         problems.append(f"Could not inspect the render canvas: {exc}")
 
     return problems
+
+
+def _canvas_renders_mesh(lite: Any) -> bool:
+    """Report whether the example canvas shows more than a uniform color.
+
+    Mirrors the distinct-color check used by the browser rendering tests:
+    a uniform background (dark, light, or fully transparent) means nothing
+    was drawn, while any rendered mesh yields multiple distinct colors.
+    """
+    import io  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+    from PIL import Image  # noqa: PLC0415
+
+    screenshot = lite.locator(".jp-OutputArea-output canvas").first.screenshot()
+    pixels = np.asarray(Image.open(io.BytesIO(screenshot)).convert("RGB"))
+    colors = {tuple(color) for color in pixels.reshape(-1, 3).tolist()}
+    return len(colors) >= MIN_DISTINCT_CANVAS_COLORS
 
 
 def _write_problems(problems: list[str], output: Path, url: str) -> None:

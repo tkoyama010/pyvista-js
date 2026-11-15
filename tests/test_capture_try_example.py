@@ -34,7 +34,7 @@ def test_build_issue_body_without_problems() -> None:
     assert "Unknown problem." in body
 
 
-def test_min_nonblank_pixels_threshold_is_positive() -> None:
-    """Test the blank-canvas threshold requires at least some real pixels."""
+def test_min_distinct_canvas_colors_threshold_requires_variation() -> None:
+    """Test the blank-canvas check needs more than one distinct color."""
     module = _load_script()
-    assert module.MIN_NONBLANK_PIXELS > 0
+    assert module.MIN_DISTINCT_CANVAS_COLORS > 1

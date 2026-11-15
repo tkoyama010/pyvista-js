@@ -40,14 +40,16 @@ jobs:
 
       - name: Install Playwright
         run: |
-          uv pip install --system playwright
+          uv pip install --system playwright pillow numpy
           uv run playwright install --with-deps chromium
 
       - name: Capture example
         id: capture
         continue-on-error: true
+        env:
+          DOC_URL: ${{ inputs.url }}
         run: |
-          uv run .github/scripts/capture_try_example.py "${{ inputs.url }}" --output capture-artifacts
+          uv run .github/scripts/capture_try_example.py "$DOC_URL" --output capture-artifacts
 
       - name: Upload capture artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
