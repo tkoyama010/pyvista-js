@@ -11,7 +11,9 @@ import pytest
 
 import pyvista_js as pv
 from pyvista_js._cli import (
+    MIN_DISTINCT_CANVAS_COLORS,
     _apply_camera_movement,
+    _build_issue_body,
     _capture_stlite_screenshots,
     _find_canvas_in_frames,
     _rotate_canvas_with_mouse,
@@ -890,3 +892,26 @@ def test_plot_new_plotter_with_camera_movement() -> None:
     """Camera movement options work with new plotters (not just pickle)."""
     with patch("pyvista_js.Plotter.show"):
         cli_main(["plot", str(VTK_FILE), "--azimuth", "45", "--zoom", "1.5"])
+
+
+def test_build_issue_body_includes_problems_and_url() -> None:
+    """``_build_issue_body`` lists every problem and the page URL."""
+    body = _build_issue_body(
+        "https://example.com/api/page.html",
+        ["The render canvas is blank", "HTTP 404 loading notebook"],
+        "https://github.com/tkoyama010/pyvista-js/actions/runs/1",
+    )
+    assert "https://example.com/api/page.html" in body
+    assert "- The render canvas is blank" in body
+    assert "- HTTP 404 loading notebook" in body
+
+
+def test_build_issue_body_without_problems() -> None:
+    """``_build_issue_body`` falls back to a placeholder when there are none."""
+    body = _build_issue_body("https://example.com/", [], "run-url")
+    assert "Unknown problem." in body
+
+
+def test_min_distinct_canvas_colors_requires_variation() -> None:
+    """The blank-canvas check needs more than one distinct color."""
+    assert MIN_DISTINCT_CANVAS_COLORS > 1
