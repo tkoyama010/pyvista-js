@@ -10,7 +10,12 @@ import numpy as np
 import pytest
 
 import pyvista_js as pv
-from pyvista_js._capture import MIN_DISTINCT_CANVAS_COLORS, _build_issue_body
+from pyvista_js._capture import (
+    MIN_DISTINCT_CANVAS_COLORS,
+    _build_issue_body,
+    _on_console,
+    _on_response,
+)
 from pyvista_js._cli import (
     _apply_camera_movement,
     _capture_stlite_screenshots,
@@ -914,3 +919,26 @@ def test_build_issue_body_without_problems() -> None:
 def test_min_distinct_canvas_colors_requires_variation() -> None:
     """The blank-canvas check needs more than one distinct color."""
     assert MIN_DISTINCT_CANVAS_COLORS > 1
+
+
+def test_on_response_records_http_errors_but_skips_optional_files() -> None:
+    """``_on_response`` collects HTTP failures except optional artifacts."""
+    failed: list[str] = []
+    _on_response(failed, MagicMock(status=404, url="https://x/missing.ipynb"))
+    _on_response(failed, MagicMock(status=404, url="https://x/try_examples.json"))
+    _on_response(failed, MagicMock(status=200, url="https://x/ok.js"))
+    assert failed == ["HTTP 404 loading missing.ipynb"]
+
+
+def test_on_console_collects_errors_but_skips_noise() -> None:
+    """``_on_console`` collects real errors and skips resource/theme noise."""
+    errors: list[str] = []
+    error = MagicMock(type="error", text="boom")
+    resource = MagicMock(type="error", text="Failed to load resource: 404")
+    theme = MagicMock(type="error", text="Got invalid theme mode: . Resetting to auto.")
+    log = MagicMock(type="log", text="hello")
+    _on_console(errors, error)
+    _on_console(errors, resource)
+    _on_console(errors, theme)
+    _on_console(errors, log)
+    assert errors == ["console.error: boom"]
