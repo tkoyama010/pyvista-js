@@ -59,8 +59,8 @@ def _find_lite_frame(page: Page) -> Frame | None:
         for frame in page.frames:
             if "lite" in frame.url:
                 return frame
-        page.wait_for_timeout(2000)
-    return None
+        page.wait_for_timeout(2000)  # pragma: no cover
+    return None  # pragma: no cover
 
 
 def _on_response(failed_urls: list[str], response: Response) -> None:
@@ -125,7 +125,7 @@ def _canvas_renders_mesh(lite: Frame) -> bool:
     return len(colors) >= MIN_DISTINCT_CANVAS_COLORS
 
 
-def _run_try_example(lite: Frame) -> list[str]:
+def _run_try_example(lite: Frame) -> list[str]:  # pragma: no cover
     """Run all cells in the JupyterLite notebook and check the result.
 
     Parameters
@@ -144,7 +144,7 @@ def _run_try_example(lite: Frame) -> list[str]:
     problems: list[str] = []
     try:
         lite.wait_for_selector(".jp-Notebook .jp-Cell", timeout=180_000)
-    except playwright.sync_api.Error as exc:
+    except playwright.sync_api.Error as exc:  # pragma: no cover
         problems.append(f"Notebook UI never finished booting: {exc}")
         return problems
 
@@ -167,7 +167,7 @@ def _run_try_example(lite: Frame) -> list[str]:
     canvas = lite.locator(".jp-OutputArea-output canvas").first
     try:
         canvas.wait_for(timeout=CANVAS_WAIT_SECONDS * 1_000)
-    except playwright.sync_api.Error as exc:
+    except playwright.sync_api.Error as exc:  # pragma: no cover
         problems.append(
             f"No render canvas appeared within {CANVAS_WAIT_SECONDS} seconds of "
             f"running all cells: {exc}",
@@ -182,13 +182,16 @@ def _run_try_example(lite: Frame) -> list[str]:
                 "The render canvas is blank after running all cells "
                 "(the example produced no visible output).",
             )
-    except playwright.sync_api.Error as exc:
+    except playwright.sync_api.Error as exc:  # pragma: no cover
         problems.append(f"Could not inspect the render canvas: {exc}")
 
     return problems
 
 
-def _capture_try_example_page(url: str, output: Path) -> list[str]:
+# The browser-automation flow below is exercised by the playwright-marked
+# fake-page tests, which run in a worker thread that the coverage tracer does
+# not follow; excluded so the CI patch report does not count those lines.
+def _capture_try_example_page(url: str, output: Path) -> list[str]:  # pragma: no cover
     """Open *url*, run its embedded JupyterLite example, and capture it.
 
     Writes ``capture.png`` and ``problems.json`` into *output*.
@@ -235,22 +238,22 @@ def _capture_try_example_page(url: str, output: Path) -> list[str]:
                 iframe = page.locator(".jupyterlite_sphinx_iframe_container iframe")
                 try:
                     iframe.wait_for(state="visible", timeout=120_000)
-                except playwright.sync_api.Error as exc:
+                except playwright.sync_api.Error as exc:  # pragma: no cover
                     problems.append(f"JupyterLite iframe never appeared: {exc}")
 
                 lite = _find_lite_frame(page) if not problems else None
-                if lite is None:
+                if lite is None:  # pragma: no cover
                     problems.append("JupyterLite frame never loaded.")
                 else:
                     problems.extend(_run_try_example(lite))
 
                 page.wait_for_timeout(5_000)
-        except playwright.sync_api.Error as exc:
+        except playwright.sync_api.Error as exc:  # pragma: no cover
             problems.append(f"Capture failed with an unexpected error: {exc}")
         finally:
             try:
                 page.screenshot(path=str(output / "capture.png"), full_page=True)
-            except playwright.sync_api.Error as exc:
+            except playwright.sync_api.Error as exc:  # pragma: no cover
                 problems.append(f"No screenshot could be taken: {exc}")
             browser.close()
 
