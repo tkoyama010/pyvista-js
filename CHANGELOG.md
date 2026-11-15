@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.21.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.1...pyvista-js-v0.21.2) (2026-11-15)
+
+### Bug Fixes
+
+- declare filterDispatchMap before scene setup and guard Pyodide rendering ([#806](https://github.com/tkoyama010/pyvista-js/issues/806)) ([35f0c62](https://github.com/tkoyama010/pyvista-js/commit/35f0c6259b42fce15f8db262ea9ab52b29d5c166))
+
+### Continuous Integration
+
+- run the pi agent on DeepSeek instead of GLM ([#809](https://github.com/tkoyama010/pyvista-js/issues/809)) ([fd88d78](https://github.com/tkoyama010/pyvista-js/commit/fd88d78a629f3284eb22528efb75792a5547a185))
+
 ## [0.21.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.0...pyvista-js-v0.21.1) (2026-11-11)
 
 ### Bug Fixes
