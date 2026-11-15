@@ -24,6 +24,7 @@ Thank you for your interest in contributing to pyvista-js! This document provide
   - [Running Tests](#running-tests)
   - [Writing Tests](#writing-tests)
   - [Test Requirements](#test-requirements)
+- [Capturing API Documentation Examples](#capturing-api-documentation-examples)
 - [Documentation](#documentation)
   - [Documentation Framework](#documentation-framework)
   - [Building Documentation](#building-documentation)
@@ -227,6 +228,34 @@ uv run pytest --cov=pyvista_js --cov-report=html
 - Bug fixes should include regression tests
 - Maintain or improve code coverage
 - Tests should pass on Python 3.12, 3.13, 3.14, and 3.15
+
+## Capturing API Documentation Examples
+
+The `capture-api-example` CLI command captures an API documentation page
+after running its embedded "Try it with JupyterLite" example:
+
+```bash
+# Capture the page and write capture.png + problems.json
+uv run pyvista-js capture-api-example \
+  https://pyvista-js.readthedocs.io/en/latest/api/_autosummary/pyvista_js.PolyData.shrink.html
+
+# Also open a "[Bug]:" issue with the gh CLI when problems are detected
+uv run pyvista-js capture-api-example <URL> --open-issue
+```
+
+The command runs all example cells in the embedded JupyterLite widget,
+takes a full-page screenshot (`capture.png`), and writes a machine-readable
+problem report (`problems.json`). Detected problems include failed notebook
+loads, console errors, HTTP failures, and blank render canvases. The
+command exits with status 1 when problems are found.
+
+The [Capture Try Example workflow](https://github.com/tkoyama010/pyvista-js/actions/workflows/capture-try-example.yml)
+runs the same command on demand: dispatch it with a documentation page URL
+from the Actions tab, and it uploads the screenshot as an artifact and
+opens a `[Bug]:` issue automatically when problems are detected.
+
+Requires: playwright (install browsers with `uv run playwright install chromium`), pillow, numpy — and the [gh CLI](https://cli.github.com/) for
+`--open-issue`.
 
 ## Documentation
 
