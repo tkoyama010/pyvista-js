@@ -13,12 +13,14 @@ import platform
 import shutil
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from playwright.sync_api import ConsoleMessage, Frame, Page, Response
 
 CANVAS_WAIT_SECONDS = 600
 LITE_FRAME_WAIT_SECONDS = 120
@@ -1063,8 +1065,6 @@ def capture_stlite_preview(
 # Try-it-with-JupyterLite example capture
 # ---------------------------------------------------------------------------
 
-# A rendered mesh produces more than one distinct color on the canvas; a
-# blank (uniform) canvas produces exactly one.
 MIN_DISTINCT_CANVAS_COLORS = 2
 
 CANVAS_WAIT_SECONDS = 600
@@ -1072,7 +1072,7 @@ LITE_FRAME_WAIT_SECONDS = 120
 HTTP_ERROR_MIN_STATUS = 400
 
 
-def _find_lite_frame(page: Any) -> Any:  # noqa: ANN401
+def _find_lite_frame(page: Page) -> Frame | None:
     """Return the JupyterLite frame of *page*, polling until it appears.
 
     Parameters
@@ -1099,7 +1099,7 @@ def _find_lite_frame(page: Any) -> Any:  # noqa: ANN401
     return None
 
 
-def _on_response(failed_urls: list[str], response: Any) -> None:  # noqa: ANN401
+def _on_response(failed_urls: list[str], response: Response) -> None:
     """Record HTTP errors, skipping optional files that may 404 by design.
 
     Parameters
@@ -1114,7 +1114,7 @@ def _on_response(failed_urls: list[str], response: Any) -> None:  # noqa: ANN401
         failed_urls.append(f"HTTP {response.status} loading {response.url.rsplit('/', 1)[-1]}")
 
 
-def _on_console(js_errors: list[str], msg: Any) -> None:  # noqa: ANN401
+def _on_console(js_errors: list[str], msg: ConsoleMessage) -> None:
     """Record console errors, skipping resource and theme noise.
 
     Parameters
@@ -1134,7 +1134,7 @@ def _on_console(js_errors: list[str], msg: Any) -> None:  # noqa: ANN401
         js_errors.append(f"console.error: {msg.text}")
 
 
-def _canvas_renders_mesh(lite: Any) -> bool:  # noqa: ANN401
+def _canvas_renders_mesh(lite: Frame) -> bool:
     """Report whether the example canvas shows more than a uniform color.
 
     Mirrors the distinct-color check used by the browser rendering tests:
@@ -1163,15 +1163,13 @@ def _canvas_renders_mesh(lite: Any) -> bool:  # noqa: ANN401
     return len(colors) >= MIN_DISTINCT_CANVAS_COLORS
 
 
-def _run_try_example(lite: Any) -> list[str]:  # noqa: ANN401
+def _run_try_example(lite: Frame) -> list[str]:
     """Run all cells in the JupyterLite notebook and check the result.
 
     Parameters
     ----------
     lite : playwright.sync_api.Frame
         The JupyterLite frame with the example notebook.
-    js_errors : list of str
-        Collector for console and page errors.
 
     Returns
     -------
@@ -1179,10 +1177,12 @@ def _run_try_example(lite: Any) -> list[str]:  # noqa: ANN401
         The problems found while running the example.
 
     """
+    import playwright.sync_api  # noqa: PLC0415
+
     problems: list[str] = []
     try:
         lite.wait_for_selector(".jp-Notebook .jp-Cell", timeout=180_000)
-    except Exception as exc:  # noqa: BLE001
+    except playwright.sync_api.Error as exc:
         problems.append(f"Notebook UI never finished booting: {exc}")
         return problems
 
@@ -1192,7 +1192,7 @@ def _run_try_example(lite: Any) -> list[str]:  # noqa: ANN401
     dialog_shown = True
     try:
         file_load_error.wait_for(timeout=5_000)
-    except Exception as exc:  # noqa: BLE001
+    except playwright.sync_api.Error as exc:
         logger.debug("No File Load Error dialog: %s", exc)
         dialog_shown = False
     if dialog_shown:
@@ -1205,7 +1205,7 @@ def _run_try_example(lite: Any) -> list[str]:  # noqa: ANN401
     canvas = lite.locator(".jp-OutputArea-output canvas").first
     try:
         canvas.wait_for(timeout=CANVAS_WAIT_SECONDS * 1_000)
-    except Exception as exc:  # noqa: BLE001
+    except playwright.sync_api.Error as exc:
         problems.append(
             f"No render canvas appeared within {CANVAS_WAIT_SECONDS} seconds of "
             f"running all cells: {exc}",
@@ -1220,7 +1220,7 @@ def _run_try_example(lite: Any) -> list[str]:  # noqa: ANN401
                 "The render canvas is blank after running all cells "
                 "(the example produced no visible output).",
             )
-    except Exception as exc:  # noqa: BLE001
+    except playwright.sync_api.Error as exc:
         problems.append(f"Could not inspect the render canvas: {exc}")
 
     return problems
@@ -1273,7 +1273,7 @@ def _capture_try_example_page(url: str, output: Path) -> list[str]:
                 iframe = page.locator(".jupyterlite_sphinx_iframe_container iframe")
                 try:
                     iframe.wait_for(state="visible", timeout=120_000)
-                except Exception as exc:  # noqa: BLE001
+                except playwright.sync_api.Error as exc:
                     problems.append(f"JupyterLite iframe never appeared: {exc}")
 
                 lite = _find_lite_frame(page) if not problems else None
@@ -1283,12 +1283,12 @@ def _capture_try_example_page(url: str, output: Path) -> list[str]:
                     problems.extend(_run_try_example(lite))
 
                 page.wait_for_timeout(5_000)
-        except Exception as exc:  # noqa: BLE001
+        except playwright.sync_api.Error as exc:
             problems.append(f"Capture failed with an unexpected error: {exc}")
         finally:
             try:
                 page.screenshot(path=str(output / "capture.png"), full_page=True)
-            except Exception as exc:  # noqa: BLE001
+            except playwright.sync_api.Error as exc:
                 problems.append(f"No screenshot could be taken: {exc}")
             browser.close()
 
