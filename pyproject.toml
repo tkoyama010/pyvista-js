@@ -167,12 +167,12 @@ lint.per-file-ignores."jupyterlite/content/*" = [
   "INP001",  # implicit namespace package
   "PLE1142", # await outside async - top-level await valid in Pyodide
 ]
-lint.per-file-ignores."stlite/*" = [
-  "INP001", # implicit namespace package
-]
 lint.per-file-ignores."src/pyvista_js/_capture.py" = [
   "PLC0415", # lazy imports - playwright, numpy and pillow are optional test dependencies (SPEC 1)
   "S603",    # subprocess - the gh CLI is invoked with a fixed argument list
+]
+lint.per-file-ignores."stlite/*" = [
+  "INP001", # implicit namespace package
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
