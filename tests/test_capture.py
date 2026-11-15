@@ -17,6 +17,7 @@ from pyvista_js._capture import (
     _open_bug_report,
     run_capture,
 )
+from pyvista_js._cli import cli_main
 
 
 def test_build_issue_body_includes_problems_and_url() -> None:
@@ -168,10 +169,13 @@ LITE_TEMPLATE = """<!DOCTYPE html>
 """
 
 
-def _write_fixture(tmp_path: Path, *, draw: bool) -> Path:
+def _write_fixture(tmp_path: Path, *, draw: bool, dialog: str = "") -> Path:
     """Write the fake docs page and JupyterLite frame into *tmp_path*."""
     tmp_path.joinpath("page.html").write_text(PAGE_TEMPLATE)
-    tmp_path.joinpath("lite.html").write_text(LITE_TEMPLATE.format(draw=str(draw).lower()))
+    lite = LITE_TEMPLATE.format(draw=str(draw).lower())
+    if dialog:
+        lite = lite.replace("<body>", f"<body><div class='jp-Dialog'>{dialog}</div>")
+    tmp_path.joinpath("lite.html").write_text(lite)
     return tmp_path / "page.html"
 
 
@@ -215,3 +219,32 @@ def test_capture_clean_run(tmp_path: Path) -> None:
         ).result()
     assert problems == []
     assert (out / "capture.png").exists()
+
+
+@pytest.mark.playwright
+def test_capture_reports_file_load_error(tmp_path: Path) -> None:
+    """A missing notebook is reported via the File Load Error dialog branch."""
+    out = tmp_path / "out"
+    out = tmp_path / "out"
+    _write_fixture(tmp_path, draw=False, dialog="File Load Error for example.ipynb")
+    page = tmp_path / "page.html"
+    with ThreadPoolExecutor() as executor:
+        problems = executor.submit(_capture_try_example_page, page.as_uri(), out).result()
+    assert any("File Load Error" in problem for problem in problems)
+
+
+def test_capture_command_exits_one_on_problems(monkeypatch) -> None:
+    """``capture-api-example`` exits 1 when the capture reports problems."""
+    monkeypatch.setattr(
+        "pyvista_js._capture._capture_try_example_page",
+        lambda url, output: ["blank canvas"],
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        cli_main(["capture-api-example", "https://example.com/"])
+    assert excinfo.value.code == 1
+
+
+def test_capture_command_succeeds_cleanly(monkeypatch) -> None:
+    """``capture-api-example`` exits 0 when the capture is clean."""
+    monkeypatch.setattr("pyvista_js._capture._capture_try_example_page", lambda url, output: [])
+    cli_main(["capture-api-example", "https://example.com/"])
