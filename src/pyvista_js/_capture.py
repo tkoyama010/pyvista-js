@@ -188,13 +188,15 @@ def _run_try_example(lite: Frame) -> list[str]:  # pragma: no cover
     return problems
 
 
-# The browser-automation flow below is exercised by the playwright-marked
-# fake-page tests, which run in a worker thread that the coverage tracer does
-# not follow; excluded so the CI patch report does not count those lines.
 def _capture_try_example_page(url: str, output: Path) -> list[str]:  # pragma: no cover
     """Open *url*, run its embedded JupyterLite example, and capture it.
 
     Writes ``capture.png`` and ``problems.json`` into *output*.
+
+    This browser-automation flow is exercised by the playwright-marked
+    fake-page tests, which run in a worker thread that the coverage tracer
+    does not follow; the function is excluded so the CI patch report does
+    not count those lines as missed.
 
     Parameters
     ----------
