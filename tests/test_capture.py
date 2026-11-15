@@ -1,6 +1,7 @@
 """Tests for the capture module backing ``capture-api-example``."""
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -180,7 +181,8 @@ def test_capture_reports_missing_widget(tmp_path: Path) -> None:
     page = tmp_path / "plain.html"
     page.write_text("<!DOCTYPE html><html><body>no widget</body></html>")
     out = tmp_path / "out"
-    problems = _capture_try_example_page(page.as_uri(), out)
+    with ThreadPoolExecutor() as executor:
+        problems = executor.submit(_capture_try_example_page, page.as_uri(), out).result()
     assert any("No 'Try it with JupyterLite!'" in problem for problem in problems)
     assert (out / "capture.png").exists()
     report = json.loads((out / "problems.json").read_text())
