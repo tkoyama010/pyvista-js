@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.21.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.0...pyvista-js-v0.21.1) (2026-11-11)
+
+### Bug Fixes
+
+- remove the direct-DOM rendering path ([#801](https://github.com/tkoyama010/pyvista-js/issues/801)) ([95cf676](https://github.com/tkoyama010/pyvista-js/commit/95cf6765b917e2212d73ae6f4a1d16ad0161492e))
+- render Circle meshes in the browser ([#789](https://github.com/tkoyama010/pyvista-js/issues/789)) ([bc03f7a](https://github.com/tkoyama010/pyvista-js/commit/bc03f7a61c53ffdc1ce17bf214393e629414f5d8))
+
+### Documentation
+
+- add ADR 0003 removing the VTKJSRenderer direct-DOM path ([#797](https://github.com/tkoyama010/pyvista-js/issues/797)) ([1a5251f](https://github.com/tkoyama010/pyvista-js/commit/1a5251f3e257a0d55de6658e83fb20e410839f46))
+- Updates for project pyvista-js-doc and language ja ([#802](https://github.com/tkoyama010/pyvista-js/issues/802)) ([8bba58b](https://github.com/tkoyama010/pyvista-js/commit/8bba58b7c51dc1276d73995dd02578f2922da7e0))
+
+### Continuous Integration
+
+- attribute pi agent PRs and commits to tkoyama010 ([#796](https://github.com/tkoyama010/pyvista-js/issues/796)) ([f21fa9b](https://github.com/tkoyama010/pyvista-js/commit/f21fa9bfc42bc2bc137788a0fbccd8dcb302d643))
+
 ## [0.21.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.20.0...pyvista-js-v0.21.0) (2026-11-05)
 
 ### Features
