@@ -53,7 +53,9 @@ jobs:
         continue-on-error: true
         env:
           DOC_URL: ${{ inputs.url }}
-          GH_TOKEN: ${{ github.token }}
+          # tkoyama010's PAT so opened issues are authored by tkoyama010
+          # instead of github-actions[bot] (same convention as pi-agent.yml).
+          GH_TOKEN: ${{ secrets.TKOYAMA010_TOKEN }}
           CAPTURE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           uv run pyvista-js capture-api-example "$DOC_URL" \
