@@ -54,7 +54,7 @@ jobs:
         env:
           DOC_URL: ${{ inputs.url }}
           GH_TOKEN: ${{ github.token }}
-          CAPTURE_RUN_URL: ${{ github.serverUrl }}/${{ github.repository }}/actions/runs/${{ github.runId }}
+          CAPTURE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.runId }}
         run: |
           uv run pyvista-js capture-api-example "$DOC_URL" \
             --output capture-artifacts --open-issue
