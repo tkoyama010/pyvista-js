@@ -10,10 +10,9 @@ import numpy as np
 import pytest
 
 import pyvista_js as pv
+from pyvista_js._capture import MIN_DISTINCT_CANVAS_COLORS, _build_issue_body
 from pyvista_js._cli import (
-    MIN_DISTINCT_CANVAS_COLORS,
     _apply_camera_movement,
-    _build_issue_body,
     _capture_stlite_screenshots,
     _find_canvas_in_frames,
     _rotate_canvas_with_mouse,
