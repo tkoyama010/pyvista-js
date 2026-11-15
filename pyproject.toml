@@ -176,6 +176,7 @@ lint.per-file-ignores."stlite/*" = [
 ]
 lint.per-file-ignores."tests/*" = [
   "ANN",     # missing type annotations - not critical for tests
+  "ARG",     # unused arguments - test doubles accept unused callbacks
   "INP001",  # implicit namespace package
   "PLR2004", # magic values - normal for test data
   "S101",    # assert - normal for pytest
