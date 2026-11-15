@@ -193,7 +193,12 @@ def test_capture_reports_missing_widget(tmp_path: Path) -> None:
 def test_capture_reports_blank_canvas(tmp_path: Path) -> None:
     """A canvas that never renders is reported as a blank-canvas problem."""
     out = tmp_path / "out"
-    problems = _capture_try_example_page(_write_fixture(tmp_path, draw=False).as_uri(), out)
+    with ThreadPoolExecutor() as executor:
+        problems = executor.submit(
+            _capture_try_example_page,
+            _write_fixture(tmp_path, draw=False).as_uri(),
+            out,
+        ).result()
     assert any("blank" in problem for problem in problems)
     assert (out / "capture.png").exists()
 
@@ -202,6 +207,11 @@ def test_capture_reports_blank_canvas(tmp_path: Path) -> None:
 def test_capture_clean_run(tmp_path: Path) -> None:
     """A drawn canvas produces no problems and a screenshot."""
     out = tmp_path / "out"
-    problems = _capture_try_example_page(_write_fixture(tmp_path, draw=True).as_uri(), out)
+    with ThreadPoolExecutor() as executor:
+        problems = executor.submit(
+            _capture_try_example_page,
+            _write_fixture(tmp_path, draw=True).as_uri(),
+            out,
+        ).result()
     assert problems == []
     assert (out / "capture.png").exists()
