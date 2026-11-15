@@ -1,7 +1,6 @@
----
-name: capture-api-example
-description: Captures an API documentation page after running its embedded "Try it with JupyterLite" example and opens a bug-report issue when problems are found. Use when checking whether a pyvista-js docs page example works, when asked to capture or screenshot a docs example, or when docs example regressions need to be reported as issues.
----
+______________________________________________________________________
+
+## name: capture-api-example description: Captures an API documentation page after running its embedded "Try it with JupyterLite" example and opens a bug-report issue when problems are found. Use when checking whether a pyvista-js docs page example works, when asked to capture or screenshot a docs example, or when docs example regressions need to be reported as issues.
 
 # Capture API Documentation Examples
 

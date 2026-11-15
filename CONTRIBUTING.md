@@ -254,8 +254,7 @@ runs the same command on demand: dispatch it with a documentation page URL
 from the Actions tab, and it uploads the screenshot as an artifact and
 opens a `[Bug]:` issue automatically when problems are detected.
 
-Requires: playwright (install browsers with `uv run playwright install
-chromium`), pillow, numpy — and the [gh CLI](https://cli.github.com/) for
+Requires: playwright (install browsers with `uv run playwright install chromium`), pillow, numpy — and the [gh CLI](https://cli.github.com/) for
 `--open-issue`.
 
 ## Documentation
