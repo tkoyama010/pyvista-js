@@ -5,9 +5,8 @@
 # access can invoke it (no comment-triggered path).
 #
 # Required repository configuration:
-#   secret   PI_TOKEN          API token for the LLM provider
-#   variable PI_PROVIDER       LLM provider (e.g. anthropic, openai, google)
-#   variable PI_MODEL          Model name (e.g. claude-sonnet-4-5, gpt-5.4)
+#   secret   PI_TOKEN          API token for the opencode provider, which
+#                              serves the deepseek-v4.1-flash model used below
 #   secret   TKOYAMA010_TOKEN  PAT belonging to tkoyama010 (contents/issues/
 #                              pull-requests write scopes), used to check out the
 #                              repository and open PRs so they are attributed to
@@ -83,8 +82,8 @@ jobs:
         uses: shaftoe/pi-coding-agent-action@381f578da466b8d2ef48f0fdb8a940f276fe4c3c  # v2.30.1
         with:
           github_token: ${{ secrets.TKOYAMA010_TOKEN }}
-          provider: ${{ vars.PI_PROVIDER }}
-          model: ${{ vars.PI_MODEL }}
+          provider: opencode
+          model: deepseek-v4.1-flash
           token: ${{ secrets.PI_TOKEN }}
           prompt: |-
             ${{
