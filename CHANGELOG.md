@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.22.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.2...pyvista-js-v0.22.0) (2026-11-18)
+
+### Features
+
+- add capture-api-example CLI command and Try-example capture workflow ([#805](https://github.com/tkoyama010/pyvista-js/issues/805)) ([6dda79e](https://github.com/tkoyama010/pyvista-js/commit/6dda79ea5f4d5878e0eb2b29fdcf69ea5b3caf75))
+
 ## [0.21.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.1...pyvista-js-v0.21.2) (2026-11-15)
 
 ### Bug Fixes
