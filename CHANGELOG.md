@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.21.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.1...pyvista-js-v0.21.2) (2026-11-15)
+
+### Bug Fixes
+
+- declare filterDispatchMap before scene setup and guard Pyodide rendering ([#806](https://github.com/tkoyama010/pyvista-js/issues/806)) ([35f0c62](https://github.com/tkoyama010/pyvista-js/commit/35f0c6259b42fce15f8db262ea9ab52b29d5c166))
+
+### Continuous Integration
+
+- run the pi agent on DeepSeek instead of GLM ([#809](https://github.com/tkoyama010/pyvista-js/issues/809)) ([fd88d78](https://github.com/tkoyama010/pyvista-js/commit/fd88d78a629f3284eb22528efb75792a5547a185))
+
+## [0.21.1](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.0...pyvista-js-v0.21.1) (2026-11-11)
+
+### Bug Fixes
+
+- remove the direct-DOM rendering path ([#801](https://github.com/tkoyama010/pyvista-js/issues/801)) ([95cf676](https://github.com/tkoyama010/pyvista-js/commit/95cf6765b917e2212d73ae6f4a1d16ad0161492e))
+- render Circle meshes in the browser ([#789](https://github.com/tkoyama010/pyvista-js/issues/789)) ([bc03f7a](https://github.com/tkoyama010/pyvista-js/commit/bc03f7a61c53ffdc1ce17bf214393e629414f5d8))
+
+### Documentation
+
+- add ADR 0003 removing the VTKJSRenderer direct-DOM path ([#797](https://github.com/tkoyama010/pyvista-js/issues/797)) ([1a5251f](https://github.com/tkoyama010/pyvista-js/commit/1a5251f3e257a0d55de6658e83fb20e410839f46))
+- Updates for project pyvista-js-doc and language ja ([#802](https://github.com/tkoyama010/pyvista-js/issues/802)) ([8bba58b](https://github.com/tkoyama010/pyvista-js/commit/8bba58b7c51dc1276d73995dd02578f2922da7e0))
+
+### Continuous Integration
+
+- attribute pi agent PRs and commits to tkoyama010 ([#796](https://github.com/tkoyama010/pyvista-js/issues/796)) ([f21fa9b](https://github.com/tkoyama010/pyvista-js/commit/f21fa9bfc42bc2bc137788a0fbccd8dcb302d643))
+
+## [0.21.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.20.0...pyvista-js-v0.21.0) (2026-11-05)
+
+### Features
+
+- add validate-pyproject pre-commit hook ([#767](https://github.com/tkoyama010/pyvista-js/issues/767)) ([1a17829](https://github.com/tkoyama010/pyvista-js/commit/1a17829384412b32c38931ad4ad3977773418917))
+- rotate, size and color glyphs per point ([#777](https://github.com/tkoyama010/pyvista-js/issues/777)) ([db16a6f](https://github.com/tkoyama010/pyvista-js/commit/db16a6fc73377992cccd2cfc2bc562a344edb056))
+
+### Bug Fixes
+
+- fill the window in standalone pages and stop preloading vtk.js ([#776](https://github.com/tkoyama010/pyvista-js/issues/776)) ([f62d30c](https://github.com/tkoyama010/pyvista-js/commit/f62d30ccf413947fa9e87d11ebb5e9a480dc3ac0))
+- shadow pytest-base-url's deprecated base_url fixture for pytest 9.2 ([#769](https://github.com/tkoyama010/pyvista-js/issues/769)) ([3f91428](https://github.com/tkoyama010/pyvista-js/commit/3f91428d0a629bf96c33b6624bd7bc0240a44a58))
+
+### Documentation
+
+- add larsoner as a contributor for bug ([#780](https://github.com/tkoyama010/pyvista-js/issues/780)) ([b4ad102](https://github.com/tkoyama010/pyvista-js/commit/b4ad102735063186025c4c0c72095d3e736f1a02))
+- add larsoner as a contributor for ideas ([#779](https://github.com/tkoyama010/pyvista-js/issues/779)) ([2d83f4a](https://github.com/tkoyama010/pyvista-js/commit/2d83f4a93393ed088326be9269f5a7edc823c507))
+- Updates for project pyvista-js-doc and language ja ([#782](https://github.com/tkoyama010/pyvista-js/issues/782)) ([5bed279](https://github.com/tkoyama010/pyvista-js/commit/5bed27945336b97927ff2f61879e3f19d42988cf))
+
+### Continuous Integration
+
+- add actionlint pre-commit hook for GitHub Actions workflows ([#768](https://github.com/tkoyama010/pyvista-js/issues/768)) ([14ea929](https://github.com/tkoyama010/pyvista-js/commit/14ea929d6cf859f6130940b18cbb87a8dc3e1fd1))
+- add pi coding agent workflow (ADR-0002) ([#765](https://github.com/tkoyama010/pyvista-js/issues/765)) ([ccb1f2a](https://github.com/tkoyama010/pyvista-js/commit/ccb1f2aeefa2ef88df94e87776937628c22eeddf))
+- add Pi Transifex update workflow ([#775](https://github.com/tkoyama010/pyvista-js/issues/775)) ([8c8af91](https://github.com/tkoyama010/pyvista-js/commit/8c8af91197614dc39f0bfa5da03c2743ac80d48b))
+
 ## [0.20.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.19.0...pyvista-js-v0.20.0) (2026-11-03)
 
 ### Features

@@ -1,0 +1,618 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, Tetsuo Koyama
+# This file is distributed under the same license as the pyvista-js package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# Tetsuo Koyama <tkoyama010@gmail.com>, 2026
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pyvista-js\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-11 13:44+0000\n"
+"PO-Revision-Date: 2026-11-11 14:04+0000\n"
+"Last-Translator: Tetsuo Koyama <tkoyama010@gmail.com>, 2026\n"
+"Language-Team: Japanese (https://app.transifex.com/tkoyama010/teams/306483/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:9
+msgid "Remove the Direct-DOM Path"
+msgstr "Direct-DOM パスの削除"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:11
+msgid "Context and Problem Statement"
+msgstr "背景と問題の提示"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:13
+msgid ""
+"`VTKJSRenderer` has two render modes selected by `use_ipython`. The IPython "
+"path generates vtk.js JavaScript and displays it through "
+"`display(Javascript(...))`. The direct-DOM path (reached in Pyodide without "
+"IPython) exists but is incomplete: `create_container()` builds a `<div>` "
+"without creating any vtk.js objects for it, and `render()` calls "
+"`self.renderer.resetCamera()` and `self.render_window.render()` on "
+"attributes that pyvista-js never sets — the code even carries `# type: "
+"ignore[attr-defined]` comments on both lines (`src/pyvista_js/rendering.py`,"
+" lines 1264–1265). Calling `render()` in that mode therefore raises "
+"`AttributeError`. The bug was found while improving test coverage in "
+"[pyvista-js#776](https://github.com/tkoyama010/pyvista-js/pull/776) and "
+"reported in [pyvista-js#778](https://github.com/tkoyama010/pyvista-"
+"js/issues/778): should the direct-DOM path be implemented properly, or "
+"removed?"
+msgstr ""
+"`VTKJSRenderer` には `use_ipython` で選択される 2 つのレンダリングモードがあります。IPython パスは "
+"vtk.js の JavaScript を生成し、`display(Javascript(...))` を通じて表示します。direct-DOM "
+"パス(IPython なしの Pyodide で到達するパス)は存在しますが未完成です。`create_container()` は vtk.js "
+"オブジェクトを一切作成せずに `<div>` を構築し、`render()` は pyvista-js が一度も設定しない属性に対して "
+"`self.renderer.resetCamera()` と `self.render_window.render()` "
+"を呼び出します。コードには両方の行に `# type: ignore[attr-defined]` "
+"コメントまで付いています(`src/pyvista_js/rendering.py`、1264〜1265 行目)。したがって、このモードで "
+"`render()` を呼び出すと `AttributeError` が発生します。このバグは [pyvista-"
+"js#776](https://github.com/tkoyama010/pyvista-js/pull/776) "
+"でのテストカバレッジ向上の作業中に発見され、[pyvista-"
+"js#778](https://github.com/tkoyama010/pyvista-js/issues/778) "
+"で報告されました。direct-DOM パスを正しく実装すべきか、削除すべきか?が問われています。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:15
+msgid ""
+"Review of this record noted that no current demo reaches the direct-DOM "
+"path. JupyterLite's Pyodide kernel includes IPython, so it takes the IPython"
+" path; the Streamlit demo renders with `generate_standalone_html()` and "
+"never calls `VTKJSRenderer.render()`; and the `stlite/` directory named in "
+"the contributing instructions is stale and absent from `main`. A concrete "
+"non-IPython use case (for example, a PyScript page embedding Pyodide without"
+" IPython) therefore remains hypothetical."
+msgstr ""
+"このレコードのレビューでは、現在のデモが direct-DOM パスに到達しないことが指摘されました。JupyterLite の Pyodide "
+"カーネルは IPython を含むため IPython パスを取り、Streamlit デモは `generate_standalone_html()`"
+" でレンダリングして `VTKJSRenderer.render()` を呼ばず、コントリビューション手順に記載されている `stlite/` "
+"ディレクトリは陳腐化しており `main` には存在しません。したがって、具体的な非 IPython のユースケース(例えば IPython なしの "
+"Pyodide を埋め込む PyScript ページ)は依然として仮説のままです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:17
+msgid "Decision Drivers"
+msgstr "意思決定の要因"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:19
+msgid ""
+"**You aren't gonna need it (YAGNI)**: capability for an embedding with no "
+"current user should not be built; the unused direct-DOM path and any new "
+"code serving only hypothetical configurations should be deleted rather than "
+"extended."
+msgstr ""
+"**You aren't gonna need it (YAGNI)**: 現在ユーザーのいない埋め込みのための機能は構築すべきではありません。未使用の"
+" direct-DOM パスや、仮説上の構成にのみ対応する新しいコードは、拡張するのではなく削除されるべきです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:20
+msgid ""
+"**Correctness over dead code**: A code path that always raises "
+"`AttributeError` when reached is a defect, and the `type: ignore` "
+"annotations hide it from both mypy and readers."
+msgstr ""
+"**デッドコードよりも正しさ**: 到達すると必ず `AttributeError` を発生させるコードパスは欠陥であり、`type: ignore` "
+"アノテーションはそれを mypy と読者双方から隠しています。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:21
+msgid ""
+"**Reachability of a plausible target**: no current demo reaches the direct-"
+"DOM path, but Pyodide without IPython (for example, a PyScript page) is a "
+"plausible future embedding, and a path that always crashes there gives no "
+"clear error for that configuration."
+msgstr ""
+"**もっともなターゲットの到達可能性**: 現在のデモは direct-DOM パスに到達しませんが、IPython なしの Pyodide(例えば "
+"PyScript ページ)はありうる将来の埋め込みであり、そこで必ずクラッシュするパスはその構成に対して明確なエラーを提供しません。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:22
+msgid ""
+"**Testability**: Coverage tooling flags the branch, and the maintainers want"
+" the suite to cover it either way — a tested implementation is also the "
+"natural target of the existing Playwright tests."
+msgstr ""
+"**テスト容易性**: "
+"カバレッジツールはこの分岐を指摘しており、メンテナーはどちらにせよテストスイートでカバーされることを望んでいます。テストされた実装は既存の "
+"Playwright テストの自然なターゲットでもあります。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:23
+msgid ""
+"**Maintenance cost**: Implementing direct-DOM rendering means creating and "
+"wiring the full vtk.js object graph (`render_window`, `renderer`, context) "
+"from Python in `src/pyvista_js/rendering.py`, duplicating logic that today "
+"lives in the vtk.js wiring of `ts/renderer.ts` and is embedded into the "
+"generated JavaScript of the IPython path."
+msgstr ""
+"**保守コスト**: direct-DOM レンダリングを実装するということは、`src/pyvista_js/rendering.py` で "
+"Python から vtk.js "
+"の完全なオブジェクトグラフ(`render_window`、`renderer`、コンテキスト)を作成・接続することを意味し、今日 "
+"`ts/renderer.ts` の vtk.js 配線にあり、IPython パスの生成 JavaScript "
+"に埋め込まれているロジックを重複させることになります。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:24
+msgid ""
+"**Time to a safe release**: the crash defect should disappear from released "
+"pyvista-js soon; options that require substantial new implementation and "
+"testing delay that release."
+msgstr ""
+"**安全なリリースまでの時間**: クラッシュ欠陥は、リリースされる pyvista-js "
+"から早く消えるべきです。大きな新規実装とテストを必要とする選択肢はそのリリースを遅らせます。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:25
+msgid ""
+"**Loud and helpful failure**: a configuration that cannot render should fail"
+" with an explicit, informative message suggesting a working alternative, "
+"instead of crashing or silently doing nothing."
+msgstr ""
+"**分かりやすく役立つエラー**: "
+"レンダリングできない構成は、クラッシュしたり黙って何もしないのではなく、動作する代替手段を提案する明示的で情報に富んだメッセージで失敗すべきです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:27
+msgid "Considered Options"
+msgstr "検討した選択肢"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:29
+msgid ""
+"Implement the direct-DOM path: make `create_container()` create the vtk.js "
+"object graph and `render()` drive it."
+msgstr ""
+"direct-DOM パスを実装する:`create_container()` が vtk.js オブジェクトグラフを作成し、`render()` "
+"がそれを駆動するようにします。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:30
+msgid ""
+"Remove the direct-DOM path: make the non-IPython branch raise an explicit, "
+"informative error."
+msgstr "direct-DOM パスを削除する:非 IPython 分岐が明示的で情報に富んだエラーを発生させるようにします。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:31
+msgid ""
+"Keep the path but document it as experimental and guard `render()` so it "
+"degrades gracefully instead of crashing."
+msgstr "パスを実験的として文書化した上で残し、`render()` をガードしてクラッシュの代わりに穏やかに劣化するようにします。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:32
+msgid ""
+"Replay the generated JavaScript in non-IPython pages: run the existing "
+"`_generate_render_js()` output of the IPython path inside the page instead "
+"of rebuilding the vtk.js object graph from Python."
+msgstr ""
+"非 IPython ページで生成済み JavaScript を再生する:Python から vtk.js "
+"オブジェクトグラフを再構築する代わりに、IPython パスの既存の `_generate_render_js()` の出力をページ内で実行します。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:33
+msgid ""
+"Share a single TypeScript render entry point: refactor `ts/renderer.ts` so "
+"both the IPython path and the direct-DOM path drive rendering through one "
+"entry function, with Python passing the rendering data and the container "
+"element."
+msgstr ""
+"単一の TypeScript レンダリングエントリポイントを共有する:`ts/renderer.ts` をリファクタリングし、IPython パスと "
+"direct-DOM パスの両方が 1 つのエントリ関数を通じてレンダリングを駆動し、Python "
+"がレンダリングデータとコンテナ要素を渡すようにします。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:35
+msgid "Decision Outcome"
+msgstr "決定結果"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:37
+msgid ""
+"Chosen option: \"Remove the direct-DOM path\", because YAGNI ranks first and"
+" removal is the only option that is Good under it: with no current demo "
+"reaching the direct-DOM path and no concrete non-IPython use case, building "
+"— or replaying — rendering capability for a hypothetical embedding is "
+"exactly the speculative work YAGNI rules out. Review of this record and "
+"discussion with larsoner in [pyvista-"
+"js#797](https://github.com/tkoyama010/pyvista-js/pull/797) settled removal, "
+"and the ranking agrees. The decision is revisitable: a concrete non-IPython "
+"use case (for example, a PyScript page embedding Pyodide without IPython) "
+"triggers a new record, where replaying the existing `_generate_render_js()` "
+"output inside the container `create_container()` builds — rather than "
+"rebuilding the vtk.js object graph from Python — is the recorded starting "
+"point because it avoids a second wiring that must stay in sync with "
+"`ts/renderer.ts`."
+msgstr ""
+"選択したオプション:「direct-DOM パスの削除」。YAGNI が第 1 位であり、削除のみが YAGNI の下で Good "
+"となる選択肢だからです。direct-DOM パスに到達する現在のデモがなく、具体的な非 IPython "
+"のユースケースもない以上、仮説上の埋め込みのためのレンダリング機能を構築(あるいは再生)することは、まさに YAGNI "
+"が排除する投機的な作業です。このレコードのレビューと [pyvista-"
+"js#797](https://github.com/tkoyama010/pyvista-js/pull/797) での larsoner "
+"との議論により削除が確定し、順位もそれに一致します。この決定は再検討可能です。具体的な非 IPython のユースケース(例えば IPython なしの"
+" Pyodide を埋め込む PyScript ページ)が生じた場合は新しいレコードのトリガーとなり、その際は `create_container()`"
+" が構築するコンテナ内で既存の `_generate_render_js()` の出力を再生することが記録された出発点となります。Python から "
+"vtk.js オブジェクトグラフを再構築するのではなく再生する方が、`ts/renderer.ts` と同期を保つべき 2 "
+"つ目の配線を避けられるからです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:39
+msgid ""
+"The scope of the removal reaches beyond `render()`. `get_renderer()` still "
+"selects `VTKJSRenderer` in Pyodide without IPython, and "
+"`VTKJSRenderer.__init__`, `create_container()`, `clear()`, and "
+"`_VTKJSLoader` all carry code that serves only the direct-DOM path. Raising "
+"the explicit error in `__init__` (or not selecting `VTKJSRenderer` in "
+"`get_renderer()`) and deleting those branches removes the path cleanly."
+msgstr ""
+"削除の範囲は `render()` を超えて及びます。`get_renderer()` は IPython なしの Pyodide で依然として "
+"`VTKJSRenderer` "
+"を選択し、`VTKJSRenderer.__init__`、`create_container()`、`clear()`、`_VTKJSLoader` "
+"はすべて direct-DOM パスにのみ対応するコードを抱えています。`__init__` で明示的なエラーを発生させる(または "
+"`get_renderer()` で `VTKJSRenderer` を選択しない)ことで、これらの分岐を削除すればパスをきれいに取り除けます。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:41
+msgid "Consequences"
+msgstr "結果"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:43
+msgid ""
+"Good, because it deletes the unused branch instead of building for "
+"hypothetical users, which is what the first-ranked driver YAGNI calls for."
+msgstr ""
+"Good:仮説上のユーザーのために構築する代わりに未使用の分岐を削除するものであり、これは第 1 位の推進要因である YAGNI の求めるところです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:44
+#: ../decisions/0003-remove-the-direct-dom-path.md:73
+msgid ""
+"Good, because it replaces the `AttributeError` with a loud, intentional "
+"error and removes the masked dead path and its `type: ignore` comments."
+msgstr ""
+"Good:`AttributeError` を意図的で分かりやすいエラーに置き換え、隠されていたデッドパスとその `type: ignore` "
+"コメントを取り除きます。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:45
+#: ../decisions/0003-remove-the-direct-dom-path.md:75
+msgid ""
+"Neutral, because the exposed failure is deterministic and easy to test, and "
+"the Playwright surface neither shrinks nor grows."
+msgstr "Neutral:露呈する失敗は決定的でテストも容易であり、Playwright の対象範囲は縮小も拡大もしないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:46
+#: ../decisions/0003-remove-the-direct-dom-path.md:76
+msgid ""
+"Good, because it is the smallest change, with no duplicated vtk.js wiring to"
+" maintain."
+msgstr "Good:最も小さな変更であり、維持すべき vtk.js 配線の重複がないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:47
+#: ../decisions/0003-remove-the-direct-dom-path.md:77
+msgid "Good, because a small Python-side change can ship the fix quickly."
+msgstr "Good:Python 側の小さな変更で修正を迅速に出荷できるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:48
+#: ../decisions/0003-remove-the-direct-dom-path.md:78
+msgid ""
+"Good, because the exposed error carries guidance, such as installing IPython"
+" or using `generate_standalone_html()`."
+msgstr ""
+"Good:露呈するエラーが、IPython のインストールや `generate_standalone_html()` "
+"の使用といったガイダンスを含むためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:50
+msgid "Confirmation"
+msgstr "確認"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:52
+msgid ""
+"Confirmed by a unit test that calls `create_container()` and `render()` in "
+"Pyodide without IPython and without preset `renderer`/`render_window` "
+"attributes and asserts the explicit error with alternative guidance (note "
+"that `tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide` cannot "
+"serve as this check because it injects stand-ins for both attributes, so it "
+"passes with the defect still present). Accepted after discussion in "
+"[tkoyama010/pyvista-js#797](https://github.com/tkoyama010/pyvista-"
+"js/pull/797)."
+msgstr ""
+"IPython なしの Pyodide で `renderer`/`render_window` 属性を事前設定せずに "
+"`create_container()` と `render()` "
+"を呼び出し、代替案のガイダンスを含む明示的なエラーを検証するユニットテストで確認されます(`tests/test_rendering.py::test_render_loads_vtkjs_in_pyodide`"
+" は両属性に代役を注入するため、欠陥が残ったままでも成功してしまい、この検証には使えないことに注意)。[tkoyama010/pyvista-"
+"js#797](https://github.com/tkoyama010/pyvista-js/pull/797) での議論の後、受領されました。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:54
+msgid "Pros and Cons of the Options"
+msgstr "各選択肢のメリットとデメリット"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:56
+msgid "Implement the direct-DOM path"
+msgstr "direct-DOM パスを実装する"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:58
+msgid ""
+"At `create_container()` time, construct the vtk.js object graph for the "
+"container; `render()` then calls `resetCamera()` and "
+"`render_window.render()` on real objects."
+msgstr ""
+"`create_container()` の時点でコンテナ用の vtk.js オブジェクトグラフを構築し、`render()` "
+"が実際のオブジェクトに対して `resetCamera()` と `render_window.render()` を呼び出すようにします。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:60
+msgid ""
+"Bad, because wiring the full vtk.js object graph builds speculative "
+"capability for an embedding no current demo reaches."
+msgstr "Bad:vtk.js の完全なオブジェクトグラフの配線は、現在のどのデモも到達しない埋め込みのための投機的な機能の構築になるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:61
+msgid ""
+"Good, because it removes the guaranteed `AttributeError` defect, and the "
+"`type: ignore[attr-defined]` markers that mask it can be deleted."
+msgstr ""
+"Good:保証されていた `AttributeError` の欠陥を取り除き、それを隠していた `type: ignore[attr-defined]`"
+" マーカーも削除できるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:62
+msgid ""
+"Good, because a possible Pyodide-without-IPython embedding gets real "
+"rendering instead of a crash."
+msgstr "Good:ありうる IPython なしの Pyodide 埋め込みが、クラッシュの代わりに実際のレンダリングを得られるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:63
+msgid ""
+"Good, because the direct-DOM branch becomes reachable and testable by tests "
+"that exercise the real lifecycle rather than injected stand-ins."
+msgstr ""
+"Good:direct-DOM 分岐が到達可能になり、注入された代役ではなく実際のライフサイクルを検証するテストでテストできるようになるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:64
+msgid ""
+"Neutral, because a second vtk.js object wiring path now exists alongside the"
+" generated-JavaScript IPython path, and the two must be kept in sync."
+msgstr ""
+"Neutral:生成 JavaScript を用いる IPython パスと並んで 2 つ目の vtk.js "
+"オブジェクト配線パスが存在することになり、両者を同期し続ける必要があるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:65
+msgid ""
+"Bad, because the fix waits on new vtk.js wiring plus new unit and browser "
+"tests before it can ship."
+msgstr "Bad:修正の出荷が、新しい vtk.js 配線と新しいユニット・ブラウザテストに依存して遅れるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:66
+msgid ""
+"Neutral, because a completed implementation leaves no unsupported "
+"configuration to fail, but until it lands the crash stays."
+msgstr "Neutral:完了した実装は失敗する未対応の構成を残しませんが、実装が着地するまでクラッシュは残るためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:68
+msgid "Remove the direct-DOM path (accepted)"
+msgstr "direct-DOM パスを削除する(受領)"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:70
+msgid ""
+"Raise an explicit `RuntimeError` with guidance (for example, \"install or "
+"initialize IPython, or use `generate_standalone_html()`\") when not in "
+"IPython."
+msgstr ""
+"IPython ではない場合、(例えば「IPython をインストール・初期化するか、`generate_standalone_html()` "
+"を使用してください」のような)ガイダンスを含む明示的な `RuntimeError` を発生させます。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:72
+msgid ""
+"Good, because it deletes the unused branch instead of building for "
+"hypothetical users."
+msgstr "Good:仮説上のユーザーのために構築する代わりに未使用の分岐を削除するためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:74
+msgid ""
+"Bad, because Pyodide-without-IPython becomes a permanently unsupported "
+"configuration, with `VTKJSRenderer` degrading to IPython-only despite "
+"accepting that environment."
+msgstr ""
+"Bad:IPython なしの Pyodide が恒久的に未対応の構成となり、その環境を受け入れながら `VTKJSRenderer` は "
+"IPython 専用に劣化するためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:80
+msgid "Keep the path but document it as experimental"
+msgstr "パスを実験的として文書化した上で残す"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:82
+msgid "Keep the path untouched but catch `AttributeError` and warn."
+msgstr "パスはそのまま残し、`AttributeError` を捕捉して警告を表示します。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:84
+msgid "Bad, because it keeps an unused branch around instead of deleting it."
+msgstr "Bad:未使用の分岐を削除する代わりに残し続けるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:85
+msgid ""
+"Bad, because the masked defect and the `type: ignore[attr-defined]` comments"
+" stay, and a caught `AttributeError` turns the crash into a silent no-op, "
+"which is worse than a clear error."
+msgstr ""
+"Bad:隠された欠陥と `type: ignore[attr-defined]` コメントが残り、捕捉された `AttributeError` "
+"はクラッシュを黙った無操作に変え、明確なエラーよりも悪いためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:86
+msgid ""
+"Bad, because in Pyodide without IPython the scene still does not render, so "
+"the supported use case gets no visualization."
+msgstr ""
+"Bad:IPython なしの Pyodide ではシーンが依然としてレンダリングされず、対応するユースケースが可視化を得られないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:87
+msgid ""
+"Good, because the guarded branch becomes deterministic and testable, and a "
+"no-IPython test needs no stand-ins for `renderer` or `render_window`."
+msgstr ""
+"Good:ガードされた分岐は決定的でテスト可能になり、IPython なしのテストは `renderer` や `render_window` "
+"の代役を必要としないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:88
+msgid ""
+"Good, because the implementation work is near zero: no vtk.js wiring is "
+"created."
+msgstr "Good:実装作業はほぼゼロで、vtk.js 配線を作成しないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:89
+msgid ""
+"Neutral, because the catch-and-warn guard is a small change, but it leaves "
+"the rendering question unresolved."
+msgstr "Neutral:捕捉して警告するガードは小さな変更ですが、レンダリングの問題を未解決のまま残すためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:90
+msgid ""
+"Bad, because the guarded branch still renders nothing and only prints a "
+"warning instead of informative guidance."
+msgstr "Bad:ガードされた分岐は依然として何もレンダリングせず、情報に富んだガイダンスの代わりに警告を表示するだけのためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:92
+msgid "Replay the generated JavaScript in non-IPython pages"
+msgstr "非 IPython ページで生成済み JavaScript を再生する"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:94
+msgid ""
+"Make the non-IPython branch emit the same JavaScript the IPython path "
+"generates through `_generate_render_js()` and inject it into the container "
+"built by `create_container()`, reusing the single vtk.js object wiring that "
+"lives in `ts/renderer.ts`."
+msgstr ""
+"非 IPython 分岐に、IPython パスが `_generate_render_js()` を通じて生成するものと同じ JavaScript "
+"を出力させ、`create_container()` が構築するコンテナに注入します。`ts/renderer.ts` にある単一の vtk.js "
+"オブジェクト配線を再利用します。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:96
+msgid ""
+"Bad, because, like implementing the path, it adds rendering capability for "
+"an embedding no current demo reaches, only at smaller cost."
+msgstr "Bad:パスを実装する場合と同様、現在のどのデモも到達しない埋め込みのためのレンダリング機能を、より小さいコストとはいえ追加するためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:97
+#: ../decisions/0003-remove-the-direct-dom-path.md:109
+msgid ""
+"Good, because it removes the guaranteed `AttributeError` defect with a "
+"deliberate behavior instead of a crash."
+msgstr "Good:保証されていた `AttributeError` の欠陥を、クラッシュの代わりに意図的な動作で取り除くためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:98
+msgid ""
+"Good, because a possible non-IPython embedding gets real rendering drawn by "
+"the same code as the IPython path."
+msgstr "Good:ありうる非 IPython 埋め込みが、IPython パスと同じコードで描画される実際のレンダリングを得られるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:99
+msgid ""
+"Neutral, because the generated JavaScript is written for the IPython display"
+" context, so standalone execution must first be proven by a browser test."
+msgstr ""
+"Neutral:生成 JavaScript は IPython "
+"の表示コンテキスト向けに書かれているため、単独実行がまずブラウザテストで証明されなければならないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:100
+msgid ""
+"Good, because nothing new must stay in sync with `ts/renderer.ts`, at the "
+"bounded cost of `create_container()` still placing a suitable host element."
+msgstr ""
+"Good:`ts/renderer.ts` と同期を保つべき新しいものが何もなく、`create_container()` "
+"が依然として適切なホスト要素を配置するという限定されたコストだけで済むためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:101
+msgid ""
+"Good, because only Python-side changes are needed, with no TypeScript "
+"rebuild in the loop."
+msgstr "Good:TypeScript の再ビルドを伴わず、Python 側の変更だけで済むためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:102
+msgid ""
+"Neutral, because if the replayed output fails in the browser, the failure "
+"carries no informative message."
+msgstr "Neutral:再生された出力がブラウザで失敗した場合、その失敗には情報に富んだメッセージが含まれないためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:104
+msgid "Share a single TypeScript render entry point"
+msgstr "単一の TypeScript レンダリングエントリポイントを共有する"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:106
+msgid ""
+"Refactor `ts/renderer.ts` so the IPython path and the direct-DOM path drive "
+"rendering through the same entry function; Python passes the rendering data "
+"and the container element, and the bundle creates the vtk.js object graph."
+msgstr ""
+"`ts/renderer.ts` をリファクタリングし、IPython パスと direct-DOM "
+"パスが同じエントリ関数を通じてレンダリングを駆動するようにします。Python がレンダリングデータとコンテナ要素を渡し、バンドルが vtk.js "
+"オブジェクトグラフを作成します。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:108
+msgid ""
+"Bad, because it refactors the bundle to serve an embedding no current demo "
+"reaches."
+msgstr "Bad:現在のどのデモも到達しない埋め込みに対応するためにバンドルをリファクタリングするためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:110
+msgid ""
+"Good, because a possible Pyodide-without-IPython embedding gets real "
+"rendering."
+msgstr "Good:ありうる IPython なしの Pyodide 埋め込みが実際のレンダリングを得られるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:111
+msgid ""
+"Good, because both modes exercise the same tested code, so one browser test "
+"covers the shared entry point."
+msgstr "Good:両モードが同じテスト済みコードを実行するため、1 つのブラウザテストで共有エントリポイントをカバーできるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:112
+msgid ""
+"Good, because a single vtk.js wiring remains: there is no second object "
+"graph to keep in sync, at only the one-time cost of refactoring the entry "
+"function out of `ts/renderer.ts` and rebuilding the bundle."
+msgstr ""
+"Good:単一の vtk.js 配線が残るだけで、同期すべき 2 つ目のオブジェクトグラフはありません。コストは `ts/renderer.ts` "
+"からエントリ関数をリファクタリングしてバンドルを再ビルドする 1 回限りのものです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:113
+msgid ""
+"Bad, because the fix waits on the TypeScript refactor, rebuild, and new "
+"tests."
+msgstr "Bad:修正の出荷が TypeScript のリファクタリング、再ビルド、新しいテストに依存して遅れるためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:114
+msgid ""
+"Neutral, because a completed shared entry point leaves no unsupported "
+"configuration to fail, but until it lands the crash stays."
+msgstr "Neutral:完成した共有エントリポイントは失敗する未対応の構成を残しませんが、着地するまでクラッシュは残るためです。"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:116
+msgid "More Information"
+msgstr "詳細情報"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:118
+msgid ""
+"Issue: [tkoyama010/pyvista-js#778](https://github.com/tkoyama010/pyvista-"
+"js/issues/778)"
+msgstr ""
+"Issue: [tkoyama010/pyvista-js#778](https://github.com/tkoyama010/pyvista-"
+"js/issues/778)"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:119
+msgid ""
+"Coverage PR that surfaced it: [tkoyama010/pyvista-"
+"js#776](https://github.com/tkoyama010/pyvista-js/pull/776)"
+msgstr ""
+"これを明らかにしたカバレッジ PR: [tkoyama010/pyvista-"
+"js#776](https://github.com/tkoyama010/pyvista-js/pull/776)"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:120
+msgid ""
+"Review discussion of this record: [tkoyama010/pyvista-"
+"js#797](https://github.com/tkoyama010/pyvista-js/pull/797)"
+msgstr ""
+"このレコードのレビューでの議論: [tkoyama010/pyvista-"
+"js#797](https://github.com/tkoyama010/pyvista-js/pull/797)"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:121
+msgid ""
+"Affected code: `src/pyvista_js/rendering.py`, `VTKJSRenderer.__init__`, "
+"`VTKJSRenderer.create_container`, `VTKJSRenderer.render`, "
+"`VTKJSRenderer.clear`, `_VTKJSLoader`, and the `get_renderer` selection of "
+"`VTKJSRenderer`"
+msgstr ""
+"影響を受けるコード: "
+"`src/pyvista_js/rendering.py`、`VTKJSRenderer.__init__`、`VTKJSRenderer.create_container`、`VTKJSRenderer.render`、`VTKJSRenderer.clear`、`_VTKJSLoader`、および"
+" `get_renderer` による `VTKJSRenderer` の選択"
+
+#: ../decisions/0003-remove-the-direct-dom-path.md:122
+msgid ""
+"ADR-0001 for the related rendering-backend decision, ADR-0000 for the record"
+" format used here."
+msgstr ""
+"関連するレンダリングバックエンドの決定については ADR-0001、ここで用いたレコード形式については ADR-0000 を参照してください。"

@@ -1301,7 +1301,25 @@ class Plotter:
 
     @property
     def actors(self) -> list[dict[str, Any]]:
-        """Return the list of actors in the plotter."""
+        """Return the list of actors in the plotter, in the order they were added.
+
+        Each entry is a dict with the ``"actor"`` returned by :meth:`add_mesh`
+        or :meth:`add_points`, the ``"mesh"`` (or ``"points"``) it draws, and
+        the options it was added with, such as ``"color"`` and ``"opacity"``.
+
+        Examples
+        --------
+        >>> import pyvista_js as pv
+        >>> plotter = pv.Plotter()
+        >>> sphere = pv.Sphere()
+        >>> actor = plotter.add_mesh(sphere, color="red")
+        >>> info = plotter.actors[0]
+        >>> info["actor"] is actor and info["mesh"] is sphere
+        True
+        >>> info["color"]
+        'red'
+
+        """
         return self._actors
 
     @property

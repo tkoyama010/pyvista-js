@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pyvista-js \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-24 11:43+0000\n"
+"POT-Creation-Date: 2026-11-05 11:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -273,7 +273,7 @@ msgstr ""
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.clip:31
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.contour:33
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.fill_holes:29
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:32
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:35
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.outline:21
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.plot:18
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.save:27
@@ -426,30 +426,30 @@ msgid "The glyphing happens in JavaScript at render time. This method only seria
 msgstr ""
 
 #: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:12
-msgid "Whether to orient glyphs by the ``'vectors'`` point array. A string names the array to use. Default is True."
+msgid "Whether to orient glyphs by the ``'vectors'`` point array. A string names the array to use. An array of 3 components gives each glyph a direction; one of 9 gives it a full 3x3 rotation, stored in column-major order as vtk.js reads it, such as ``rotations.transpose(0, 2, 1).reshape(-1, 9)`` for an ``(n_points, 3, 3)`` array of rotation matrices. Default is True."
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:15
-msgid "Whether to scale glyphs by the ``'vectors'`` point array. A string names the array to use. For simplicity, only ``'vectors'`` scaling is supported in this implementation. Default is True."
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:19
+msgid "Whether to scale glyphs. A string names the point array whose magnitude scales each glyph, such as a one-component array of sizes. Default is True."
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:20
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:23
 msgid "Scale factor applied to the glyphs. Default is 1.0."
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:22
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:25
 msgid "Geometry to use for each glyph. Default uses an arrow (matching the PyVista default)."
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:26
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:29
 msgid "A mesh configured for glyph rendering."
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:29
-msgid "If ``orient`` is set but the vectors array is missing or has a     mismatched length."
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:32
+msgid "If ``orient`` is set but the vectors array is missing or has a     mismatched length or a number of components other than 3 or 9,     or ``scale`` names a missing array."
 msgstr ""
 
-#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:44
+#: ../../src/pyvista_js/mesh.py:docstring of pyvista_js.mesh.PolyData.glyph:47
 msgid "Render the glyphs:"
 msgstr ""
 

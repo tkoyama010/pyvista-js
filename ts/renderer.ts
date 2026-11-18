@@ -10,6 +10,9 @@
 /** Number of components in a 3-D coordinate (x, y, z). */
 // biome-ignore lint/style/noExcessiveLinesPerFile: renderer is a cohesive single-file module
 const XYZ_COMPONENTS = 3;
+
+/** Components of a per-glyph 3x3 rotation matrix. */
+const MATRIX_COMPONENTS = 9;
 const PLANAR_CUT_VALUE = 0.0;
 
 /** Number of components in a 2-D texture coordinate (u, v). */
@@ -113,7 +116,10 @@ interface SourceResult {
  * @returns The underlying {@link VtkPolyData} from the source or filter output.
  */
 function getPolyData(sourceResult: SourceResult): VtkPolyData {
-  if (sourceResult.isFilter) {
+  if (
+    sourceResult.isFilter &&
+    typeof (sourceResult.output as { update?: unknown }).update === "function"
+  ) {
     (sourceResult.output as VtkAlgorithm).update();
     return (sourceResult.output as VtkAlgorithm).getOutputData();
   }
@@ -133,6 +139,27 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
     filter.setInputData(sourceResult.output as VtkPolyData);
   }
 }
+
+/**
+ * Map from filter type to its dispatcher function.
+ *
+ * Declared above the scene-setup entry block: `applyFilters` runs during
+ * scene construction, and a `var`-downleveled `const` here would be hoisted
+ * as `undefined`, crashing filter actors with `undefined['shrink']`.
+ */
+const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
+  {
+    shrink: tryShrinkFilter,
+    tube: tryTubeFilter,
+    clip: tryClipFilter,
+    contour: tryContourFilter,
+    fillHoles: tryFillHolesFilter,
+    threshold: tryThresholdFilter,
+    slice: trySliceFilter,
+    warpByScalar: tryWarpByScalarFilter,
+    smoothTaubin: trySmoothTaubinFilter,
+    textureSphere: tryTextureMapToSphere,
+  };
 
 const sceneData: SceneData =
   // biome-ignore lint/style/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
@@ -459,6 +486,18 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the disk source configured as a circle.
  */
 function createCircleSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const circleFactory = vtk.Filters.Sources.vtkCircleSource;
+  if (circleFactory) {
+    const source = circleFactory.newInstance({
+      center: [0, 0, 0],
+      direction: [0, 0, 1],
+      radius: cfg.radius ?? DEFAULT_RADIUS,
+      resolution: cfg.resolution ?? DEFAULT_RESOLUTION,
+      lines: true,
+    });
+    return { output: source, isFilter: true };
+  }
   return createDiskSource({
     type: "disk",
     innerRadius: 0,
@@ -746,10 +785,14 @@ function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper 
   mapper.setScalarVisibility(false);
 
   let geometry: VtkPolyData;
+  let templateSize = 1;
   if (cfg.geometryPoints && cfg.geometryPoints.length > 0) {
     // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     geometry = vtk.Common.DataModel.vtkPolyData.newInstance();
-    const geometryPoints = Float32Array.from(cfg.geometryPoints);
+    const rawPoints = Float32Array.from(cfg.geometryPoints);
+    // vtk.js rescales a template under ~3 cm on upload, which glyphs ignore: use unit size
+    templateSize = boundsDiagonal(rawPoints) || 1;
+    const geometryPoints = rawPoints.map((value) => value / templateSize);
     // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
     const geometryPts = vtk.Common.Core.vtkPoints.newInstance();
     geometryPts.setData(geometryPoints, XYZ_COMPONENTS);
@@ -764,17 +807,41 @@ function createGlyphMapper(polydata: VtkPolyData, cfg: SourceConfig): VtkMapper 
     arrow.update();
     geometry = arrow.getOutputData();
   }
-  mapper.setSourceData(geometry);
+  mapper.setInputData(geometry, 1); // port 1 is the glyph geometry
 
   const orientationArray = cfg.orientationArray ?? "vectors";
   if (cfg.orient !== false) {
     mapper.setOrient?.(true);
     mapper.setOrientationArray(orientationArray);
+    const array = polydata.getPointData().getArrayByName(orientationArray);
+    if (array?.getNumberOfComponents() === MATRIX_COMPONENTS) {
+      mapper.setOrientationModeToMatrix();
+    }
   }
-  if (cfg.scaleFactor !== undefined) {
-    mapper.setScaleFactor(cfg.scaleFactor);
+  if (cfg.scaleArray) {
+    mapper.setScaleArray(cfg.scaleArray);
+    mapper.setScaleModeToScaleByMagnitude();
   }
+  mapper.setScaleFactor((cfg.scaleFactor ?? 1) * templateSize);
   return mapper as unknown as VtkMapper;
+}
+
+/**
+ * Return the length of the diagonal of the bounding box of flat XYZ points.
+ * @param points
+ * @returns The diagonal, or 0 for no points.
+ */
+function boundsDiagonal(points: Float32Array): number {
+  let sum = 0;
+  for (let axis = 0; axis < XYZ_COMPONENTS; axis += 1) {
+    const values = points.filter((_, index) => index % XYZ_COMPONENTS === axis);
+    if (values.length > 0) {
+      const hi = values.reduce((max, value) => Math.max(max, value));
+      const lo = values.reduce((min, value) => Math.min(min, value));
+      sum += (hi - lo) ** 2;
+    }
+  }
+  return Math.sqrt(sum);
 }
 
 function createMeshSource(cfg: SourceConfig): SourceResult {
@@ -1216,6 +1283,7 @@ function setupActor(
   let mapper: VtkMapper;
   if (cfg.source.type === "glyph") {
     mapper = createGlyphMapper(polydata, cfg.source);
+    applyScalars(mapper, cfg.scalars);
   } else {
     const mapperInput = setupNormals(currentResult, cfg.normals);
     mapper = createMapper(mapperInput, cfg);
@@ -1539,23 +1607,6 @@ function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResul
   // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.holeSize === undefined ? current : applyFillHolesFilter(current, f.holeSize);
 }
-
-/**
- * Map from filter type to its dispatcher function.
- */
-const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
-  {
-    shrink: tryShrinkFilter,
-    tube: tryTubeFilter,
-    clip: tryClipFilter,
-    contour: tryContourFilter,
-    fillHoles: tryFillHolesFilter,
-    threshold: tryThresholdFilter,
-    slice: trySliceFilter,
-    warpByScalar: tryWarpByScalarFilter,
-    smoothTaubin: trySmoothTaubinFilter,
-    textureSphere: tryTextureMapToSphere,
-  };
 
 /**
  * Apply a chain of filters to a source.

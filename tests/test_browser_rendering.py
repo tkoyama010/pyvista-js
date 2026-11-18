@@ -13,6 +13,7 @@ In production use, vtk.js could be vendored locally to avoid this dependency.
 
 from __future__ import annotations
 
+import io
 import json
 import tempfile
 from pathlib import Path
@@ -21,7 +22,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from pyvista_js import Cube, Line, Plotter, PolyData, Sphere, Text
+from pyvista_js import Circle, Cube, Line, Plotter, PolyData, Sphere, Text
 from pyvista_js.examples import download_bunny, download_trumpet
 from pyvista_js.readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from pyvista_js.rendering import BrowserRenderer, scene_to_json
@@ -315,6 +316,43 @@ def test_shrink_filter_renders_in_browser(page: Page) -> None:
 
     # Verify no JS errors (catches missing filter implementations)
     assert len(js_errors) == 0, f"JavaScript errors during shrink rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_circle_renders_in_browser(page: Page) -> None:
+    """Test that a Circle mesh renders visible pixels, not a blank canvas.
+
+    This is a regression test for gh-788: ``pv.Circle().plot()`` previously
+    rendered a blank canvas because the renderer fell back to an empty
+    vtk.js PolyData when ``vtkDiskSource`` was unavailable.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = Plotter()
+    plotter.add_mesh(Circle(radius=1.0), color="red")
+
+    # Collect JS errors
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for circle"
+    assert len(js_errors) == 0, f"JavaScript errors during circle rendering: {js_errors}"
+
+    # Verify that non-background pixels were drawn: screenshot the canvas
+    # element and check that more than one distinct color is present.
+    from PIL import Image  # noqa: PLC0415
+
+    screenshot = page.locator("canvas").screenshot()
+    pixels = np.asarray(Image.open(io.BytesIO(screenshot)).convert("RGB"))
+    colors = {tuple(color) for color in pixels.reshape(-1, 3).tolist()}
+    assert len(colors) > 1, "Circle rendered a blank canvas"
 
 
 @pytest.mark.playwright
@@ -764,3 +802,40 @@ def test_update_actor_add_remove_and_camera(page: Page) -> None:
     )
     assert (n_actors, color) == (1, [1, 0, 0])
     np.testing.assert_allclose(direction, [-1, 0, 0], atol=1e-6)
+
+
+@pytest.mark.playwright
+def test_glyph_matrices_scales_and_colors(page: Page) -> None:
+    """Test glyphs are rotated by matrices, sized, and colored per point in the page.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    mesh = PolyData(np.array([[-1.0, 0, 0], [1.0, 0, 0]]))
+    mesh.point_data["rotations"] = np.tile(np.eye(3).ravel(), (2, 1))
+    mesh.point_data["sizes"] = np.array([1.0, 0.5])
+    mesh.point_data["colors"] = np.array([[255, 0, 0, 255], [0, 255, 0, 128]], np.uint8)
+    # a 2 cm square, small enough that vtk.js would rescale it on upload
+    square = PolyData(
+        np.array([[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]]) * 0.01,
+        [4, 0, 1, 2, 3],
+    )
+    plotter = Plotter()
+    plotter._renderer = BrowserRenderer()
+    glyphed = mesh.glyph(orient="rotations", scale="sizes", geometry=square)
+    plotter.add_mesh(glyphed, scalars="colors")
+    _load_plotter_html(page, plotter)
+    mapper = page.evaluate(
+        "id => { const m = window.__pvjs[id][0].actors[0].mapper;"
+        " const b = m.getInputData(1).getBounds();"
+        " return [m.getOrientationMode(), m.getScaleArray(), m.getScalarVisibility(),"
+        " m.getColorByArrayName(), Math.hypot(b[1] - b[0], b[3] - b[2], b[5] - b[4]),"
+        " m.getScaleFactor()]; }",
+        plotter.container_id,
+    )
+    assert mapper[:4] == [2, "sizes", True, "colors"]  # 2 is vtk.js's MATRIX mode
+    # drawn at unit size and scaled back up, so the rescaling cannot happen
+    np.testing.assert_allclose(mapper[4:], [1, 0.02 * np.sqrt(2)], rtol=1e-6)
