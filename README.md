@@ -51,6 +51,17 @@ await micropip.install("pyvista-js")
 await micropip.install("orjson")  # optional, for speed
 ```
 
+To view saved meshes in JupyterLab, also install the
+[JupyterView](https://github.com/trungleduc/jupyterview) extension:
+
+```bash
+pip install "pyvista-js[jupyter]"
+```
+
+See [View meshes in JupyterLab with
+JupyterView](https://pyvista-js.readthedocs.io/en/latest/howtos/jupyterview.html)
+for the full workflow.
+
 ## Usage
 
 ```python

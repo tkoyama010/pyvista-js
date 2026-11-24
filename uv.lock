@@ -832,6 +832,19 @@ wheels = [
 ]
 
 [[package]]
+name = "jupyterview"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyter-server" },
+    { name = "meshio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/99/eb/b03085db72c0d2b99aea13c4af4391c485a0e8ef1f8ab87474cc6fbc3070/jupyterview-0.8.0.tar.gz", hash = "sha256:fc2924e78186e3284734dc2cec645f0dbff0cd87dfb6d0bbe051ca63fef1a820", size = 18524260, upload-time = "2026-01-24T19:05:49.81Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/65/4c/fe45ddbce92f8f2b64e9b96684a48ea5469a6b614b61beca3fde29b95087/jupyterview-0.8.0-py3-none-any.whl", hash = "sha256:5ac597063aad98eaa19fa08478704d139902b06752ceeb591cc8504211db9d02", size = 12895232, upload-time = "2026-01-24T19:05:45.848Z" },
+]
+
+[[package]]
 name = "jupytext"
 version = "1.19.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1985,6 +1998,9 @@ fast = [
 io = [
     { name = "meshio" },
 ]
+jupyter = [
+    { name = "jupyterview" },
+]
 streamlit = [
     { name = "streamlit" },
 ]
@@ -2018,6 +2034,7 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.0.1,<4.0.1" },
     { name = "jupyterlite-pyodide-kernel", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.8.6" },
     { name = "jupyterlite-sphinx", marker = "python_full_version >= '3.12' and python_full_version < '3.14' and extra == 'docs'", specifier = "==0.23" },
+    { name = "jupyterview", marker = "extra == 'jupyter'", specifier = ">=0.8.0,<1.0.1" },
     { name = "jupytext", marker = "extra == 'docs'", specifier = ">=1.19.1,<2.0.1" },
     { name = "lazy-loader", specifier = ">=0.4.1,<1.0.1" },
     { name = "meshio", marker = "extra == 'io'", specifier = ">=5.3.5,<6.0.1" },
@@ -2037,7 +2054,7 @@ requires-dist = [
     { name = "tox", marker = "extra == 'dev'", specifier = ">=4.0.1,<5.0.1" },
     { name = "typer", specifier = ">=0.9.1,<1.0.1" },
 ]
-provides-extras = ["dev", "docs", "fast", "io", "streamlit"]
+provides-extras = ["dev", "docs", "fast", "io", "jupyter", "streamlit"]
 
 [package.metadata.requires-dev]
 dev = [
