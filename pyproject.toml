@@ -104,6 +104,9 @@ optional-dependencies.fast = [
 optional-dependencies.io = [
   "meshio>=5.3.5,<6.0.1",
 ]
+optional-dependencies.jupyter = [
+  "jupyterview>=0.8,<1.0.1",
+]
 optional-dependencies.streamlit = [
   "streamlit>=1.30.1,<2.0.1",
 ]

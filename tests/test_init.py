@@ -1,8 +1,19 @@
 """Test package initialization and metadata."""
 
+import tomllib
+from pathlib import Path
+
 import pytest
 
 import pyvista_js
+
+
+def test_jupyter_extra_declared() -> None:
+    """Test the jupyter extra installs a JupyterLab extension."""
+    pyproject = Path(__file__).parent.parent / "pyproject.toml"
+    data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    extras = data["project"]["optional-dependencies"]
+    assert any(spec.startswith("jupyterview") for spec in extras["jupyter"])
 
 
 def test_import() -> None:
