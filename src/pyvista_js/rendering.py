@@ -74,14 +74,12 @@ import pathlib
 import secrets
 import sys
 import tempfile
-import time
 import webbrowser
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from pathlib import Path
-    from typing import Self
 
     import numpy as np
     from numpy.typing import ArrayLike
@@ -134,18 +132,6 @@ _VTKJS_CDN = "https://unpkg.com/vtk.js@29.5.0"
 # Check if running in Pyodide environment
 PYODIDE_ENV = sys.platform == "emscripten"
 
-if PYODIDE_ENV:
-    try:
-        from js import document  # type: ignore[import-not-found]
-
-        VTK_AVAILABLE = True
-    except ImportError:
-        VTK_AVAILABLE = False
-        document = None  # type: ignore[assignment]
-else:
-    VTK_AVAILABLE = False
-    document = None  # type: ignore[assignment]
-
 # Check if running in IPython (Jupyter, JupyterLite, the IPython shell)
 try:
     from IPython import get_ipython
@@ -157,38 +143,6 @@ except ImportError:
     IPYTHON_AVAILABLE = False
     Javascript = None  # type: ignore[assignment]
     display = None  # type: ignore[assignment]
-
-
-class _VTKJSLoader:
-    """Singleton class to manage vtk.js library loading."""
-
-    _instance: _VTKJSLoader | None = None
-    _loaded: bool = False
-
-    def __new__(cls) -> Self:
-        """Ensure singleton instance."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance  # type: ignore[return-value]
-
-    def load(self) -> None:
-        """Load the vtk.js library into the page, for rendering into it directly.
-
-        Only Pyodide without IPython needs this: the scenes displayed in a
-        notebook load vtk.js themselves. It loads the library once per session
-        and waits for it to be available.
-        """
-        if self._loaded:
-            return
-
-        if PYODIDE_ENV and document is not None:
-            # In pure Pyodide environment without IPython
-            script = document.createElement("script")
-            script.src = _VTKJS_CDN
-            document.head.appendChild(script)
-            # Wait for vtk.js to load from CDN
-            time.sleep(2)
-            self._loaded = True
 
 
 logger = logging.getLogger(__name__)
@@ -1152,14 +1106,9 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
     Notes
     -----
-    This renderer can only be instantiated in a Pyodide environment
-    with vtk.js loaded in the page. Use `get_renderer()` to automatically
-    get the appropriate renderer for the current environment.
-
-    The renderer creates standard vtk.js objects:
-    - vtkRenderer: Scene renderer
-    - vtkRenderWindow: Rendering window
-    - vtkRenderWindowInteractor: User interaction handler
+    This renderer can only be instantiated where IPython is available
+    (Jupyter, JupyterLite, the IPython shell). Use `get_renderer()` to
+    automatically get the appropriate renderer for the current environment.
 
     Examples
     --------
@@ -1187,24 +1136,21 @@ class VTKJSRenderer(_BaseHTMLRenderer):
         Raises
         ------
         RuntimeError
-            If not running in Pyodide environment.
-        ImportError
-            If vtk.js is not available in the page.
+            If IPython is not available.
 
         """
-        if not PYODIDE_ENV and not IPYTHON_AVAILABLE:
-            msg = "VTKJSRenderer requires either Pyodide environment or IPython"
+        if not IPYTHON_AVAILABLE:
+            msg = (
+                "VTKJSRenderer requires IPython. Install or initialize IPython, "
+                "or use generate_standalone_html() instead."
+            )
             raise RuntimeError(msg)
 
         super().__init__(lighting=lighting)
-        self.container = None
         self.use_ipython = IPYTHON_AVAILABLE
 
     def create_container(self, element_id: str = "pyvista-container") -> object | None:
-        """Create a DOM container for rendering.
-
-        Creates a <div> element in the document and configures it for
-        vtk.js rendering with mouse/touch interaction support.
+        """Store the container ID for later HTML generation.
 
         Parameters
         ----------
@@ -1213,8 +1159,8 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         Returns
         -------
-        container
-            The created DOM element (if using direct DOM) or None (if using IPython).
+        None
+            Always None; the container is created by the generated JavaScript.
 
         Examples
         --------
@@ -1222,39 +1168,20 @@ class VTKJSRenderer(_BaseHTMLRenderer):
         >>> container = renderer.create_container('my-visualization')  # doctest: +SKIP
 
         """
-        if self.use_ipython:
-            super().create_container(element_id)
-            return None
-        # Create container div directly
-        self.container = document.createElement("div")  # type: ignore[attr-defined]
-        self.container.setAttribute("id", element_id)  # type: ignore[attr-defined]
-        self.container.style.width = "100%"  # type: ignore[attr-defined]
-        self.container.style.height = "600px"  # type: ignore[attr-defined]
-
-        # Append to body
-        document.body.appendChild(self.container)  # type: ignore[union-attr]
-
-        return self.container
+        return super().create_container(element_id)
 
     def render(self) -> None:
         """Render the scene.
 
-        Resets the camera to show all actors and triggers rendering.
-        In IPython/Jupyter, generates and displays HTML with vtk.js code.
+        Generates and displays HTML with vtk.js code through IPython.
 
         Examples
         --------
         >>> renderer.render()  # Display the visualization  # doctest: +SKIP
 
         """
-        if self.use_ipython:
-            js_code = self._generate_render_js()
-            display(Javascript(js_code))
-        else:
-            # Direct rendering, which needs vtk.js in the page already
-            _VTKJSLoader().load()
-            self.renderer.resetCamera()  # type: ignore[attr-defined]
-            self.render_window.render()  # type: ignore[attr-defined]
+        js_code = self._generate_render_js()
+        display(Javascript(js_code))
 
     def clear(self) -> None:
         """Remove all actors from the renderer.
@@ -1265,8 +1192,6 @@ class VTKJSRenderer(_BaseHTMLRenderer):
 
         """
         super().clear()
-        if not self.use_ipython and hasattr(self, "renderer"):
-            self.renderer.removeAllActors()
 
 
 def _launch_chromium(playwright: Playwright) -> Browser:
@@ -1900,7 +1825,7 @@ def get_renderer(
     Returns
     -------
     VTKJSRenderer or BrowserRenderer or MockRenderer
-        - VTKJSRenderer if in Pyodide or IPython environment
+        - VTKJSRenderer if IPython is available
         - BrowserRenderer in standard Python (opens the default browser)
         - MockRenderer if ``PYVISTA_JS_NO_BROWSER=1`` is set (for testing/CI)
 
@@ -1926,8 +1851,8 @@ def get_renderer(
     browser opening (useful for CI/CD and automated testing).
 
     """
-    # Use VTKJSRenderer if in Pyodide with vtk.js OR if IPython is available
-    if (PYODIDE_ENV and VTK_AVAILABLE) or IPYTHON_AVAILABLE:
+    # Use VTKJSRenderer if IPython is available; it raises a loud error otherwise
+    if IPYTHON_AVAILABLE:
         return VTKJSRenderer(lighting=lighting)
     # Respect opt-out env var for CI/testing
     if os.environ.get("PYVISTA_JS_NO_BROWSER"):

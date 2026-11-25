@@ -18,6 +18,15 @@ import typer
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+
+CANVAS_WAIT_SECONDS = 600
+LITE_FRAME_WAIT_SECONDS = 120
+HTTP_ERROR_MIN_STATUS = 400
+
+# A rendered mesh produces more than one distinct color on the canvas;
+# a blank (uniform) canvas produces exactly one.
+MIN_DISTINCT_CANVAS_COLORS = 2
+
 logger = logging.getLogger(__name__)
 
 # Supported file extensions and the reader class name they map to.
@@ -1047,6 +1056,50 @@ def capture_stlite_preview(
             sys.exit(1)
 
     logger.info("stlite preview GIF saved to: %s", output_path)
+
+
+@app.command(name="capture-api-example")
+def capture_api_example(
+    url: Annotated[
+        str,
+        typer.Argument(
+            help="API documentation page URL to capture.",
+            metavar="URL",
+        ),
+    ],
+    output: Annotated[
+        Path,
+        typer.Option(
+            "--output",
+            help="Directory for capture.png and problems.json. Default: capture-artifacts.",
+            metavar="PATH",
+        ),
+    ] = Path("capture-artifacts"),
+    open_issue: Annotated[
+        bool | None,
+        typer.Option(
+            "--open-issue/--no-open-issue",
+            help="Open a bug-report issue with the 'gh' CLI when problems are detected.",
+        ),
+    ] = None,
+) -> None:
+    """Capture an API doc page after running its "Try it with JupyterLite" example.
+
+    Opens the documentation page, activates the embedded JupyterLite widget,
+    runs all notebook cells, and writes a full-page screenshot
+    (``capture.png``) plus a machine-readable problem report
+    (``problems.json``). Detected problems include failed notebook loads,
+    console errors, HTTP failures, and blank render canvases.
+
+    Exits with status 1 when problems are detected. Requires: playwright,
+    pillow, numpy (and the 'gh' CLI for --open-issue).
+    """
+    from ._capture import run_capture  # noqa: PLC0415
+
+    if open_issue is None:
+        open_issue = False
+    if not run_capture(url, output, open_issue=open_issue):
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

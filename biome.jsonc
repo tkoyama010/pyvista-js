@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["ts/**/*.ts", "ts/**/*.d.ts", "biome.json"]
+    "includes": ["ts/**/*.ts", "ts/**/*.d.ts", ".pi/extensions/**/*.ts", "biome.json"]
   },
   "formatter": {
     "enabled": true,
@@ -30,6 +30,18 @@
       "suspicious": "error"
     }
   },
+  "overrides": [
+    {
+      "includes": [".pi/extensions/**/*.ts"],
+      "linter": {
+        "rules": {
+          // pi extensions are Node scripts run by the agent host.
+          "correctness": { "noNodejsModules": "off" },
+          "style": { "noProcessEnv": "off" }
+        }
+      }
+    }
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "double",

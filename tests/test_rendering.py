@@ -319,26 +319,12 @@ def test_generate_standalone_html(renderer_class, monkeypatch) -> None:
     assert scene["actors"][0]["source"]["type"] == "sphere"
 
 
-def test_render_loads_vtkjs_in_pyodide(monkeypatch) -> None:
-    """Test that rendering into a Pyodide page without IPython loads vtk.js there once."""
-    added: list[object] = []
-    document = types.SimpleNamespace(
-        createElement=lambda _tag: types.SimpleNamespace(),
-        head=types.SimpleNamespace(appendChild=added.append),
-    )
+def test_vtkjs_renderer_requires_ipython(monkeypatch) -> None:
+    """Test that Pyodide without IPython gets an explicit error with guidance."""
     monkeypatch.setattr(rendering, "PYODIDE_ENV", True)
     monkeypatch.setattr(rendering, "IPYTHON_AVAILABLE", False)
-    monkeypatch.setattr(rendering, "document", document)
-    monkeypatch.setattr(rendering.time, "sleep", lambda _seconds: None)
-    monkeypatch.setattr(rendering._VTKJSLoader(), "_loaded", False)
-    renderer = rendering.VTKJSRenderer()
-    assert added == []  # nothing until it renders
-    # the vtk.js objects that rendering directly into the page uses
-    renderer.renderer = types.SimpleNamespace(resetCamera=lambda: None)  # type: ignore[attr-defined]
-    renderer.render_window = types.SimpleNamespace(render=lambda: None)  # type: ignore[attr-defined]
-    renderer.render()
-    renderer.render()
-    assert [script.src for script in added] == [rendering._VTKJS_CDN]
+    with pytest.raises(RuntimeError, match="generate_standalone_html"):
+        rendering.VTKJSRenderer()
 
 
 def test_generate_render_js(monkeypatch) -> None:

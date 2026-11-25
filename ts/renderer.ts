@@ -113,7 +113,10 @@ interface SourceResult {
  * @returns The underlying {@link VtkPolyData} from the source or filter output.
  */
 function getPolyData(sourceResult: SourceResult): VtkPolyData {
-  if (sourceResult.isFilter) {
+  if (
+    sourceResult.isFilter &&
+    typeof (sourceResult.output as { update?: unknown }).update === "function"
+  ) {
     (sourceResult.output as VtkAlgorithm).update();
     return (sourceResult.output as VtkAlgorithm).getOutputData();
   }
@@ -133,6 +136,27 @@ function connectInput(filter: VtkAlgorithm, sourceResult: SourceResult): void {
     filter.setInputData(sourceResult.output as VtkPolyData);
   }
 }
+
+/**
+ * Map from filter type to its dispatcher function.
+ *
+ * Declared above the scene-setup entry block: `applyFilters` runs during
+ * scene construction, and a `var`-downleveled `const` here would be hoisted
+ * as `undefined`, crashing filter actors with `undefined['shrink']`.
+ */
+const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
+  {
+    shrink: tryShrinkFilter,
+    tube: tryTubeFilter,
+    clip: tryClipFilter,
+    contour: tryContourFilter,
+    fillHoles: tryFillHolesFilter,
+    threshold: tryThresholdFilter,
+    slice: trySliceFilter,
+    warpByScalar: tryWarpByScalarFilter,
+    smoothTaubin: trySmoothTaubinFilter,
+    textureSphere: tryTextureMapToSphere,
+  };
 
 const sceneData: SceneData =
   // biome-ignore lint/style/noTernary lint/correctness/noUndeclaredVariables: ternary is idiomatic for concise conditional returns
@@ -459,6 +483,18 @@ function createDiskSource(cfg: SourceConfig): SourceResult {
  * @returns A {@link SourceResult} wrapping the disk source configured as a circle.
  */
 function createCircleSource(cfg: SourceConfig): SourceResult {
+  // biome-ignore lint/correctness/noUndeclaredVariables: vtk globals are declared in vtk.d.ts
+  const circleFactory = vtk.Filters.Sources.vtkCircleSource;
+  if (circleFactory) {
+    const source = circleFactory.newInstance({
+      center: [0, 0, 0],
+      direction: [0, 0, 1],
+      radius: cfg.radius ?? DEFAULT_RADIUS,
+      resolution: cfg.resolution ?? DEFAULT_RESOLUTION,
+      lines: true,
+    });
+    return { output: source, isFilter: true };
+  }
   return createDiskSource({
     type: "disk",
     innerRadius: 0,
@@ -1477,23 +1513,6 @@ function tryFillHolesFilter(current: SourceResult, f: FilterConfig): SourceResul
   // biome-ignore lint/style/noTernary: ternary is idiomatic for concise conditional returns
   return f.holeSize === undefined ? current : applyFillHolesFilter(current, f.holeSize);
 }
-
-/**
- * Map from filter type to its dispatcher function.
- */
-const filterDispatchMap: Record<string, (current: SourceResult, f: FilterConfig) => SourceResult> =
-  {
-    shrink: tryShrinkFilter,
-    tube: tryTubeFilter,
-    clip: tryClipFilter,
-    contour: tryContourFilter,
-    fillHoles: tryFillHolesFilter,
-    threshold: tryThresholdFilter,
-    slice: trySliceFilter,
-    warpByScalar: tryWarpByScalarFilter,
-    smoothTaubin: trySmoothTaubinFilter,
-    textureSphere: tryTextureMapToSphere,
-  };
 
 /**
  * Apply a chain of filters to a source.

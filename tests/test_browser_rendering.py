@@ -13,6 +13,7 @@ In production use, vtk.js could be vendored locally to avoid this dependency.
 
 from __future__ import annotations
 
+import io
 import json
 import tempfile
 from pathlib import Path
@@ -21,7 +22,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-from pyvista_js import Cube, Line, Plotter, PolyData, Sphere, Text
+from pyvista_js import Circle, Cube, Line, Plotter, PolyData, Sphere, Text
 from pyvista_js.examples import download_bunny, download_trumpet
 from pyvista_js.readers import OBJReader, PLYReader, PolyDataReader, STLReader
 from pyvista_js.rendering import BrowserRenderer, scene_to_json
@@ -315,6 +316,43 @@ def test_shrink_filter_renders_in_browser(page: Page) -> None:
 
     # Verify no JS errors (catches missing filter implementations)
     assert len(js_errors) == 0, f"JavaScript errors during shrink rendering: {js_errors}"
+
+
+@pytest.mark.playwright
+def test_circle_renders_in_browser(page: Page) -> None:
+    """Test that a Circle mesh renders visible pixels, not a blank canvas.
+
+    This is a regression test for gh-788: ``pv.Circle().plot()`` previously
+    rendered a blank canvas because the renderer fell back to an empty
+    vtk.js PolyData when ``vtkDiskSource`` was unavailable.
+
+    Parameters
+    ----------
+    page : Page
+        Playwright page fixture for browser automation.
+
+    """
+    plotter = Plotter()
+    plotter.add_mesh(Circle(radius=1.0), color="red")
+
+    # Collect JS errors
+    js_errors: list[str] = []
+    page.on("console", lambda msg: js_errors.append(msg.text) if msg.type == "error" else None)
+
+    _load_plotter_html(page, plotter)
+
+    canvas = page.query_selector("canvas")
+    assert canvas is not None, "Canvas element not found for circle"
+    assert len(js_errors) == 0, f"JavaScript errors during circle rendering: {js_errors}"
+
+    # Verify that non-background pixels were drawn: screenshot the canvas
+    # element and check that more than one distinct color is present.
+    from PIL import Image  # noqa: PLC0415
+
+    screenshot = page.locator("canvas").screenshot()
+    pixels = np.asarray(Image.open(io.BytesIO(screenshot)).convert("RGB"))
+    colors = {tuple(color) for color in pixels.reshape(-1, 3).tolist()}
+    assert len(colors) > 1, "Circle rendered a blank canvas"
 
 
 @pytest.mark.playwright
