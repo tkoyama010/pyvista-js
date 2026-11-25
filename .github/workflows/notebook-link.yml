@@ -1,4 +1,4 @@
-name: Deploy Notebook.link branch
+name: Deploy notebook-link branch
 
 on:
   push:
