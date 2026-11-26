@@ -2,15 +2,13 @@
 
 ## [0.22.0](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.2...pyvista-js-v0.22.0) (2026-11-26)
 
-
 ### Features
 
-* add capture-api-example CLI command and Try-example capture workflow ([#805](https://github.com/tkoyama010/pyvista-js/issues/805)) ([6dda79e](https://github.com/tkoyama010/pyvista-js/commit/6dda79ea5f4d5878e0eb2b29fdcf69ea5b3caf75))
-
+- add capture-api-example CLI command and Try-example capture workflow ([#805](https://github.com/tkoyama010/pyvista-js/issues/805)) ([6dda79e](https://github.com/tkoyama010/pyvista-js/commit/6dda79ea5f4d5878e0eb2b29fdcf69ea5b3caf75))
 
 ### Bug Fixes
 
-* **deps:** bump mistune floor to 3.3.4 for GHSA-phmp-hrw4-r36r and GHSA-ww7q-mxrj-5ffg ([#828](https://github.com/tkoyama010/pyvista-js/issues/828)) ([b766671](https://github.com/tkoyama010/pyvista-js/commit/b766671d7b35b3b437f25105e341b4eb87d2d3eb))
+- **deps:** bump mistune floor to 3.3.4 for GHSA-phmp-hrw4-r36r and GHSA-ww7q-mxrj-5ffg ([#828](https://github.com/tkoyama010/pyvista-js/issues/828)) ([b766671](https://github.com/tkoyama010/pyvista-js/commit/b766671d7b35b3b437f25105e341b4eb87d2d3eb))
 
 ## [0.21.2](https://github.com/tkoyama010/pyvista-js/compare/pyvista-js-v0.21.1...pyvista-js-v0.21.2) (2026-11-15)
 
